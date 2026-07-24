@@ -491,47 +491,6 @@
       transform: scale(1.025);
     }
 
-    .gallery-nav {
-      position: absolute;
-      top: 50%;
-      z-index: 2;
-      display: grid;
-      width: 34px;
-      height: 34px;
-      place-items: center;
-      border: 1px solid rgba(255, 255, 255, 0.74);
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.9);
-      color: var(--ink);
-      cursor: pointer;
-      opacity: 0;
-      transform: translateY(-50%);
-      box-shadow: 0 8px 22px rgba(0, 0, 0, 0.14);
-      transition: opacity 160ms ease, background 160ms ease;
-    }
-
-    .gallery-nav:hover {
-      background: #fff;
-    }
-
-    .product-card:hover .gallery-nav,
-    .product-card:focus-within .gallery-nav {
-      opacity: 1;
-    }
-
-    .gallery-nav.prev {
-      left: 10px;
-    }
-
-    .gallery-nav.next {
-      right: 10px;
-    }
-
-    .gallery-nav svg {
-      width: 17px;
-      height: 17px;
-    }
-
     .gallery-dots {
       position: absolute;
       left: 10px;
@@ -539,7 +498,7 @@
       z-index: 2;
       display: inline-flex;
       gap: 5px;
-      max-width: calc(100% - 100px);
+      max-width: calc(100% - 20px);
       align-items: center;
       border-radius: 999px;
       padding: 5px 7px;
@@ -575,30 +534,6 @@
       font-size: 14px;
       font-weight: 500;
       box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-    }
-
-    .quick-actions {
-      position: absolute;
-      right: 10px;
-      bottom: 10px;
-      display: flex;
-      gap: 8px;
-      opacity: 0;
-      transform: translateY(8px);
-      transition: opacity 160ms ease, transform 160ms ease;
-    }
-
-    .product-card:hover .quick-actions,
-    .product-card:focus-within .quick-actions {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    .quick-actions .icon-button {
-      width: 38px;
-      height: 38px;
-      background: #fff;
-      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.16);
     }
 
     .product-info {
@@ -1296,31 +1231,12 @@
         gap: 24px 10px;
       }
 
-      .quick-actions {
-        opacity: 1;
-        transform: none;
-      }
-
-      .gallery-nav {
-        width: 30px;
-        height: 30px;
-        opacity: 0.86;
-      }
-
-      .gallery-nav.prev {
-        left: 8px;
-      }
-
-      .gallery-nav.next {
-        right: 8px;
-      }
-
       .gallery-dots {
         left: 8px;
         bottom: 9px;
         gap: 4px;
         padding: 4px 6px;
-        max-width: calc(100% - 88px);
+        max-width: calc(100% - 16px);
       }
 
       .gallery-dot {
@@ -1330,11 +1246,6 @@
 
       .gallery-dot.active {
         width: 11px;
-      }
-
-      .quick-actions .icon-button {
-        width: 34px;
-        height: 34px;
       }
 
       .product-info {
@@ -2183,12 +2094,6 @@
           </div>
         </div>
         ${hasGallery ? `
-          <button class="gallery-nav prev" type="button" data-gallery-prev="${product.id}" aria-label="Previous image">
-            <i data-lucide="chevron-left"></i>
-          </button>
-          <button class="gallery-nav next" type="button" data-gallery-next="${product.id}" aria-label="Next image">
-            <i data-lucide="chevron-right"></i>
-          </button>
           <div class="gallery-dots">
             ${images.map((_, index) => `
               <button class="gallery-dot ${index === 0 ? "active" : ""}" type="button" data-gallery-dot="${product.id}" data-gallery-index="${index}" aria-label="Image ${index + 1}"></button>
@@ -2298,14 +2203,6 @@
         <article class="product-card">
           <div class="product-media" role="group" aria-label="${productName(product)}">
             ${renderProductGallery(product)}
-            <div class="quick-actions">
-              <button class="icon-button" type="button" data-product-view="${product.id}" aria-label="${t("view")} ${productName(product)}">
-                <i data-lucide="eye"></i>
-              </button>
-              <button class="icon-button" type="button" data-add-cart="${product.id}" aria-label="${t("add")} ${productName(product)}" ${!available(product) ? "disabled" : ""}>
-                <i data-lucide="plus"></i>
-              </button>
-            </div>
           </div>
           <div class="product-info">
             <a class="product-title" href="#catalog">${productName(product)}</a>
@@ -2727,16 +2624,6 @@
       const target = clickedElement.closest("button, a");
       if (!target) return;
 
-      if (target.matches("[data-gallery-prev]")) {
-        event.preventDefault();
-        moveGallery(target.dataset.galleryPrev, -1);
-        return;
-      }
-      if (target.matches("[data-gallery-next]")) {
-        event.preventDefault();
-        moveGallery(target.dataset.galleryNext, 1);
-        return;
-      }
       if (target.matches("[data-gallery-dot]")) {
         event.preventDefault();
         setGallerySlide(target.dataset.galleryDot, Number(target.dataset.galleryIndex || 0));
