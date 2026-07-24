@@ -9,6 +9,10 @@
   <link rel="preconnect" href="https://unpkg.com">
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
   <script>
+    function isAdminRoute() {
+      return location.hash === "#admin" || location.hash.indexOf("#admin?") === 0;
+    }
+
     function openAdminFallback(event) {
       if (event) event.preventDefault();
       var store = document.getElementById("storeView");
@@ -25,7 +29,7 @@
         if (login) login.hidden = false;
         if (shell) shell.hidden = true;
       }
-      if (location.hash !== "#admin") location.hash = "admin";
+      if (!isAdminRoute()) location.hash = "admin";
     }
 
     function loginAdminFallback(event) {
@@ -40,6 +44,8 @@
         } catch (error) {}
         if (login) login.hidden = true;
         if (shell) shell.hidden = false;
+        if (typeof renderAdmin === "function") renderAdmin();
+        if (typeof refreshIcons === "function") refreshIcons();
       } else {
         alert("密码错误，默认密码是 admin123");
       }
@@ -1682,7 +1688,7 @@
           <a href="#home" data-i18n="navHome">Home</a>
           <a href="#catalog" data-i18n="navCatalog">Catalog</a>
           <a href="#contact" data-i18n="navContact">Contact</a>
-          <a href="./gogoshop-admin.html">Admin</a>
+          <a href="./gogoshop.html#admin">Admin</a>
         </nav>
         <div class="header-actions">
           <div class="language-toggle" data-language-toggle aria-label="Language">
@@ -1690,7 +1696,7 @@
             <button type="button" data-lang="zh">中文</button>
           </div>
           <button class="icon-button" type="button" data-open-search aria-label="Search"><i data-lucide="search"></i></button>
-          <button class="icon-button" type="button" onclick="location.href='./gogoshop-admin.html'" aria-label="Account"><i data-lucide="user"></i></button>
+          <button class="icon-button" type="button" onclick="location.href='./gogoshop.html#admin'" aria-label="Account"><i data-lucide="user"></i></button>
           <button class="icon-button cart-button" type="button" data-open-cart aria-label="Cart">
             <i data-lucide="shopping-bag"></i>
             <span class="cart-count" data-cart-count>0</span>
@@ -1706,7 +1712,7 @@
           <button type="button" data-lang="en">EN</button>
           <button type="button" data-lang="zh">中文</button>
         </div>
-        <button class="icon-button" type="button" onclick="location.href='./gogoshop-admin.html'" aria-label="Account"><i data-lucide="user"></i></button>
+        <button class="icon-button" type="button" onclick="location.href='./gogoshop.html#admin'" aria-label="Account"><i data-lucide="user"></i></button>
         <button class="icon-button cart-button" type="button" data-open-cart aria-label="Cart">
           <i data-lucide="shopping-bag"></i>
           <span class="cart-count" data-cart-count-mobile>0</span>
@@ -1782,7 +1788,7 @@
         <nav class="footer-links">
           <a href="#home">Go Go Shop</a>
           <a href="#catalog" data-i18n="navCatalog">Catalog</a>
-          <a href="./gogoshop-admin.html">Admin</a>
+          <a href="./gogoshop.html#admin">Admin</a>
           <a href="https://gogoshop.nz/" target="_blank" rel="noreferrer" data-i18n="originalSite">Original site</a>
         </nav>
       </div>
@@ -2143,7 +2149,7 @@
         <a href="#home" data-close-panels data-i18n="navHome">Home</a>
         <a href="#catalog" data-close-panels data-i18n="navCatalog">Catalog</a>
         <a href="#contact" data-close-panels data-i18n="navContact">Contact</a>
-        <a href="./gogoshop-admin.html" data-close-panels>Admin</a>
+        <a href="./gogoshop.html#admin" data-close-panels>Admin</a>
       </nav>
     </div>
   </aside>
@@ -2992,6 +2998,10 @@
     }
 
     function attemptLogin(form) {
+      if (!form) {
+        showToast("Login form not ready");
+        return;
+      }
       const password = new FormData(form).get("password");
       if (password === ADMIN_PASSWORD) {
         storageSet(ADMIN_KEY, "true");
@@ -3015,7 +3025,7 @@
     function showStore() {
       $("#storeView").style.display = "";
       $("#admin").classList.remove("active");
-      if (location.hash === "#admin") {
+      if (isAdminRoute()) {
         history.replaceState(null, "", "#home");
       }
       refreshIcons();
@@ -3573,7 +3583,7 @@
     $("#searchInput").addEventListener("input", renderSearch);
 
     window.addEventListener("hashchange", () => {
-      if (location.hash === "#admin") {
+      if (isAdminRoute()) {
         showAdmin();
       } else if ($("#admin").classList.contains("active")) {
         showStore();
@@ -3584,7 +3594,7 @@
       if (event.key === "Escape") closePanels();
     });
 
-    if (location.hash === "#admin") {
+      if (isAdminRoute()) {
       showAdmin();
     }
 
