@@ -150,8 +150,8 @@
 
     .mobile-header {
       display: none;
-      grid-template-columns: auto auto 1fr auto auto;
-      gap: 20px;
+      grid-template-columns: auto auto 1fr auto auto auto;
+      gap: 14px;
       min-height: 60px;
       padding: 0 15px;
     }
@@ -175,9 +175,38 @@
 
     .header-actions {
       display: flex;
-      gap: 19px;
+      gap: 16px;
       margin-left: auto;
       align-items: center;
+    }
+
+    .language-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 2px;
+      background: #fff;
+      white-space: nowrap;
+    }
+
+    .language-toggle button {
+      min-width: 34px;
+      height: 26px;
+      border: 0;
+      border-radius: 999px;
+      padding: 0 8px;
+      background: transparent;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .language-toggle button.active {
+      background: var(--ink);
+      color: #fff;
     }
 
     .icon-button {
@@ -232,7 +261,7 @@
       min-height: 344px;
       display: grid;
       place-items: center;
-      padding: 100px 24px 72px;
+      padding: 92px 24px 78px;
       isolation: isolate;
       background: #d9b197;
     }
@@ -257,8 +286,9 @@
       position: absolute;
       inset: 0;
       z-index: -1;
-      opacity: 0.9;
+      opacity: 0.95;
       background:
+        linear-gradient(90deg, rgba(0, 0, 0, 0.34), rgba(0, 0, 0, 0.18) 42%, rgba(0, 0, 0, 0.35)),
         linear-gradient(115deg, transparent 0 73%, #1f3837 73.4% 79%, transparent 79.3%),
         radial-gradient(ellipse at 73% 95%, #7c3e30 0 5.1rem, transparent 5.2rem),
         radial-gradient(circle at 78% 70%, #8b4b3e 0 3.5rem, transparent 3.6rem),
@@ -269,9 +299,12 @@
     }
 
     .hero-content {
+      position: relative;
+      z-index: 1;
       display: grid;
       gap: 25px;
       justify-items: center;
+      max-width: min(92vw, 920px);
       text-align: center;
     }
 
@@ -282,7 +315,8 @@
       font-size: clamp(34px, 5.2vw, 54px);
       font-weight: 800;
       line-height: 1.05;
-      text-shadow: 0 2px 14px rgba(0, 0, 0, 0.18);
+      text-wrap: balance;
+      text-shadow: 0 3px 18px rgba(0, 0, 0, 0.46);
     }
 
     .button {
@@ -421,6 +455,7 @@
     }
 
     .product-media {
+      display: block;
       position: relative;
       overflow: hidden;
       aspect-ratio: 1;
@@ -479,7 +514,8 @@
     .product-info {
       display: grid;
       gap: 7px;
-      padding-top: 12px;
+      min-height: 58px;
+      padding-top: 13px;
     }
 
     .product-title {
@@ -1120,14 +1156,45 @@
         display: grid;
       }
 
+      .mobile-header .language-toggle {
+        justify-self: end;
+      }
+
+      .language-toggle button {
+        min-width: 31px;
+        padding: 0 7px;
+      }
+
       .hero {
-        min-height: 290px;
-        padding: 92px 20px 60px;
+        min-height: 280px;
+        padding: 78px 20px 58px;
+        place-items: center start;
+      }
+
+      .hero::after {
+        opacity: 0.82;
+        background:
+          linear-gradient(90deg, rgba(0, 0, 0, 0.46), rgba(0, 0, 0, 0.24) 60%, rgba(0, 0, 0, 0.36)),
+          linear-gradient(115deg, transparent 0 79%, #1f3837 79.4% 84%, transparent 84.3%),
+          radial-gradient(ellipse at 88% 106%, #7c3e30 0 4.8rem, transparent 4.9rem),
+          radial-gradient(circle at 93% 76%, #192b29 0 3.4rem, transparent 3.5rem),
+          linear-gradient(0deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.02));
+      }
+
+      .hero-content {
+        justify-items: start;
+        max-width: 320px;
+        text-align: left;
       }
 
       .hero h1 {
-        max-width: 360px;
-        font-size: 34px;
+        max-width: 310px;
+        font-size: 31px;
+        line-height: 1.08;
+      }
+
+      .hero .button {
+        min-width: 98px;
       }
 
       .section {
@@ -1136,7 +1203,7 @@
 
       .product-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 22px 8px;
+        gap: 24px 10px;
       }
 
       .quick-actions {
@@ -1147,6 +1214,11 @@
       .quick-actions .icon-button {
         width: 34px;
         height: 34px;
+      }
+
+      .product-info {
+        min-height: 62px;
+        padding-top: 11px;
       }
 
       .footer-inner {
@@ -1198,6 +1270,22 @@
     }
 
     @media (max-width: 580px) {
+      .mobile-header {
+        gap: 10px;
+        padding: 0 12px;
+      }
+
+      .mobile-header .brand {
+        font-size: 15px;
+      }
+
+      .language-toggle button {
+        min-width: 28px;
+        height: 24px;
+        padding: 0 6px;
+        font-size: 11px;
+      }
+
       .catalog-tools {
         display: grid;
       }
@@ -1260,18 +1348,22 @@
 </head>
 <body>
   <div class="main-view" id="storeView">
-    <aside class="announcement">Welcome to our store</aside>
+    <aside class="announcement" data-i18n="announcement">Welcome to our store</aside>
 
     <header class="site-header">
       <div class="desktop-header" aria-label="Store navigation">
         <a class="brand" href="#home">Go Go Shop</a>
         <nav class="nav-links">
-          <a href="#home">Home</a>
-          <a href="#catalog">Catalog</a>
-          <a href="#contact">Contact</a>
+          <a href="#home" data-i18n="navHome">Home</a>
+          <a href="#catalog" data-i18n="navCatalog">Catalog</a>
+          <a href="#contact" data-i18n="navContact">Contact</a>
           <a href="./gogoshop-admin.html">Admin</a>
         </nav>
         <div class="header-actions">
+          <div class="language-toggle" data-language-toggle aria-label="Language">
+            <button type="button" data-lang="en">EN</button>
+            <button type="button" data-lang="zh">中文</button>
+          </div>
           <button class="icon-button" type="button" data-open-search aria-label="Search"><i data-lucide="search"></i></button>
           <button class="icon-button" type="button" onclick="location.href='./gogoshop-admin.html'" aria-label="Account"><i data-lucide="user"></i></button>
           <button class="icon-button cart-button" type="button" data-open-cart aria-label="Cart">
@@ -1285,6 +1377,10 @@
         <button class="icon-button" type="button" data-open-menu aria-label="Menu"><i data-lucide="menu"></i></button>
         <button class="icon-button" type="button" data-open-search aria-label="Search"><i data-lucide="search"></i></button>
         <a class="brand" href="#home">Go Go Shop</a>
+        <div class="language-toggle" data-language-toggle aria-label="Language">
+          <button type="button" data-lang="en">EN</button>
+          <button type="button" data-lang="zh">中文</button>
+        </div>
         <button class="icon-button" type="button" onclick="location.href='./gogoshop-admin.html'" aria-label="Account"><i data-lucide="user"></i></button>
         <button class="icon-button cart-button" type="button" data-open-cart aria-label="Cart">
           <i data-lucide="shopping-bag"></i>
@@ -1296,23 +1392,23 @@
     <main id="home">
       <section class="hero" aria-label="Go Go Shop hero">
         <div class="hero-content">
-          <h1>Browse our latest products</h1>
-          <a class="button" href="#catalog">Shop all</a>
+          <h1 data-i18n="heroTitle">Browse our latest products</h1>
+          <a class="button" href="#catalog" data-i18n="shopAll">Shop all</a>
         </div>
       </section>
 
       <section class="section" id="catalog">
         <div class="section-heading">
-          <h2>Products</h2>
-          <button class="text-link" type="button" data-view-all>View all</button>
+          <h2 data-i18n="productsTitle">Products</h2>
+          <button class="text-link" type="button" data-view-all data-i18n="viewAll">View all</button>
         </div>
         <div class="catalog-tools">
           <div class="chips" data-category-tabs></div>
           <select class="sort-select" id="sortProducts" aria-label="Sort products">
-            <option value="featured">Featured</option>
-            <option value="price-low">Price low to high</option>
-            <option value="price-high">Price high to low</option>
-            <option value="stock">In stock first</option>
+            <option value="featured" data-i18n="sortFeatured">Featured</option>
+            <option value="price-low" data-i18n="sortLow">Price low to high</option>
+            <option value="price-high" data-i18n="sortHigh">Price high to low</option>
+            <option value="stock" data-i18n="sortStock">In stock first</option>
           </select>
         </div>
         <div class="product-grid" id="productGrid"></div>
@@ -1320,26 +1416,26 @@
 
       <section class="section" id="contact">
         <div class="section-heading">
-          <h2>Contact</h2>
+          <h2 data-i18n="contactTitle">Contact</h2>
         </div>
         <div class="admin-panel">
           <div class="admin-panel-body">
             <div class="form-row">
               <label class="field">
-                <span>Name</span>
-                <input type="text" placeholder="Your name">
+                <span data-i18n="fieldName">Name</span>
+                <input type="text" placeholder="Your name" data-i18n-placeholder="placeholderName">
               </label>
               <label class="field">
-                <span>Email</span>
+                <span data-i18n="fieldEmail">Email</span>
                 <input type="email" placeholder="you@example.com">
               </label>
             </div>
             <label class="field" style="margin-top: 12px;">
-              <span>Message</span>
-              <textarea placeholder="Tell us what you need"></textarea>
+              <span data-i18n="fieldMessage">Message</span>
+              <textarea placeholder="Tell us what you need" data-i18n-placeholder="placeholderMessage"></textarea>
             </label>
             <div class="form-actions" style="margin-top: 14px;">
-              <button class="button" type="button" data-toast="Message saved locally">Send</button>
+              <button class="button" type="button" data-toast="Message saved locally" data-i18n="send">Send</button>
             </div>
           </div>
         </div>
@@ -1349,17 +1445,17 @@
     <footer class="footer">
       <div class="footer-inner">
         <div class="newsletter">
-          <h2>Join our email list</h2>
+          <h2 data-i18n="newsletter">Join our email list</h2>
           <form class="newsletter-form" data-newsletter>
-            <input type="email" placeholder="Email" aria-label="Email">
+            <input type="email" placeholder="Email" aria-label="Email" data-i18n-placeholder="fieldEmail">
             <button class="button secondary" type="submit" aria-label="Subscribe"><i data-lucide="arrow-right"></i></button>
           </form>
         </div>
         <nav class="footer-links">
           <a href="#home">Go Go Shop</a>
-          <a href="#catalog">Catalog</a>
+          <a href="#catalog" data-i18n="navCatalog">Catalog</a>
           <a href="./gogoshop-admin.html">Admin</a>
-          <a href="https://gogoshop.nz/" target="_blank" rel="noreferrer">Original site</a>
+          <a href="https://gogoshop.nz/" target="_blank" rel="noreferrer" data-i18n="originalSite">Original site</a>
         </nav>
       </div>
     </footer>
@@ -1546,9 +1642,9 @@
     </div>
     <div class="drawer-body">
       <nav class="menu-links">
-        <a href="#home" data-close-panels>Home</a>
-        <a href="#catalog" data-close-panels>Catalog</a>
-        <a href="#contact" data-close-panels>Contact</a>
+        <a href="#home" data-close-panels data-i18n="navHome">Home</a>
+        <a href="#catalog" data-close-panels data-i18n="navCatalog">Catalog</a>
+        <a href="#contact" data-close-panels data-i18n="navContact">Contact</a>
         <a href="./gogoshop-admin.html" data-close-panels>Admin</a>
       </nav>
     </div>
@@ -1556,28 +1652,28 @@
 
   <aside class="drawer" id="cartDrawer" aria-hidden="true">
     <div class="drawer-head">
-      <h2 class="drawer-title">Cart</h2>
+      <h2 class="drawer-title" data-i18n="cartTitle">Cart</h2>
       <button class="icon-button" type="button" data-close-panels aria-label="Close"><i data-lucide="x"></i></button>
     </div>
     <div class="drawer-body" id="cartLines"></div>
     <div class="drawer-foot">
       <div class="section-heading" style="margin-bottom: 16px;">
-        <h2 style="font-size: 20px;">Total</h2>
+        <h2 style="font-size: 20px;" data-i18n="total">Total</h2>
         <strong id="cartTotal">$0.00</strong>
       </div>
-      <button class="button" type="button" data-checkout style="width: 100%;"><i data-lucide="credit-card"></i> Checkout</button>
+      <button class="button" type="button" data-checkout style="width: 100%;"><i data-lucide="credit-card"></i> <span data-i18n="checkout">Checkout</span></button>
     </div>
   </aside>
 
   <section class="search-panel" id="searchPanel" aria-hidden="true">
     <div class="panel-head">
-      <h2 class="panel-title">Search</h2>
+      <h2 class="panel-title" data-i18n="searchTitle">Search</h2>
       <button class="icon-button" type="button" data-close-panels aria-label="Close"><i data-lucide="x"></i></button>
     </div>
     <div class="search-body">
       <div class="search-input-wrap">
-        <input type="search" id="searchInput" placeholder="Search products" autocomplete="off">
-        <button class="button ghost" type="button" data-clear-search>Clear</button>
+        <input type="search" id="searchInput" placeholder="Search products" autocomplete="off" data-i18n-placeholder="searchPlaceholder">
+        <button class="button ghost" type="button" data-clear-search data-i18n="clear">Clear</button>
       </div>
       <div class="result-list" id="searchResults"></div>
     </div>
@@ -1590,7 +1686,105 @@
     const CART_KEY = "gogoshop_cart_v1";
     const ORDER_KEY = "gogoshop_orders_v1";
     const ADMIN_KEY = "gogoshop_admin_unlocked_v1";
+    const LANG_KEY = "gogoshop_lang_v1";
     const ADMIN_PASSWORD = "admin123";
+
+    const translations = {
+      en: {
+        announcement: "Welcome to our store",
+        navHome: "Home",
+        navCatalog: "Catalog",
+        navContact: "Contact",
+        heroTitle: "Browse our latest products",
+        shopAll: "Shop all",
+        productsTitle: "Products",
+        viewAll: "View all",
+        sortFeatured: "Featured",
+        sortLow: "Price low to high",
+        sortHigh: "Price high to low",
+        sortStock: "In stock first",
+        contactTitle: "Contact",
+        fieldName: "Name",
+        fieldEmail: "Email",
+        fieldMessage: "Message",
+        placeholderName: "Your name",
+        placeholderMessage: "Tell us what you need",
+        send: "Send",
+        newsletter: "Join our email list",
+        originalSite: "Original site",
+        cartTitle: "Cart",
+        total: "Total",
+        checkout: "Checkout",
+        searchTitle: "Search",
+        searchPlaceholder: "Search products",
+        clear: "Clear",
+        soldOut: "Sold out",
+        add: "Add",
+        view: "View",
+        noProducts: "No products",
+        emptyCart: "Your cart is empty",
+        continueShopping: "Continue shopping",
+        noResults: "No results",
+        soldOutToast: "Sold out",
+        addedToCart: "Added to cart",
+        cartEmpty: "Cart is empty",
+        orderCreated: "Order created",
+        subscribed: "Subscribed",
+        messageSaved: "Message saved locally",
+        allCategory: "All"
+      },
+      zh: {
+        announcement: "欢迎来到我们的商店",
+        navHome: "首页",
+        navCatalog: "商品",
+        navContact: "联系",
+        heroTitle: "浏览我们的最新商品",
+        shopAll: "查看全部",
+        productsTitle: "商品",
+        viewAll: "全部",
+        sortFeatured: "推荐排序",
+        sortLow: "价格从低到高",
+        sortHigh: "价格从高到低",
+        sortStock: "有库存优先",
+        contactTitle: "联系",
+        fieldName: "姓名",
+        fieldEmail: "邮箱",
+        fieldMessage: "留言",
+        placeholderName: "你的姓名",
+        placeholderMessage: "告诉我们你需要什么",
+        send: "发送",
+        newsletter: "订阅我们的邮件",
+        originalSite: "原网站",
+        cartTitle: "购物车",
+        total: "合计",
+        checkout: "结账",
+        searchTitle: "搜索",
+        searchPlaceholder: "搜索商品",
+        clear: "清除",
+        soldOut: "售罄",
+        add: "加入",
+        view: "查看",
+        noProducts: "暂无商品",
+        emptyCart: "购物车为空",
+        continueShopping: "继续购物",
+        noResults: "没有结果",
+        soldOutToast: "已售罄",
+        addedToCart: "已加入购物车",
+        cartEmpty: "购物车为空",
+        orderCreated: "订单已创建",
+        subscribed: "订阅成功",
+        messageSaved: "留言已保存到本地",
+        allCategory: "全部"
+      }
+    };
+
+    const productLabels = {
+      "Blind Box": { zh: "盲盒" },
+      "Key Chain": { zh: "钥匙扣" },
+      "Phone Case": { zh: "手机壳" },
+      "Smart Glasses": { zh: "智能眼镜" },
+      "Soft Toy": { zh: "毛绒玩具" }
+    };
 
     const seedProducts = [
       {
@@ -1730,6 +1924,7 @@
       orders: load(ORDER_KEY, seedOrders),
       category: "All",
       sort: "featured",
+      lang: storageGet(LANG_KEY) || "en",
       adminTab: "overview"
     };
 
@@ -1792,6 +1987,40 @@
       return money.format(Number(value || 0));
     }
 
+    function t(key) {
+      return translations[state.lang]?.[key] || translations.en[key] || key;
+    }
+
+    function productName(product) {
+      return state.lang === "zh" ? productLabels[product.title]?.zh || product.title : product.title;
+    }
+
+    function categoryName(category) {
+      if (category === "All") return t("allCategory");
+      return state.lang === "zh" ? productLabels[category]?.zh || category : category;
+    }
+
+    function setLanguage(lang) {
+      state.lang = lang === "zh" ? "zh" : "en";
+      storageSet(LANG_KEY, state.lang);
+      document.documentElement.lang = state.lang === "zh" ? "zh-CN" : "en";
+      applyLanguage();
+      renderAll();
+    }
+
+    function applyLanguage() {
+      $$("[data-i18n]").forEach((element) => {
+        element.textContent = t(element.dataset.i18n);
+      });
+      $$("[data-i18n-placeholder]").forEach((element) => {
+        element.placeholder = t(element.dataset.i18nPlaceholder);
+      });
+      $$("[data-language-toggle] button").forEach((button) => {
+        button.classList.toggle("active", button.dataset.lang === state.lang);
+        button.setAttribute("aria-pressed", String(button.dataset.lang === state.lang));
+      });
+    }
+
     function showToast(message) {
       const toast = $("#toast");
       toast.textContent = message;
@@ -1827,7 +2056,7 @@
       const tabs = $("[data-category-tabs]");
       tabs.innerHTML = categories().map((category) => `
         <button class="chip ${category === state.category ? "active" : ""}" type="button" data-category="${category}">
-          ${category}
+          ${categoryName(category)}
         </button>
       `).join("");
     }
@@ -1837,26 +2066,26 @@
       const grid = $("#productGrid");
       const products = visibleProducts();
       if (!products.length) {
-        grid.innerHTML = `<div class="empty-state" style="grid-column: 1 / -1;">No products</div>`;
+        grid.innerHTML = `<div class="empty-state" style="grid-column: 1 / -1;">${t("noProducts")}</div>`;
         refreshIcons();
         return;
       }
       grid.innerHTML = products.map((product) => `
         <article class="product-card">
-          <a class="product-media" href="#catalog" aria-label="${product.title}">
-            ${!available(product) ? `<span class="badge">Sold out</span>` : ""}
-            <img src="${product.image}" alt="${product.title}" loading="lazy">
+          <a class="product-media" href="#catalog" aria-label="${productName(product)}">
+            ${!available(product) ? `<span class="badge">${t("soldOut")}</span>` : ""}
+            <img src="${product.image}" alt="${productName(product)}" loading="lazy">
             <div class="quick-actions">
-              <button class="icon-button" type="button" data-product-view="${product.id}" aria-label="View ${product.title}">
+              <button class="icon-button" type="button" data-product-view="${product.id}" aria-label="${t("view")} ${productName(product)}">
                 <i data-lucide="eye"></i>
               </button>
-              <button class="icon-button" type="button" data-add-cart="${product.id}" aria-label="Add ${product.title}" ${!available(product) ? "disabled" : ""}>
+              <button class="icon-button" type="button" data-add-cart="${product.id}" aria-label="${t("add")} ${productName(product)}" ${!available(product) ? "disabled" : ""}>
                 <i data-lucide="plus"></i>
               </button>
             </div>
           </a>
           <div class="product-info">
-            <a class="product-title" href="#catalog">${product.title}</a>
+            <a class="product-title" href="#catalog">${productName(product)}</a>
             <div class="price">${formatPrice(product.price)}</div>
           </div>
         </article>
@@ -1885,8 +2114,8 @@
         lines.innerHTML = `
           <div class="empty-state">
             <div>
-              <h2>Your cart is empty</h2>
-              <a class="button ghost" href="#catalog" data-close-panels>Continue shopping</a>
+              <h2>${t("emptyCart")}</h2>
+              <a class="button ghost" href="#catalog" data-close-panels>${t("continueShopping")}</a>
             </div>
           </div>
         `;
@@ -1898,9 +2127,9 @@
         if (!product) return "";
         return `
           <div class="cart-line">
-            <img src="${product.image}" alt="${product.title}">
+            <img src="${product.image}" alt="${productName(product)}">
             <div>
-              <h3>${product.title}</h3>
+              <h3>${productName(product)}</h3>
               <div class="muted">${formatPrice(product.price)}</div>
               <div class="quantity" aria-label="Quantity">
                 <button type="button" data-cart-minus="${product.id}" aria-label="Decrease">-</button>
@@ -1918,7 +2147,7 @@
     function addToCart(id) {
       const product = state.products.find((item) => item.id === id);
       if (!product || !available(product)) {
-        showToast("Sold out");
+        showToast(t("soldOutToast"));
         return;
       }
       const line = state.cart.find((item) => item.id === id);
@@ -1932,7 +2161,7 @@
       persistProducts();
       renderCart();
       renderAdmin();
-      showToast("Added to cart");
+      showToast(t("addedToCart"));
     }
 
     function changeCart(id, delta) {
@@ -1948,7 +2177,7 @@
 
     function checkout() {
       if (!state.cart.length) {
-        showToast("Cart is empty");
+        showToast(t("cartEmpty"));
         return;
       }
       const order = {
@@ -1970,7 +2199,7 @@
       persistProducts();
       persistCart();
       renderAll();
-      showToast("Order created");
+      showToast(t("orderCreated"));
     }
 
     function openPanel(name) {
@@ -2000,20 +2229,20 @@
       const query = $("#searchInput").value.trim().toLowerCase();
       const results = state.products
         .filter((product) => product.published)
-        .filter((product) => !query || [product.title, product.category, product.description].join(" ").toLowerCase().includes(query))
+        .filter((product) => !query || [product.title, productName(product), product.category, categoryName(product.category), product.description].join(" ").toLowerCase().includes(query))
         .slice(0, 6);
       $("#searchResults").innerHTML = results.map((product) => `
         <div class="result-item">
-          <img src="${product.image}" alt="${product.title}">
+          <img src="${product.image}" alt="${productName(product)}">
           <div>
-            <strong>${product.title}</strong>
-            <div class="muted">${formatPrice(product.price)} · ${product.category}</div>
+            <strong>${productName(product)}</strong>
+            <div class="muted">${formatPrice(product.price)} · ${categoryName(product.category)}</div>
           </div>
           <button class="button ghost" type="button" data-add-cart="${product.id}" ${!available(product) ? "disabled" : ""}>
-            <i data-lucide="plus"></i> Add
+            <i data-lucide="plus"></i> ${t("add")}
           </button>
         </div>
-      `).join("") || `<div class="empty-state">No results</div>`;
+      `).join("") || `<div class="empty-state">${t("noResults")}</div>`;
       refreshIcons();
     }
 
@@ -2272,6 +2501,9 @@
       if (target.matches("[data-open-cart]")) openPanel("cart");
       if (target.matches("[data-open-menu]")) openPanel("menu");
       if (target.matches("[data-close-panels]")) closePanels();
+      if (target.matches("[data-lang]")) {
+        setLanguage(target.dataset.lang);
+      }
       if (target.matches("[data-view-all]")) {
         state.category = "All";
         renderProducts();
@@ -2283,7 +2515,7 @@
       if (target.matches("[data-add-cart]")) addToCart(target.dataset.addCart);
       if (target.matches("[data-product-view]")) {
         const product = state.products.find((item) => item.id === target.dataset.productView);
-        if (product) showToast(`${product.title} · ${formatPrice(product.price)}`);
+        if (product) showToast(`${productName(product)} · ${formatPrice(product.price)}`);
       }
       if (target.matches("[data-cart-plus]")) changeCart(target.dataset.cartPlus, 1);
       if (target.matches("[data-cart-minus]")) changeCart(target.dataset.cartMinus, -1);
@@ -2319,14 +2551,14 @@
         showToast("Products reset");
       }
       if (target.matches("[data-export-products]")) exportProducts();
-      if (target.matches("[data-toast]")) showToast(target.dataset.toast);
+      if (target.matches("[data-toast]")) showToast(t("messageSaved"));
     });
 
     document.addEventListener("submit", (event) => {
       if (event.target.matches("[data-newsletter]")) {
         event.preventDefault();
         event.target.reset();
-        showToast("Subscribed");
+        showToast(t("subscribed"));
       }
       if (event.target.matches("[data-login-form]")) {
         event.preventDefault();
@@ -2358,6 +2590,8 @@
       showAdmin();
     }
 
+    document.documentElement.lang = state.lang === "zh" ? "zh-CN" : "en";
+    applyLanguage();
     renderAll();
     window.addEventListener("load", refreshIcons);
   </script>
