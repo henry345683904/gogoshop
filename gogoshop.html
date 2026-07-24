@@ -460,17 +460,107 @@
       overflow: hidden;
       aspect-ratio: 1;
       background: var(--soft);
+      touch-action: pan-y;
     }
 
-    .product-media img {
+    .media-slider {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .media-track {
+      display: flex;
+      width: 100%;
+      height: 100%;
+      transform: translateX(calc(var(--active-slide, 0) * -100%));
+      transition: transform 220ms ease;
+      will-change: transform;
+    }
+
+    .media-slide {
+      flex: 0 0 100%;
       width: 100%;
       height: 100%;
       object-fit: cover;
       transition: transform 220ms ease;
+      user-select: none;
     }
 
-    .product-card:hover img {
+    .product-card:hover .media-slide {
       transform: scale(1.025);
+    }
+
+    .gallery-nav {
+      position: absolute;
+      top: 50%;
+      z-index: 2;
+      display: grid;
+      width: 34px;
+      height: 34px;
+      place-items: center;
+      border: 1px solid rgba(255, 255, 255, 0.74);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.9);
+      color: var(--ink);
+      cursor: pointer;
+      opacity: 0;
+      transform: translateY(-50%);
+      box-shadow: 0 8px 22px rgba(0, 0, 0, 0.14);
+      transition: opacity 160ms ease, background 160ms ease;
+    }
+
+    .gallery-nav:hover {
+      background: #fff;
+    }
+
+    .product-card:hover .gallery-nav,
+    .product-card:focus-within .gallery-nav {
+      opacity: 1;
+    }
+
+    .gallery-nav.prev {
+      left: 10px;
+    }
+
+    .gallery-nav.next {
+      right: 10px;
+    }
+
+    .gallery-nav svg {
+      width: 17px;
+      height: 17px;
+    }
+
+    .gallery-dots {
+      position: absolute;
+      left: 10px;
+      bottom: 12px;
+      z-index: 2;
+      display: inline-flex;
+      gap: 5px;
+      max-width: calc(100% - 100px);
+      align-items: center;
+      border-radius: 999px;
+      padding: 5px 7px;
+      background: rgba(255, 255, 255, 0.78);
+      backdrop-filter: blur(5px);
+    }
+
+    .gallery-dot {
+      width: 6px;
+      height: 6px;
+      border: 0;
+      border-radius: 999px;
+      padding: 0;
+      background: rgba(0, 0, 0, 0.28);
+      cursor: pointer;
+      transition: width 160ms ease, background 160ms ease;
+    }
+
+    .gallery-dot.active {
+      width: 13px;
+      background: var(--ink);
     }
 
     .badge {
@@ -1211,6 +1301,37 @@
         transform: none;
       }
 
+      .gallery-nav {
+        width: 30px;
+        height: 30px;
+        opacity: 0.86;
+      }
+
+      .gallery-nav.prev {
+        left: 8px;
+      }
+
+      .gallery-nav.next {
+        right: 8px;
+      }
+
+      .gallery-dots {
+        left: 8px;
+        bottom: 9px;
+        gap: 4px;
+        padding: 4px 6px;
+        max-width: calc(100% - 88px);
+      }
+
+      .gallery-dot {
+        width: 5px;
+        height: 5px;
+      }
+
+      .gallery-dot.active {
+        width: 11px;
+      }
+
       .quick-actions .icon-button {
         width: 34px;
         height: 34px;
@@ -1906,6 +2027,48 @@
       }
     ];
 
+    const productImageSets = {
+      "blind-box": [
+        "https://cdn.shopify.com/s/files/1/0608/4165/6384/files/rn-image_picker_lib_temp_09c2f614-fcfa-4def-8c6e-9490a07a8a62.jpg?v=1782510734",
+        "https://cdn.shopify.com/s/files/1/0608/4165/6384/files/rn-image_picker_lib_temp_d7ae9586-aa4b-4812-8462-0ecc9ade1890.jpg?v=1782510771",
+        "https://cdn.shopify.com/s/files/1/0608/4165/6384/files/rn-image_picker_lib_temp_94888af2-6d97-4a19-a808-fcdd0310b0e1.jpg?v=1782510771",
+        "https://cdn.shopify.com/s/files/1/0608/4165/6384/files/rn-image_picker_lib_temp_19d66746-2e53-4e97-af4c-66e2c70d1b79.jpg?v=1782510771",
+        "https://cdn.shopify.com/s/files/1/0608/4165/6384/files/rn-image_picker_lib_temp_9fc3ffed-2953-4131-a37d-dd2022f2d1db.jpg?v=1782510772",
+        "https://cdn.shopify.com/s/files/1/0608/4165/6384/files/rn-image_picker_lib_temp_d8ca8eeb-0001-40c4-b027-abba148982f5.jpg?v=1782510771"
+      ],
+      "blind-box-1": [
+        "https://cdn.shopify.com/s/files/1/0608/4165/6384/files/rn-image_picker_lib_temp_d0974c4b-368f-4096-85a8-3bb1b776cd0c.jpg?v=1782511848",
+        "https://cdn.shopify.com/s/files/1/0608/4165/6384/files/rn-image_picker_lib_temp_d257bd68-ea03-43d2-9b4e-38cb4014f663.jpg?v=1782511872",
+        "https://cdn.shopify.com/s/files/1/0608/4165/6384/files/rn-image_picker_lib_temp_c3d7c0e7-cb2c-493f-8723-3bdf5e0d1616.jpg?v=1782511872",
+        "https://cdn.shopify.com/s/files/1/0608/4165/6384/files/rn-image_picker_lib_temp_e8cbe8b3-a11b-48d8-b755-0b06c46b5a90.jpg?v=1782511871",
+        "https://cdn.shopify.com/s/files/1/0608/4165/6384/files/rn-image_picker_lib_temp_254cdbef-54b4-4c1c-a181-f713a83f6f7d.jpg?v=1782511872",
+        "https://cdn.shopify.com/s/files/1/0608/4165/6384/files/rn-image_picker_lib_temp_a79f33e2-78d6-4785-84da-90403a58eb6d.jpg?v=1782511872"
+      ],
+      "key-chain": [
+        "https://cdn.shopify.com/s/files/1/0608/4165/6384/files/rn-image_picker_lib_temp_ba75def8-8bc5-44f2-9c69-645934bef2ce.jpg?v=1782590358",
+        "https://cdn.shopify.com/s/files/1/0608/4165/6384/files/rn-image_picker_lib_temp_c3ebf55b-cdd6-4390-8a85-e0190349829f.jpg?v=1782590358",
+        "https://cdn.shopify.com/s/files/1/0608/4165/6384/files/rn-image_picker_lib_temp_736b4185-e88d-41bc-8ddb-11be77312bd3.jpg?v=1782590358",
+        "https://cdn.shopify.com/s/files/1/0608/4165/6384/files/rn-image_picker_lib_temp_824cb801-9589-4812-bf31-4f965b8f8910.jpg?v=1782590358",
+        "https://cdn.shopify.com/s/files/1/0608/4165/6384/files/rn-image_picker_lib_temp_8942b7af-1982-4761-9b4e-63fc622515f0.jpg?v=1782590358"
+      ],
+      "phone-case-3": [
+        "https://cdn.shopify.com/s/files/1/0608/4165/6384/files/rn-image_picker_lib_temp_80a58ee6-430b-469b-859b-0c3c0cf590c9.jpg?v=1782417831",
+        "https://cdn.shopify.com/s/files/1/0608/4165/6384/files/rn-image_picker_lib_temp_038d76af-b167-40f6-bc83-9823a7ddd357.jpg?v=1782417844",
+        "https://cdn.shopify.com/s/files/1/0608/4165/6384/files/rn-image_picker_lib_temp_2d9e234a-d3c9-46a6-87ef-020ad658e30f.jpg?v=1782417845",
+        "https://cdn.shopify.com/s/files/1/0608/4165/6384/files/rn-image_picker_lib_temp_2cc63f5d-f11b-46af-801a-73347ee1f831.jpg?v=1782417830",
+        "https://cdn.shopify.com/s/files/1/0608/4165/6384/files/rn-image_picker_lib_temp_5ef4388c-2e79-49a6-836b-99c2a04b2bab.jpg?v=1782417831",
+        "https://cdn.shopify.com/s/files/1/0608/4165/6384/files/rn-image_picker_lib_temp_09fde627-7b7f-4725-b955-370030059883.jpg?v=1782417831"
+      ],
+      "smart-glasses": [
+        "https://cdn.shopify.com/s/files/1/0608/4165/6384/files/rn-image_picker_lib_temp_3b0c0439-9771-408f-85ad-c70f8fef0b26.jpg?v=1782417962",
+        "https://cdn.shopify.com/s/files/1/0608/4165/6384/files/rn-image_picker_lib_temp_0bfc125b-42c6-46e8-96bd-358f705fecbd.jpg?v=1782417980"
+      ],
+      "soft-toy": [
+        "https://cdn.shopify.com/s/files/1/0608/4165/6384/files/rn-image_picker_lib_temp_496117a2-313a-41e5-940c-26a4324a739e.jpg?v=1782590358",
+        "https://cdn.shopify.com/s/files/1/0608/4165/6384/files/rn-image_picker_lib_temp_73a33131-80c0-4bfe-a0f2-4da3c668b919.jpg?v=1782590358"
+      ]
+    };
+
     const seedOrders = [
       { id: "GGS-1048", date: "Mon", total: 64.92, items: 5 },
       { id: "GGS-1049", date: "Tue", total: 42.94, items: 4 },
@@ -2000,6 +2163,67 @@
       return state.lang === "zh" ? productLabels[category]?.zh || category : category;
     }
 
+    function productImages(product) {
+      const gallery = Array.isArray(product.images) && product.images.length
+        ? product.images
+        : productImageSets[product.id] || [];
+      return [...new Set([product.image, ...gallery].filter(Boolean))].slice(0, 6);
+    }
+
+    function renderProductGallery(product) {
+      const images = productImages(product);
+      const hasGallery = images.length > 1;
+      return `
+        ${!available(product) ? `<span class="badge">${t("soldOut")}</span>` : ""}
+        <div class="media-slider" data-gallery="${product.id}" data-gallery-index="0" data-gallery-count="${images.length}" style="--active-slide: 0">
+          <div class="media-track">
+            ${images.map((image, index) => `
+              <img class="media-slide" src="${image}" alt="${productName(product)} ${index + 1}" loading="lazy" draggable="false">
+            `).join("")}
+          </div>
+        </div>
+        ${hasGallery ? `
+          <button class="gallery-nav prev" type="button" data-gallery-prev="${product.id}" aria-label="Previous image">
+            <i data-lucide="chevron-left"></i>
+          </button>
+          <button class="gallery-nav next" type="button" data-gallery-next="${product.id}" aria-label="Next image">
+            <i data-lucide="chevron-right"></i>
+          </button>
+          <div class="gallery-dots">
+            ${images.map((_, index) => `
+              <button class="gallery-dot ${index === 0 ? "active" : ""}" type="button" data-gallery-dot="${product.id}" data-gallery-index="${index}" aria-label="Image ${index + 1}"></button>
+            `).join("")}
+          </div>
+        ` : ""}
+      `;
+    }
+
+    function findGallery(galleryId) {
+      return $$(".media-slider").find((slider) => slider.dataset.gallery === galleryId);
+    }
+
+    function setGallerySlide(galleryId, index) {
+      const slider = findGallery(galleryId);
+      if (!slider) return;
+      const total = Number(slider.dataset.galleryCount || 0);
+      if (total < 2) return;
+      const nextIndex = ((index % total) + total) % total;
+      slider.dataset.galleryIndex = String(nextIndex);
+      slider.style.setProperty("--active-slide", nextIndex);
+      const media = slider.closest(".product-media");
+      $$("[data-gallery-dot]", media || document).forEach((dot) => {
+        if (dot.dataset.galleryDot === galleryId) {
+          dot.classList.toggle("active", Number(dot.dataset.galleryIndex) === nextIndex);
+        }
+      });
+    }
+
+    function moveGallery(galleryId, step) {
+      const slider = findGallery(galleryId);
+      if (!slider) return;
+      setGallerySlide(galleryId, Number(slider.dataset.galleryIndex || 0) + step);
+    }
+
     function setLanguage(lang) {
       state.lang = lang === "zh" ? "zh" : "en";
       storageSet(LANG_KEY, state.lang);
@@ -2072,9 +2296,8 @@
       }
       grid.innerHTML = products.map((product) => `
         <article class="product-card">
-          <a class="product-media" href="#catalog" aria-label="${productName(product)}">
-            ${!available(product) ? `<span class="badge">${t("soldOut")}</span>` : ""}
-            <img src="${product.image}" alt="${productName(product)}" loading="lazy">
+          <div class="product-media" role="group" aria-label="${productName(product)}">
+            ${renderProductGallery(product)}
             <div class="quick-actions">
               <button class="icon-button" type="button" data-product-view="${product.id}" aria-label="${t("view")} ${productName(product)}">
                 <i data-lucide="eye"></i>
@@ -2083,7 +2306,7 @@
                 <i data-lucide="plus"></i>
               </button>
             </div>
-          </a>
+          </div>
           <div class="product-info">
             <a class="product-title" href="#catalog">${productName(product)}</a>
             <div class="price">${formatPrice(product.price)}</div>
@@ -2489,6 +2712,13 @@
       const clickedElement = event.target instanceof Element ? event.target : event.target.parentElement;
       if (!clickedElement) return;
 
+      const swipedMedia = clickedElement.closest(".product-media");
+      if (swipedMedia?.dataset.gallerySwiped === "true") {
+        event.preventDefault();
+        swipedMedia.dataset.gallerySwiped = "false";
+        return;
+      }
+
       if (clickedElement.matches("[data-backdrop]")) {
         closePanels();
         return;
@@ -2497,6 +2727,21 @@
       const target = clickedElement.closest("button, a");
       if (!target) return;
 
+      if (target.matches("[data-gallery-prev]")) {
+        event.preventDefault();
+        moveGallery(target.dataset.galleryPrev, -1);
+        return;
+      }
+      if (target.matches("[data-gallery-next]")) {
+        event.preventDefault();
+        moveGallery(target.dataset.galleryNext, 1);
+        return;
+      }
+      if (target.matches("[data-gallery-dot]")) {
+        event.preventDefault();
+        setGallerySlide(target.dataset.galleryDot, Number(target.dataset.galleryIndex || 0));
+        return;
+      }
       if (target.matches("[data-open-search]")) openPanel("search");
       if (target.matches("[data-open-cart]")) openPanel("cart");
       if (target.matches("[data-open-menu]")) openPanel("menu");
@@ -2512,8 +2757,12 @@
         state.category = target.dataset.category;
         renderProducts();
       }
-      if (target.matches("[data-add-cart]")) addToCart(target.dataset.addCart);
+      if (target.matches("[data-add-cart]")) {
+        event.preventDefault();
+        addToCart(target.dataset.addCart);
+      }
       if (target.matches("[data-product-view]")) {
+        event.preventDefault();
         const product = state.products.find((item) => item.id === target.dataset.productView);
         if (product) showToast(`${productName(product)} · ${formatPrice(product.price)}`);
       }
@@ -2552,6 +2801,45 @@
       }
       if (target.matches("[data-export-products]")) exportProducts();
       if (target.matches("[data-toast]")) showToast(t("messageSaved"));
+    });
+
+    let galleryGesture = null;
+
+    document.addEventListener("pointerdown", (event) => {
+      if (!event.isPrimary || event.button > 0) return;
+      const target = event.target instanceof Element ? event.target : null;
+      const slider = target?.closest(".media-slider");
+      if (!slider || Number(slider.dataset.galleryCount || 0) < 2) return;
+      galleryGesture = {
+        galleryId: slider.dataset.gallery,
+        pointerId: event.pointerId,
+        startX: event.clientX,
+        startY: event.clientY,
+        media: slider.closest(".product-media")
+      };
+    });
+
+    document.addEventListener("pointerup", (event) => {
+      if (!galleryGesture || galleryGesture.pointerId !== event.pointerId) return;
+      const deltaX = event.clientX - galleryGesture.startX;
+      const deltaY = event.clientY - galleryGesture.startY;
+      if (Math.abs(deltaX) > 35 && Math.abs(deltaX) > Math.abs(deltaY) * 1.2) {
+        moveGallery(galleryGesture.galleryId, deltaX < 0 ? 1 : -1);
+        if (galleryGesture.media) {
+          const swipedTarget = galleryGesture.media;
+          swipedTarget.dataset.gallerySwiped = "true";
+          window.setTimeout(() => {
+            if (swipedTarget.dataset.gallerySwiped === "true") {
+              swipedTarget.dataset.gallerySwiped = "false";
+            }
+          }, 450);
+        }
+      }
+      galleryGesture = null;
+    });
+
+    document.addEventListener("pointercancel", () => {
+      galleryGesture = null;
     });
 
     document.addEventListener("submit", (event) => {
