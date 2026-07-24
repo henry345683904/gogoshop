@@ -20,7 +20,10 @@
       var login = document.getElementById("loginScreen");
       var shell = document.getElementById("adminShell");
       if (store) store.style.display = "none";
-      if (admin) admin.classList.add("active");
+      if (admin) {
+        admin.style.display = "";
+        admin.classList.add("active");
+      }
       var unlocked = window.__gogoshopAdminUnlocked === true;
       try {
         unlocked = unlocked || localStorage.getItem("gogoshop_admin_unlocked_v1") === "true";
@@ -52,6 +55,7 @@
           message.hidden = true;
           message.textContent = "";
         }
+        if (passwordInput) passwordInput.value = "";
         try {
           if (typeof renderAdmin === "function") renderAdmin();
           if (typeof refreshIcons === "function") refreshIcons();
@@ -59,7 +63,7 @@
       } else {
         if (message) {
           message.hidden = false;
-          message.textContent = "密码错误，请输入 admin123";
+          message.textContent = "密码错误，请重试";
         }
         if (passwordInput) {
           passwordInput.focus();
@@ -775,6 +779,12 @@
       width: 100%;
       aspect-ratio: 1;
       background: var(--store-soft, var(--soft));
+      cursor: grab;
+      touch-action: pan-y;
+    }
+
+    .product-detail-main.dragging {
+      cursor: grabbing;
     }
 
     .product-detail-main img {
@@ -782,6 +792,8 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
+      pointer-events: none;
+      user-select: none;
     }
 
     .product-detail-thumbnails {
@@ -2098,11 +2110,10 @@
     <div id="loginScreen" class="login-wrap">
       <div class="login-panel">
         <h1>Go Go Shop Admin</h1>
-        <p class="muted">默认密码：<strong>admin123</strong></p>
         <form data-login-form onsubmit="return loginAdminFallback(event)">
           <label class="field">
             <span>Password</span>
-            <input type="password" name="password" value="admin123" autocomplete="current-password">
+            <input type="password" name="password" placeholder="请输入管理员密码" autocomplete="current-password" required>
           </label>
           <button class="button" type="submit" data-login-button><i data-lucide="log-in"></i> 登录后台</button>
           <button class="button ghost" type="button" data-back-store><i data-lucide="store"></i> Storefront</button>
@@ -3111,8 +3122,8 @@
         </button>
         <div class="product-detail-layout">
           <div class="product-detail-gallery">
-            <div class="product-detail-main">
-              <img src="${escapeHtml(currentImage)}" alt="${escapeHtml(productName(product))}" data-detail-main-image>
+            <div class="product-detail-main" data-detail-gallery data-detail-gallery-count="${images.length}" role="group" aria-label="Product images" tabindex="0">
+              <img src="${escapeHtml(currentImage)}" alt="${escapeHtml(productName(product))}" data-detail-main-image draggable="false">
             </div>
             ${images.length > 1 ? `
               <div class="product-detail-thumbnails" aria-label="Product images">
@@ -3207,11 +3218,14 @@
       if (location.hash !== returnHash) location.hash = returnHash;
     }
 
-    function setDetailImage(index) {
+    function setDetailImage(index, wrap = false) {
       const product = state.products.find((item) => item.id === state.activeProductId);
       if (!product) return;
       const images = productImages(product);
-      state.detailImageIndex = Math.min(Math.max(0, Number(index) || 0), Math.max(0, images.length - 1));
+      const requestedIndex = Number(index) || 0;
+      state.detailImageIndex = wrap && images.length
+        ? ((requestedIndex % images.length) + images.length) % images.length
+        : Math.min(Math.max(0, requestedIndex), Math.max(0, images.length - 1));
       const mainImage = $("[data-detail-main-image]");
       if (mainImage) mainImage.src = images[state.detailImageIndex] || product.image;
       $$("[data-detail-image]").forEach((button) => {
@@ -3484,11 +3498,12 @@
         storageSet(ADMIN_KEY, "true");
         message.hidden = true;
         message.textContent = "";
+        if (passwordInput) passwordInput.value = "";
         showAdmin();
         showToast("Signed in");
       } else {
         message.hidden = false;
-        message.textContent = "密码错误，请输入 admin123";
+        message.textContent = "密码错误，请重试";
         if (passwordInput) {
           passwordInput.focus();
           passwordInput.select();
@@ -3499,6 +3514,7 @@
 
     function showAdmin() {
       $("#storeView").style.display = "none";
+      $("#admin").style.display = "";
       $("#admin").classList.add("active");
       const unlocked = window.__gogoshopAdminUnlocked === true || storageGet(ADMIN_KEY) === "true";
       $("#loginScreen").hidden = unlocked;
@@ -3510,26 +3526,45 @@
     function showStore() {
       $("#storeView").style.display = "";
       $("#admin").classList.remove("active");
+      $("#admin").style.display = "none";
       if (isAdminRoute()) {
         history.replaceState(null, "", "#home");
       }
       refreshIcons();
     }
 
-    function logoutAdmin() {
+    function clearAdminAccess() {
       window.__gogoshopAdminUnlocked = false;
       memoryStore.delete(ADMIN_KEY);
       try {
         localStorage.removeItem(ADMIN_KEY);
       } catch (error) {}
+    }
+
+    function resetAdminLogin(focusPassword = false) {
       $("#loginScreen").hidden = false;
       $("#adminShell").hidden = true;
+      const message = $("#loginMessage");
+      message.hidden = true;
+      message.textContent = "";
       const passwordInput = $("[data-login-form] [name='password']");
       if (passwordInput) {
-        passwordInput.value = "admin123";
-        passwordInput.focus();
+        passwordInput.value = "";
+        if (focusPassword) passwordInput.focus();
       }
+    }
+
+    function logoutAdmin() {
+      clearAdminAccess();
+      resetAdminLogin(true);
       showToast("已退出后台");
+    }
+
+    function exitAdminToStore() {
+      clearAdminAccess();
+      resetAdminLogin(false);
+      showStore();
+      window.scrollTo({ top: 0, behavior: "auto" });
     }
 
     function setAdminTab(tab) {
@@ -4006,7 +4041,7 @@
         location.hash = "admin";
         showAdmin();
       }
-      if (target.matches("[data-back-store]")) showStore();
+      if (target.matches("[data-back-store]")) exitAdminToStore();
       if (target.matches("[data-admin-logout]")) logoutAdmin();
       if (target.matches("[data-admin-tab]")) setAdminTab(target.dataset.adminTab);
       if (target.matches("[data-open-product-tab]")) setAdminTab("products");
@@ -4041,10 +4076,22 @@
     });
 
     let galleryGesture = null;
+    let detailGalleryGesture = null;
 
     document.addEventListener("pointerdown", (event) => {
       if (!event.isPrimary || event.button > 0) return;
       const target = event.target instanceof Element ? event.target : null;
+      const detailGallery = target?.closest("[data-detail-gallery]");
+      if (detailGallery && Number(detailGallery.dataset.detailGalleryCount || 0) > 1) {
+        detailGallery.classList.add("dragging");
+        detailGalleryGesture = {
+          pointerId: event.pointerId,
+          startX: event.clientX,
+          startY: event.clientY,
+          gallery: detailGallery
+        };
+        return;
+      }
       const slider = target?.closest(".media-slider");
       if (!slider || Number(slider.dataset.galleryCount || 0) < 2) return;
       galleryGesture = {
@@ -4057,6 +4104,16 @@
     });
 
     document.addEventListener("pointerup", (event) => {
+      if (detailGalleryGesture && detailGalleryGesture.pointerId === event.pointerId) {
+        const deltaX = event.clientX - detailGalleryGesture.startX;
+        const deltaY = event.clientY - detailGalleryGesture.startY;
+        detailGalleryGesture.gallery.classList.remove("dragging");
+        if (Math.abs(deltaX) > 35 && Math.abs(deltaX) > Math.abs(deltaY) * 1.2) {
+          setDetailImage(state.detailImageIndex + (deltaX < 0 ? 1 : -1), true);
+        }
+        detailGalleryGesture = null;
+        return;
+      }
       if (!galleryGesture || galleryGesture.pointerId !== event.pointerId) return;
       const deltaX = event.clientX - galleryGesture.startX;
       const deltaY = event.clientY - galleryGesture.startY;
@@ -4076,6 +4133,8 @@
     });
 
     document.addEventListener("pointercancel", () => {
+      if (detailGalleryGesture?.gallery) detailGalleryGesture.gallery.classList.remove("dragging");
+      detailGalleryGesture = null;
       galleryGesture = null;
     });
 
@@ -4116,6 +4175,18 @@
     });
 
     document.addEventListener("keydown", (event) => {
+      if (!$("#productDetail").hidden && !event.target.matches("input, textarea, select")) {
+        if (event.key === "ArrowRight") {
+          event.preventDefault();
+          setDetailImage(state.detailImageIndex + 1, true);
+          return;
+        }
+        if (event.key === "ArrowLeft") {
+          event.preventDefault();
+          setDetailImage(state.detailImageIndex - 1, true);
+          return;
+        }
+      }
       if (event.key !== "Escape") return;
       if ($("[data-backdrop]").classList.contains("open")) {
         closePanels();
