@@ -614,13 +614,17 @@
       overflow: hidden;
       aspect-ratio: 1;
       background: var(--soft);
+      cursor: pointer;
       touch-action: pan-y;
     }
 
     .media-slider {
+      display: block;
       width: 100%;
       height: 100%;
       overflow: hidden;
+      color: inherit;
+      text-decoration: none;
     }
 
     .media-track {
@@ -697,6 +701,13 @@
       padding-top: 13px;
     }
 
+    .product-summary-link {
+      display: grid;
+      gap: 7px;
+      color: inherit;
+      text-decoration: none;
+    }
+
     .product-title {
       overflow-wrap: anywhere;
       font-size: 15px;
@@ -707,6 +718,216 @@
     .price {
       font-size: 14px;
       font-weight: 650;
+    }
+
+    #productDetail[hidden] {
+      display: none;
+    }
+
+    .main-view.product-open #home,
+    .main-view.product-open .footer {
+      display: none;
+    }
+
+    .product-detail-view {
+      min-height: calc(100vh - 96px);
+      border-top: 1px solid var(--line);
+      padding: 30px 40px 72px;
+      background: var(--store-bg, #fff);
+    }
+
+    .product-detail-inner {
+      width: min(100%, var(--max));
+      margin: 0 auto;
+    }
+
+    .product-detail-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 24px;
+      border: 0;
+      padding: 6px 0;
+      background: transparent;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 650;
+    }
+
+    .product-detail-back svg {
+      width: 17px;
+      height: 17px;
+    }
+
+    .product-detail-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.25fr) minmax(320px, 0.75fr);
+      gap: 52px;
+      align-items: start;
+    }
+
+    .product-detail-gallery {
+      min-width: 0;
+    }
+
+    .product-detail-main {
+      overflow: hidden;
+      width: 100%;
+      aspect-ratio: 1;
+      background: var(--store-soft, var(--soft));
+    }
+
+    .product-detail-main img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .product-detail-thumbnails {
+      display: grid;
+      grid-auto-flow: column;
+      grid-auto-columns: 76px;
+      gap: 9px;
+      overflow-x: auto;
+      padding: 10px 0 2px;
+      scrollbar-width: thin;
+    }
+
+    .product-detail-thumb {
+      overflow: hidden;
+      width: 76px;
+      height: 76px;
+      border: 1px solid transparent;
+      border-radius: 4px;
+      padding: 0;
+      background: var(--soft);
+    }
+
+    .product-detail-thumb.active {
+      border-color: var(--ink);
+    }
+
+    .product-detail-thumb img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .product-detail-copy {
+      position: sticky;
+      top: 92px;
+      display: grid;
+      gap: 20px;
+      padding-top: 6px;
+    }
+
+    .product-detail-category {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .product-detail-copy h1 {
+      margin: -4px 0 0;
+      overflow-wrap: anywhere;
+      font-size: calc(34px * var(--store-heading-scale));
+      line-height: 1.12;
+    }
+
+    .product-detail-price {
+      margin: -8px 0 0;
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .product-detail-description {
+      margin: 0;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.65;
+      white-space: pre-line;
+    }
+
+    .product-detail-stock {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin: 0;
+      font-size: 14px;
+      font-weight: 650;
+    }
+
+    .stock-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #16845b;
+    }
+
+    .stock-dot.sold-out {
+      background: #b42318;
+    }
+
+    .product-detail-purchase {
+      display: grid;
+      grid-template-columns: 118px minmax(0, 1fr);
+      gap: 10px;
+    }
+
+    .product-detail-quantity-label {
+      margin: 0 0 8px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 650;
+    }
+
+    .detail-quantity {
+      display: grid;
+      grid-template-columns: 38px 1fr 38px;
+      min-height: 48px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fff;
+    }
+
+    .detail-quantity button {
+      border: 0;
+      background: #fff;
+      font-size: 18px;
+    }
+
+    .detail-quantity output {
+      display: grid;
+      place-items: center;
+      min-width: 0;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .product-detail-add {
+      min-height: 48px;
+      width: 100%;
+    }
+
+    .product-detail-note {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      border-top: 1px solid var(--line);
+      padding-top: 18px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .product-detail-note svg {
+      flex: 0 0 auto;
+      width: 18px;
+      height: 18px;
     }
 
     .muted {
@@ -923,9 +1144,16 @@
     }
 
     .result-item img {
+      display: block;
       width: 64px;
       height: 64px;
       object-fit: cover;
+    }
+
+    .result-product-link {
+      min-width: 0;
+      color: inherit;
+      text-decoration: none;
     }
 
     .menu-links {
@@ -1581,6 +1809,36 @@
         padding: 11px 10px 0;
       }
 
+      .product-detail-view {
+        padding: 20px 0 52px;
+      }
+
+      .product-detail-back {
+        margin-right: 16px;
+        margin-bottom: 18px;
+        margin-left: 16px;
+      }
+
+      .product-detail-layout {
+        grid-template-columns: 1fr;
+        gap: 24px;
+      }
+
+      .product-detail-thumbnails {
+        padding-right: 16px;
+        padding-left: 16px;
+      }
+
+      .product-detail-copy {
+        position: static;
+        gap: 17px;
+        padding: 0 16px;
+      }
+
+      .product-detail-copy h1 {
+        font-size: calc(28px * var(--store-heading-scale));
+      }
+
       .footer-inner {
         grid-template-columns: 1fr;
         padding: 34px 16px;
@@ -1756,6 +2014,10 @@
         </button>
       </div>
     </header>
+
+    <section class="product-detail-view" id="productDetail" aria-label="Product details" hidden>
+      <div class="product-detail-inner" id="productDetailContent"></div>
+    </section>
 
     <main id="home">
       <section class="hero" aria-label="Go Go Shop hero">
@@ -2266,6 +2528,11 @@
         soldOut: "Sold out",
         add: "Add",
         view: "View",
+        backProducts: "Back to products",
+        quantity: "Quantity",
+        addToCart: "Add to cart",
+        productFallback: "Product details will be added soon.",
+        pickupNote: "Pickup and delivery options are confirmed at checkout.",
         noProducts: "No products",
         emptyCart: "Your cart is empty",
         continueShopping: "Continue shopping",
@@ -2309,6 +2576,11 @@
         soldOut: "售罄",
         add: "加入",
         view: "查看",
+        backProducts: "返回商品列表",
+        quantity: "数量",
+        addToCart: "加入购物车",
+        productFallback: "商品详情即将补充。",
+        pickupNote: "取货和配送方式将在结账时确认。",
         noProducts: "暂无商品",
         emptyCart: "购物车为空",
         continueShopping: "继续购物",
@@ -2532,7 +2804,12 @@
       category: "All",
       sort: "featured",
       lang: storageGet(LANG_KEY) || "en",
-      adminTab: "overview"
+      adminTab: "overview",
+      activeProductId: null,
+      detailImageIndex: 0,
+      detailQuantity: 1,
+      productReturnHash: "#catalog",
+      productReturnScroll: 0
     };
 
     const money = new Intl.NumberFormat("en-NZ", { style: "currency", currency: "NZD" });
@@ -2757,17 +3034,17 @@
       const hasGallery = images.length > 1;
       return `
         ${!available(product) ? `<span class="badge">${t("soldOut")}</span>` : ""}
-        <div class="media-slider" data-gallery="${product.id}" data-gallery-index="0" data-gallery-count="${images.length}" style="--active-slide: 0">
+        <a class="media-slider" href="#product=${encodeURIComponent(product.id)}" data-product-view="${escapeHtml(product.id)}" data-gallery="${escapeHtml(product.id)}" data-gallery-index="0" data-gallery-count="${images.length}" style="--active-slide: 0" aria-label="${escapeHtml(productName(product))}">
           <div class="media-track">
             ${images.map((image, index) => `
-              <img class="media-slide" src="${image}" alt="${productName(product)} ${index + 1}" loading="lazy" draggable="false">
+              <img class="media-slide" src="${escapeHtml(image)}" alt="${escapeHtml(productName(product))} ${index + 1}" loading="lazy" draggable="false">
             `).join("")}
           </div>
-        </div>
+        </a>
         ${hasGallery ? `
           <div class="gallery-dots">
             ${images.map((_, index) => `
-              <button class="gallery-dot ${index === 0 ? "active" : ""}" type="button" data-gallery-dot="${product.id}" data-gallery-index="${index}" aria-label="Image ${index + 1}"></button>
+              <button class="gallery-dot ${index === 0 ? "active" : ""}" type="button" data-gallery-dot="${escapeHtml(product.id)}" data-gallery-index="${index}" aria-label="Image ${index + 1}"></button>
             `).join("")}
           </div>
         ` : ""}
@@ -2798,6 +3075,156 @@
       const slider = findGallery(galleryId);
       if (!slider) return;
       setGallerySlide(galleryId, Number(slider.dataset.galleryIndex || 0) + step);
+    }
+
+    function productRouteId() {
+      if (!location.hash.startsWith("#product=")) return null;
+      try {
+        return decodeURIComponent(location.hash.slice("#product=".length));
+      } catch (error) {
+        return null;
+      }
+    }
+
+    function detailStockText(product) {
+      if (!available(product)) return t("soldOut");
+      const stock = Math.max(0, Number(product.stock) || 0);
+      return state.lang === "zh" ? `现货 · 剩余 ${stock} 件` : `In stock · ${stock} available`;
+    }
+
+    function renderProductDetail() {
+      const detail = $("#productDetail");
+      const content = $("#productDetailContent");
+      const product = state.products.find((item) => item.id === state.activeProductId && item.published);
+      if (!detail || !content || !product) return;
+
+      const images = productImages(product);
+      state.detailImageIndex = Math.min(Math.max(0, state.detailImageIndex), Math.max(0, images.length - 1));
+      state.detailQuantity = Math.min(Math.max(1, state.detailQuantity), Math.max(1, Number(product.stock) || 1));
+      const currentImage = images[state.detailImageIndex] || product.image;
+      const soldOut = !available(product);
+
+      content.innerHTML = `
+        <button class="product-detail-back" type="button" data-close-product>
+          <i data-lucide="arrow-left"></i>
+          <span>${t("backProducts")}</span>
+        </button>
+        <div class="product-detail-layout">
+          <div class="product-detail-gallery">
+            <div class="product-detail-main">
+              <img src="${escapeHtml(currentImage)}" alt="${escapeHtml(productName(product))}" data-detail-main-image>
+            </div>
+            ${images.length > 1 ? `
+              <div class="product-detail-thumbnails" aria-label="Product images">
+                ${images.map((image, index) => `
+                  <button class="product-detail-thumb ${index === state.detailImageIndex ? "active" : ""}" type="button" data-detail-image="${index}" aria-label="Image ${index + 1}">
+                    <img src="${escapeHtml(image)}" alt="" loading="lazy">
+                  </button>
+                `).join("")}
+              </div>
+            ` : ""}
+          </div>
+          <div class="product-detail-copy">
+            <p class="product-detail-category">${escapeHtml(categoryName(product.category))}</p>
+            <h1>${escapeHtml(productName(product))}</h1>
+            <p class="product-detail-price">${formatPrice(product.price)}</p>
+            <p class="product-detail-description">${escapeHtml(product.description?.trim() || t("productFallback"))}</p>
+            <p class="product-detail-stock">
+              <span class="stock-dot ${soldOut ? "sold-out" : ""}"></span>
+              <span>${detailStockText(product)}</span>
+            </p>
+            <div>
+              <p class="product-detail-quantity-label">${t("quantity")}</p>
+              <div class="product-detail-purchase">
+                <div class="detail-quantity" aria-label="${t("quantity")}">
+                  <button type="button" data-detail-quantity="-1" aria-label="Decrease quantity" ${soldOut ? "disabled" : ""}>−</button>
+                  <output data-detail-quantity-value>${state.detailQuantity}</output>
+                  <button type="button" data-detail-quantity="1" aria-label="Increase quantity" ${soldOut ? "disabled" : ""}>+</button>
+                </div>
+                <button class="button product-detail-add" type="button" data-detail-add="${escapeHtml(product.id)}" ${soldOut ? "disabled" : ""}>
+                  <i data-lucide="shopping-bag"></i>
+                  <span>${soldOut ? t("soldOut") : t("addToCart")}</span>
+                </button>
+              </div>
+            </div>
+            <div class="product-detail-note">
+              <i data-lucide="truck"></i>
+              <span>${t("pickupNote")}</span>
+            </div>
+          </div>
+        </div>
+      `;
+      detail.hidden = false;
+      $("#storeView").classList.add("product-open");
+      refreshIcons();
+    }
+
+    function showProductDetail(id, updateHash = true) {
+      const product = state.products.find((item) => item.id === id && item.published);
+      if (!product) return false;
+
+      const detail = $("#productDetail");
+      const openingProduct = state.activeProductId !== id || detail.hidden;
+      if (openingProduct) {
+        if (!productRouteId() && !isAdminRoute()) {
+          state.productReturnHash = location.hash || "#catalog";
+          state.productReturnScroll = window.scrollY;
+        }
+        state.detailImageIndex = 0;
+        state.detailQuantity = 1;
+        product.views = Number(product.views || 0) + 1;
+        persistProducts();
+      }
+
+      state.activeProductId = id;
+      $("#storeView").style.display = "";
+      $("#admin").classList.remove("active");
+      closePanels();
+      renderProductDetail();
+
+      const nextHash = `#product=${encodeURIComponent(id)}`;
+      if (updateHash && location.hash !== nextHash) location.hash = nextHash;
+      window.scrollTo({ top: 0, behavior: "auto" });
+      return true;
+    }
+
+    function hideProductDetail(restoreScroll = false) {
+      const detail = $("#productDetail");
+      if (!detail || detail.hidden) return;
+      detail.hidden = true;
+      $("#storeView").classList.remove("product-open");
+      state.activeProductId = null;
+      state.detailImageIndex = 0;
+      state.detailQuantity = 1;
+      if (restoreScroll) {
+        window.requestAnimationFrame(() => window.scrollTo({ top: state.productReturnScroll, behavior: "auto" }));
+      }
+    }
+
+    function closeProductDetail() {
+      const returnHash = state.productReturnHash || "#catalog";
+      hideProductDetail(true);
+      if (location.hash !== returnHash) location.hash = returnHash;
+    }
+
+    function setDetailImage(index) {
+      const product = state.products.find((item) => item.id === state.activeProductId);
+      if (!product) return;
+      const images = productImages(product);
+      state.detailImageIndex = Math.min(Math.max(0, Number(index) || 0), Math.max(0, images.length - 1));
+      const mainImage = $("[data-detail-main-image]");
+      if (mainImage) mainImage.src = images[state.detailImageIndex] || product.image;
+      $$("[data-detail-image]").forEach((button) => {
+        button.classList.toggle("active", Number(button.dataset.detailImage) === state.detailImageIndex);
+      });
+    }
+
+    function changeDetailQuantity(delta) {
+      const product = state.products.find((item) => item.id === state.activeProductId);
+      if (!product || !available(product)) return;
+      state.detailQuantity = Math.min(Math.max(1, state.detailQuantity + Number(delta || 0)), Math.max(1, Number(product.stock) || 1));
+      const output = $("[data-detail-quantity-value]");
+      if (output) output.textContent = state.detailQuantity;
     }
 
     function setLanguage(lang) {
@@ -2872,12 +3299,14 @@
       }
       grid.innerHTML = products.map((product) => `
         <article class="product-card">
-          <div class="product-media" role="group" aria-label="${productName(product)}">
+          <div class="product-media" role="group" aria-label="${escapeHtml(productName(product))}">
             ${renderProductGallery(product)}
           </div>
           <div class="product-info">
-            <a class="product-title" href="#catalog">${productName(product)}</a>
-            <div class="price">${formatPrice(product.price)}</div>
+            <a class="product-summary-link" href="#product=${encodeURIComponent(product.id)}" data-product-view="${escapeHtml(product.id)}">
+              <span class="product-title">${escapeHtml(productName(product))}</span>
+              <span class="price">${formatPrice(product.price)}</span>
+            </a>
           </div>
         </article>
       `).join("");
@@ -2935,30 +3364,33 @@
       refreshIcons();
     }
 
-    function addToCart(id) {
+    function addToCart(id, quantity = 1) {
       const product = state.products.find((item) => item.id === id);
       if (!product || !available(product)) {
         showToast(t("soldOutToast"));
-        return;
+        return false;
       }
+      const amount = Math.max(1, Math.floor(Number(quantity) || 1));
+      const stock = Math.max(1, Number(product.stock) || 1);
       const line = state.cart.find((item) => item.id === id);
       if (line) {
-        line.quantity += 1;
+        line.quantity = Math.min(stock, line.quantity + amount);
       } else {
-        state.cart.push({ id, quantity: 1 });
+        state.cart.push({ id, quantity: Math.min(stock, amount) });
       }
-      product.views += 1;
       persistCart();
-      persistProducts();
       renderCart();
       renderAdmin();
       showToast(t("addedToCart"));
+      return true;
     }
 
     function changeCart(id, delta) {
       const line = state.cart.find((item) => item.id === id);
       if (!line) return;
-      line.quantity += delta;
+      const product = state.products.find((item) => item.id === id);
+      const maxQuantity = Math.max(1, Number(product?.stock) || 1);
+      line.quantity = Math.min(maxQuantity, line.quantity + delta);
       if (line.quantity <= 0) {
         state.cart = state.cart.filter((item) => item.id !== id);
       }
@@ -3024,12 +3456,14 @@
         .slice(0, 6);
       $("#searchResults").innerHTML = results.map((product) => `
         <div class="result-item">
-          <img src="${product.image}" alt="${productName(product)}">
+          <a class="result-product-link" href="#product=${encodeURIComponent(product.id)}" data-product-view="${escapeHtml(product.id)}">
+            <img src="${escapeHtml(product.image)}" alt="${escapeHtml(productName(product))}">
+          </a>
           <div>
-            <strong>${productName(product)}</strong>
+            <a class="result-product-link" href="#product=${encodeURIComponent(product.id)}" data-product-view="${escapeHtml(product.id)}"><strong>${escapeHtml(productName(product))}</strong></a>
             <div class="muted">${formatPrice(product.price)} · ${categoryName(product.category)}</div>
           </div>
-          <button class="button ghost" type="button" data-add-cart="${product.id}" ${!available(product) ? "disabled" : ""}>
+          <button class="button ghost" type="button" data-add-cart="${escapeHtml(product.id)}" ${!available(product) ? "disabled" : ""}>
             <i data-lucide="plus"></i> ${t("add")}
           </button>
         </div>
@@ -3485,6 +3919,7 @@
       renderSearch();
       applyStoreDesign();
       renderAdmin();
+      if (state.activeProductId) renderProductDetail();
     }
 
     document.addEventListener("click", (event) => {
@@ -3511,6 +3946,22 @@
         setGallerySlide(target.dataset.galleryDot, Number(target.dataset.galleryIndex || 0));
         return;
       }
+      if (target.matches("[data-detail-image]")) {
+        setDetailImage(target.dataset.detailImage);
+        return;
+      }
+      if (target.matches("[data-detail-quantity]")) {
+        changeDetailQuantity(target.dataset.detailQuantity);
+        return;
+      }
+      if (target.matches("[data-detail-add]")) {
+        if (addToCart(target.dataset.detailAdd, state.detailQuantity)) openPanel("cart");
+        return;
+      }
+      if (target.matches("[data-close-product]")) {
+        closeProductDetail();
+        return;
+      }
       if (target.matches("[data-open-search]")) openPanel("search");
       if (target.matches("[data-open-cart]")) openPanel("cart");
       if (target.matches("[data-open-menu]")) openPanel("menu");
@@ -3532,8 +3983,7 @@
       }
       if (target.matches("[data-product-view]")) {
         event.preventDefault();
-        const product = state.products.find((item) => item.id === target.dataset.productView);
-        if (product) showToast(`${productName(product)} · ${formatPrice(product.price)}`);
+        showProductDetail(target.dataset.productView);
       }
       if (target.matches("[data-cart-plus]")) changeCart(target.dataset.cartPlus, 1);
       if (target.matches("[data-cart-minus]")) changeCart(target.dataset.cartMinus, -1);
@@ -3652,23 +4102,37 @@
 
     window.addEventListener("hashchange", () => {
       if (isAdminRoute()) {
+        hideProductDetail();
         showAdmin();
-      } else if ($("#admin").classList.contains("active")) {
-        showStore();
+        return;
+      }
+      if ($("#admin").classList.contains("active")) showStore();
+      const routeProductId = productRouteId();
+      if (routeProductId) {
+        showProductDetail(routeProductId, false);
+      } else {
+        hideProductDetail();
       }
     });
 
     document.addEventListener("keydown", (event) => {
-      if (event.key === "Escape") closePanels();
+      if (event.key !== "Escape") return;
+      if ($("[data-backdrop]").classList.contains("open")) {
+        closePanels();
+      } else if (!$("#productDetail").hidden) {
+        closeProductDetail();
+      }
     });
-
-      if (isAdminRoute()) {
-      showAdmin();
-    }
 
     document.documentElement.lang = state.lang === "zh" ? "zh-CN" : "en";
     applyLanguage();
     renderAll();
+    if (isAdminRoute()) {
+      showAdmin();
+    } else {
+      const routeProductId = productRouteId();
+      if (routeProductId) showProductDetail(routeProductId, false);
+    }
     window.addEventListener("load", refreshIcons);
   </script>
 </body>
