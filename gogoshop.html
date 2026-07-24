@@ -24,52 +24,13 @@
         admin.style.display = "";
         admin.classList.add("active");
       }
-      var unlocked = window.__gogoshopAdminUnlocked === true;
-      try {
-        unlocked = unlocked || localStorage.getItem("gogoshop_admin_unlocked_v1") === "true";
-      } catch (error) {}
-      if (login) login.hidden = unlocked;
-      if (shell) shell.hidden = !unlocked;
+      if (login) login.hidden = false;
+      if (shell) shell.hidden = true;
       if (!isAdminRoute()) location.hash = "admin";
     }
 
     function loginAdminFallback(event) {
-      if (event) {
-        event.preventDefault();
-        event.stopPropagation();
-      }
-      var form = event && event.target && event.target.closest ? event.target.closest("form") : document.querySelector("[data-login-form]");
-      var passwordInput = form && form.querySelector('[name="password"]');
-      var password = passwordInput ? passwordInput.value.trim() : "";
-      var login = document.getElementById("loginScreen");
-      var shell = document.getElementById("adminShell");
-      var message = document.getElementById("loginMessage");
-      if (password === "admin123") {
-        window.__gogoshopAdminUnlocked = true;
-        try {
-          localStorage.setItem("gogoshop_admin_unlocked_v1", "true");
-        } catch (error) {}
-        if (login) login.hidden = true;
-        if (shell) shell.hidden = false;
-        if (message) {
-          message.hidden = true;
-          message.textContent = "";
-        }
-        if (passwordInput) passwordInput.value = "";
-        try {
-          if (typeof renderAdmin === "function") renderAdmin();
-          if (typeof refreshIcons === "function") refreshIcons();
-        } catch (error) {}
-      } else {
-        if (message) {
-          message.hidden = false;
-          message.textContent = "密码错误，请重试";
-        }
-        if (passwordInput) {
-          passwordInput.focus();
-          passwordInput.select();
-        }
-      }
+      if (event) event.preventDefault();
       return false;
     }
   </script>
@@ -191,7 +152,7 @@
     .mobile-header {
       display: none;
       position: relative;
-      grid-template-columns: auto auto 1fr auto;
+      grid-template-columns: auto auto 1fr auto auto;
       gap: 14px;
       min-height: 60px;
       padding: 0 15px;
@@ -1176,6 +1137,89 @@
 
     .search-body {
       padding: 22px 24px 28px;
+    }
+
+    .auth-view[hidden] {
+      display: none;
+    }
+
+    .auth-view,
+    .account-order-list {
+      display: grid;
+      gap: 14px;
+    }
+
+    .oauth-grid,
+    .account-summary {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .oauth-grid .button {
+      min-width: 0;
+      padding: 0 12px;
+    }
+
+    .auth-divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .auth-divider::before,
+    .auth-divider::after {
+      content: "";
+      height: 1px;
+      flex: 1;
+      background: var(--line);
+    }
+
+    .account-summary > div,
+    .account-order {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+      background: #fff;
+    }
+
+    .account-summary span,
+    .account-order-meta {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .account-summary strong {
+      display: block;
+      margin-top: 6px;
+      font-size: 21px;
+    }
+
+    .account-order-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .account-order-items {
+      margin: 10px 0 0;
+      padding: 10px 0 0;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .auth-message {
+      min-height: 20px;
+      margin: 0;
+      color: var(--danger);
+      font-size: 13px;
+      font-weight: 700;
     }
 
     .search-input-wrap {
@@ -2378,7 +2422,7 @@
       }
 
       .admin-nav {
-        grid-template-columns: repeat(5, minmax(0, 1fr));
+        grid-template-columns: repeat(7, minmax(0, 1fr));
         gap: 4px;
       }
 
@@ -2669,6 +2713,10 @@
         font-size: 10px;
       }
 
+      .mobile-header .account-button {
+        display: none;
+      }
+
       .product-detail-purchase {
         grid-template-columns: minmax(96px, 0.85fr) minmax(0, 1.45fr);
         gap: 8px;
@@ -2699,7 +2747,7 @@
             <button type="button" data-lang="zh">中文</button>
           </div>
           <button class="icon-button" type="button" data-open-search aria-label="Search"><i data-lucide="search"></i></button>
-          <button class="icon-button header-admin-button" type="button" data-open-admin onclick="openAdminFallback(event)" aria-label="Account"><i data-lucide="user"></i></button>
+          <button class="icon-button account-button" type="button" data-open-account aria-label="Account"><i data-lucide="user-round"></i></button>
           <button class="icon-button cart-button" type="button" data-open-cart aria-label="Cart">
             <i data-lucide="shopping-bag"></i>
             <span class="cart-count" data-cart-count>0</span>
@@ -2715,7 +2763,7 @@
           <button type="button" data-lang="en">EN</button>
           <button type="button" data-lang="zh">中文</button>
         </div>
-        <button class="icon-button header-admin-button" type="button" data-open-admin onclick="openAdminFallback(event)" aria-label="Account"><i data-lucide="user"></i></button>
+        <button class="icon-button account-button" type="button" data-open-account aria-label="Account"><i data-lucide="user-round"></i></button>
         <button class="icon-button cart-button" type="button" data-open-cart aria-label="Cart">
           <i data-lucide="shopping-bag"></i>
           <span class="cart-count" data-cart-count-mobile>0</span>
@@ -2806,10 +2854,14 @@
     <div id="loginScreen" class="login-wrap">
       <div class="login-panel">
         <h1>Go Go Shop Admin</h1>
-        <form data-login-form onsubmit="return loginAdminFallback(event)">
+        <form data-login-form>
+          <label class="field">
+            <span>Email</span>
+            <input type="email" name="email" placeholder="管理员邮箱" autocomplete="email" required>
+          </label>
           <label class="field">
             <span>Password</span>
-            <input type="password" name="password" placeholder="请输入管理员密码" autocomplete="current-password" required>
+            <input type="password" name="password" placeholder="管理员账户密码" autocomplete="current-password" required>
           </label>
           <button class="button" type="submit" data-login-button><i data-lucide="log-in"></i> 登录后台</button>
           <button class="button ghost" type="button" data-back-store><i data-lucide="store"></i> Storefront</button>
@@ -2824,6 +2876,8 @@
         <nav class="admin-nav">
           <button class="tab-button active" type="button" data-admin-tab="overview" aria-label="Overview" title="Overview"><i data-lucide="layout-dashboard"></i><span>Overview</span></button>
           <button class="tab-button" type="button" data-admin-tab="products" aria-label="Products" title="Products"><i data-lucide="package-plus"></i><span>Products</span></button>
+          <button class="tab-button" type="button" data-admin-tab="orders" aria-label="Orders" title="Orders"><i data-lucide="receipt-text"></i><span>Orders</span></button>
+          <button class="tab-button" type="button" data-admin-tab="customers" aria-label="Customers" title="Customers"><i data-lucide="users"></i><span>Customers</span></button>
           <button class="tab-button" type="button" data-admin-tab="analytics" aria-label="Analytics" title="Analytics"><i data-lucide="chart-column"></i><span>Analytics</span></button>
           <button class="tab-button" type="button" data-admin-tab="design" aria-label="Design" title="Design"><i data-lucide="paintbrush"></i><span>Design</span></button>
           <button class="tab-button" type="button" data-back-store aria-label="Storefront" title="Storefront"><i data-lucide="store"></i><span>Store</span></button>
@@ -2877,6 +2931,36 @@
               </div>
             </div>
             <div class="admin-product-list" id="adminProductRows"></div>
+          </div>
+        </section>
+
+        <section class="admin-section" data-admin-section="orders">
+          <div class="admin-panel">
+            <div class="admin-panel-head">
+              <div><h2>Orders</h2><span class="muted">Inventory is deducted only after confirmation.</span></div>
+              <button class="button ghost" type="button" data-refresh-admin-data><i data-lucide="refresh-cw"></i> Refresh</button>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Order</th><th>Customer</th><th>Total</th><th>Status</th><th>Points</th><th>Action</th></tr></thead>
+                <tbody id="adminOrderRows"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section class="admin-section" data-admin-section="customers">
+          <div class="admin-panel">
+            <div class="admin-panel-head">
+              <div><h2>Customers</h2><span class="muted">Accounts, spending and reward points.</span></div>
+              <button class="button ghost" type="button" data-refresh-admin-data><i data-lucide="refresh-cw"></i> Refresh</button>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Customer</th><th>Email</th><th>Points</th><th>Total spent</th><th>Joined</th></tr></thead>
+                <tbody id="customerRows"></tbody>
+              </table>
+            </div>
           </div>
         </section>
 
@@ -3277,6 +3361,7 @@
         <a href="#catalog" data-close-panels data-i18n="navCatalog">Catalog</a>
         <a href="#contact" data-close-panels data-i18n="navContact" hidden>Contact</a>
         <a href="#admin" data-open-admin data-close-panels onclick="openAdminFallback(event)">Admin</a>
+        <button class="button ghost" type="button" data-open-account><i data-lucide="user-round"></i> <span data-i18n="accountTitle">Account</span></button>
       </nav>
     </div>
   </aside>
@@ -3296,6 +3381,42 @@
     </div>
   </aside>
 
+  <aside class="drawer" id="accountDrawer" aria-hidden="true">
+    <div class="drawer-head">
+      <h2 class="drawer-title" data-i18n="accountTitle">Account</h2>
+      <button class="icon-button" type="button" data-close-panels aria-label="Close"><i data-lucide="x"></i></button>
+    </div>
+    <div class="drawer-body">
+      <section class="auth-view" data-auth-signed-out>
+        <div class="oauth-grid">
+          <button class="button ghost" type="button" data-oauth-provider="google"><i data-lucide="chrome"></i> Google</button>
+          <button class="button ghost" type="button" data-oauth-provider="apple"><i data-lucide="apple"></i> Apple</button>
+        </div>
+        <div class="auth-divider"><span data-i18n="orEmail">or use email</span></div>
+        <form class="auth-view" data-customer-auth-form>
+          <label class="field"><span data-i18n="fieldName">Name</span><input type="text" name="fullName" autocomplete="name"></label>
+          <label class="field"><span data-i18n="fieldEmail">Email</span><input type="email" name="email" autocomplete="email" required></label>
+          <label class="field"><span data-i18n="password">Password</span><input type="password" name="password" autocomplete="current-password" minlength="6" required></label>
+          <div class="form-row">
+            <button class="button" type="submit" data-auth-action="signin" data-i18n="signIn">Sign in</button>
+            <button class="button ghost" type="submit" data-auth-action="signup" data-i18n="createAccount">Create account</button>
+          </div>
+          <p class="auth-message" id="customerAuthMessage" role="alert" aria-live="polite"></p>
+        </form>
+      </section>
+      <section class="auth-view" data-auth-signed-in hidden>
+        <div><h3 id="accountName" style="margin: 0 0 5px;">Customer</h3><p class="muted" id="accountEmail" style="margin: 0;"></p></div>
+        <div class="account-summary">
+          <div><span data-i18n="rewardPoints">Reward points</span><strong id="accountPoints">0</strong></div>
+          <div><span data-i18n="totalSpent">Total spent</span><strong id="accountSpent">$0.00</strong></div>
+        </div>
+        <div class="section-heading" style="margin: 4px 0 0;"><h2 style="font-size: 20px;" data-i18n="myOrders">My orders</h2></div>
+        <div class="account-order-list" id="accountOrders"></div>
+        <button class="button ghost" type="button" data-customer-logout><i data-lucide="log-out"></i> <span data-i18n="signOut">Sign out</span></button>
+      </section>
+    </div>
+  </aside>
+
   <section class="search-panel" id="searchPanel" aria-hidden="true">
     <div class="panel-head">
       <h2 class="panel-title" data-i18n="searchTitle">Search</h2>
@@ -3312,6 +3433,7 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     const STORAGE_KEY = "gogoshop_products_v1";
     const CART_KEY = "gogoshop_cart_v1";
@@ -3319,7 +3441,9 @@
     const DESIGN_KEY = "gogoshop_store_design_v1";
     const ADMIN_KEY = "gogoshop_admin_unlocked_v1";
     const LANG_KEY = "gogoshop_lang_v1";
-    const ADMIN_PASSWORD = "admin123";
+    const SUPABASE_URL = "https://ucnkcddhrptqpdlvcohy.supabase.co";
+    const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_zv6WbyD1hZKUx-Zyak-fPw_e1mURTN8";
+    const db = window.supabase?.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY) || null;
 
     const translations = {
       en: {
@@ -3368,6 +3492,19 @@
         orderCreated: "Order created",
         subscribed: "Subscribed",
         messageSaved: "Message saved locally",
+        accountTitle: "Account",
+        orEmail: "or use email",
+        password: "Password",
+        signIn: "Sign in",
+        createAccount: "Create account",
+        signOut: "Sign out",
+        rewardPoints: "Reward points",
+        totalSpent: "Total spent",
+        myOrders: "My orders",
+        loginToCheckout: "Sign in before checkout",
+        pendingOrder: "Pending confirmation",
+        confirmedOrder: "Confirmed",
+        noOrders: "No orders yet",
         allCategory: "All"
       },
       zh: {
@@ -3416,6 +3553,19 @@
         orderCreated: "订单已创建",
         subscribed: "订阅成功",
         messageSaved: "留言已保存到本地",
+        accountTitle: "我的账户",
+        orEmail: "或使用邮箱",
+        password: "密码",
+        signIn: "登录",
+        createAccount: "创建账户",
+        signOut: "退出登录",
+        rewardPoints: "积分",
+        totalSpent: "累计消费",
+        myOrders: "我的订单",
+        loginToCheckout: "请先登录后再结账",
+        pendingOrder: "等待商家确认",
+        confirmedOrder: "已确认",
+        noOrders: "暂无订单",
         allCategory: "全部"
       }
     };
@@ -3630,6 +3780,12 @@
       sort: "featured",
       lang: storageGet(LANG_KEY) || "en",
       adminTab: "overview",
+      session: null,
+      profile: null,
+      customerOrders: [],
+      adminOrders: [],
+      customers: [],
+      authReady: false,
       activeProductId: null,
       detailImageIndex: 0,
       detailQuantity: 1,
@@ -4147,6 +4303,148 @@
       refreshIcons();
     }
 
+    function authErrorMessage(error) {
+      const message = String(error?.message || error || "Unknown error");
+      if (/invalid login/i.test(message)) return state.lang === "zh" ? "邮箱或密码错误" : "Invalid email or password";
+      if (/email not confirmed/i.test(message)) return state.lang === "zh" ? "请先完成邮箱验证" : "Confirm your email first";
+      return message;
+    }
+
+    function orderStatusLabel(status) {
+      if (status === "confirmed") return t("confirmedOrder");
+      if (status === "cancelled") return state.lang === "zh" ? "已取消" : "Cancelled";
+      return t("pendingOrder");
+    }
+
+    function renderAccount() {
+      const signedIn = Boolean(state.session?.user);
+      const signedOutView = $("[data-auth-signed-out]");
+      const signedInView = $("[data-auth-signed-in]");
+      if (!signedOutView || !signedInView) return;
+      signedOutView.hidden = signedIn;
+      signedInView.hidden = !signedIn;
+      if (!signedIn) {
+        $("#customerAuthMessage").textContent = db ? "" : "Supabase is unavailable";
+        return;
+      }
+
+      const user = state.session.user;
+      $("#accountName").textContent = state.profile?.full_name || user.user_metadata?.full_name || user.email?.split("@")[0] || "Customer";
+      $("#accountEmail").textContent = state.profile?.email || user.email || "";
+      $("#accountPoints").textContent = Number(state.profile?.points || 0).toLocaleString();
+      $("#accountSpent").textContent = formatPrice(state.profile?.total_spent || 0);
+      const target = $("#accountOrders");
+      target.innerHTML = state.customerOrders.length ? state.customerOrders.map((order) => `
+        <article class="account-order">
+          <div class="account-order-head">
+            <div><strong>${escapeHtml(order.order_number)}</strong><div class="account-order-meta">${new Date(order.created_at).toLocaleString(state.lang === "zh" ? "zh-CN" : "en-NZ")}</div></div>
+            <span class="status ${order.status === "confirmed" ? "live" : "featured"}">${escapeHtml(orderStatusLabel(order.status))}</span>
+          </div>
+          <strong>${formatPrice(order.total)}</strong> · ${Number(order.item_count || 0)} ${state.lang === "zh" ? "件" : "items"}
+          ${order.status === "confirmed" ? `<div class="account-order-meta">+${Number(order.points_awarded || 0)} ${t("rewardPoints")}</div>` : ""}
+          <div class="account-order-items">${(order.order_items || []).map((item) => `${escapeHtml(item.product_title)} × ${Number(item.quantity)} · ${formatPrice(item.unit_price)}`).join("<br>")}</div>
+        </article>
+      `).join("") : `<div class="empty-state">${t("noOrders")}</div>`;
+      refreshIcons();
+    }
+
+    async function loadStoreInventory() {
+      if (!db) return;
+      const { data, error } = await db.from("products").select("id,title,price,stock,sales,published");
+      if (error) return;
+      data.forEach((remote) => {
+        const product = state.products.find((item) => item.id === remote.id);
+        if (product) Object.assign(product, {
+          title: remote.title,
+          price: Number(remote.price),
+          stock: Number(remote.stock),
+          sales: Number(remote.sales),
+          published: Boolean(remote.published)
+        });
+      });
+      persistProducts();
+      renderProducts();
+      renderCart();
+    }
+
+    async function loadCustomerData() {
+      if (!db || !state.session?.user) {
+        state.profile = null;
+        state.customerOrders = [];
+        renderAccount();
+        return;
+      }
+      const userId = state.session.user.id;
+      const [profileResult, orderResult] = await Promise.all([
+        db.from("profiles").select("id,email,full_name,points,total_spent,is_admin,created_at").eq("id", userId).single(),
+        db.from("orders").select("id,order_number,status,total,item_count,points_awarded,created_at,order_items(product_title,unit_price,quantity)").eq("user_id", userId).order("created_at", { ascending: false })
+      ]);
+      if (!profileResult.error) state.profile = profileResult.data;
+      state.customerOrders = orderResult.error ? [] : (orderResult.data || []);
+      renderAccount();
+    }
+
+    async function handleAuthSession(session) {
+      state.session = session;
+      await loadCustomerData();
+      state.authReady = true;
+      if (isAdminRoute()) showAdmin();
+    }
+
+    async function initSupabase() {
+      if (!db) {
+        state.authReady = true;
+        renderAccount();
+        return;
+      }
+      const { data } = await db.auth.getSession();
+      await handleAuthSession(data.session);
+      await loadStoreInventory();
+      db.auth.onAuthStateChange((_event, session) => {
+        window.setTimeout(() => handleAuthSession(session), 0);
+      });
+    }
+
+    async function submitCustomerAuth(form, action) {
+      if (!db || !form) return;
+      const values = Object.fromEntries(new FormData(form).entries());
+      const message = $("#customerAuthMessage");
+      message.textContent = state.lang === "zh" ? "处理中..." : "Working...";
+      const result = action === "signup"
+        ? await db.auth.signUp({ email: values.email.trim(), password: values.password, options: { data: { full_name: values.fullName.trim() } } })
+        : await db.auth.signInWithPassword({ email: values.email.trim(), password: values.password });
+      if (result.error) {
+        message.textContent = authErrorMessage(result.error);
+        return;
+      }
+      form.reset();
+      if (!result.data.session) {
+        message.textContent = state.lang === "zh" ? "账户已创建，请检查邮箱完成验证" : "Account created. Check your email to confirm it.";
+      } else {
+        message.textContent = "";
+        await handleAuthSession(result.data.session);
+      }
+    }
+
+    async function signInWithProvider(provider) {
+      if (!db) return;
+      const { error } = await db.auth.signInWithOAuth({
+        provider,
+        options: { redirectTo: `${location.origin}${location.pathname}${location.search}` }
+      });
+      if (error) $("#customerAuthMessage").textContent = authErrorMessage(error);
+    }
+
+    async function customerSignOut() {
+      if (!db) return;
+      await db.auth.signOut();
+      state.session = null;
+      state.profile = null;
+      state.customerOrders = [];
+      renderAccount();
+      showToast(state.lang === "zh" ? "已退出登录" : "Signed out");
+    }
+
     function cartQuantity() {
       return state.cart.reduce((sum, line) => sum + line.quantity, 0);
     }
@@ -4232,30 +4530,31 @@
       renderCart();
     }
 
-    function checkout() {
+    async function checkout() {
       if (!state.cart.length) {
         showToast(t("cartEmpty"));
         return;
       }
-      const order = {
-        id: `GGS-${Math.floor(1100 + Math.random() * 8999)}`,
-        date: new Date().toLocaleDateString("en-NZ", { weekday: "short" }),
-        total: Number(cartTotal().toFixed(2)),
-        items: cartQuantity()
-      };
-      state.cart.forEach((line) => {
-        const product = state.products.find((item) => item.id === line.id);
-        if (product) {
-          product.stock = Math.max(0, Number(product.stock) - line.quantity);
-          product.sales = Number(product.sales || 0) + line.quantity;
-        }
+      if (!db || !state.session?.user) {
+        openPanel("account");
+        showToast(t("loginToCheckout"));
+        return;
+      }
+      const checkoutButton = $("[data-checkout]");
+      checkoutButton.disabled = true;
+      const { error } = await db.rpc("create_order", {
+        p_items: state.cart.map((line) => ({ product_id: line.id, quantity: line.quantity }))
       });
-      state.orders.push(order);
+      checkoutButton.disabled = false;
+      if (error) {
+        showToast(authErrorMessage(error));
+        return;
+      }
       state.cart = [];
-      persistOrders();
-      persistProducts();
       persistCart();
-      renderAll();
+      await loadCustomerData();
+      renderCart();
+      openPanel("account");
       showToast(t("orderCreated"));
     }
 
@@ -4265,6 +4564,10 @@
       $("[data-backdrop]").classList.add("open");
       if (name === "cart") $("#cartDrawer").classList.add("open");
       if (name === "menu") $("#menuDrawer").classList.add("open");
+      if (name === "account") {
+        $("#accountDrawer").classList.add("open");
+        renderAccount();
+      }
       if (name === "search") {
         $("#searchPanel").classList.add("open");
         window.setTimeout(() => $("#searchInput").focus(), 60);
@@ -4275,6 +4578,7 @@
     function closePanels(removeBackdrop = true) {
       $("#cartDrawer").classList.remove("open");
       $("#menuDrawer").classList.remove("open");
+      $("#accountDrawer").classList.remove("open");
       $("#searchPanel").classList.remove("open");
       if (removeBackdrop) {
         $("[data-backdrop]").classList.remove("open");
@@ -4305,40 +4609,46 @@
       refreshIcons();
     }
 
-    function attemptLogin(form) {
+    async function attemptLogin(form) {
       if (!form) {
         showToast("Login form not ready");
         return;
       }
-      const password = new FormData(form).get("password");
+      if (!db) {
+        showToast("Supabase is unavailable");
+        return;
+      }
+      const values = Object.fromEntries(new FormData(form).entries());
       const passwordInput = form.querySelector('[name="password"]');
       const message = $("#loginMessage");
-      if (password === ADMIN_PASSWORD) {
-        window.__gogoshopAdminUnlocked = true;
-        storageSet(ADMIN_KEY, "true");
-        message.hidden = true;
-        message.textContent = "";
-        if (passwordInput) passwordInput.value = "";
-        showAdmin();
-        showToast("Signed in");
-      } else {
-        message.hidden = false;
-        message.textContent = "密码错误，请重试";
-        if (passwordInput) {
-          passwordInput.focus();
-          passwordInput.select();
-        }
-        showToast("Wrong password");
+      message.hidden = false;
+      message.textContent = "正在验证管理员账户...";
+      const { data, error } = await db.auth.signInWithPassword({ email: values.email.trim(), password: values.password });
+      if (error) {
+        message.textContent = authErrorMessage(error);
+        return;
       }
+      await handleAuthSession(data.session);
+      if (!state.profile?.is_admin) {
+        message.hidden = false;
+        message.textContent = "此账户没有管理员权限";
+        return;
+      }
+      message.hidden = true;
+      message.textContent = "";
+      if (passwordInput) passwordInput.value = "";
+      showAdmin();
+      showToast("Signed in");
     }
 
     function showAdmin() {
       $("#storeView").style.display = "none";
       $("#admin").style.display = "";
       $("#admin").classList.add("active");
-      const unlocked = window.__gogoshopAdminUnlocked === true || storageGet(ADMIN_KEY) === "true";
+      const unlocked = Boolean(state.profile?.is_admin);
       $("#loginScreen").hidden = unlocked;
       $("#adminShell").hidden = !unlocked;
+      if (unlocked) loadAdminData();
       renderAdmin();
       refreshIcons();
     }
@@ -4354,7 +4664,6 @@
     }
 
     function clearAdminAccess() {
-      window.__gogoshopAdminUnlocked = false;
       memoryStore.delete(ADMIN_KEY);
       try {
         localStorage.removeItem(ADMIN_KEY);
@@ -4374,17 +4683,18 @@
       }
     }
 
-    function logoutAdmin() {
+    async function logoutAdmin() {
       closeProductEditor();
       clearAdminAccess();
+      if (db) await db.auth.signOut();
+      state.session = null;
+      state.profile = null;
       resetAdminLogin(true);
       showToast("已退出后台");
     }
 
     function exitAdminToStore() {
       closeProductEditor();
-      clearAdminAccess();
-      resetAdminLogin(false);
       showStore();
       window.scrollTo({ top: 0, behavior: "auto" });
     }
@@ -4396,6 +4706,8 @@
       const titleMap = {
         overview: ["Overview", "Products, inventory, orders and storefront signals."],
         products: ["Products", "Add, edit and publish items."],
+        orders: ["Orders", "Confirm orders before inventory and points are updated."],
+        customers: ["Customers", "Accounts, spending and reward points."],
         analytics: ["Analytics", "Revenue, orders and product performance."],
         design: ["Store design", "Customize typography, colors, hero content and plugin blocks."]
       };
@@ -4405,12 +4717,89 @@
       refreshIcons();
     }
 
+    async function loadAdminData() {
+      if (!db || !state.profile?.is_admin) return;
+      const [ordersResult, customersResult] = await Promise.all([
+        db.from("orders").select("id,order_number,user_id,status,total,item_count,points_awarded,created_at,confirmed_at,profiles!orders_user_id_fkey(email,full_name),order_items(product_title,quantity,unit_price)").order("created_at", { ascending: false }),
+        db.from("profiles").select("id,email,full_name,points,total_spent,created_at,is_admin").order("created_at", { ascending: false })
+      ]);
+      if (!ordersResult.error) state.adminOrders = ordersResult.data || [];
+      if (!customersResult.error) state.customers = customersResult.data || [];
+      renderAdmin();
+    }
+
+    function renderAdminOrders() {
+      const target = $("#adminOrderRows");
+      if (!target) return;
+      target.innerHTML = state.adminOrders.length ? state.adminOrders.map((order) => {
+        const customer = order.profiles || {};
+        return `
+          <tr>
+            <td><strong>${escapeHtml(order.order_number)}</strong><div class="muted">${new Date(order.created_at).toLocaleString("en-NZ")}</div></td>
+            <td>${escapeHtml(customer.full_name || customer.email || "Customer")}<div class="muted">${escapeHtml(customer.email || "")}</div></td>
+            <td>${formatPrice(order.total)}<div class="muted">${Number(order.item_count)} items</div></td>
+            <td><span class="status ${order.status === "confirmed" ? "live" : "featured"}">${escapeHtml(orderStatusLabel(order.status))}</span></td>
+            <td>${Number(order.points_awarded || Math.floor(Number(order.total) || 0))}</td>
+            <td>${order.status === "pending" ? `<button class="button" type="button" data-confirm-order="${order.id}"><i data-lucide="check"></i> Confirm</button>` : `<span class="muted">${order.confirmed_at ? new Date(order.confirmed_at).toLocaleDateString("en-NZ") : "-"}</span>`}</td>
+          </tr>
+          <tr><td colspan="6" class="muted">${(order.order_items || []).map((item) => `${escapeHtml(item.product_title)} × ${Number(item.quantity)}`).join(" · ")}</td></tr>
+        `;
+      }).join("") : `<tr><td colspan="6"><div class="empty-state">No customer orders yet</div></td></tr>`;
+      refreshIcons();
+    }
+
+    function renderCustomers() {
+      const target = $("#customerRows");
+      if (!target) return;
+      target.innerHTML = state.customers.length ? state.customers.map((customer) => `
+        <tr>
+          <td><strong>${escapeHtml(customer.full_name || "Customer")}</strong>${customer.is_admin ? `<div class="status featured">Admin</div>` : ""}</td>
+          <td>${escapeHtml(customer.email)}</td>
+          <td>${Number(customer.points || 0).toLocaleString()}</td>
+          <td>${formatPrice(customer.total_spent)}</td>
+          <td>${new Date(customer.created_at).toLocaleDateString("en-NZ")}</td>
+        </tr>
+      `).join("") : `<tr><td colspan="5"><div class="empty-state">No customers yet</div></td></tr>`;
+    }
+
+    async function confirmSupabaseOrder(orderId) {
+      if (!db || !state.profile?.is_admin) return;
+      const button = $(`[data-confirm-order="${CSS.escape(orderId)}"]`);
+      if (button) button.disabled = true;
+      const { error } = await db.rpc("confirm_order", { p_order_id: orderId });
+      if (error) {
+        if (button) button.disabled = false;
+        showToast(authErrorMessage(error));
+        return;
+      }
+      await Promise.all([loadAdminData(), loadStoreInventory(), loadCustomerData()]);
+      renderAll();
+      showToast(state.lang === "zh" ? "订单已确认，库存和积分已更新" : "Order confirmed; inventory and points updated");
+    }
+
+    async function syncProductToSupabase(product) {
+      if (!db || !state.profile?.is_admin || !product) return;
+      const { error } = await db.from("products").upsert({
+        id: product.id,
+        title: product.title,
+        price: Number(product.price),
+        stock: Math.max(0, Number(product.stock) || 0),
+        sales: Math.max(0, Number(product.sales) || 0),
+        published: Boolean(product.published),
+        updated_at: new Date().toISOString()
+      });
+      if (error) showToast(`Supabase: ${authErrorMessage(error)}`);
+    }
+
     function getMetrics() {
-      const revenue = state.orders.reduce((sum, order) => sum + order.total, 0);
+      const confirmedOrders = state.adminOrders.filter((order) => order.status === "confirmed");
+      const revenue = confirmedOrders.length
+        ? confirmedOrders.reduce((sum, order) => sum + Number(order.total), 0)
+        : state.orders.reduce((sum, order) => sum + order.total, 0);
       const units = state.products.reduce((sum, product) => sum + Number(product.sales || 0), 0);
       const views = state.products.reduce((sum, product) => sum + Number(product.views || 0), 0);
       const live = state.products.filter((product) => product.published).length;
-      return { revenue, units, views, live };
+      return { revenue, units, views, live, orderCount: state.adminOrders.length || state.orders.length };
     }
 
     function renderMetrics(target, extended = false) {
@@ -4419,7 +4808,7 @@
       const inventory = state.products.reduce((sum, product) => sum + Number(product.stock || 0), 0);
       $(target).innerHTML = [
         ["Revenue", formatPrice(metrics.revenue)],
-        ["Orders", state.orders.length],
+        ["Orders", metrics.orderCount],
         ["Units sold", metrics.units],
         [extended ? "Conversion" : "Products", extended ? conversion : metrics.live],
         ...(extended ? [["Inventory", inventory]] : [])
@@ -4432,7 +4821,11 @@
     }
 
     function renderRevenueChart() {
-      const recent = state.orders.slice(-7);
+      const remote = state.adminOrders.filter((order) => order.status === "confirmed").slice(0, 7).reverse().map((order) => ({
+        date: new Date(order.created_at).toLocaleDateString("en-NZ", { weekday: "short" }),
+        total: Number(order.total)
+      }));
+      const recent = remote.length ? remote : state.orders.slice(-7);
       const max = Math.max(...recent.map((order) => order.total), 1);
       $("#revenueChart").innerHTML = recent.map((order) => `
         <div class="bar-row">
@@ -4491,7 +4884,13 @@
     }
 
     function renderOrders() {
-      $("#orderRows").innerHTML = state.orders.slice(-8).reverse().map((order) => `
+      const orders = state.adminOrders.length ? state.adminOrders.slice(0, 8).map((order) => ({
+        id: order.order_number,
+        date: new Date(order.created_at).toLocaleDateString("en-NZ", { weekday: "short" }),
+        total: Number(order.total),
+        items: Number(order.item_count)
+      })) : state.orders.slice(-8).reverse();
+      $("#orderRows").innerHTML = orders.map((order) => `
         <tr>
           <td><strong>${order.id}</strong><div class="muted">${order.date}</div></td>
           <td>${formatPrice(order.total)}</td>
@@ -4598,6 +4997,8 @@
       renderRevenueChart();
       renderInventoryStatus();
       renderAdminProducts();
+      renderAdminOrders();
+      renderCustomers();
       renderTopProducts();
       renderOrders();
       renderAdminDesign();
@@ -4843,7 +5244,14 @@
       openProductEditor();
     }
 
-    function deleteProduct(id) {
+    async function deleteProduct(id) {
+      if (db && state.profile?.is_admin) {
+        const { error } = await db.from("products").update({ published: false, updated_at: new Date().toISOString() }).eq("id", id);
+        if (error) {
+          showToast(authErrorMessage(error));
+          return;
+        }
+      }
       state.products = state.products.filter((product) => product.id !== id);
       state.cart = state.cart.filter((line) => line.id !== id);
       persistProducts();
@@ -4862,7 +5270,7 @@
       showToast(product.featured ? "商品已置顶到首页" : "已取消首页置顶");
     }
 
-    function saveProduct(event) {
+    async function saveProduct(event) {
       event.preventDefault();
       const form = event.target;
       const data = Object.fromEntries(new FormData(form).entries());
@@ -4902,6 +5310,7 @@
         state.products.unshift(product);
       }
       persistProducts();
+      await syncProductToSupabase(product);
       clearProductForm();
       closeProductEditor();
       renderAll();
@@ -4924,6 +5333,7 @@
       renderProducts();
       renderCart();
       renderSearch();
+      renderAccount();
       applyStoreDesign();
       renderAdmin();
       if (state.activeProductId) renderProductDetail();
@@ -4999,7 +5409,10 @@
       if (target.matches("[data-open-search]")) openPanel("search");
       if (target.matches("[data-open-cart]")) openPanel("cart");
       if (target.matches("[data-open-menu]")) openPanel("menu");
+      if (target.matches("[data-open-account]")) openPanel("account");
       if (target.matches("[data-close-panels]")) closePanels();
+      if (target.matches("[data-oauth-provider]")) signInWithProvider(target.dataset.oauthProvider);
+      if (target.matches("[data-customer-logout]")) customerSignOut();
       if (target.matches("[data-lang]")) {
         setLanguage(target.dataset.lang);
       }
@@ -5043,6 +5456,8 @@
       if (target.matches("[data-back-store]")) exitAdminToStore();
       if (target.matches("[data-admin-logout]")) logoutAdmin();
       if (target.matches("[data-admin-tab]")) setAdminTab(target.dataset.adminTab);
+      if (target.matches("[data-confirm-order]")) confirmSupabaseOrder(target.dataset.confirmOrder);
+      if (target.matches("[data-refresh-admin-data]")) loadAdminData();
       if (target.matches("[data-open-product-tab], [data-new-product]")) openNewProductEditor();
       if (target.matches("[data-close-product-editor]")) closeProductEditor();
       if (target.matches("[data-clear-form]")) clearProductForm();
@@ -5052,6 +5467,7 @@
       if (target.matches("[data-reset-products]")) {
         state.products = clone(seedProducts);
         persistProducts();
+        Promise.all(state.products.map(syncProductToSupabase));
         renderAll();
         showToast("Products reset");
       }
@@ -5158,6 +5574,10 @@
         event.preventDefault();
         attemptLogin(event.target);
       }
+      if (event.target.matches("[data-customer-auth-form]")) {
+        event.preventDefault();
+        submitCustomerAuth(event.target, event.submitter?.dataset.authAction || "signin");
+      }
       if (event.target.matches("[data-product-form]")) saveProduct(event);
       if (event.target.matches("[data-design-block-form]")) saveDesignBlock(event);
     });
@@ -5218,6 +5638,7 @@
     document.documentElement.lang = state.lang === "zh" ? "zh-CN" : "en";
     applyLanguage();
     renderAll();
+    initSupabase();
     if (isAdminRoute()) {
       showAdmin();
     } else {

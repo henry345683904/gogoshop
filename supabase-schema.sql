@@ -1,0 +1,249 @@
+-- Run this entire file once in Supabase Dashboard > SQL Editor.
+-- After creating your first account, promote it with:
+-- update public.profiles set is_admin = true where email = 'YOUR_EMAIL';
+
+create extension if not exists pgcrypto;
+
+create table if not exists public.profiles (
+  id uuid primary key references auth.users(id) on delete cascade,
+  email text not null default '',
+  full_name text not null default '',
+  points integer not null default 0 check (points >= 0),
+  total_spent numeric(12,2) not null default 0 check (total_spent >= 0),
+  is_admin boolean not null default false,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists public.products (
+  id text primary key,
+  title text not null,
+  price numeric(12,2) not null check (price >= 0),
+  stock integer not null default 0 check (stock >= 0),
+  sales integer not null default 0 check (sales >= 0),
+  published boolean not null default true,
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists public.orders (
+  id uuid primary key default gen_random_uuid(),
+  order_number text not null unique,
+  user_id uuid not null references public.profiles(id) on delete restrict,
+  status text not null default 'pending' check (status in ('pending', 'confirmed', 'cancelled')),
+  total numeric(12,2) not null check (total >= 0),
+  item_count integer not null check (item_count > 0),
+  points_awarded integer not null default 0 check (points_awarded >= 0),
+  created_at timestamptz not null default now(),
+  confirmed_at timestamptz,
+  confirmed_by uuid references public.profiles(id) on delete set null
+);
+
+create table if not exists public.order_items (
+  id bigint generated always as identity primary key,
+  order_id uuid not null references public.orders(id) on delete cascade,
+  product_id text not null references public.products(id) on delete restrict,
+  product_title text not null,
+  unit_price numeric(12,2) not null check (unit_price >= 0),
+  quantity integer not null check (quantity > 0),
+  unique (order_id, product_id)
+);
+
+create index if not exists orders_user_id_idx on public.orders(user_id, created_at desc);
+create index if not exists orders_status_idx on public.orders(status, created_at desc);
+create index if not exists order_items_order_id_idx on public.order_items(order_id);
+create unique index if not exists order_items_order_product_idx on public.order_items(order_id, product_id);
+
+create or replace function public.handle_new_user()
+returns trigger
+language plpgsql
+security definer set search_path = public
+as $$
+begin
+  insert into public.profiles (id, email, full_name)
+  values (
+    new.id,
+    coalesce(new.email, ''),
+    coalesce(new.raw_user_meta_data ->> 'full_name', new.raw_user_meta_data ->> 'name', '')
+  )
+  on conflict (id) do update set
+    email = excluded.email,
+    full_name = coalesce(nullif(public.profiles.full_name, ''), excluded.full_name),
+    updated_at = now();
+  return new;
+end;
+$$;
+
+drop trigger if exists on_auth_user_created on auth.users;
+create trigger on_auth_user_created
+  after insert or update of email, raw_user_meta_data on auth.users
+  for each row execute procedure public.handle_new_user();
+
+insert into public.profiles (id, email, full_name)
+select id, coalesce(email, ''), coalesce(raw_user_meta_data ->> 'full_name', raw_user_meta_data ->> 'name', '')
+from auth.users
+on conflict (id) do update set email = excluded.email;
+
+create or replace function public.is_admin()
+returns boolean
+language sql
+stable
+security definer set search_path = public
+as $$
+  select exists(select 1 from public.profiles where id = auth.uid() and is_admin = true);
+$$;
+
+alter table public.profiles enable row level security;
+alter table public.products enable row level security;
+alter table public.orders enable row level security;
+alter table public.order_items enable row level security;
+
+drop policy if exists "profiles read own or admin" on public.profiles;
+create policy "profiles read own or admin" on public.profiles
+  for select using (id = auth.uid() or public.is_admin());
+drop policy if exists "profiles update own" on public.profiles;
+
+drop policy if exists "products public read" on public.products;
+create policy "products public read" on public.products for select using (true);
+drop policy if exists "products admin write" on public.products;
+create policy "products admin write" on public.products for all
+  using (public.is_admin()) with check (public.is_admin());
+
+drop policy if exists "orders read own or admin" on public.orders;
+create policy "orders read own or admin" on public.orders
+  for select using (user_id = auth.uid() or public.is_admin());
+drop policy if exists "order items read own or admin" on public.order_items;
+create policy "order items read own or admin" on public.order_items
+  for select using (
+    exists (
+      select 1 from public.orders
+      where orders.id = order_items.order_id
+        and (orders.user_id = auth.uid() or public.is_admin())
+    )
+  );
+
+create or replace function public.create_order(p_items jsonb)
+returns uuid
+language plpgsql
+security definer set search_path = public
+as $$
+declare
+  v_user uuid := auth.uid();
+  v_order_id uuid;
+  v_order_number text;
+  v_total numeric(12,2) := 0;
+  v_item_count integer := 0;
+  v_item jsonb;
+  v_product public.products%rowtype;
+  v_quantity integer;
+begin
+  if v_user is null then raise exception 'Authentication required'; end if;
+  if p_items is null or jsonb_typeof(p_items) <> 'array' or jsonb_array_length(p_items) = 0 then
+    raise exception 'Cart is empty';
+  end if;
+
+  for v_item in
+    select jsonb_build_object(
+      'product_id', item ->> 'product_id',
+      'quantity', sum(greatest(1, coalesce((item ->> 'quantity')::integer, 1)))
+    )
+    from jsonb_array_elements(p_items) as entries(item)
+    group by item ->> 'product_id'
+  loop
+    v_quantity := greatest(1, coalesce((v_item ->> 'quantity')::integer, 1));
+    select * into v_product from public.products
+      where id = v_item ->> 'product_id' and published = true;
+    if not found then raise exception 'Product unavailable: %', v_item ->> 'product_id'; end if;
+    if v_product.stock < v_quantity then raise exception 'Insufficient stock for %', v_product.title; end if;
+    v_total := v_total + (v_product.price * v_quantity);
+    v_item_count := v_item_count + v_quantity;
+  end loop;
+
+  v_order_number := 'GGS-' || to_char(clock_timestamp(), 'YYMMDDHH24MISS') || '-' || upper(substr(gen_random_uuid()::text, 1, 4));
+  insert into public.orders (order_number, user_id, total, item_count)
+  values (v_order_number, v_user, round(v_total, 2), v_item_count)
+  returning id into v_order_id;
+
+  for v_item in
+    select jsonb_build_object(
+      'product_id', item ->> 'product_id',
+      'quantity', sum(greatest(1, coalesce((item ->> 'quantity')::integer, 1)))
+    )
+    from jsonb_array_elements(p_items) as entries(item)
+    group by item ->> 'product_id'
+  loop
+    v_quantity := greatest(1, coalesce((v_item ->> 'quantity')::integer, 1));
+    select * into v_product from public.products where id = v_item ->> 'product_id';
+    insert into public.order_items (order_id, product_id, product_title, unit_price, quantity)
+    values (v_order_id, v_product.id, v_product.title, v_product.price, v_quantity);
+  end loop;
+
+  return v_order_id;
+end;
+$$;
+
+create or replace function public.confirm_order(p_order_id uuid)
+returns public.orders
+language plpgsql
+security definer set search_path = public
+as $$
+declare
+  v_order public.orders%rowtype;
+  v_item public.order_items%rowtype;
+  v_points integer;
+  v_stock integer;
+begin
+  if not public.is_admin() then raise exception 'Administrator access required'; end if;
+  select * into v_order from public.orders where id = p_order_id for update;
+  if not found then raise exception 'Order not found'; end if;
+  if v_order.status <> 'pending' then raise exception 'Order has already been processed'; end if;
+
+  for v_item in select * from public.order_items where order_id = p_order_id
+  loop
+    select stock into v_stock from public.products where id = v_item.product_id for update;
+    if v_stock is null or v_stock < v_item.quantity then
+      raise exception 'Insufficient stock for %', v_item.product_title;
+    end if;
+  end loop;
+
+  for v_item in select * from public.order_items where order_id = p_order_id
+  loop
+    update public.products
+      set stock = stock - v_item.quantity,
+          sales = sales + v_item.quantity,
+          updated_at = now()
+      where id = v_item.product_id;
+  end loop;
+
+  v_points := floor(v_order.total)::integer;
+  update public.orders set
+    status = 'confirmed', points_awarded = v_points,
+    confirmed_at = now(), confirmed_by = auth.uid()
+    where id = p_order_id returning * into v_order;
+  update public.profiles set
+    points = points + v_points,
+    total_spent = total_spent + v_order.total,
+    updated_at = now()
+    where id = v_order.user_id;
+  return v_order;
+end;
+$$;
+
+revoke all on function public.create_order(jsonb) from public, anon;
+revoke all on function public.confirm_order(uuid) from public, anon;
+grant execute on function public.create_order(jsonb) to authenticated;
+grant execute on function public.confirm_order(uuid) to authenticated;
+grant select on public.products to anon, authenticated;
+grant insert, update, delete on public.products to authenticated;
+grant select on public.profiles, public.orders, public.order_items to authenticated;
+
+insert into public.products (id, title, price, stock, sales, published) values
+  ('blind-box', 'Blind Box', 12.99, 0, 31, true),
+  ('blind-box-1', 'Blind Box', 12.99, 0, 24, true),
+  ('key-chain', 'Key Chain', 9.99, 0, 18, true),
+  ('phone-case-3', 'Phone Case', 4.99, 44, 52, true),
+  ('phone-case-2', 'Phone Case', 9.99, 20, 29, true),
+  ('phone-case-1', 'Phone Case', 4.99, 35, 43, true),
+  ('phone-case', 'Phone Case', 4.99, 22, 37, true),
+  ('smart-glasses', 'Smart Glasses', 14.99, 13, 11, true),
+  ('soft-toy', 'Soft Toy', 14.99, 0, 15, true)
+on conflict (id) do nothing;
