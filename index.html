@@ -253,6 +253,45 @@
 
     .main-view {
       min-height: 100vh;
+      --store-font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --store-bg: #ffffff;
+      --store-text: #0d0d0d;
+      --store-accent: #111111;
+      --store-soft: #f7f7f7;
+      --store-base-size: 15px;
+      --store-heading-scale: 1;
+      --store-hero-overlay: 0.45;
+      background: var(--store-bg);
+      color: var(--store-text);
+      font-family: var(--store-font-family);
+      font-size: var(--store-base-size);
+    }
+
+    .main-view .site-header,
+    .main-view .announcement,
+    .main-view .footer,
+    .main-view .drawer,
+    .main-view .search-panel {
+      background: var(--store-bg);
+      color: var(--store-text);
+    }
+
+    .main-view .button:not(.ghost):not(.secondary),
+    .main-view .cart-count,
+    .main-view .language-toggle button.active {
+      border-color: var(--store-accent);
+      background: var(--store-accent);
+    }
+
+    .main-view .section-heading h2,
+    .main-view .newsletter h2 {
+      font-size: calc(27px * var(--store-heading-scale));
+    }
+
+    .main-view .soft-surface,
+    .main-view .product-media,
+    .main-view .footer {
+      background: var(--store-soft);
     }
 
     .hero {
@@ -298,6 +337,16 @@
       clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
     }
 
+    .hero.hero-has-image::before {
+      background: var(--store-hero-image) center / cover no-repeat;
+    }
+
+    .hero.hero-has-image::after {
+      opacity: var(--store-hero-overlay);
+      background: #000;
+      clip-path: none;
+    }
+
     .hero-content {
       position: relative;
       z-index: 1;
@@ -317,6 +366,19 @@
       line-height: 1.05;
       text-wrap: balance;
       text-shadow: 0 3px 18px rgba(0, 0, 0, 0.46);
+    }
+
+    .main-view .hero h1 {
+      font-size: calc(46px * var(--store-heading-scale));
+    }
+
+    .hero-subtitle {
+      max-width: 680px;
+      margin: -8px 0 0;
+      color: rgba(255, 255, 255, 0.92);
+      font-size: 17px;
+      line-height: 1.55;
+      text-shadow: 0 2px 12px rgba(0, 0, 0, 0.38);
     }
 
     .button {
@@ -358,6 +420,12 @@
       border-radius: 8px;
     }
 
+    .main-view .hero .button {
+      border-color: #fff;
+      background: rgba(0, 0, 0, 0);
+      color: #fff;
+    }
+
     .hero .button:hover {
       background: rgba(0, 0, 0, 0.14);
     }
@@ -366,6 +434,68 @@
       max-width: var(--max);
       margin: 0 auto;
       padding: 44px 40px;
+    }
+
+    .custom-blocks[hidden] {
+      display: none;
+    }
+
+    .custom-block-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .store-block {
+      display: grid;
+      gap: 12px;
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 18px;
+      background: var(--block-bg, #fff);
+      color: var(--block-text, var(--store-text));
+      font-size: var(--block-font-size, 16px);
+      overflow: hidden;
+    }
+
+    .store-block.banner {
+      grid-column: 1 / -1;
+      min-height: 190px;
+      align-content: center;
+      padding: 28px;
+    }
+
+    .store-block.image {
+      padding: 0;
+    }
+
+    .store-block img {
+      width: 100%;
+      height: 210px;
+      object-fit: cover;
+      background: var(--store-soft);
+    }
+
+    .store-block.image .store-block-content {
+      padding: 0 18px 18px;
+    }
+
+    .store-block h3 {
+      margin: 0;
+      font-size: calc(20px * var(--store-heading-scale));
+      line-height: 1.16;
+    }
+
+    .store-block p {
+      margin: 0;
+      color: inherit;
+      line-height: 1.55;
+    }
+
+    .store-block .button {
+      justify-self: start;
+      margin-top: 2px;
     }
 
     .section-heading {
@@ -974,6 +1104,148 @@
       gap: 14px;
     }
 
+    .design-grid {
+      display: grid;
+      grid-template-columns: minmax(300px, 0.86fr) minmax(420px, 1.14fr);
+      gap: 16px;
+      align-items: start;
+    }
+
+    .design-form,
+    .block-form {
+      display: grid;
+      gap: 14px;
+    }
+
+    .block-builder {
+      margin-top: 18px;
+      border-top: 1px solid #e3e4e4;
+      padding-top: 18px;
+    }
+
+    .block-builder h3 {
+      margin: 0 0 12px;
+      font-size: 15px;
+    }
+
+    .color-field input[type="color"] {
+      min-height: 42px;
+      padding: 4px;
+    }
+
+    .design-preview {
+      display: grid;
+      gap: 12px;
+      min-height: 420px;
+      border: 1px solid #d7dada;
+      border-radius: 8px;
+      padding: 14px;
+      background: #f6f7f7;
+    }
+
+    .preview-store {
+      overflow: hidden;
+      border: 1px solid #d7dada;
+      border-radius: 8px;
+      background: var(--preview-bg, #fff);
+      color: var(--preview-text, #111);
+      font-family: var(--preview-font, inherit);
+      font-size: var(--preview-size, 14px);
+    }
+
+    .preview-announcement {
+      display: grid;
+      min-height: 32px;
+      place-items: center;
+      border-bottom: 1px solid #e3e4e4;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .preview-hero {
+      display: grid;
+      min-height: 180px;
+      place-items: center;
+      padding: 24px;
+      background:
+        linear-gradient(rgba(0, 0, 0, var(--preview-overlay, 0.45)), rgba(0, 0, 0, var(--preview-overlay, 0.45))),
+        var(--preview-hero-bg, linear-gradient(135deg, #4d9298, #d88a76));
+      background-position: center;
+      background-size: cover;
+      color: #fff;
+      text-align: var(--preview-align, center);
+    }
+
+    .preview-hero h3 {
+      margin: 0;
+      font-size: calc(26px * var(--preview-heading-scale, 1));
+      line-height: 1.12;
+    }
+
+    .preview-hero p {
+      margin: 10px 0 0;
+      line-height: 1.45;
+    }
+
+    .preview-button {
+      display: inline-flex;
+      min-height: 34px;
+      align-items: center;
+      justify-content: center;
+      margin-top: 16px;
+      border-radius: 8px;
+      padding: 0 14px;
+      background: var(--preview-accent, #111);
+      color: #fff;
+      font-weight: 800;
+    }
+
+    .preview-blocks {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      padding: 12px;
+    }
+
+    .preview-block {
+      min-height: 72px;
+      border: 1px solid #e3e4e4;
+      border-radius: 8px;
+      padding: 12px;
+      background: var(--block-bg, #fff);
+      color: var(--block-text, inherit);
+      font-size: var(--block-size, 14px);
+    }
+
+    .preview-block strong,
+    .preview-block span {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .block-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .block-list-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      border: 1px solid #e3e4e4;
+      border-radius: 8px;
+      padding: 10px 12px;
+      background: #fff;
+    }
+
+    .block-list-item strong,
+    .block-list-item span {
+      display: block;
+    }
+
     .form-row {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1218,6 +1490,10 @@
         line-height: 1.08;
       }
 
+      .main-view .hero h1 {
+        font-size: calc(31px * var(--store-heading-scale));
+      }
+
       .hero .button {
         min-width: 98px;
       }
@@ -1229,6 +1505,15 @@
       .product-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 24px 10px;
+      }
+
+      .custom-block-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .store-block.banner {
+        min-height: 150px;
+        padding: 22px;
       }
 
       .gallery-dots {
@@ -1263,6 +1548,14 @@
       }
 
       .admin-shell {
+        grid-template-columns: 1fr;
+      }
+
+      .design-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .preview-blocks {
         grid-template-columns: 1fr;
       }
 
@@ -1425,9 +1718,12 @@
       <section class="hero" aria-label="Go Go Shop hero">
         <div class="hero-content">
           <h1 data-i18n="heroTitle">Browse our latest products</h1>
+          <p class="hero-subtitle" data-design-hero-subtitle hidden></p>
           <a class="button" href="#catalog" data-i18n="shopAll">Shop all</a>
         </div>
       </section>
+
+      <section class="section custom-blocks" id="customBlocks" hidden></section>
 
       <section class="section" id="catalog">
         <div class="section-heading">
@@ -1515,6 +1811,7 @@
           <button class="tab-button active" type="button" data-admin-tab="overview"><i data-lucide="layout-dashboard"></i><span>Overview</span></button>
           <button class="tab-button" type="button" data-admin-tab="products"><i data-lucide="package-plus"></i><span>Products</span></button>
           <button class="tab-button" type="button" data-admin-tab="analytics"><i data-lucide="chart-column"></i><span>Analytics</span></button>
+          <button class="tab-button" type="button" data-admin-tab="design"><i data-lucide="paintbrush"></i><span>Design</span></button>
           <button class="tab-button" type="button" data-back-store><i data-lucide="store"></i><span>Store</span></button>
         </nav>
       </aside>
@@ -1631,6 +1928,175 @@
           </div>
         </section>
 
+        <section class="admin-section" data-admin-section="design">
+          <div class="design-grid">
+            <div class="admin-panel">
+              <div class="admin-panel-head">
+                <h2>Visual store editor</h2>
+                <button class="button ghost" type="button" data-reset-design><i data-lucide="rotate-ccw"></i> Reset</button>
+              </div>
+              <div class="admin-panel-body">
+                <form class="design-form" data-design-form>
+                  <label class="field">
+                    <span>Store font</span>
+                    <select name="fontFamily">
+                      <option value='Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'>Modern sans</option>
+                      <option value='Georgia, "Times New Roman", serif'>Editorial serif</option>
+                      <option value='"Trebuchet MS", Arial, sans-serif'>Rounded casual</option>
+                      <option value='"Courier New", monospace'>Mono</option>
+                    </select>
+                  </label>
+                  <div class="form-row">
+                    <label class="field">
+                      <span>Base font size</span>
+                      <input type="range" name="baseFontSize" min="13" max="19" step="1">
+                    </label>
+                    <label class="field">
+                      <span>Heading scale</span>
+                      <input type="range" name="headingScale" min="0.85" max="1.25" step="0.05">
+                    </label>
+                  </div>
+                  <div class="form-row">
+                    <label class="field color-field">
+                      <span>Text color</span>
+                      <input type="color" name="textColor">
+                    </label>
+                    <label class="field color-field">
+                      <span>Accent color</span>
+                      <input type="color" name="accentColor">
+                    </label>
+                  </div>
+                  <div class="form-row">
+                    <label class="field color-field">
+                      <span>Page background</span>
+                      <input type="color" name="backgroundColor">
+                    </label>
+                    <label class="field color-field">
+                      <span>Soft surface</span>
+                      <input type="color" name="softColor">
+                    </label>
+                  </div>
+                  <label class="field">
+                    <span>Announcement bar</span>
+                    <input type="text" name="announcement" placeholder="Welcome to our store">
+                  </label>
+                  <label class="field">
+                    <span>Hero title</span>
+                    <input type="text" name="heroTitle" placeholder="Browse our latest products">
+                  </label>
+                  <label class="field">
+                    <span>Hero subtitle</span>
+                    <textarea name="heroSubtitle" placeholder="Add a short campaign message"></textarea>
+                  </label>
+                  <div class="form-row">
+                    <label class="field">
+                      <span>Hero button text</span>
+                      <input type="text" name="heroButton" placeholder="Shop all">
+                    </label>
+                    <label class="field">
+                      <span>Hero alignment</span>
+                      <select name="heroAlign">
+                        <option value="center">Center</option>
+                        <option value="left">Left</option>
+                        <option value="right">Right</option>
+                      </select>
+                    </label>
+                  </div>
+                  <label class="field">
+                    <span>Hero image URL</span>
+                    <input type="url" name="heroImage" placeholder="https://...">
+                  </label>
+                  <div class="form-row">
+                    <label class="field">
+                      <span>Hero height</span>
+                      <input type="range" name="heroHeight" min="280" max="560" step="20">
+                    </label>
+                    <label class="field">
+                      <span>Image overlay</span>
+                      <input type="range" name="heroOverlay" min="15" max="75" step="5">
+                    </label>
+                  </div>
+                </form>
+
+                <div class="block-builder">
+                  <h3>Add plugin block</h3>
+                  <form class="block-form" data-design-block-form>
+                    <input type="hidden" name="id">
+                    <div class="form-row">
+                      <label class="field">
+                        <span>Plugin type</span>
+                        <select name="type">
+                          <option value="text">Text</option>
+                          <option value="image">Image</option>
+                          <option value="banner">Banner</option>
+                          <option value="cta">Button CTA</option>
+                        </select>
+                      </label>
+                      <label class="field">
+                        <span>Font size</span>
+                        <input type="number" name="fontSize" min="12" max="32" step="1" value="16">
+                      </label>
+                    </div>
+                    <label class="field">
+                      <span>Title</span>
+                      <input type="text" name="title" placeholder="New arrival">
+                    </label>
+                    <label class="field">
+                      <span>Text</span>
+                      <textarea name="text" placeholder="Write the content shown on the storefront"></textarea>
+                    </label>
+                    <label class="field">
+                      <span>Image URL</span>
+                      <input type="url" name="imageUrl" placeholder="https://...">
+                    </label>
+                    <div class="form-row">
+                      <label class="field">
+                        <span>Button text</span>
+                        <input type="text" name="buttonText" placeholder="Shop now">
+                      </label>
+                      <label class="field">
+                        <span>Button link</span>
+                        <input type="text" name="buttonLink" placeholder="#catalog">
+                      </label>
+                    </div>
+                    <div class="form-row">
+                      <label class="field color-field">
+                        <span>Block background</span>
+                        <input type="color" name="backgroundColor" value="#ffffff">
+                      </label>
+                      <label class="field color-field">
+                        <span>Block text</span>
+                        <input type="color" name="textColor" value="#111111">
+                      </label>
+                    </div>
+                    <div class="form-actions">
+                      <button class="button" type="submit"><i data-lucide="plus"></i> Save block</button>
+                      <button class="button ghost" type="button" data-clear-design-block>Clear block</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+
+            <div class="admin-panel">
+              <div class="admin-panel-head">
+                <h2>Live preview</h2>
+                <a class="button ghost" href="#home" data-back-store><i data-lucide="external-link"></i> Storefront</a>
+              </div>
+              <div class="admin-panel-body">
+                <div class="design-preview" id="designPreview"></div>
+              </div>
+              <div class="admin-panel-head">
+                <h2>Plugin blocks</h2>
+                <span class="muted">Text, image, banner, CTA</span>
+              </div>
+              <div class="admin-panel-body">
+                <div class="block-list" id="designBlockList"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <section class="admin-section" data-admin-section="analytics">
           <div class="metric-grid" id="analyticsMetrics"></div>
           <div class="chart-grid">
@@ -1717,6 +2183,7 @@
     const STORAGE_KEY = "gogoshop_products_v1";
     const CART_KEY = "gogoshop_cart_v1";
     const ORDER_KEY = "gogoshop_orders_v1";
+    const DESIGN_KEY = "gogoshop_store_design_v1";
     const ADMIN_KEY = "gogoshop_admin_unlocked_v1";
     const LANG_KEY = "gogoshop_lang_v1";
     const ADMIN_PASSWORD = "admin123";
@@ -1990,12 +2457,32 @@
       { id: "GGS-1054", date: "Sun", total: 54.93, items: 5 }
     ];
 
+    const seedDesign = {
+      fontFamily: 'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+      baseFontSize: 15,
+      headingScale: 1,
+      textColor: "#0d0d0d",
+      backgroundColor: "#ffffff",
+      accentColor: "#111111",
+      softColor: "#f7f7f7",
+      announcement: "",
+      heroTitle: "",
+      heroSubtitle: "",
+      heroButton: "",
+      heroImage: "",
+      heroAlign: "center",
+      heroHeight: 344,
+      heroOverlay: 45,
+      blocks: []
+    };
+
     const memoryStore = new Map();
 
     const state = {
       products: load(STORAGE_KEY, seedProducts),
       cart: load(CART_KEY, []),
       orders: load(ORDER_KEY, seedOrders),
+      design: load(DESIGN_KEY, seedDesign),
       category: "All",
       sort: "featured",
       lang: storageGet(LANG_KEY) || "en",
@@ -2008,6 +2495,52 @@
 
     function clone(value) {
       return JSON.parse(JSON.stringify(value));
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "").replace(/[&<>"']/g, (char) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+      })[char]);
+    }
+
+    function clampNumber(value, min, max, fallback) {
+      const number = Number(value);
+      if (!Number.isFinite(number)) return fallback;
+      return Math.min(max, Math.max(min, number));
+    }
+
+    function safeColor(value, fallback) {
+      return /^#[0-9a-f]{6}$/i.test(String(value || "")) ? value : fallback;
+    }
+
+    function normalizeDesign(value = {}) {
+      const design = { ...seedDesign, ...(value || {}) };
+      design.baseFontSize = clampNumber(design.baseFontSize, 13, 19, seedDesign.baseFontSize);
+      design.headingScale = clampNumber(design.headingScale, 0.85, 1.25, seedDesign.headingScale);
+      design.heroHeight = clampNumber(design.heroHeight, 280, 560, seedDesign.heroHeight);
+      design.heroOverlay = clampNumber(design.heroOverlay, 15, 75, seedDesign.heroOverlay);
+      design.textColor = safeColor(design.textColor, seedDesign.textColor);
+      design.backgroundColor = safeColor(design.backgroundColor, seedDesign.backgroundColor);
+      design.accentColor = safeColor(design.accentColor, seedDesign.accentColor);
+      design.softColor = safeColor(design.softColor, seedDesign.softColor);
+      design.heroAlign = ["left", "center", "right"].includes(design.heroAlign) ? design.heroAlign : seedDesign.heroAlign;
+      design.blocks = Array.isArray(design.blocks) ? design.blocks.map((block) => ({
+        id: block.id || `block-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`,
+        type: ["text", "image", "banner", "cta"].includes(block.type) ? block.type : "text",
+        title: block.title || "",
+        text: block.text || "",
+        imageUrl: block.imageUrl || "",
+        buttonText: block.buttonText || "",
+        buttonLink: block.buttonLink || "#catalog",
+        backgroundColor: safeColor(block.backgroundColor, "#ffffff"),
+        textColor: safeColor(block.textColor, design.textColor),
+        fontSize: clampNumber(block.fontSize, 12, 32, 16)
+      })) : [];
+      return design;
     }
 
     function storageGet(key) {
@@ -2049,6 +2582,11 @@
       save(CART_KEY, state.cart);
     }
 
+    function persistDesign() {
+      state.design = normalizeDesign(state.design);
+      save(DESIGN_KEY, state.design);
+    }
+
     function persistOrders() {
       save(ORDER_KEY, state.orders);
     }
@@ -2072,6 +2610,93 @@
     function categoryName(category) {
       if (category === "All") return t("allCategory");
       return state.lang === "zh" ? productLabels[category]?.zh || category : category;
+    }
+
+    function effectiveDesign() {
+      const design = normalizeDesign(state.design);
+      return {
+        ...design,
+        announcementText: design.announcement || t("announcement"),
+        heroTitleText: design.heroTitle || t("heroTitle"),
+        heroButtonText: design.heroButton || t("shopAll")
+      };
+    }
+
+    function applyStoreDesign() {
+      state.design = normalizeDesign(state.design);
+      const design = effectiveDesign();
+      const store = $("#storeView");
+      if (!store) return;
+      store.style.setProperty("--store-font-family", design.fontFamily);
+      store.style.setProperty("--store-base-size", `${design.baseFontSize}px`);
+      store.style.setProperty("--store-heading-scale", design.headingScale);
+      store.style.setProperty("--store-bg", design.backgroundColor);
+      store.style.setProperty("--store-text", design.textColor);
+      store.style.setProperty("--store-accent", design.accentColor);
+      store.style.setProperty("--store-soft", design.softColor);
+
+      const announcement = $(".announcement", store);
+      if (announcement) announcement.textContent = design.announcementText;
+
+      const hero = $(".hero", store);
+      if (hero) {
+        hero.style.minHeight = `${design.heroHeight}px`;
+        hero.style.setProperty("--store-hero-overlay", design.heroOverlay / 100);
+        if (design.heroImage) {
+          hero.classList.add("hero-has-image");
+          hero.style.setProperty("--store-hero-image", `url("${design.heroImage.replace(/"/g, "%22")}")`);
+        } else {
+          hero.classList.remove("hero-has-image");
+          hero.style.removeProperty("--store-hero-image");
+        }
+      }
+
+      const heroContent = $(".hero-content", store);
+      if (heroContent) {
+        heroContent.style.textAlign = design.heroAlign;
+        heroContent.style.justifyItems = design.heroAlign === "left" ? "start" : design.heroAlign === "right" ? "end" : "center";
+      }
+
+      const heroTitle = $(".hero h1", store);
+      if (heroTitle) heroTitle.textContent = design.heroTitleText;
+
+      const heroSubtitle = $("[data-design-hero-subtitle]", store);
+      if (heroSubtitle) {
+        heroSubtitle.textContent = design.heroSubtitle;
+        heroSubtitle.hidden = !design.heroSubtitle;
+      }
+
+      const heroButton = $(".hero .button", store);
+      if (heroButton) heroButton.textContent = design.heroButtonText;
+
+      renderCustomBlocks(design);
+    }
+
+    function renderStoreBlock(block) {
+      const style = `--block-bg: ${safeColor(block.backgroundColor, "#ffffff")}; --block-text: ${safeColor(block.textColor, state.design.textColor || "#111111")}; --block-font-size: ${clampNumber(block.fontSize, 12, 32, 16)}px;`;
+      const title = block.title ? `<h3>${escapeHtml(block.title)}</h3>` : "";
+      const text = block.text ? `<p>${escapeHtml(block.text)}</p>` : "";
+      const image = block.imageUrl ? `<img src="${escapeHtml(block.imageUrl)}" alt="${escapeHtml(block.title || "Store image")}" loading="lazy">` : "";
+      const button = block.buttonText ? `<a class="button" href="${escapeHtml(block.buttonLink || "#catalog")}">${escapeHtml(block.buttonText)}</a>` : "";
+      return `
+        <article class="store-block ${escapeHtml(block.type)}" style="${style}">
+          ${block.type === "image" ? image : ""}
+          <div class="store-block-content">
+            ${block.type !== "image" ? image : ""}
+            ${title}
+            ${text}
+            ${button}
+          </div>
+        </article>
+      `;
+    }
+
+    function renderCustomBlocks(design = effectiveDesign()) {
+      const container = $("#customBlocks");
+      if (!container) return;
+      const blocks = normalizeDesign(design).blocks;
+      container.hidden = !blocks.length;
+      container.innerHTML = blocks.length ? `<div class="custom-block-grid">${blocks.map(renderStoreBlock).join("")}</div>` : "";
     }
 
     function productImages(product) {
@@ -2403,7 +3028,8 @@
       const titleMap = {
         overview: ["Overview", "Products, inventory, orders and storefront signals."],
         products: ["Products", "Add, edit and publish items."],
-        analytics: ["Analytics", "Revenue, orders and product performance."]
+        analytics: ["Analytics", "Revenue, orders and product performance."],
+        design: ["Store design", "Customize typography, colors, hero content and plugin blocks."]
       };
       $("#adminPageTitle").textContent = titleMap[tab][0];
       $("#adminPageSub").textContent = titleMap[tab][1];
@@ -2509,6 +3135,97 @@
       `).join("");
     }
 
+    function syncDesignForm() {
+      const form = $("[data-design-form]");
+      if (!form || (document.activeElement && form.contains(document.activeElement))) return;
+      const design = normalizeDesign(state.design);
+      Object.entries(design).forEach(([key, value]) => {
+        const field = form.elements.namedItem(key);
+        if (field && key !== "blocks") field.value = value;
+      });
+    }
+
+    function updateDesignFromForm() {
+      const form = $("[data-design-form]");
+      if (!form) return;
+      const data = Object.fromEntries(new FormData(form).entries());
+      state.design = normalizeDesign({
+        ...state.design,
+        fontFamily: data.fontFamily,
+        baseFontSize: data.baseFontSize,
+        headingScale: data.headingScale,
+        textColor: data.textColor,
+        backgroundColor: data.backgroundColor,
+        accentColor: data.accentColor,
+        softColor: data.softColor,
+        announcement: data.announcement.trim(),
+        heroTitle: data.heroTitle.trim(),
+        heroSubtitle: data.heroSubtitle.trim(),
+        heroButton: data.heroButton.trim(),
+        heroImage: data.heroImage.trim(),
+        heroAlign: data.heroAlign,
+        heroHeight: data.heroHeight,
+        heroOverlay: data.heroOverlay
+      });
+      persistDesign();
+      applyStoreDesign();
+      renderDesignPreview();
+    }
+
+    function renderDesignPreview() {
+      const preview = $("#designPreview");
+      if (!preview) return;
+      const design = effectiveDesign();
+      const heroBackground = design.heroImage ? `url("${escapeHtml(design.heroImage)}")` : "linear-gradient(135deg, #4d9298, #d88a76)";
+      preview.innerHTML = `
+        <div class="preview-store" style="--preview-bg: ${design.backgroundColor}; --preview-text: ${design.textColor}; --preview-accent: ${design.accentColor}; --preview-font: ${escapeHtml(design.fontFamily)}; --preview-size: ${design.baseFontSize}px; --preview-heading-scale: ${design.headingScale}; --preview-overlay: ${design.heroOverlay / 100}; --preview-hero-bg: ${heroBackground}; --preview-align: ${design.heroAlign};">
+          <div class="preview-announcement">${escapeHtml(design.announcementText)}</div>
+          <div class="preview-hero">
+            <div>
+              <h3>${escapeHtml(design.heroTitleText)}</h3>
+              ${design.heroSubtitle ? `<p>${escapeHtml(design.heroSubtitle)}</p>` : ""}
+              <span class="preview-button">${escapeHtml(design.heroButtonText)}</span>
+            </div>
+          </div>
+          <div class="preview-blocks">
+            ${design.blocks.length ? design.blocks.slice(0, 4).map((block) => `
+              <div class="preview-block" style="--block-bg: ${safeColor(block.backgroundColor, "#ffffff")}; --block-text: ${safeColor(block.textColor, design.textColor)}; --block-size: ${clampNumber(block.fontSize, 12, 32, 16)}px;">
+                <strong>${escapeHtml(block.title || block.type)}</strong>
+                <span>${escapeHtml(block.text || block.buttonText || block.imageUrl || "Plugin block")}</span>
+              </div>
+            `).join("") : `<div class="preview-block"><strong>Plugin area</strong><span>Add text, image, banner or CTA blocks.</span></div>`}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderDesignBlocks() {
+      const list = $("#designBlockList");
+      if (!list) return;
+      const blocks = normalizeDesign(state.design).blocks;
+      list.innerHTML = blocks.length ? blocks.map((block, index) => `
+        <div class="block-list-item">
+          <div>
+            <strong>${escapeHtml(block.title || block.type)}</strong>
+            <span class="muted">${escapeHtml(block.type)} · ${clampNumber(block.fontSize, 12, 32, 16)}px</span>
+          </div>
+          <div class="row-actions">
+            <button class="action-button" type="button" data-edit-design-block="${block.id}" aria-label="Edit block"><i data-lucide="pencil"></i></button>
+            <button class="action-button" type="button" data-move-design-block="${block.id}" data-direction="-1" aria-label="Move up" ${index === 0 ? "disabled" : ""}><i data-lucide="arrow-up"></i></button>
+            <button class="action-button" type="button" data-move-design-block="${block.id}" data-direction="1" aria-label="Move down" ${index === blocks.length - 1 ? "disabled" : ""}><i data-lucide="arrow-down"></i></button>
+            <button class="action-button" type="button" data-delete-design-block="${block.id}" aria-label="Delete block"><i data-lucide="trash-2"></i></button>
+          </div>
+        </div>
+      `).join("") : `<div class="empty-state">No plugin blocks yet</div>`;
+    }
+
+    function renderAdminDesign() {
+      if (!$("#designPreview")) return;
+      syncDesignForm();
+      renderDesignPreview();
+      renderDesignBlocks();
+    }
+
     function renderAdmin() {
       if ($("#adminShell").hidden) return;
       renderMetrics("#metricGrid");
@@ -2518,6 +3235,7 @@
       renderAdminProducts();
       renderTopProducts();
       renderOrders();
+      renderAdminDesign();
       refreshIcons();
     }
 
@@ -2528,6 +3246,92 @@
       fields.namedItem("id").value = "";
       fields.namedItem("published").checked = true;
       $("#productFormTitle").textContent = "Add product";
+    }
+
+    function clearDesignBlockForm() {
+      const form = $("[data-design-block-form]");
+      if (!form) return;
+      form.reset();
+      form.elements.namedItem("id").value = "";
+      form.elements.namedItem("fontSize").value = 16;
+      form.elements.namedItem("backgroundColor").value = "#ffffff";
+      form.elements.namedItem("textColor").value = "#111111";
+    }
+
+    function saveDesignBlock(event) {
+      event.preventDefault();
+      const form = event.target;
+      const data = Object.fromEntries(new FormData(form).entries());
+      const block = {
+        id: data.id || `block-${Date.now().toString(36)}`,
+        type: data.type,
+        title: data.title.trim(),
+        text: data.text.trim(),
+        imageUrl: data.imageUrl.trim(),
+        buttonText: data.buttonText.trim(),
+        buttonLink: data.buttonLink.trim() || "#catalog",
+        backgroundColor: data.backgroundColor,
+        textColor: data.textColor,
+        fontSize: data.fontSize
+      };
+      const design = normalizeDesign(state.design);
+      const index = design.blocks.findIndex((item) => item.id === block.id);
+      if (index >= 0) {
+        design.blocks[index] = block;
+      } else {
+        design.blocks.push(block);
+      }
+      state.design = normalizeDesign(design);
+      persistDesign();
+      clearDesignBlockForm();
+      applyStoreDesign();
+      renderAdminDesign();
+      showToast("Design block saved");
+    }
+
+    function editDesignBlock(id) {
+      const block = normalizeDesign(state.design).blocks.find((item) => item.id === id);
+      const form = $("[data-design-block-form]");
+      if (!block || !form) return;
+      Object.entries(block).forEach(([key, value]) => {
+        const field = form.elements.namedItem(key);
+        if (field) field.value = value;
+      });
+      setAdminTab("design");
+    }
+
+    function deleteDesignBlock(id) {
+      state.design = normalizeDesign({
+        ...state.design,
+        blocks: normalizeDesign(state.design).blocks.filter((block) => block.id !== id)
+      });
+      persistDesign();
+      applyStoreDesign();
+      renderAdminDesign();
+      showToast("Design block deleted");
+    }
+
+    function moveDesignBlock(id, direction) {
+      const design = normalizeDesign(state.design);
+      const index = design.blocks.findIndex((block) => block.id === id);
+      const nextIndex = index + Number(direction);
+      if (index < 0 || nextIndex < 0 || nextIndex >= design.blocks.length) return;
+      const [block] = design.blocks.splice(index, 1);
+      design.blocks.splice(nextIndex, 0, block);
+      state.design = design;
+      persistDesign();
+      applyStoreDesign();
+      renderAdminDesign();
+    }
+
+    function resetDesign() {
+      state.design = clone(seedDesign);
+      persistDesign();
+      syncDesignForm();
+      clearDesignBlockForm();
+      applyStoreDesign();
+      renderAdminDesign();
+      showToast("Store design reset");
     }
 
     function editProduct(id) {
@@ -2558,7 +3362,7 @@
 
     function saveProduct(event) {
       event.preventDefault();
-      const form = event.currentTarget;
+      const form = event.target;
       const data = Object.fromEntries(new FormData(form).entries());
       const id = data.id || `${data.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}-${Date.now().toString(36)}`;
       const existing = state.products.find((product) => product.id === id);
@@ -2602,6 +3406,7 @@
       renderProducts();
       renderCart();
       renderSearch();
+      applyStoreDesign();
       renderAdmin();
     }
 
@@ -2687,7 +3492,24 @@
         showToast("Products reset");
       }
       if (target.matches("[data-export-products]")) exportProducts();
+      if (target.matches("[data-reset-design]")) resetDesign();
+      if (target.matches("[data-clear-design-block]")) clearDesignBlockForm();
+      if (target.matches("[data-edit-design-block]")) editDesignBlock(target.dataset.editDesignBlock);
+      if (target.matches("[data-delete-design-block]")) deleteDesignBlock(target.dataset.deleteDesignBlock);
+      if (target.matches("[data-move-design-block]")) moveDesignBlock(target.dataset.moveDesignBlock, target.dataset.direction);
       if (target.matches("[data-toast]")) showToast(t("messageSaved"));
+    });
+
+    document.addEventListener("input", (event) => {
+      if (event.target instanceof Element && event.target.closest("[data-design-form]")) {
+        updateDesignFromForm();
+      }
+    });
+
+    document.addEventListener("change", (event) => {
+      if (event.target instanceof Element && event.target.closest("[data-design-form]")) {
+        updateDesignFromForm();
+      }
     });
 
     let galleryGesture = null;
@@ -2740,6 +3562,7 @@
         attemptLogin(event.target);
       }
       if (event.target.matches("[data-product-form]")) saveProduct(event);
+      if (event.target.matches("[data-design-block-form]")) saveDesignBlock(event);
     });
 
     $("#sortProducts").addEventListener("change", (event) => {
