@@ -21,34 +21,52 @@
       var shell = document.getElementById("adminShell");
       if (store) store.style.display = "none";
       if (admin) admin.classList.add("active");
+      var unlocked = window.__gogoshopAdminUnlocked === true;
       try {
-        var unlocked = localStorage.getItem("gogoshop_admin_unlocked_v1") === "true";
-        if (login) login.hidden = unlocked;
-        if (shell) shell.hidden = !unlocked;
-      } catch (error) {
-        if (login) login.hidden = false;
-        if (shell) shell.hidden = true;
-      }
+        unlocked = unlocked || localStorage.getItem("gogoshop_admin_unlocked_v1") === "true";
+      } catch (error) {}
+      if (login) login.hidden = unlocked;
+      if (shell) shell.hidden = !unlocked;
       if (!isAdminRoute()) location.hash = "admin";
     }
 
     function loginAdminFallback(event) {
-      if (event) event.preventDefault();
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
       var form = event && event.target && event.target.closest ? event.target.closest("form") : document.querySelector("[data-login-form]");
-      var password = form && form.querySelector('[name="password"]') ? form.querySelector('[name="password"]').value : "";
+      var passwordInput = form && form.querySelector('[name="password"]');
+      var password = passwordInput ? passwordInput.value.trim() : "";
       var login = document.getElementById("loginScreen");
       var shell = document.getElementById("adminShell");
+      var message = document.getElementById("loginMessage");
       if (password === "admin123") {
+        window.__gogoshopAdminUnlocked = true;
         try {
           localStorage.setItem("gogoshop_admin_unlocked_v1", "true");
         } catch (error) {}
         if (login) login.hidden = true;
         if (shell) shell.hidden = false;
-        if (typeof renderAdmin === "function") renderAdmin();
-        if (typeof refreshIcons === "function") refreshIcons();
+        if (message) {
+          message.hidden = true;
+          message.textContent = "";
+        }
+        try {
+          if (typeof renderAdmin === "function") renderAdmin();
+          if (typeof refreshIcons === "function") refreshIcons();
+        } catch (error) {}
       } else {
-        alert("密码错误，默认密码是 admin123");
+        if (message) {
+          message.hidden = false;
+          message.textContent = "密码错误，请输入 admin123";
+        }
+        if (passwordInput) {
+          passwordInput.focus();
+          passwordInput.select();
+        }
       }
+      return false;
     }
   </script>
   <style>
@@ -1436,6 +1454,14 @@
       gap: 14px;
     }
 
+    .login-message {
+      min-height: 20px;
+      margin: 0;
+      color: #b42318;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
     .empty-state {
       display: grid;
       min-height: 160px;
@@ -1699,7 +1725,7 @@
           <a href="#home" data-i18n="navHome">Home</a>
           <a href="#catalog" data-i18n="navCatalog">Catalog</a>
           <a href="#contact" data-i18n="navContact">Contact</a>
-          <a href="./gogoshop.html#admin">Admin</a>
+          <a href="#admin" data-open-admin onclick="openAdminFallback(event)">Admin</a>
         </nav>
         <div class="header-actions">
           <div class="language-toggle" data-language-toggle aria-label="Language">
@@ -1707,7 +1733,7 @@
             <button type="button" data-lang="zh">中文</button>
           </div>
           <button class="icon-button" type="button" data-open-search aria-label="Search"><i data-lucide="search"></i></button>
-          <button class="icon-button" type="button" onclick="location.href='./gogoshop.html#admin'" aria-label="Account"><i data-lucide="user"></i></button>
+          <button class="icon-button" type="button" data-open-admin onclick="openAdminFallback(event)" aria-label="Account"><i data-lucide="user"></i></button>
           <button class="icon-button cart-button" type="button" data-open-cart aria-label="Cart">
             <i data-lucide="shopping-bag"></i>
             <span class="cart-count" data-cart-count>0</span>
@@ -1723,7 +1749,7 @@
           <button type="button" data-lang="en">EN</button>
           <button type="button" data-lang="zh">中文</button>
         </div>
-        <button class="icon-button" type="button" onclick="location.href='./gogoshop.html#admin'" aria-label="Account"><i data-lucide="user"></i></button>
+        <button class="icon-button" type="button" data-open-admin onclick="openAdminFallback(event)" aria-label="Account"><i data-lucide="user"></i></button>
         <button class="icon-button cart-button" type="button" data-open-cart aria-label="Cart">
           <i data-lucide="shopping-bag"></i>
           <span class="cart-count" data-cart-count-mobile>0</span>
@@ -1799,7 +1825,7 @@
         <nav class="footer-links">
           <a href="#home">Go Go Shop</a>
           <a href="#catalog" data-i18n="navCatalog">Catalog</a>
-          <a href="./gogoshop.html#admin">Admin</a>
+          <a href="#admin" data-open-admin onclick="openAdminFallback(event)">Admin</a>
           <a href="https://gogoshop.nz/" target="_blank" rel="noreferrer" data-i18n="originalSite">Original site</a>
         </nav>
       </div>
@@ -1810,13 +1836,15 @@
     <div id="loginScreen" class="login-wrap">
       <div class="login-panel">
         <h1>Go Go Shop Admin</h1>
-        <form data-login-form>
+        <p class="muted">默认密码：<strong>admin123</strong></p>
+        <form data-login-form onsubmit="return loginAdminFallback(event)">
           <label class="field">
             <span>Password</span>
             <input type="password" name="password" value="admin123" autocomplete="current-password">
           </label>
-          <button class="button" type="submit" data-login-button onclick="loginAdminFallback(event)"><i data-lucide="log-in"></i> Sign in</button>
+          <button class="button" type="submit" data-login-button><i data-lucide="log-in"></i> 登录后台</button>
           <button class="button ghost" type="button" data-back-store><i data-lucide="store"></i> Storefront</button>
+          <p class="login-message" id="loginMessage" role="alert" aria-live="polite" hidden></p>
         </form>
       </div>
     </div>
@@ -1841,6 +1869,7 @@
           </div>
           <div class="form-actions">
             <button class="button ghost" type="button" data-export-products><i data-lucide="download"></i> Export</button>
+            <button class="button ghost" type="button" data-admin-logout><i data-lucide="log-out"></i> 退出</button>
             <button class="button" type="button" data-open-product-tab><i data-lucide="plus"></i> Add product</button>
           </div>
         </div>
@@ -2160,7 +2189,7 @@
         <a href="#home" data-close-panels data-i18n="navHome">Home</a>
         <a href="#catalog" data-close-panels data-i18n="navCatalog">Catalog</a>
         <a href="#contact" data-close-panels data-i18n="navContact">Contact</a>
-        <a href="./gogoshop.html#admin" data-close-panels>Admin</a>
+        <a href="#admin" data-open-admin data-close-panels onclick="openAdminFallback(event)">Admin</a>
       </nav>
     </div>
   </aside>
@@ -3014,11 +3043,22 @@
         return;
       }
       const password = new FormData(form).get("password");
+      const passwordInput = form.querySelector('[name="password"]');
+      const message = $("#loginMessage");
       if (password === ADMIN_PASSWORD) {
+        window.__gogoshopAdminUnlocked = true;
         storageSet(ADMIN_KEY, "true");
+        message.hidden = true;
+        message.textContent = "";
         showAdmin();
         showToast("Signed in");
       } else {
+        message.hidden = false;
+        message.textContent = "密码错误，请输入 admin123";
+        if (passwordInput) {
+          passwordInput.focus();
+          passwordInput.select();
+        }
         showToast("Wrong password");
       }
     }
@@ -3026,7 +3066,7 @@
     function showAdmin() {
       $("#storeView").style.display = "none";
       $("#admin").classList.add("active");
-      const unlocked = storageGet(ADMIN_KEY) === "true";
+      const unlocked = window.__gogoshopAdminUnlocked === true || storageGet(ADMIN_KEY) === "true";
       $("#loginScreen").hidden = unlocked;
       $("#adminShell").hidden = !unlocked;
       renderAdmin();
@@ -3040,6 +3080,22 @@
         history.replaceState(null, "", "#home");
       }
       refreshIcons();
+    }
+
+    function logoutAdmin() {
+      window.__gogoshopAdminUnlocked = false;
+      memoryStore.delete(ADMIN_KEY);
+      try {
+        localStorage.removeItem(ADMIN_KEY);
+      } catch (error) {}
+      $("#loginScreen").hidden = false;
+      $("#adminShell").hidden = true;
+      const passwordInput = $("[data-login-form] [name='password']");
+      if (passwordInput) {
+        passwordInput.value = "admin123";
+        passwordInput.focus();
+      }
+      showToast("已退出后台");
     }
 
     function setAdminTab(tab) {
@@ -3501,6 +3557,7 @@
         showAdmin();
       }
       if (target.matches("[data-back-store]")) showStore();
+      if (target.matches("[data-admin-logout]")) logoutAdmin();
       if (target.matches("[data-admin-tab]")) setAdminTab(target.dataset.adminTab);
       if (target.matches("[data-open-product-tab]")) setAdminTab("products");
       if (target.matches("[data-clear-form]")) clearProductForm();
