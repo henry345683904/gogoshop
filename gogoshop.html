@@ -325,7 +325,7 @@
     .hero {
       position: relative;
       overflow: hidden;
-      min-height: 344px;
+      min-height: var(--store-hero-height, 344px);
       display: grid;
       place-items: center;
       padding: 92px 24px 78px;
@@ -559,6 +559,14 @@
       border-top: 1px solid var(--line);
       border-bottom: 1px solid var(--line);
       padding: 14px 0;
+    }
+
+    .catalog-tools .sort-select {
+      margin-left: auto;
+    }
+
+    [data-category-tabs][hidden] {
+      display: none;
     }
 
     .chips {
@@ -1219,6 +1227,11 @@
       overflow: auto;
     }
 
+    .login-wrap[hidden],
+    .admin-shell[hidden] {
+      display: none;
+    }
+
     .admin-shell {
       display: grid;
       min-height: 100vh;
@@ -1366,6 +1379,212 @@
     .product-form {
       display: grid;
       gap: 14px;
+    }
+
+    body.editor-open {
+      overflow: hidden;
+    }
+
+    .product-manager-panel > .admin-panel-head > div:first-child {
+      display: grid;
+      gap: 3px;
+    }
+
+    .product-manager-panel > .admin-panel-head .muted {
+      font-size: 12px;
+    }
+
+    .admin-product-list {
+      display: grid;
+    }
+
+    .admin-product-item {
+      display: grid;
+      grid-template-columns: 58px minmax(170px, 1fr) auto auto;
+      gap: 14px;
+      align-items: center;
+      min-width: 0;
+      border-bottom: 1px solid #e3e4e4;
+      padding: 12px 18px;
+      cursor: pointer;
+      transition: background 150ms ease;
+    }
+
+    .admin-product-item:last-child {
+      border-bottom: 0;
+    }
+
+    .admin-product-item:hover,
+    .admin-product-item:focus-visible {
+      background: #f6f7f7;
+    }
+
+    .admin-product-item > img {
+      width: 58px;
+      height: 58px;
+      border-radius: 4px;
+      object-fit: cover;
+      background: var(--soft);
+    }
+
+    .admin-product-summary {
+      min-width: 0;
+    }
+
+    .admin-product-summary strong,
+    .admin-product-summary span {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .admin-product-summary strong {
+      margin-bottom: 5px;
+      font-size: 14px;
+    }
+
+    .admin-product-summary span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .admin-product-meta {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      color: #3d4242;
+      font-size: 13px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .product-editor-modal[hidden] {
+      display: none;
+    }
+
+    .product-editor-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 320;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: rgba(0, 0, 0, 0.38);
+    }
+
+    .product-editor-dialog {
+      width: min(100%, 920px);
+      max-height: min(820px, calc(100vh - 48px));
+      overflow: hidden;
+      border: 1px solid #d7dada;
+      border-radius: 8px;
+      background: #fff;
+      box-shadow: 0 24px 70px rgba(0, 0, 0, 0.24);
+    }
+
+    .product-editor-head {
+      display: flex;
+      min-height: 68px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      border-bottom: 1px solid #e3e4e4;
+      padding: 10px 18px 10px 22px;
+    }
+
+    .product-editor-head h2,
+    .product-editor-head p {
+      margin: 0;
+    }
+
+    .product-editor-head h2 {
+      font-size: 20px;
+    }
+
+    .product-editor-head p {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .product-editor-body {
+      display: grid;
+      grid-template-columns: minmax(260px, 0.72fr) minmax(420px, 1.28fr);
+      max-height: calc(min(820px, 100vh - 48px) - 68px);
+      overflow: auto;
+    }
+
+    .product-editor-visual {
+      border-right: 1px solid #e3e4e4;
+      padding: 22px;
+      background: #f6f7f7;
+    }
+
+    .product-editor-image {
+      display: grid;
+      overflow: hidden;
+      width: 100%;
+      aspect-ratio: 1;
+      place-items: center;
+      background: #e9ebeb;
+    }
+
+    .product-editor-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .product-editor-empty {
+      display: grid;
+      place-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .product-editor-empty svg {
+      width: 32px;
+      height: 32px;
+    }
+
+    .product-editor-preview-copy {
+      display: grid;
+      justify-items: start;
+      gap: 8px;
+      padding-top: 16px;
+    }
+
+    .product-editor-preview-copy h3,
+    .product-editor-preview-copy p {
+      margin: 0;
+    }
+
+    .product-editor-preview-copy h3 {
+      overflow-wrap: anywhere;
+      font-size: 18px;
+    }
+
+    .product-editor-preview-copy p {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .product-editor-form {
+      align-content: start;
+      padding: 22px;
+    }
+
+    .product-editor-publish {
+      border-top: 1px solid #e3e4e4;
+      border-bottom: 1px solid #e3e4e4;
+      padding: 8px 0;
+    }
+
+    .product-editor-actions {
+      justify-content: flex-end;
     }
 
     .design-grid {
@@ -1735,8 +1954,8 @@
       }
 
       .hero {
-        min-height: 280px;
-        padding: 78px 20px 58px;
+        min-height: min(var(--store-hero-height, 344px), 240px);
+        padding: 68px 18px 46px;
         place-items: center start;
       }
 
@@ -1758,12 +1977,12 @@
 
       .hero h1 {
         max-width: 310px;
-        font-size: 31px;
+        font-size: 28px;
         line-height: 1.08;
       }
 
       .main-view .hero h1 {
-        font-size: calc(31px * var(--store-heading-scale));
+        font-size: calc(28px * var(--store-heading-scale));
       }
 
       .hero .button {
@@ -1771,7 +1990,7 @@
       }
 
       .section {
-        padding: 34px 16px;
+        padding: 28px 16px;
       }
 
       #catalog {
@@ -1787,7 +2006,7 @@
 
       .product-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 24px 10px;
+        gap: 20px 4px;
       }
 
       .custom-block-grid {
@@ -1817,8 +2036,8 @@
       }
 
       .product-info {
-        min-height: 62px;
-        padding: 11px 10px 0;
+        min-height: 58px;
+        padding: 9px 8px 0;
       }
 
       .product-detail-view {
@@ -1862,6 +2081,8 @@
 
       .admin-shell {
         grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr;
+        align-content: start;
       }
 
       .design-grid {
@@ -1873,23 +2094,28 @@
       }
 
       .admin-sidebar {
-        position: static;
+        position: sticky;
+        z-index: 5;
+        top: 0;
         height: auto;
         border-right: 0;
         border-bottom: 1px solid #d8dada;
-        padding: 16px;
+        padding: 6px 8px;
       }
 
       .admin-logo {
-        margin-bottom: 12px;
+        display: none;
       }
 
       .admin-nav {
-        grid-template-columns: repeat(4, minmax(0, 1fr));
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 4px;
       }
 
       .tab-button {
+        min-height: 40px;
         justify-content: center;
+        padding: 0;
       }
 
       .tab-button span {
@@ -1897,13 +2123,142 @@
       }
 
       .admin-main {
-        padding: 18px 16px 28px;
+        padding: 12px 10px 24px;
       }
 
-      .metric-grid,
+      .admin-topbar {
+        margin-bottom: 12px;
+      }
+
+      .admin-title h1 {
+        font-size: 22px;
+      }
+
+      .admin-title p {
+        display: none;
+      }
+
+      .admin-topbar .button,
+      .product-manager-panel .button {
+        min-height: 38px;
+        padding: 0 10px;
+        font-size: 12px;
+      }
+
+      .metric-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+        margin-bottom: 10px;
+      }
+
       .admin-grid,
       .chart-grid {
         grid-template-columns: 1fr;
+        gap: 8px;
+      }
+
+      .metric {
+        padding: 12px;
+      }
+
+      .metric strong {
+        margin-top: 6px;
+        font-size: 21px;
+      }
+
+      .admin-panel-head {
+        min-height: 46px;
+        padding: 0 12px;
+      }
+
+      .admin-panel-body {
+        padding: 12px;
+      }
+
+      .bar-chart {
+        gap: 7px;
+      }
+
+      .bar-row {
+        grid-template-columns: 64px 1fr 38px;
+        gap: 6px;
+        font-size: 11px;
+      }
+
+      .bar-track {
+        height: 8px;
+      }
+
+      .admin-product-item {
+        grid-template-columns: 54px minmax(0, 1fr) auto;
+        gap: 10px;
+        padding: 10px 12px;
+      }
+
+      .admin-product-item > img {
+        width: 54px;
+        height: 54px;
+      }
+
+      .admin-product-meta {
+        grid-column: 2;
+        gap: 10px;
+        font-size: 12px;
+      }
+
+      .admin-product-item .row-actions {
+        grid-column: 3;
+        grid-row: 1 / span 2;
+        flex-direction: column;
+      }
+
+      .product-editor-modal {
+        padding: 0;
+      }
+
+      .product-editor-dialog {
+        width: 100%;
+        height: 100%;
+        max-height: none;
+        border: 0;
+        border-radius: 0;
+      }
+
+      .product-editor-head {
+        min-height: 60px;
+        padding: 8px 12px 8px 16px;
+      }
+
+      .product-editor-body {
+        grid-template-columns: 1fr;
+        max-height: calc(100vh - 60px);
+      }
+
+      .product-editor-visual {
+        display: grid;
+        grid-template-columns: 138px minmax(0, 1fr);
+        gap: 14px;
+        align-items: center;
+        border-right: 0;
+        border-bottom: 1px solid #e3e4e4;
+        padding: 14px 16px;
+      }
+
+      .product-editor-preview-copy {
+        padding-top: 0;
+      }
+
+      .product-editor-form {
+        padding: 16px;
+      }
+
+      .product-editor-actions {
+        position: sticky;
+        bottom: -16px;
+        margin: 0 -16px -16px;
+        border-top: 1px solid #e3e4e4;
+        padding: 12px 16px;
+        background: #fff;
       }
     }
 
@@ -1925,15 +2280,17 @@
       }
 
       .catalog-tools {
-        display: grid;
+        display: flex;
+        justify-content: flex-end;
+        padding: 10px 0;
       }
 
       .sort-select {
-        width: 100%;
+        width: 150px;
       }
 
       .section-heading h2 {
-        font-size: 25px;
+        font-size: 22px;
       }
 
       .badge {
@@ -1943,7 +2300,7 @@
 
       .product-title,
       .price {
-        font-size: 14px;
+        font-size: 13px;
       }
 
       .drawer {
@@ -1972,14 +2329,40 @@
       .admin-topbar {
         align-items: flex-start;
         flex-direction: column;
-      }
-
-      .metric-grid {
         gap: 10px;
       }
 
+      .admin-topbar .form-actions {
+        display: grid;
+        width: 100%;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 6px;
+      }
+
       .bar-row {
-        grid-template-columns: 76px 1fr 48px;
+        grid-template-columns: 58px 1fr 34px;
+      }
+
+      .product-manager-panel > .admin-panel-head {
+        align-items: flex-start;
+        flex-direction: column;
+        height: auto;
+        padding-top: 10px;
+        padding-bottom: 10px;
+      }
+
+      .product-manager-panel > .admin-panel-head .form-actions {
+        display: grid;
+        width: 100%;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .product-editor-visual {
+        grid-template-columns: 112px minmax(0, 1fr);
+      }
+
+      .product-editor-head p {
+        display: none;
       }
     }
   </style>
@@ -2048,7 +2431,7 @@
           <button class="text-link" type="button" data-view-all data-i18n="viewAll">View all</button>
         </div>
         <div class="catalog-tools">
-          <div class="chips" data-category-tabs></div>
+          <div class="chips" data-category-tabs hidden></div>
           <select class="sort-select" id="sortProducts" aria-label="Sort products">
             <option value="featured" data-i18n="sortFeatured">Featured</option>
             <option value="price-low" data-i18n="sortLow">Price low to high</option>
@@ -2126,11 +2509,11 @@
       <aside class="admin-sidebar">
         <div class="admin-logo">Go Go Shop</div>
         <nav class="admin-nav">
-          <button class="tab-button active" type="button" data-admin-tab="overview"><i data-lucide="layout-dashboard"></i><span>Overview</span></button>
-          <button class="tab-button" type="button" data-admin-tab="products"><i data-lucide="package-plus"></i><span>Products</span></button>
-          <button class="tab-button" type="button" data-admin-tab="analytics"><i data-lucide="chart-column"></i><span>Analytics</span></button>
-          <button class="tab-button" type="button" data-admin-tab="design"><i data-lucide="paintbrush"></i><span>Design</span></button>
-          <button class="tab-button" type="button" data-back-store><i data-lucide="store"></i><span>Store</span></button>
+          <button class="tab-button active" type="button" data-admin-tab="overview" aria-label="Overview" title="Overview"><i data-lucide="layout-dashboard"></i><span>Overview</span></button>
+          <button class="tab-button" type="button" data-admin-tab="products" aria-label="Products" title="Products"><i data-lucide="package-plus"></i><span>Products</span></button>
+          <button class="tab-button" type="button" data-admin-tab="analytics" aria-label="Analytics" title="Analytics"><i data-lucide="chart-column"></i><span>Analytics</span></button>
+          <button class="tab-button" type="button" data-admin-tab="design" aria-label="Design" title="Design"><i data-lucide="paintbrush"></i><span>Design</span></button>
+          <button class="tab-button" type="button" data-back-store aria-label="Storefront" title="Storefront"><i data-lucide="store"></i><span>Store</span></button>
         </nav>
       </aside>
 
@@ -2169,81 +2552,18 @@
         </section>
 
         <section class="admin-section" data-admin-section="products">
-          <div class="admin-grid">
-            <div class="admin-panel">
-              <div class="admin-panel-head">
-                <h2 id="productFormTitle">Add product</h2>
-                <button class="action-button" type="button" data-clear-form aria-label="Clear form"><i data-lucide="rotate-ccw"></i></button>
-              </div>
-              <div class="admin-panel-body">
-                <form class="product-form" data-product-form>
-                  <input type="hidden" name="id">
-                  <label class="field">
-                    <span>Product name</span>
-                    <input type="text" name="title" required>
-                  </label>
-                  <div class="form-row">
-                    <label class="field">
-                      <span>Category</span>
-                      <select name="category">
-                        <option>Blind Box</option>
-                        <option>Phone Case</option>
-                        <option>Key Chain</option>
-                        <option>Soft Toy</option>
-                        <option>Smart Glasses</option>
-                      </select>
-                    </label>
-                    <label class="field">
-                      <span>Price NZD</span>
-                      <input type="number" name="price" min="0" step="0.01" required>
-                    </label>
-                  </div>
-                  <div class="form-row">
-                    <label class="field">
-                      <span>Stock</span>
-                      <input type="number" name="stock" min="0" step="1" required>
-                    </label>
-                    <label class="field">
-                      <span>Image URL</span>
-                      <input type="url" name="image" required>
-                    </label>
-                  </div>
-                  <label class="field">
-                    <span>Description</span>
-                    <textarea name="description"></textarea>
-                  </label>
-                  <label class="switch">
-                    <span>Published</span>
-                    <input type="checkbox" name="published" checked>
-                  </label>
-                  <div class="form-actions">
-                    <button class="button" type="submit"><i data-lucide="save"></i> Save</button>
-                    <button class="button ghost" type="button" data-clear-form>Cancel</button>
-                  </div>
-                </form>
-              </div>
-            </div>
-
-            <div class="admin-panel">
-              <div class="admin-panel-head">
+          <div class="admin-panel product-manager-panel">
+            <div class="admin-panel-head">
+              <div>
                 <h2>Products</h2>
-                <button class="button ghost" type="button" data-reset-products><i data-lucide="refresh-cw"></i> Reset</button>
+                <span class="muted" id="adminProductCount"></span>
               </div>
-              <div class="table-wrap">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Product</th>
-                      <th>Price</th>
-                      <th>Stock</th>
-                      <th>Status</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody id="adminProductRows"></tbody>
-                </table>
+              <div class="form-actions">
+                <button class="button ghost" type="button" data-reset-products><i data-lucide="refresh-cw"></i> Reset</button>
+                <button class="button" type="button" data-new-product><i data-lucide="plus"></i> Add product</button>
               </div>
             </div>
+            <div class="admin-product-list" id="adminProductRows"></div>
           </div>
         </section>
 
@@ -2447,6 +2767,79 @@
           </div>
         </section>
       </main>
+    </div>
+  </section>
+
+  <section class="product-editor-modal" id="productEditorModal" data-product-editor-backdrop hidden>
+    <div class="product-editor-dialog" role="dialog" aria-modal="true" aria-labelledby="productFormTitle">
+      <div class="product-editor-head">
+        <div>
+          <h2 id="productFormTitle">添加商品</h2>
+          <p>商品信息与店铺展示同步</p>
+        </div>
+        <button class="icon-button" type="button" data-close-product-editor aria-label="关闭商品编辑"><i data-lucide="x"></i></button>
+      </div>
+      <div class="product-editor-body">
+        <aside class="product-editor-visual">
+          <div class="product-editor-image">
+            <img src="" alt="商品预览" data-product-editor-image hidden>
+            <div class="product-editor-empty" data-product-editor-empty>
+              <i data-lucide="image"></i>
+              <span>商品图片预览</span>
+            </div>
+          </div>
+          <div class="product-editor-preview-copy">
+            <span class="status live" data-product-editor-status>在售</span>
+            <h3 data-product-editor-title>新商品</h3>
+            <p data-product-editor-meta>NZ$0.00 · 库存 0</p>
+          </div>
+        </aside>
+        <form class="product-form product-editor-form" data-product-form>
+          <input type="hidden" name="id">
+          <label class="field">
+            <span>商品名称</span>
+            <input type="text" name="title" autocomplete="off" required>
+          </label>
+          <div class="form-row">
+            <label class="field">
+              <span>商品分类</span>
+              <select name="category">
+                <option>Blind Box</option>
+                <option>Phone Case</option>
+                <option>Key Chain</option>
+                <option>Soft Toy</option>
+                <option>Smart Glasses</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>价格 NZD</span>
+              <input type="number" name="price" min="0" step="0.01" required>
+            </label>
+          </div>
+          <div class="form-row">
+            <label class="field">
+              <span>库存数量</span>
+              <input type="number" name="stock" min="0" step="1" required>
+            </label>
+            <label class="field">
+              <span>商品图片 URL</span>
+              <input type="url" name="image" required>
+            </label>
+          </div>
+          <label class="field">
+            <span>商品描述</span>
+            <textarea name="description" rows="4"></textarea>
+          </label>
+          <label class="switch product-editor-publish">
+            <span>在商店中发布</span>
+            <input type="checkbox" name="published" checked>
+          </label>
+          <div class="form-actions product-editor-actions">
+            <button class="button ghost" type="button" data-close-product-editor>取消</button>
+            <button class="button" type="submit"><i data-lucide="save"></i> 保存商品</button>
+          </div>
+        </form>
+      </div>
     </div>
   </section>
 
@@ -2974,7 +3367,7 @@
 
       const hero = $(".hero", store);
       if (hero) {
-        hero.style.minHeight = `${design.heroHeight}px`;
+        hero.style.setProperty("--store-hero-height", `${design.heroHeight}px`);
         hero.style.setProperty("--store-hero-overlay", design.heroOverlay / 100);
         if (design.heroImage) {
           hero.classList.add("hero-has-image");
@@ -3555,12 +3948,14 @@
     }
 
     function logoutAdmin() {
+      closeProductEditor();
       clearAdminAccess();
       resetAdminLogin(true);
       showToast("已退出后台");
     }
 
     function exitAdminToStore() {
+      closeProductEditor();
       clearAdminAccess();
       resetAdminLogin(false);
       showStore();
@@ -3635,27 +4030,24 @@
     }
 
     function renderAdminProducts() {
+      $("#adminProductCount").textContent = `${state.products.length} products`;
       $("#adminProductRows").innerHTML = state.products.map((product) => `
-        <tr>
-          <td>
-            <div class="mini-product">
-              <img src="${product.image}" alt="${product.title}">
-              <div>
-                <strong>${product.title}</strong>
-                <div class="muted">${product.category}</div>
-              </div>
-            </div>
-          </td>
-          <td>${formatPrice(product.price)}</td>
-          <td>${product.stock}</td>
-          <td><span class="status ${available(product) ? "live" : "draft"}">${available(product) ? "Live" : "Sold out"}</span></td>
-          <td>
-            <div class="row-actions">
-              <button class="action-button" type="button" data-edit-product="${product.id}" aria-label="Edit ${product.title}"><i data-lucide="pencil"></i></button>
-              <button class="action-button" type="button" data-delete-product="${product.id}" aria-label="Delete ${product.title}"><i data-lucide="trash-2"></i></button>
-            </div>
-          </td>
-        </tr>
+        <article class="admin-product-item" data-edit-product-row="${escapeHtml(product.id)}" role="button" tabindex="0" aria-label="Edit ${escapeHtml(product.title)}">
+          <img src="${escapeHtml(product.image)}" alt="${escapeHtml(product.title)}">
+          <div class="admin-product-summary">
+            <strong>${escapeHtml(product.title)}</strong>
+            <span>${escapeHtml(product.category)}${product.description ? ` · ${escapeHtml(product.description)}` : ""}</span>
+          </div>
+          <div class="admin-product-meta">
+            <span>${formatPrice(product.price)}</span>
+            <span>Stock ${Number(product.stock) || 0}</span>
+            <span class="status ${available(product) ? "live" : "draft"}">${available(product) ? "Live" : "Sold out"}</span>
+          </div>
+          <div class="row-actions">
+            <button class="action-button" type="button" data-edit-product="${escapeHtml(product.id)}" aria-label="Edit ${escapeHtml(product.title)}"><i data-lucide="pencil"></i></button>
+            <button class="action-button" type="button" data-delete-product="${escapeHtml(product.id)}" aria-label="Delete ${escapeHtml(product.title)}"><i data-lucide="trash-2"></i></button>
+          </div>
+        </article>
       `).join("");
     }
 
@@ -3787,11 +4179,71 @@
 
     function clearProductForm() {
       const form = $("[data-product-form]");
+      if (!form) return;
       const fields = form.elements;
       form.reset();
       fields.namedItem("id").value = "";
       fields.namedItem("published").checked = true;
-      $("#productFormTitle").textContent = "Add product";
+      fields.namedItem("price").value = "0";
+      fields.namedItem("stock").value = "0";
+      $("#productFormTitle").textContent = "添加商品";
+      updateProductEditorPreview();
+    }
+
+    function updateProductEditorPreview() {
+      const form = $("[data-product-form]");
+      if (!form) return;
+      const fields = form.elements;
+      const imageUrl = fields.namedItem("image").value.trim();
+      const image = $("[data-product-editor-image]");
+      const empty = $("[data-product-editor-empty]");
+      const title = fields.namedItem("title").value.trim() || "新商品";
+      const price = Number(fields.namedItem("price").value || 0);
+      const stock = Math.max(0, Number(fields.namedItem("stock").value || 0));
+      const published = fields.namedItem("published").checked;
+      const status = $("[data-product-editor-status]");
+
+      image.onload = () => {
+        image.hidden = false;
+        empty.hidden = true;
+      };
+      image.onerror = () => {
+        image.hidden = true;
+        empty.hidden = false;
+      };
+      if (imageUrl) {
+        image.hidden = false;
+        empty.hidden = true;
+        if (image.src !== imageUrl) image.src = imageUrl;
+      } else {
+        image.removeAttribute("src");
+        image.hidden = true;
+        empty.hidden = false;
+      }
+
+      $("[data-product-editor-title]").textContent = title;
+      $("[data-product-editor-meta]").textContent = `${formatPrice(price)} · 库存 ${stock}`;
+      status.textContent = !published ? "草稿" : stock > 0 ? "在售" : "售罄";
+      status.className = `status ${published && stock > 0 ? "live" : "draft"}`;
+    }
+
+    function openProductEditor() {
+      $("#productEditorModal").hidden = false;
+      document.body.classList.add("editor-open");
+      updateProductEditorPreview();
+      refreshIcons();
+      window.setTimeout(() => $("[data-product-form] [name='title']")?.focus(), 60);
+    }
+
+    function openNewProductEditor() {
+      setAdminTab("products");
+      clearProductForm();
+      openProductEditor();
+    }
+
+    function closeProductEditor() {
+      $("#productEditorModal").hidden = true;
+      document.body.classList.remove("editor-open");
     }
 
     function clearDesignBlockForm() {
@@ -3883,6 +4335,7 @@
     function editProduct(id) {
       const product = state.products.find((item) => item.id === id);
       if (!product) return;
+      clearProductForm();
       const form = $("[data-product-form]");
       const fields = form.elements;
       fields.namedItem("id").value = product.id;
@@ -3893,8 +4346,10 @@
       fields.namedItem("image").value = product.image;
       fields.namedItem("description").value = product.description || "";
       fields.namedItem("published").checked = product.published;
-      $("#productFormTitle").textContent = "Edit product";
+      $("#productFormTitle").textContent = "编辑商品";
       setAdminTab("products");
+      updateProductEditorPreview();
+      openProductEditor();
     }
 
     function deleteProduct(id) {
@@ -3932,6 +4387,7 @@
       }
       persistProducts();
       clearProductForm();
+      closeProductEditor();
       renderAll();
       showToast("Product saved");
     }
@@ -3970,6 +4426,17 @@
 
       if (clickedElement.matches("[data-backdrop]")) {
         closePanels();
+        return;
+      }
+
+      if (clickedElement.matches("[data-product-editor-backdrop]")) {
+        closeProductEditor();
+        return;
+      }
+
+      const productEditRow = clickedElement.closest("[data-edit-product-row]");
+      if (productEditRow && !clickedElement.closest("button, a")) {
+        editProduct(productEditRow.dataset.editProductRow);
         return;
       }
 
@@ -4044,7 +4511,8 @@
       if (target.matches("[data-back-store]")) exitAdminToStore();
       if (target.matches("[data-admin-logout]")) logoutAdmin();
       if (target.matches("[data-admin-tab]")) setAdminTab(target.dataset.adminTab);
-      if (target.matches("[data-open-product-tab]")) setAdminTab("products");
+      if (target.matches("[data-open-product-tab], [data-new-product]")) openNewProductEditor();
+      if (target.matches("[data-close-product-editor]")) closeProductEditor();
       if (target.matches("[data-clear-form]")) clearProductForm();
       if (target.matches("[data-edit-product]")) editProduct(target.dataset.editProduct);
       if (target.matches("[data-delete-product]")) deleteProduct(target.dataset.deleteProduct);
@@ -4067,11 +4535,17 @@
       if (event.target instanceof Element && event.target.closest("[data-design-form]")) {
         updateDesignFromForm();
       }
+      if (event.target instanceof Element && event.target.closest("[data-product-form]")) {
+        updateProductEditorPreview();
+      }
     });
 
     document.addEventListener("change", (event) => {
       if (event.target instanceof Element && event.target.closest("[data-design-form]")) {
         updateDesignFromForm();
+      }
+      if (event.target instanceof Element && event.target.closest("[data-product-form]")) {
+        updateProductEditorPreview();
       }
     });
 
@@ -4175,6 +4649,16 @@
     });
 
     document.addEventListener("keydown", (event) => {
+      const productRow = event.target instanceof Element ? event.target.closest("[data-edit-product-row]") : null;
+      if (productRow && (event.key === "Enter" || event.key === " ")) {
+        event.preventDefault();
+        editProduct(productRow.dataset.editProductRow);
+        return;
+      }
+      if (event.key === "Escape" && !$("#productEditorModal").hidden) {
+        closeProductEditor();
+        return;
+      }
       if (!$("#productDetail").hidden && !event.target.matches("input, textarea, select")) {
         if (event.key === "ArrowRight") {
           event.preventDefault();
