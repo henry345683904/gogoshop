@@ -2054,6 +2054,17 @@
       color: var(--danger);
     }
 
+    .status.featured {
+      gap: 4px;
+      background: #eaf4f5;
+      color: var(--river);
+    }
+
+    .status.featured svg {
+      width: 13px;
+      height: 13px;
+    }
+
     .row-actions {
       display: flex;
       gap: 7px;
@@ -2067,6 +2078,12 @@
       border: 1px solid var(--line);
       border-radius: 8px;
       background: #fff;
+    }
+
+    .action-button.pinned {
+      border-color: #8ab7bb;
+      background: #eaf4f5;
+      color: var(--river);
     }
 
     .chart-grid {
@@ -3118,6 +3135,10 @@
                 <span>在线商店</span>
                 <input type="checkbox" name="onlineStore" checked>
               </label>
+              <label class="shopify-check-row">
+                <span>在首页置顶</span>
+                <input type="checkbox" name="featured">
+              </label>
             </section>
 
             <section class="shopify-editor-card">
@@ -4000,7 +4021,13 @@
         if (state.sort === "price-low") return a.price - b.price;
         if (state.sort === "price-high") return b.price - a.price;
         if (state.sort === "stock") return Number(available(b)) - Number(available(a));
-        return seedProducts.findIndex((item) => item.id === a.id) - seedProducts.findIndex((item) => item.id === b.id);
+        if (Boolean(a.featured) !== Boolean(b.featured)) return Number(Boolean(b.featured)) - Number(Boolean(a.featured));
+        if (a.featured && b.featured && Number(a.featuredAt || 0) !== Number(b.featuredAt || 0)) {
+          return Number(b.featuredAt || 0) - Number(a.featuredAt || 0);
+        }
+        const aIndex = seedProducts.findIndex((item) => item.id === a.id);
+        const bIndex = seedProducts.findIndex((item) => item.id === b.id);
+        return (aIndex < 0 ? Number.MAX_SAFE_INTEGER : aIndex) - (bIndex < 0 ? Number.MAX_SAFE_INTEGER : bIndex);
       });
     }
 
@@ -4354,7 +4381,7 @@
           <img src="${escapeHtml(product.image)}" alt="${escapeHtml(product.title)}">
           <div class="admin-product-summary">
             <strong>${escapeHtml(product.title)}</strong>
-            <span>${escapeHtml(product.category)}${product.description ? ` · ${escapeHtml(product.description)}` : ""}</span>
+            <span>${product.featured ? "Pinned · " : ""}${escapeHtml(product.category)}${product.description ? ` · ${escapeHtml(product.description)}` : ""}</span>
           </div>
           <div class="admin-product-meta">
             <span>${formatPrice(product.price)}</span>
@@ -4362,7 +4389,7 @@
             <span class="status ${available(product) ? "live" : "draft"}">${available(product) ? "Live" : "Sold out"}</span>
           </div>
           <div class="row-actions">
-            <button class="action-button" type="button" data-edit-product="${escapeHtml(product.id)}" aria-label="Edit ${escapeHtml(product.title)}"><i data-lucide="pencil"></i></button>
+            <button class="action-button ${product.featured ? "pinned" : ""}" type="button" data-toggle-featured="${escapeHtml(product.id)}" aria-label="${product.featured ? "Unpin" : "Pin"} ${escapeHtml(product.title)}" aria-pressed="${Boolean(product.featured)}" title="${product.featured ? "取消首页置顶" : "置顶到首页"}"><i data-lucide="${product.featured ? "pin-off" : "pin"}"></i></button>
             <button class="action-button" type="button" data-delete-product="${escapeHtml(product.id)}" aria-label="Delete ${escapeHtml(product.title)}"><i data-lucide="trash-2"></i></button>
           </div>
         </article>
@@ -4506,6 +4533,7 @@
       fields.namedItem("status").value = "active";
       fields.namedItem("vendor").value = "Go Go Shop";
       fields.namedItem("onlineStore").checked = true;
+      fields.namedItem("featured").checked = false;
       fields.namedItem("taxable").checked = true;
       fields.namedItem("trackQuantity").checked = true;
       const imageFile = $("[data-product-image-file]", form);
@@ -4716,6 +4744,7 @@
       fields.namedItem("description").value = product.description || "";
       fields.namedItem("status").value = product.published ? "active" : "draft";
       fields.namedItem("onlineStore").checked = product.onlineStore ?? product.published;
+      fields.namedItem("featured").checked = Boolean(product.featured);
       fields.namedItem("compareAtPrice").value = product.compareAtPrice || "";
       fields.namedItem("costPerItem").value = product.costPerItem || "";
       fields.namedItem("sku").value = product.sku || "";
@@ -4741,12 +4770,23 @@
       showToast("Product deleted");
     }
 
+    function toggleFeaturedProduct(id) {
+      const product = state.products.find((item) => item.id === id);
+      if (!product) return;
+      product.featured = !product.featured;
+      product.featuredAt = product.featured ? Date.now() : 0;
+      persistProducts();
+      renderAll();
+      showToast(product.featured ? "商品已置顶到首页" : "已取消首页置顶");
+    }
+
     function saveProduct(event) {
       event.preventDefault();
       const form = event.target;
       const data = Object.fromEntries(new FormData(form).entries());
       const id = data.id || `${data.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}-${Date.now().toString(36)}`;
       const existing = state.products.find((product) => product.id === id);
+      const featured = form.featured.checked;
       const product = {
         id,
         title: data.title.trim(),
@@ -4760,6 +4800,8 @@
         published: data.status === "active" && form.onlineStore.checked,
         status: data.status,
         onlineStore: form.onlineStore.checked,
+        featured,
+        featuredAt: featured ? (existing?.featured ? Number(existing.featuredAt || Date.now()) : Date.now()) : 0,
         taxable: form.taxable.checked,
         trackQuantity: form.trackQuantity.checked,
         sku: data.sku.trim(),
@@ -4785,7 +4827,7 @@
     }
 
     function exportProducts() {
-      const headers = ["id", "title", "category", "price", "compareAtPrice", "costPerItem", "stock", "published", "sku", "barcode", "vendor", "tags", "image"];
+      const headers = ["id", "title", "category", "price", "compareAtPrice", "costPerItem", "stock", "published", "featured", "sku", "barcode", "vendor", "tags", "image"];
       const rows = state.products.map((product) => headers.map((key) => `"${String(product[key] ?? "").replace(/"/g, '""')}"`).join(","));
       const blob = new Blob([[headers.join(","), ...rows].join("\n")], { type: "text/csv" });
       const url = URL.createObjectURL(blob);
@@ -4923,6 +4965,7 @@
       if (target.matches("[data-close-product-editor]")) closeProductEditor();
       if (target.matches("[data-clear-form]")) clearProductForm();
       if (target.matches("[data-edit-product]")) editProduct(target.dataset.editProduct);
+      if (target.matches("[data-toggle-featured]")) toggleFeaturedProduct(target.dataset.toggleFeatured);
       if (target.matches("[data-delete-product]")) deleteProduct(target.dataset.deleteProduct);
       if (target.matches("[data-reset-products]")) {
         state.products = clone(seedProducts);
