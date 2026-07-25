@@ -18,12 +18,41 @@ create table if not exists public.profiles (
 create table if not exists public.products (
   id text primary key,
   title text not null,
+  category text not null default '',
+  description text not null default '',
   price numeric(12,2) not null check (price >= 0),
+  compare_at_price numeric(12,2) not null default 0 check (compare_at_price >= 0),
+  cost_per_item numeric(12,2) not null default 0 check (cost_per_item >= 0),
   stock integer not null default 0 check (stock >= 0),
   sales integer not null default 0 check (sales >= 0),
   published boolean not null default true,
+  image text not null default '',
+  images jsonb not null default '[]'::jsonb,
+  vendor text not null default '',
+  sku text not null default '',
+  tags text not null default '',
+  source_url text not null default '',
+  source_currency text not null default '',
+  source_price numeric(12,2) not null default 0 check (source_price >= 0),
+  source_variants jsonb not null default '[]'::jsonb,
+  source_attributes jsonb not null default '[]'::jsonb,
   updated_at timestamptz not null default now()
 );
+
+alter table public.products add column if not exists category text not null default '';
+alter table public.products add column if not exists description text not null default '';
+alter table public.products add column if not exists compare_at_price numeric(12,2) not null default 0;
+alter table public.products add column if not exists cost_per_item numeric(12,2) not null default 0;
+alter table public.products add column if not exists image text not null default '';
+alter table public.products add column if not exists images jsonb not null default '[]'::jsonb;
+alter table public.products add column if not exists vendor text not null default '';
+alter table public.products add column if not exists sku text not null default '';
+alter table public.products add column if not exists tags text not null default '';
+alter table public.products add column if not exists source_url text not null default '';
+alter table public.products add column if not exists source_currency text not null default '';
+alter table public.products add column if not exists source_price numeric(12,2) not null default 0;
+alter table public.products add column if not exists source_variants jsonb not null default '[]'::jsonb;
+alter table public.products add column if not exists source_attributes jsonb not null default '[]'::jsonb;
 
 create table if not exists public.orders (
   id uuid primary key default gen_random_uuid(),

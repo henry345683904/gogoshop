@@ -3397,6 +3397,10 @@
                     <span>图片 URL</span>
                     <input type="url" name="image" data-product-image-url required>
                   </label>
+                  <label class="field">
+                    <span>更多图片 URL（每行一个）</span>
+                    <textarea name="images" rows="5" placeholder="https://..."></textarea>
+                  </label>
                   <input type="file" accept="image/jpeg,image/png,image/webp" data-product-image-file hidden>
                   <div class="shopify-media-actions">
                     <button class="button ghost" type="button" data-open-product-image-file><i data-lucide="upload"></i> 上传文件</button>
@@ -3423,7 +3427,10 @@
                   <span>单件成本 NZD</span>
                   <input type="number" name="costPerItem" min="0" step="0.01">
                 </label>
-                <div></div>
+                <label class="field">
+                  <span>1688 供应价 CNY</span>
+                  <input type="number" name="sourcePriceCny" min="0" step="0.01">
+                </label>
               </div>
               <label class="shopify-check-row">
                 <span>对该商品收取税费</span>
@@ -3492,6 +3499,7 @@
                   <option>Key Chain</option>
                   <option>Soft Toy</option>
                   <option>Smart Glasses</option>
+                  <option>1688 Imports</option>
                 </select>
               </label>
               <label class="field">
@@ -3501,6 +3509,10 @@
               <label class="field">
                 <span>厂商</span>
                 <input type="text" name="vendor" autocomplete="off">
+              </label>
+              <label class="field">
+                <span>1688 商品链接</span>
+                <input type="url" name="sourceUrl" autocomplete="off">
               </label>
               <label class="field">
                 <span>标签</span>
@@ -4199,15 +4211,16 @@
       container.innerHTML = blocks.length ? `<div class="custom-block-grid">${blocks.map(renderStoreBlock).join("")}</div>` : "";
     }
 
-    function productImages(product) {
+    function productImages(product, limit = Infinity) {
       const gallery = Array.isArray(product.images) && product.images.length
         ? product.images
         : productImageSets[product.id] || [];
-      return [...new Set([product.image, ...gallery].filter(Boolean))].slice(0, 6);
+      const images = [...new Set([product.image, ...gallery].filter(Boolean))];
+      return Number.isFinite(limit) ? images.slice(0, limit) : images;
     }
 
     function renderProductGallery(product) {
-      const images = productImages(product);
+      const images = productImages(product, 6);
       const hasGallery = images.length > 1;
       return `
         ${!available(product) ? `<span class="badge">${t("soldOut")}</span>` : ""}
@@ -4302,7 +4315,7 @@
             ` : ""}
           </div>
           <div class="product-detail-copy">
-            <p class="product-detail-category">${escapeHtml(categoryName(product.category))}</p>
+            <p class="product-detail-category">${escapeHtml([categoryName(product.category), product.vendor].filter(Boolean).join(" · "))}</p>
             <h1>${escapeHtml(productName(product))}</h1>
             <p class="product-detail-price">${formatPrice(product.price)}</p>
             <p class="product-detail-description">${escapeHtml(product.description?.trim() || t("productFallback"))}</p>
@@ -4572,21 +4585,50 @@
 
     async function loadStoreInventory() {
       if (!db) return;
-      const { data, error } = await db.from("products").select("id,title,price,stock,sales,published");
+      let { data, error } = await db.from("products").select("id,title,category,description,price,compare_at_price,cost_per_item,stock,sales,published,image,images,vendor,sku,tags,source_url,source_currency,source_price,source_variants,source_attributes");
+      if (error) {
+        ({ data, error } = await db.from("products").select("id,title,price,stock,sales,published"));
+      }
       if (error) return;
       data.forEach((remote) => {
         const product = state.products.find((item) => item.id === remote.id);
-        if (product) Object.assign(product, {
+        const remoteProduct = {
+          id: remote.id,
+          handle: remote.id,
           title: remote.title,
+          category: remote.category || product?.category || "1688 Imports",
+          productType: remote.category || product?.productType || product?.category || "1688 Imports",
+          description: remote.description ?? product?.description ?? "",
           price: Number(remote.price),
+          compareAtPrice: Number(remote.compare_at_price || 0),
+          costPerItem: Number(remote.cost_per_item || 0),
           stock: Number(remote.stock),
           sales: Number(remote.sales),
-          published: Boolean(remote.published)
-        });
+          published: Boolean(remote.published),
+          status: remote.published ? "active" : "draft",
+          onlineStore: Boolean(remote.published),
+          image: remote.image ?? product?.image ?? "",
+          images: Array.isArray(remote.images) ? remote.images : (product?.images || []),
+          vendor: remote.vendor || product?.vendor || "Go Go Shop",
+          sku: remote.sku ?? product?.sku ?? "",
+          tags: remote.tags ?? product?.tags ?? "",
+          sourceUrl: remote.source_url ?? product?.sourceUrl ?? "",
+          sourceCurrency: remote.source_currency ?? product?.sourceCurrency ?? "",
+          sourcePriceCny: Number(remote.source_price ?? product?.sourcePriceCny ?? 0),
+          sourceVariants: Array.isArray(remote.source_variants) ? remote.source_variants : (product?.sourceVariants || []),
+          sourceAttributes: Array.isArray(remote.source_attributes) ? remote.source_attributes : (product?.sourceAttributes || []),
+          taxable: true,
+          trackQuantity: true,
+          featured: false,
+          views: 0
+        };
+        if (product) Object.assign(product, remoteProduct);
+        else state.products.push(remoteProduct);
       });
       persistProducts();
       renderProducts();
       renderCart();
+      if (!$("#adminShell")?.hidden) renderAdmin();
     }
 
     async function loadCustomerData() {
@@ -5039,10 +5081,24 @@
       const { error } = await db.from("products").upsert({
         id: product.id,
         title: product.title,
+        category: product.category || "",
+        description: product.description || "",
         price: Number(product.price),
+        compare_at_price: Math.max(0, Number(product.compareAtPrice) || 0),
+        cost_per_item: Math.max(0, Number(product.costPerItem) || 0),
         stock: Math.max(0, Number(product.stock) || 0),
         sales: Math.max(0, Number(product.sales) || 0),
         published: Boolean(product.published),
+        image: product.image || "",
+        images: Array.isArray(product.images) ? product.images : [],
+        vendor: product.vendor || "",
+        sku: product.sku || "",
+        tags: product.tags || "",
+        source_url: product.sourceUrl || "",
+        source_currency: product.sourceCurrency || "",
+        source_price: Math.max(0, Number(product.sourcePriceCny) || 0),
+        source_variants: Array.isArray(product.sourceVariants) ? product.sourceVariants : [],
+        source_attributes: Array.isArray(product.sourceAttributes) ? product.sourceAttributes : [],
         updated_at: new Date().toISOString()
       });
       if (error) showToast(`Supabase: ${authErrorMessage(error)}`);
@@ -5113,12 +5169,12 @@
           <img src="${escapeHtml(product.image)}" alt="${escapeHtml(product.title)}">
           <div class="admin-product-summary">
             <strong>${escapeHtml(product.title)}</strong>
-            <span>${product.featured ? "Pinned · " : ""}${escapeHtml(product.category)}${product.description ? ` · ${escapeHtml(product.description)}` : ""}</span>
+            <span>${product.featured ? "Pinned · " : ""}${escapeHtml([product.category, product.vendor, product.sourcePriceCny ? `¥${product.sourcePriceCny} CNY` : ""].filter(Boolean).join(" · "))}</span>
           </div>
           <div class="admin-product-meta">
             <span>${formatPrice(product.price)}</span>
             <span>Stock ${Number(product.stock) || 0}</span>
-            <span class="status ${available(product) ? "live" : "draft"}">${available(product) ? "Live" : "Sold out"}</span>
+            <span class="status ${product.published ? "live" : "draft"}">${product.published ? "Live" : "Draft"}</span>
           </div>
           <div class="row-actions">
             <button class="action-button ${product.featured ? "pinned" : ""}" type="button" data-toggle-featured="${escapeHtml(product.id)}" aria-label="${product.featured ? "Unpin" : "Pin"} ${escapeHtml(product.title)}" aria-pressed="${Boolean(product.featured)}" title="${product.featured ? "取消首页置顶" : "置顶到首页"}"><i data-lucide="${product.featured ? "pin-off" : "pin"}"></i></button>
@@ -5270,6 +5326,7 @@
       fields.namedItem("id").value = "";
       fields.namedItem("price").value = "0";
       fields.namedItem("stock").value = "0";
+      fields.namedItem("sourcePriceCny").value = "0";
       fields.namedItem("status").value = "active";
       fields.namedItem("vendor").value = "Go Go Shop";
       fields.namedItem("onlineStore").checked = true;
@@ -5481,6 +5538,7 @@
       fields.namedItem("price").value = product.price;
       fields.namedItem("stock").value = product.stock;
       fields.namedItem("image").value = product.image;
+      fields.namedItem("images").value = (product.images || []).filter((image) => image && image !== product.image).join("\n");
       fields.namedItem("description").value = product.description || "";
       fields.namedItem("status").value = product.published ? "active" : "draft";
       fields.namedItem("onlineStore").checked = product.onlineStore ?? product.published;
@@ -5493,6 +5551,8 @@
       fields.namedItem("trackQuantity").checked = product.trackQuantity ?? true;
       fields.namedItem("productType").value = product.productType || product.category || "";
       fields.namedItem("vendor").value = product.vendor || "Go Go Shop";
+      fields.namedItem("sourceUrl").value = product.sourceUrl || "";
+      fields.namedItem("sourcePriceCny").value = product.sourcePriceCny || "";
       fields.namedItem("tags").value = product.tags || "";
       fields.namedItem("template").value = product.template || "default";
       $("#productFormTitle").textContent = product.title;
@@ -5503,7 +5563,7 @@
 
     async function deleteProduct(id) {
       if (db && state.profile?.is_admin) {
-        const { error } = await db.from("products").update({ published: false, updated_at: new Date().toISOString() }).eq("id", id);
+        const { error } = await db.from("products").delete().eq("id", id);
         if (error) {
           showToast(authErrorMessage(error));
           return;
@@ -5534,6 +5594,8 @@
       const id = data.id || `${data.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}-${Date.now().toString(36)}`;
       const existing = state.products.find((product) => product.id === id);
       const featured = form.featured.checked;
+      const image = data.image.trim();
+      const images = [...new Set([image, ...String(data.images || "").split(/\r?\n/).map((value) => value.trim()).filter(Boolean)])];
       const product = {
         id,
         title: data.title.trim(),
@@ -5543,6 +5605,11 @@
         price: Number(data.price),
         compareAtPrice: Number(data.compareAtPrice || 0),
         costPerItem: Number(data.costPerItem || 0),
+        sourcePriceCny: Number(data.sourcePriceCny || 0),
+        sourceCurrency: existing?.sourceCurrency || (data.sourceUrl ? "CNY" : ""),
+        sourceUrl: data.sourceUrl.trim(),
+        sourceVariants: existing?.sourceVariants || [],
+        sourceAttributes: existing?.sourceAttributes || [],
         stock: Number(data.stock),
         published: data.status === "active" && form.onlineStore.checked,
         status: data.status,
@@ -5557,7 +5624,8 @@
         vendor: data.vendor.trim(),
         tags: data.tags.trim(),
         template: data.template,
-        image: data.image.trim(),
+        image,
+        images,
         sales: existing?.sales || 0,
         views: existing?.views || 0
       };
@@ -5575,7 +5643,7 @@
     }
 
     function exportProducts() {
-      const headers = ["id", "title", "category", "price", "compareAtPrice", "costPerItem", "stock", "published", "featured", "sku", "barcode", "vendor", "tags", "image"];
+      const headers = ["id", "title", "category", "description", "price", "compareAtPrice", "costPerItem", "sourcePriceCny", "stock", "published", "featured", "sku", "barcode", "vendor", "tags", "image", "images", "sourceUrl"];
       const rows = state.products.map((product) => headers.map((key) => `"${String(product[key] ?? "").replace(/"/g, '""')}"`).join(","));
       const blob = new Blob([[headers.join(","), ...rows].join("\n")], { type: "text/csv" });
       const url = URL.createObjectURL(blob);
