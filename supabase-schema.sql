@@ -36,6 +36,8 @@ create table if not exists public.products (
   source_price numeric(12,2) not null default 0 check (source_price >= 0),
   source_variants jsonb not null default '[]'::jsonb,
   source_attributes jsonb not null default '[]'::jsonb,
+  deleted_at timestamptz,
+  deleted_was_published boolean not null default false,
   updated_at timestamptz not null default now()
 );
 
@@ -53,6 +55,8 @@ alter table public.products add column if not exists source_currency text not nu
 alter table public.products add column if not exists source_price numeric(12,2) not null default 0;
 alter table public.products add column if not exists source_variants jsonb not null default '[]'::jsonb;
 alter table public.products add column if not exists source_attributes jsonb not null default '[]'::jsonb;
+alter table public.products add column if not exists deleted_at timestamptz;
+alter table public.products add column if not exists deleted_was_published boolean not null default false;
 
 create table if not exists public.orders (
   id uuid primary key default gen_random_uuid(),
@@ -81,6 +85,7 @@ create index if not exists orders_user_id_idx on public.orders(user_id, created_
 create index if not exists orders_status_idx on public.orders(status, created_at desc);
 create index if not exists order_items_order_id_idx on public.order_items(order_id);
 create unique index if not exists order_items_order_product_idx on public.order_items(order_id, product_id);
+create index if not exists products_deleted_at_idx on public.products(deleted_at);
 
 create or replace function public.handle_new_user()
 returns trigger
@@ -141,7 +146,8 @@ create policy "profiles read own or admin" on public.profiles
 drop policy if exists "profiles update own" on public.profiles;
 
 drop policy if exists "products public read" on public.products;
-create policy "products public read" on public.products for select using (true);
+create policy "products public read" on public.products for select
+  using (deleted_at is null or public.is_admin());
 drop policy if exists "products admin write" on public.products;
 create policy "products admin write" on public.products for all
   using (public.is_admin()) with check (public.is_admin());

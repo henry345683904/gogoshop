@@ -1771,6 +1771,37 @@
       display: grid;
     }
 
+    .product-trash-panel {
+      border-top: 1px solid #d8dada;
+      background: #fafafa;
+    }
+
+    .product-trash-panel[hidden] {
+      display: none;
+    }
+
+    .product-trash-head {
+      display: flex;
+      min-height: 58px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 10px 18px;
+    }
+
+    .product-trash-head h3 {
+      margin: 0 0 2px;
+      font-size: 15px;
+    }
+
+    .admin-product-item.trashed {
+      cursor: default;
+    }
+
+    .admin-product-item.trashed:hover {
+      background: transparent;
+    }
+
     .admin-product-item {
       display: grid;
       grid-template-columns: 58px minmax(170px, 1fr) auto auto;
@@ -2419,6 +2450,10 @@
       color: var(--river);
     }
 
+    .action-button.danger {
+      color: var(--danger);
+    }
+
     .chart-grid {
       display: grid;
       grid-template-columns: minmax(360px, 1.3fr) minmax(260px, 0.7fr);
@@ -2941,7 +2976,12 @@
       .product-manager-panel > .admin-panel-head .form-actions {
         display: grid;
         width: 100%;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .product-trash-head {
+        align-items: flex-start;
+        padding: 10px 12px;
       }
 
       .product-editor-head-inner,
@@ -3216,10 +3256,18 @@
               </div>
               <div class="form-actions">
                 <button class="button ghost" type="button" data-reset-products><i data-lucide="refresh-cw"></i> Reset</button>
+                <button class="button ghost" type="button" data-toggle-product-trash aria-expanded="false"><i data-lucide="recycle"></i> 回收站 <span id="adminTrashCount">0</span></button>
                 <button class="button" type="button" data-new-product><i data-lucide="plus"></i> Add product</button>
               </div>
             </div>
             <div class="admin-product-list" id="adminProductRows"></div>
+            <section class="product-trash-panel" data-product-trash-panel hidden>
+              <div class="product-trash-head">
+                <div><h3>回收站</h3><span class="muted">已删除的商品可恢复到原来的发布状态。</span></div>
+                <button class="action-button" type="button" data-close-product-trash aria-label="关闭回收站" title="关闭回收站"><i data-lucide="x"></i></button>
+              </div>
+              <div class="admin-product-list" id="adminTrashRows"></div>
+            </section>
           </div>
         </section>
 
@@ -3780,6 +3828,7 @@
     const CART_KEY = "gogoshop_cart_v1";
     const ORDER_KEY = "gogoshop_orders_v1";
     const DESIGN_KEY = "gogoshop_store_design_v1";
+    const TRASH_KEY = "gogoshop_product_trash_v1";
     const ADMIN_KEY = "gogoshop_admin_unlocked_v1";
     const LANG_KEY = "gogoshop_lang_v1";
     const SUPABASE_URL = "https://ucnkcddhrptqpdlvcohy.supabase.co";
@@ -4140,6 +4189,7 @@
 
     const state = {
       products: load(STORAGE_KEY, seedProducts),
+      deletedProducts: load(TRASH_KEY, []),
       cart: load(CART_KEY, []),
       orders: load(ORDER_KEY, seedOrders),
       design: load(DESIGN_KEY, seedDesign),
@@ -4147,6 +4197,7 @@
       sort: "featured",
       lang: storageGet(LANG_KEY) || "en",
       adminTab: "overview",
+      trashOpen: false,
       session: null,
       profile: null,
       customerOrders: [],
@@ -4251,6 +4302,10 @@
 
     function persistProducts() {
       save(STORAGE_KEY, state.products);
+    }
+
+    function persistDeletedProducts() {
+      save(TRASH_KEY, state.deletedProducts);
     }
 
     function persistCart() {
@@ -4814,29 +4869,32 @@
 
     async function loadStoreInventory() {
       if (!db) return;
-      let { data, error } = await db.from("products").select("id,title,category,description,price,compare_at_price,cost_per_item,stock,sales,published,image,images,vendor,sku,tags,source_url,source_currency,source_price,source_variants,source_attributes");
+      let supportsRecycleBin = true;
+      let { data, error } = await db.from("products").select("id,title,category,description,price,compare_at_price,cost_per_item,stock,sales,published,image,images,vendor,sku,tags,source_url,source_currency,source_price,source_variants,source_attributes,deleted_at,deleted_was_published");
+      if (error) {
+        supportsRecycleBin = false;
+        ({ data, error } = await db.from("products").select("id,title,category,description,price,compare_at_price,cost_per_item,stock,sales,published,image,images,vendor,sku,tags,source_url,source_currency,source_price,source_variants,source_attributes"));
+      }
       if (error) {
         ({ data, error } = await db.from("products").select("id,title,price,stock,sales,published"));
       }
       if (error) return;
-      const remoteProductIds = new Set(data.map((product) => product.id));
-      state.products = state.products.filter((product) => (
-        !String(product.id).startsWith("1688-") || remoteProductIds.has(product.id)
-      ));
+      const localProducts = [...state.products, ...state.deletedProducts];
+      const remoteProductIds = new Set(data.filter((product) => !product.deleted_at).map((product) => product.id));
+      state.products = state.products.filter((product) => remoteProductIds.has(product.id));
       const cartSize = state.cart.length;
-      state.cart = state.cart.filter((line) => (
-        !String(line.id).startsWith("1688-") || remoteProductIds.has(line.id)
-      ));
+      state.cart = state.cart.filter((line) => remoteProductIds.has(line.id));
       if (state.cart.length !== cartSize) persistCart();
+      state.deletedProducts = [];
       data.forEach((remote) => {
-        const product = state.products.find((item) => item.id === remote.id);
+        const localProduct = localProducts.find((item) => item.id === remote.id);
         const remoteProduct = {
           id: remote.id,
           handle: remote.id,
           title: remote.title,
-          category: remote.category || product?.category || "1688 Imports",
-          productType: remote.category || product?.productType || product?.category || "1688 Imports",
-          description: remote.description ?? product?.description ?? "",
+          category: remote.category || localProduct?.category || "1688 Imports",
+          productType: remote.category || localProduct?.productType || localProduct?.category || "1688 Imports",
+          description: remote.description ?? localProduct?.description ?? "",
           price: Number(remote.price),
           compareAtPrice: Number(remote.compare_at_price || 0),
           costPerItem: Number(remote.cost_per_item || 0),
@@ -4845,25 +4903,35 @@
           published: Boolean(remote.published),
           status: remote.published ? "active" : "draft",
           onlineStore: Boolean(remote.published),
-          image: remote.image ?? product?.image ?? "",
-          images: Array.isArray(remote.images) ? remote.images : (product?.images || []),
-          vendor: remote.vendor || product?.vendor || "Go Go Shop",
-          sku: remote.sku ?? product?.sku ?? "",
-          tags: remote.tags ?? product?.tags ?? "",
-          sourceUrl: remote.source_url ?? product?.sourceUrl ?? "",
-          sourceCurrency: remote.source_currency ?? product?.sourceCurrency ?? "",
-          sourcePriceCny: Number(remote.source_price ?? product?.sourcePriceCny ?? 0),
-          sourceVariants: Array.isArray(remote.source_variants) ? remote.source_variants : (product?.sourceVariants || []),
-          sourceAttributes: Array.isArray(remote.source_attributes) ? remote.source_attributes : (product?.sourceAttributes || []),
+          image: remote.image ?? localProduct?.image ?? "",
+          images: Array.isArray(remote.images) ? remote.images : (localProduct?.images || []),
+          vendor: remote.vendor || localProduct?.vendor || "Go Go Shop",
+          sku: remote.sku ?? localProduct?.sku ?? "",
+          tags: remote.tags ?? localProduct?.tags ?? "",
+          sourceUrl: remote.source_url ?? localProduct?.sourceUrl ?? "",
+          sourceCurrency: remote.source_currency ?? localProduct?.sourceCurrency ?? "",
+          sourcePriceCny: Number(remote.source_price ?? localProduct?.sourcePriceCny ?? 0),
+          sourceVariants: Array.isArray(remote.source_variants) ? remote.source_variants : (localProduct?.sourceVariants || []),
+          sourceAttributes: Array.isArray(remote.source_attributes) ? remote.source_attributes : (localProduct?.sourceAttributes || []),
+          deletedAt: supportsRecycleBin ? (remote.deleted_at || null) : null,
+          restorePublished: supportsRecycleBin ? Boolean(remote.deleted_was_published) : false,
+          restoreFeatured: Boolean(localProduct?.restoreFeatured),
           taxable: true,
           trackQuantity: true,
-          featured: false,
-          views: 0
+          featured: Boolean(localProduct?.featured),
+          views: Number(localProduct?.views || 0)
         };
+        if (remoteProduct.deletedAt) {
+          if (state.profile?.is_admin) state.deletedProducts.push(remoteProduct);
+          return;
+        }
+        const product = state.products.find((item) => item.id === remote.id);
         if (product) Object.assign(product, remoteProduct);
         else state.products.push(remoteProduct);
       });
+      state.deletedProducts.sort((a, b) => new Date(b.deletedAt || 0) - new Date(a.deletedAt || 0));
       persistProducts();
+      persistDeletedProducts();
       renderProducts();
       renderCart();
       if (!$("#adminShell")?.hidden) renderAdmin();
@@ -4889,6 +4957,12 @@
     async function handleAuthSession(session) {
       state.session = session;
       await loadCustomerData();
+      if (state.profile?.is_admin) {
+        await loadStoreInventory();
+      } else if (state.deletedProducts.length) {
+        state.deletedProducts = [];
+        persistDeletedProducts();
+      }
       state.authReady = true;
       applyStoreDesign();
       if (isAdminRoute()) showAdmin();
@@ -4902,7 +4976,7 @@
       }
       const { data } = await db.auth.getSession();
       await handleAuthSession(data.session);
-      await loadStoreInventory();
+      if (!state.profile?.is_admin) await loadStoreInventory();
       db.auth.onAuthStateChange((_event, session) => {
         window.setTimeout(() => handleAuthSession(session), 0);
       });
@@ -5366,6 +5440,8 @@
         source_price: Math.max(0, Number(product.sourcePriceCny) || 0),
         source_variants: Array.isArray(product.sourceVariants) ? product.sourceVariants : [],
         source_attributes: Array.isArray(product.sourceAttributes) ? product.sourceAttributes : [],
+        deleted_at: null,
+        deleted_was_published: false,
         updated_at: new Date().toISOString()
       });
       if (error) showToast(`Supabase: ${authErrorMessage(error)}`);
@@ -5431,6 +5507,11 @@
 
     function renderAdminProducts() {
       $("#adminProductCount").textContent = `${state.products.length} products`;
+      $("#adminTrashCount").textContent = String(state.deletedProducts.length);
+      const trashToggle = $("[data-toggle-product-trash]");
+      const trashPanel = $("[data-product-trash-panel]");
+      trashToggle.setAttribute("aria-expanded", String(state.trashOpen));
+      trashPanel.hidden = !state.trashOpen;
       $("#adminProductRows").innerHTML = state.products.map((product) => `
         <article class="admin-product-item" data-edit-product-row="${escapeHtml(product.id)}" role="button" tabindex="0" aria-label="Edit ${escapeHtml(product.title)}">
           <img src="${escapeHtml(product.image)}" alt="${escapeHtml(product.title)}">
@@ -5448,7 +5529,25 @@
             <button class="action-button" type="button" data-delete-product="${escapeHtml(product.id)}" aria-label="Delete ${escapeHtml(product.title)}"><i data-lucide="trash-2"></i></button>
           </div>
         </article>
-      `).join("");
+      `).join("") || `<div class="empty-state">No active products</div>`;
+      $("#adminTrashRows").innerHTML = state.deletedProducts.map((product) => `
+        <article class="admin-product-item trashed">
+          <img src="${escapeHtml(product.image)}" alt="${escapeHtml(product.title)}">
+          <div class="admin-product-summary">
+            <strong>${escapeHtml(product.title)}</strong>
+            <span>${escapeHtml(product.deletedAt ? `删除于 ${new Date(product.deletedAt).toLocaleString("zh-CN")}` : "已删除")}</span>
+          </div>
+          <div class="admin-product-meta">
+            <span>${formatPrice(product.price)}</span>
+            <span>库存 ${Number(product.stock) || 0}</span>
+            <span class="status ${product.restorePublished ? "live" : "draft"}">${product.restorePublished ? "原为上架" : "原为草稿"}</span>
+          </div>
+          <div class="row-actions">
+            <button class="action-button" type="button" data-restore-product="${escapeHtml(product.id)}" aria-label="恢复 ${escapeHtml(product.title)}" title="恢复商品"><i data-lucide="rotate-ccw"></i></button>
+            <button class="action-button danger" type="button" data-delete-product-permanently="${escapeHtml(product.id)}" aria-label="永久删除 ${escapeHtml(product.title)}" title="永久删除"><i data-lucide="trash-2"></i></button>
+          </div>
+        </article>
+      `).join("") || `<div class="empty-state">回收站为空</div>`;
     }
 
     function renderTopProducts() {
@@ -5829,6 +5928,82 @@
     }
 
     async function deleteProduct(id) {
+      const product = state.products.find((item) => item.id === id);
+      if (!product) return;
+      const confirmed = window.confirm(`确定将“${product.title}”移入回收站吗？\n\n商品会立即从商店隐藏，之后可以恢复。`);
+      if (!confirmed) return;
+      const deletedAt = new Date().toISOString();
+      if (db && state.profile?.is_admin) {
+        const { error } = await db.from("products").update({
+          deleted_at: deletedAt,
+          deleted_was_published: Boolean(product.published),
+          published: false,
+          updated_at: deletedAt
+        }).eq("id", id);
+        if (error) {
+          showToast(authErrorMessage(error));
+          return;
+        }
+      }
+      state.products = state.products.filter((product) => product.id !== id);
+      state.deletedProducts.unshift({
+        ...product,
+        deletedAt,
+        restorePublished: Boolean(product.published),
+        restoreFeatured: Boolean(product.featured),
+        published: false,
+        onlineStore: false,
+        featured: false,
+        status: "draft"
+      });
+      state.cart = state.cart.filter((line) => line.id !== id);
+      persistProducts();
+      persistDeletedProducts();
+      persistCart();
+      renderAll();
+      showToast(state.lang === "zh" ? "商品已移入回收站" : "Product moved to recycle bin");
+    }
+
+    async function restoreProduct(id) {
+      const product = state.deletedProducts.find((item) => item.id === id);
+      if (!product) return;
+      const published = Boolean(product.restorePublished);
+      if (db && state.profile?.is_admin) {
+        const { error } = await db.from("products").update({
+          deleted_at: null,
+          deleted_was_published: false,
+          published,
+          updated_at: new Date().toISOString()
+        }).eq("id", id);
+        if (error) {
+          showToast(authErrorMessage(error));
+          return;
+        }
+      }
+      const restoredProduct = {
+        ...product,
+        deletedAt: null,
+        restorePublished: false,
+        published,
+        onlineStore: published,
+        featured: Boolean(product.restoreFeatured),
+        restoreFeatured: false,
+        status: published ? "active" : "draft"
+      };
+      state.deletedProducts = state.deletedProducts.filter((item) => item.id !== id);
+      state.products = state.products.filter((item) => item.id !== id);
+      state.products.unshift(restoredProduct);
+      persistProducts();
+      persistDeletedProducts();
+      renderAll();
+      showToast(state.lang === "zh" ? "商品已恢复" : "Product restored");
+    }
+
+    async function permanentlyDeleteProduct(id) {
+      const product = state.deletedProducts.find((item) => item.id === id);
+      if (!product) return;
+      const confirmed = window.confirm(`永久删除“${product.title}”？\n\n此操作无法撤销。`);
+      if (!confirmed) return;
       if (db && state.profile?.is_admin) {
         const { error } = await db.from("products").delete().eq("id", id);
         if (error) {
@@ -5836,12 +6011,16 @@
           return;
         }
       }
-      state.products = state.products.filter((product) => product.id !== id);
-      state.cart = state.cart.filter((line) => line.id !== id);
-      persistProducts();
-      persistCart();
+      state.deletedProducts = state.deletedProducts.filter((item) => item.id !== id);
+      persistDeletedProducts();
       renderAll();
-      showToast("Product deleted");
+      showToast(state.lang === "zh" ? "商品已永久删除" : "Product permanently deleted");
+    }
+
+    function toggleProductTrash(forceOpen) {
+      state.trashOpen = typeof forceOpen === "boolean" ? forceOpen : !state.trashOpen;
+      renderAdminProducts();
+      refreshIcons();
     }
 
     function toggleFeaturedProduct(id) {
@@ -5901,7 +6080,9 @@
       } else {
         state.products.unshift(product);
       }
+      state.deletedProducts = state.deletedProducts.filter((item) => item.id !== id);
       persistProducts();
+      persistDeletedProducts();
       await syncProductToSupabase(product);
       clearProductForm();
       closeProductEditor();
@@ -6087,9 +6268,15 @@
       if (target.matches("[data-edit-product]")) editProduct(target.dataset.editProduct);
       if (target.matches("[data-toggle-featured]")) toggleFeaturedProduct(target.dataset.toggleFeatured);
       if (target.matches("[data-delete-product]")) deleteProduct(target.dataset.deleteProduct);
+      if (target.matches("[data-toggle-product-trash]")) toggleProductTrash();
+      if (target.matches("[data-close-product-trash]")) toggleProductTrash(false);
+      if (target.matches("[data-restore-product]")) restoreProduct(target.dataset.restoreProduct);
+      if (target.matches("[data-delete-product-permanently]")) permanentlyDeleteProduct(target.dataset.deleteProductPermanently);
       if (target.matches("[data-reset-products]")) {
         state.products = clone(seedProducts);
+        state.deletedProducts = [];
         persistProducts();
+        persistDeletedProducts();
         Promise.all(state.products.map(syncProductToSupabase));
         renderAll();
         showToast("Products reset");
