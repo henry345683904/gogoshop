@@ -92,6 +92,15 @@ as $$
   select exists(select 1 from public.profiles where id = auth.uid() and is_admin = true);
 $$;
 
+create or replace function public.get_admin_login_email()
+returns text
+language sql
+stable
+security definer set search_path = public
+as $$
+  select email from public.profiles where is_admin = true order by created_at limit 1;
+$$;
+
 alter table public.profiles enable row level security;
 alter table public.products enable row level security;
 alter table public.orders enable row level security;
@@ -230,8 +239,10 @@ $$;
 
 revoke all on function public.create_order(jsonb) from public, anon;
 revoke all on function public.confirm_order(uuid) from public, anon;
+revoke all on function public.get_admin_login_email() from public;
 grant execute on function public.create_order(jsonb) to authenticated;
 grant execute on function public.confirm_order(uuid) to authenticated;
+grant execute on function public.get_admin_login_email() to anon, authenticated;
 grant select on public.products to anon, authenticated;
 grant insert, update, delete on public.products to authenticated;
 grant select on public.profiles, public.orders, public.order_items to authenticated;
