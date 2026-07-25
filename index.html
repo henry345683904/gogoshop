@@ -152,7 +152,7 @@
     .mobile-header {
       display: none;
       position: relative;
-      grid-template-columns: auto auto 1fr auto auto;
+      grid-template-columns: auto auto 1fr auto;
       gap: 14px;
       min-height: 60px;
       padding: 0 15px;
@@ -2262,6 +2262,10 @@
         justify-self: end;
       }
 
+      .mobile-header .account-button {
+        display: none;
+      }
+
       .language-toggle button {
         min-width: 31px;
         padding: 0 7px;
@@ -2855,10 +2859,6 @@
       <div class="login-panel">
         <h1>Go Go Shop Admin</h1>
         <form data-login-form>
-          <label class="field">
-            <span>Email</span>
-            <input type="email" name="email" placeholder="管理员邮箱" autocomplete="email" required>
-          </label>
           <label class="field">
             <span>Password</span>
             <input type="password" name="password" placeholder="管理员账户密码" autocomplete="current-password" required>
@@ -3502,6 +3502,7 @@
         totalSpent: "Total spent",
         myOrders: "My orders",
         loginToCheckout: "Sign in before checkout",
+        backendNotReady: "Order service is not initialized. Run supabase-schema.sql first.",
         pendingOrder: "Pending confirmation",
         confirmedOrder: "Confirmed",
         noOrders: "No orders yet",
@@ -3563,6 +3564,7 @@
         totalSpent: "累计消费",
         myOrders: "我的订单",
         loginToCheckout: "请先登录后再结账",
+        backendNotReady: "订单数据库尚未初始化，请先运行 supabase-schema.sql",
         pendingOrder: "等待商家确认",
         confirmedOrder: "已确认",
         noOrders: "暂无订单",
@@ -4305,6 +4307,7 @@
 
     function authErrorMessage(error) {
       const message = String(error?.message || error || "Unknown error");
+      if (/schema cache|could not find.*function|relation .* does not exist|PGRST20/i.test(`${error?.code || ""} ${message}`)) return t("backendNotReady");
       if (/invalid login/i.test(message)) return state.lang === "zh" ? "邮箱或密码错误" : "Invalid email or password";
       if (/email not confirmed/i.test(message)) return state.lang === "zh" ? "请先完成邮箱验证" : "Confirm your email first";
       return message;
@@ -4623,7 +4626,12 @@
       const message = $("#loginMessage");
       message.hidden = false;
       message.textContent = "正在验证管理员账户...";
-      const { data, error } = await db.auth.signInWithPassword({ email: values.email.trim(), password: values.password });
+      const adminLookup = await db.rpc("get_admin_login_email");
+      if (adminLookup.error || !adminLookup.data) {
+        message.textContent = adminLookup.error ? authErrorMessage(adminLookup.error) : "尚未设置管理员账户";
+        return;
+      }
+      const { data, error } = await db.auth.signInWithPassword({ email: String(adminLookup.data), password: values.password });
       if (error) {
         message.textContent = authErrorMessage(error);
         return;
