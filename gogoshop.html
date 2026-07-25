@@ -1111,12 +1111,27 @@
     }
 
     #accountDrawer [data-auth-signed-in] > :not(.account-actions) {
+      margin-left: 0;
+      margin-right: 0;
+    }
+
+    #accountDrawer [data-auth-signed-in] > div:first-child,
+    #accountDrawer [data-auth-signed-in] > .account-summary,
+    #accountDrawer [data-auth-signed-in] > .section-heading {
       margin-left: 12px;
       margin-right: 12px;
     }
 
+    #accountDrawer [data-auth-signed-in] > .account-order-list {
+      margin-left: 12px;
+      margin-right: 12px;
+      padding-right: 0;
+      padding-left: 0;
+    }
+
     #accountDrawer [data-auth-signed-in] > .section-heading {
-      margin: 5px 12px 1px !important;
+      margin-top: 0 !important;
+      margin-bottom: 0 !important;
       min-height: 26px;
       align-items: center;
     }
@@ -2727,7 +2742,14 @@
       }
 
       #accountDrawer [data-auth-signed-in] > .section-heading {
-        margin: 4px 10px 0 !important;
+        margin: 0 10px !important;
+      }
+
+      #accountDrawer [data-auth-signed-in] > div:first-child,
+      #accountDrawer [data-auth-signed-in] > .account-summary,
+      #accountDrawer [data-auth-signed-in] > .account-order-list {
+        margin-left: 10px;
+        margin-right: 10px;
       }
 
       #accountDrawer .account-order-head {
