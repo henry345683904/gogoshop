@@ -1236,21 +1236,19 @@
     }
 
     .account-actions {
-      position: sticky;
-      bottom: 0;
-      z-index: 2;
       display: flex;
       justify-content: center;
-      margin: auto 0 0;
+      position: static;
+      margin: 12px 12px 4px;
       padding: 12px;
       background: var(--paper);
       border-top: 1px solid var(--line);
     }
 
     #accountDrawer .account-actions .button {
-      width: min(100%, 220px);
-      min-width: 150px;
-      flex: 0 1 auto;
+      width: 100%;
+      min-width: 0;
+      flex: 1 1 auto;
       padding: 0 18px;
       white-space: nowrap;
       overflow: visible;
@@ -2712,14 +2710,14 @@
       }
 
       #accountDrawer .account-actions {
-        bottom: 0;
-        margin: auto 0 0;
+        position: static;
+        margin: 10px 10px 2px;
         padding: 10px;
       }
 
       #accountDrawer .account-actions .button {
-        width: min(100%, 240px);
-        min-width: 170px;
+        width: 100%;
+        min-width: 0;
       }
 
       .newsletter-form,
