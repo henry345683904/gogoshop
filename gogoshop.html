@@ -1397,16 +1397,128 @@
       text-decoration: none;
     }
 
+    .menu-drawer .drawer-body {
+      padding: 10px 20px 28px;
+    }
+
     .menu-links {
       display: grid;
-      gap: 2px;
-      font-size: 22px;
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .menu-link,
+    .menu-section-toggle,
+    .menu-account {
+      width: 100%;
+      min-height: 54px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      border: 0;
+      border-bottom: 1px solid var(--line);
+      border-radius: 0;
+      background: transparent;
+      color: inherit;
+      font: inherit;
+      text-align: left;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .menu-link > span,
+    .menu-section-toggle > span,
+    .menu-account > span,
+    .menu-category-button > span:first-child {
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 11px;
+    }
+
+    .menu-link svg,
+    .menu-section-toggle svg,
+    .menu-account svg,
+    .menu-category-button svg {
+      width: 18px;
+      height: 18px;
+      flex: 0 0 auto;
+      stroke-width: 1.8;
+    }
+
+    .menu-section-toggle .menu-chevron {
+      width: 16px;
+      height: 16px;
+      transition: transform 180ms ease;
+    }
+
+    .menu-section-toggle[aria-expanded="true"] .menu-chevron {
+      transform: rotate(180deg);
+    }
+
+    .menu-section-content[hidden] {
+      display: none;
+    }
+
+    .menu-category-list {
+      display: grid;
+      padding: 6px 0 8px 29px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .menu-category-button {
+      width: 100%;
+      min-height: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      color: #555;
+      font: inherit;
+      font-size: 14px;
+      font-weight: 500;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .menu-category-button:hover,
+    .menu-category-button.active {
+      color: var(--store-text);
+    }
+
+    .menu-category-button.active {
       font-weight: 700;
     }
 
-    .menu-links a {
-      padding: 14px 0;
+    .menu-category-count {
+      min-width: 24px;
+      color: #888;
+      font-size: 12px;
+      text-align: right;
+    }
+
+    .menu-info-copy {
+      display: grid;
+      gap: 12px;
+      padding: 14px 4px 16px 29px;
       border-bottom: 1px solid var(--line);
+      color: #666;
+      font-size: 13px;
+      font-weight: 400;
+      line-height: 1.65;
+    }
+
+    .menu-info-copy p {
+      margin: 0;
+    }
+
+    .menu-info-copy .button {
+      width: fit-content;
+      min-height: 40px;
     }
 
     .toast {
@@ -2918,7 +3030,6 @@
           <a href="#home" data-i18n="navHome">Home</a>
           <a href="#catalog" data-i18n="navCatalog">Catalog</a>
           <a href="#contact" data-i18n="navContact" hidden>Contact</a>
-          <a href="#admin" data-open-admin onclick="openAdminFallback(event)">Admin</a>
         </nav>
         <div class="header-actions">
           <div class="language-toggle" data-language-toggle aria-label="Language">
@@ -3022,7 +3133,6 @@
         <nav class="footer-links">
           <a href="#home">Go Go Shop</a>
           <a href="#catalog" data-i18n="navCatalog">Catalog</a>
-          <a href="#admin" data-open-admin onclick="openAdminFallback(event)">Admin</a>
           <a href="https://gogoshop.nz/" target="_blank" rel="noreferrer" data-i18n="originalSite">Original site</a>
         </nav>
       </div>
@@ -3544,11 +3654,39 @@
     </div>
     <div class="drawer-body">
       <nav class="menu-links">
-        <a href="#home" data-close-panels data-i18n="navHome">Home</a>
-        <a href="#catalog" data-close-panels data-i18n="navCatalog">Catalog</a>
-        <a href="#contact" data-close-panels data-i18n="navContact" hidden>Contact</a>
-        <a href="#admin" data-open-admin data-close-panels onclick="openAdminFallback(event)">Admin</a>
-        <button class="button ghost" type="button" data-open-account><i data-lucide="user-round"></i> <span data-i18n="accountTitle">Account</span></button>
+        <a class="menu-link" href="#home" data-close-panels>
+          <span><i data-lucide="home"></i><span data-i18n="navHome">Home</span></span>
+        </a>
+        <section class="menu-section">
+          <button class="menu-section-toggle" type="button" data-menu-toggle="categories" aria-expanded="false">
+            <span><i data-lucide="layout-grid"></i><span data-i18n="menuCategories">Product categories</span></span>
+            <i class="menu-chevron" data-lucide="chevron-down"></i>
+          </button>
+          <div class="menu-section-content menu-category-list" data-menu-content="categories" data-menu-categories hidden></div>
+        </section>
+        <section class="menu-section">
+          <button class="menu-section-toggle" type="button" data-menu-toggle="about" aria-expanded="false">
+            <span><i data-lucide="info"></i><span data-i18n="menuAbout">About us</span></span>
+            <i class="menu-chevron" data-lucide="chevron-down"></i>
+          </button>
+          <div class="menu-section-content menu-info-copy" data-menu-content="about" hidden>
+            <p data-i18n="aboutCompanyText">GO GO SHOP is a New Zealand online store for practical phone accessories, small electronics and everyday gifts.</p>
+          </div>
+        </section>
+        <section class="menu-section">
+          <button class="menu-section-toggle" type="button" data-menu-toggle="contact" aria-expanded="false">
+            <span><i data-lucide="mail"></i><span data-i18n="menuContact">Contact us</span></span>
+            <i class="menu-chevron" data-lucide="chevron-down"></i>
+          </button>
+          <div class="menu-section-content menu-info-copy" data-menu-content="contact" hidden>
+            <p data-i18n="contactCompanyText">Questions about products or an order? Send us a message and we will get back to you.</p>
+            <button class="button ghost" type="button" data-open-contact><i data-lucide="message-square"></i><span data-i18n="openContactForm">Open contact form</span></button>
+          </div>
+        </section>
+        <button class="menu-account" type="button" data-open-account>
+          <span><i data-lucide="user-round"></i><span data-i18n="accountTitle">Account</span></span>
+          <i data-lucide="chevron-right"></i>
+        </button>
       </nav>
     </div>
   </aside>
@@ -3628,7 +3766,7 @@
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="product-localizations.js?v=1"></script>
+  <script src="product-localizations.js?v=2"></script>
   <script>
     const STORAGE_KEY = "gogoshop_products_v1";
     const CART_KEY = "gogoshop_cart_v1";
@@ -3701,7 +3839,14 @@
         pendingOrder: "Pending confirmation",
         confirmedOrder: "Confirmed",
         noOrders: "No orders yet",
-        allCategory: "All"
+        allCategory: "All products",
+        otherCategory: "Other products",
+        menuCategories: "Product categories",
+        menuAbout: "About us",
+        menuContact: "Contact us",
+        aboutCompanyText: "GO GO SHOP is a New Zealand online store for practical phone accessories, small electronics and everyday gifts.",
+        contactCompanyText: "Questions about products or an order? Send us a message and we will get back to you.",
+        openContactForm: "Open contact form"
       },
       zh: {
         announcement: "欢迎来到我们的商店",
@@ -3763,7 +3908,14 @@
         pendingOrder: "等待商家确认",
         confirmedOrder: "已确认",
         noOrders: "暂无订单",
-        allCategory: "全部"
+        allCategory: "全部商品",
+        otherCategory: "其他商品",
+        menuCategories: "商品分类",
+        menuAbout: "关于公司",
+        menuContact: "联系我们",
+        aboutCompanyText: "GO GO SHOP 是一家位于新西兰的网店，提供实用手机配件、小型电子产品和日常礼品。",
+        contactCompanyText: "如需咨询商品或订单，请通过联系表单给我们留言。",
+        openContactForm: "打开联系表单"
       }
     };
 
@@ -3774,6 +3926,14 @@
       "Smart Glasses": { zh: "智能眼镜" },
       "Soft Toy": { zh: "毛绒玩具" }
     };
+
+    const storefrontCategories = Array.isArray(window.GOGOSHOP_STOREFRONT_CATEGORIES)
+      ? window.GOGOSHOP_STOREFRONT_CATEGORIES
+      : [];
+    const storefrontCategoryByProductId = new Map();
+    storefrontCategories.forEach((category) => {
+      (category.ids || []).forEach((id) => storefrontCategoryByProductId.set(id, category.key));
+    });
 
     const seedProducts = [
       {
@@ -4127,7 +4287,14 @@
 
     function categoryName(category) {
       if (category === "All") return t("allCategory");
+      if (category === "other") return t("otherCategory");
+      const storefrontCategory = storefrontCategories.find((item) => item.key === category);
+      if (storefrontCategory) return state.lang === "zh" ? storefrontCategory.zh : storefrontCategory.en;
       return state.lang === "zh" ? productLabels[category]?.zh || category : category;
+    }
+
+    function productCategoryKey(product) {
+      return storefrontCategoryByProductId.get(product.id) || "other";
     }
 
     function customerWelcomeText() {
@@ -4333,7 +4500,7 @@
             ` : ""}
           </div>
           <div class="product-detail-copy">
-            <p class="product-detail-category">${escapeHtml([categoryName(product.category), product.vendor].filter(Boolean).join(" · "))}</p>
+            <p class="product-detail-category">${escapeHtml([categoryName(productCategoryKey(product)), product.vendor].filter(Boolean).join(" · "))}</p>
             <h1>${escapeHtml(productName(product))}</h1>
             <p class="product-detail-price">${formatPrice(product.price)}</p>
             <p class="product-detail-description">${escapeHtml(productDescription(product))}</p>
@@ -4474,13 +4641,20 @@
     }
 
     function categories() {
-      return ["All", ...new Set(state.products.map((product) => product.category).filter(Boolean))];
+      const activeCategories = new Set(
+        state.products.filter((product) => product.published).map(productCategoryKey)
+      );
+      const ordered = storefrontCategories
+        .filter((category) => activeCategories.has(category.key))
+        .map((category) => category.key);
+      if (activeCategories.has("other")) ordered.push("other");
+      return ["All", ...ordered];
     }
 
     function visibleProducts() {
       const filtered = state.products.filter((product) => {
         if (!product.published) return false;
-        return state.category === "All" || product.category === state.category;
+        return state.category === "All" || productCategoryKey(product) === state.category;
       });
       return filtered.sort((a, b) => {
         if (state.sort === "price-low") return a.price - b.price;
@@ -4505,8 +4679,28 @@
       `).join("");
     }
 
+    function renderMenuCategories() {
+      const list = $("[data-menu-categories]");
+      if (!list) return;
+      list.innerHTML = categories().map((category) => {
+        const definition = storefrontCategories.find((item) => item.key === category);
+        const icon = category === "All" ? "layout-grid" : (definition?.icon || "package");
+        const count = state.products.filter((product) => (
+          product.published && (category === "All" || productCategoryKey(product) === category)
+        )).length;
+        const active = category === state.category;
+        return `
+          <button class="menu-category-button ${active ? "active" : ""}" type="button" data-menu-category="${escapeHtml(category)}" ${active ? 'aria-current="true"' : ""}>
+            <span><i data-lucide="${escapeHtml(icon)}"></i><span>${escapeHtml(categoryName(category))}</span></span>
+            <span class="menu-category-count">${count}</span>
+          </button>
+        `;
+      }).join("");
+    }
+
     function renderProducts() {
       renderCategoryTabs();
+      renderMenuCategories();
       const grid = $("#productGrid");
       const products = visibleProducts();
       if (!products.length) {
@@ -4608,6 +4802,15 @@
         ({ data, error } = await db.from("products").select("id,title,price,stock,sales,published"));
       }
       if (error) return;
+      const remoteProductIds = new Set(data.map((product) => product.id));
+      state.products = state.products.filter((product) => (
+        !String(product.id).startsWith("1688-") || remoteProductIds.has(product.id)
+      ));
+      const cartSize = state.cart.length;
+      state.cart = state.cart.filter((line) => (
+        !String(line.id).startsWith("1688-") || remoteProductIds.has(line.id)
+      ));
+      if (state.cart.length !== cartSize) persistCart();
       data.forEach((remote) => {
         const product = state.products.find((item) => item.id === remote.id);
         const remoteProduct = {
@@ -4845,12 +5048,39 @@
       showToast(t("orderCreated"));
     }
 
+    function toggleMenuSection(name) {
+      const button = $(`[data-menu-toggle="${name}"]`);
+      const content = $(`[data-menu-content="${name}"]`);
+      if (!button || !content) return;
+      const expanded = button.getAttribute("aria-expanded") === "true";
+      if (!expanded) {
+        $$('[data-menu-toggle]').forEach((item) => item.setAttribute("aria-expanded", "false"));
+        $$('[data-menu-content]').forEach((item) => { item.hidden = true; });
+      }
+      button.setAttribute("aria-expanded", String(!expanded));
+      content.hidden = expanded;
+    }
+
+    function openContactSection() {
+      const contact = $("#contact");
+      if (!contact) return;
+      closePanels();
+      hideProductDetail();
+      contact.hidden = false;
+      location.hash = "contact";
+      window.setTimeout(() => contact.scrollIntoView({ behavior: "smooth", block: "start" }), 0);
+    }
+
     function openPanel(name) {
       closePanels(false);
       document.body.classList.add("panel-open");
       $("[data-backdrop]").classList.add("open");
       if (name === "cart") $("#cartDrawer").classList.add("open");
-      if (name === "menu") $("#menuDrawer").classList.add("open");
+      if (name === "menu") {
+        renderMenuCategories();
+        $("#menuDrawer").classList.add("open");
+        refreshIcons();
+      }
       if (name === "account") {
         $("#accountDrawer").classList.add("open");
         renderAccount();
@@ -4877,7 +5107,7 @@
       const query = $("#searchInput").value.trim().toLowerCase();
       const results = state.products
         .filter((product) => product.published)
-        .filter((product) => !query || [product.title, productName(product), product.category, categoryName(product.category), product.description, productDescription(product)].join(" ").toLowerCase().includes(query))
+        .filter((product) => !query || [product.title, productName(product), product.category, categoryName(productCategoryKey(product)), product.description, productDescription(product)].join(" ").toLowerCase().includes(query))
         .slice(0, 6);
       $("#searchResults").innerHTML = results.map((product) => `
         <div class="result-item">
@@ -5757,6 +5987,23 @@
       }
       if (target.matches("[data-close-product]")) {
         closeProductDetail();
+        return;
+      }
+      if (target.matches("[data-menu-toggle]")) {
+        toggleMenuSection(target.dataset.menuToggle);
+        return;
+      }
+      if (target.matches("[data-menu-category]")) {
+        state.category = target.dataset.menuCategory;
+        closePanels();
+        hideProductDetail();
+        renderProducts();
+        location.hash = "catalog";
+        window.setTimeout(() => $("#catalog")?.scrollIntoView({ behavior: "smooth", block: "start" }), 0);
+        return;
+      }
+      if (target.matches("[data-open-contact]")) {
+        openContactSection();
         return;
       }
       if (target.matches("[data-open-search]")) openPanel("search");
