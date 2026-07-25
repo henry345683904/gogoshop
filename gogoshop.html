@@ -3628,6 +3628,7 @@
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="product-localizations.js?v=1"></script>
   <script>
     const STORAGE_KEY = "gogoshop_products_v1";
     const CART_KEY = "gogoshop_cart_v1";
@@ -4104,7 +4105,20 @@
     }
 
     function productName(product) {
-      return state.lang === "zh" ? productLabels[product.title]?.zh || product.title : product.title;
+      const localization = window.GOGOSHOP_PRODUCT_LOCALIZATIONS?.[product.id];
+      if (state.lang === "zh") return localization?.zh || productLabels[product.title]?.zh || product.title;
+      return localization?.en || product.title;
+    }
+
+    function productDescription(product) {
+      const localization = window.GOGOSHOP_PRODUCT_LOCALIZATIONS?.[product.id];
+      if (state.lang === "zh") return product.description?.trim() || t("productFallback");
+      return localization?.description || product.description?.trim() || t("productFallback");
+    }
+
+    function orderItemName(item) {
+      const product = state.products.find((entry) => entry.id === item.product_id);
+      return product ? productName(product) : item.product_title;
     }
 
     function categoryName(category) {
@@ -4318,7 +4332,7 @@
             <p class="product-detail-category">${escapeHtml([categoryName(product.category), product.vendor].filter(Boolean).join(" · "))}</p>
             <h1>${escapeHtml(productName(product))}</h1>
             <p class="product-detail-price">${formatPrice(product.price)}</p>
-            <p class="product-detail-description">${escapeHtml(product.description?.trim() || t("productFallback"))}</p>
+            <p class="product-detail-description">${escapeHtml(productDescription(product))}</p>
             <p class="product-detail-stock">
               <span class="stock-dot ${soldOut ? "sold-out" : ""}"></span>
               <span>${detailStockText(product)}</span>
@@ -4557,7 +4571,7 @@
           </div>
           <strong>${formatPrice(order.total)}</strong> · ${Number(order.item_count || 0)} ${state.lang === "zh" ? "件" : "items"}
           ${order.status === "confirmed" ? `<div class="account-order-meta">+${Number(order.points_awarded || 0)} ${t("rewardPoints")}</div>` : ""}
-          <div class="account-order-items">${(order.order_items || []).map((item) => `${escapeHtml(item.product_title)} × ${Number(item.quantity)} · ${formatPrice(item.unit_price)}`).join("<br>")}</div>
+          <div class="account-order-items">${(order.order_items || []).map((item) => `${escapeHtml(orderItemName(item))} × ${Number(item.quantity)} · ${formatPrice(item.unit_price)}`).join("<br>")}</div>
         </article>
       `).join("") : `<div class="empty-state">${t("noOrders")}</div>`;
       refreshIcons();
@@ -4576,7 +4590,7 @@
       content.innerHTML = `
         <div class="account-order-meta">${escapeHtml(order.order_number)} · ${new Date(order.created_at).toLocaleString(state.lang === "zh" ? "zh-CN" : "en-NZ")}</div>
         <p><span class="status ${order.status === "confirmed" ? "live" : "featured"}">${escapeHtml(orderStatusLabel(order.status))}</span></p>
-        <div class="account-order-items">${(order.order_items || []).map((item) => `<div style="display:flex;justify-content:space-between;gap:12px;padding:6px 0;"><span>${escapeHtml(item.product_title)} × ${Number(item.quantity)}</span><span>${formatPrice(Number(item.unit_price) * Number(item.quantity))}</span></div>`).join("")}</div>
+        <div class="account-order-items">${(order.order_items || []).map((item) => `<div style="display:flex;justify-content:space-between;gap:12px;padding:6px 0;"><span>${escapeHtml(orderItemName(item))} × ${Number(item.quantity)}</span><span>${formatPrice(Number(item.unit_price) * Number(item.quantity))}</span></div>`).join("")}</div>
         <p><strong>Total: ${formatPrice(order.total)}</strong> · ${Number(order.item_count || 0)} items</p>
         ${order.status === "confirmed" ? `<div class="account-order-meta">+${Number(order.points_awarded || 0)} ${t("rewardPoints")}</div>` : ""}`;
       modal.hidden = false;
@@ -4641,7 +4655,7 @@
       const userId = state.session.user.id;
       const [profileResult, orderResult] = await Promise.all([
         db.from("profiles").select("id,email,full_name,points,total_spent,is_admin,created_at").eq("id", userId).single(),
-        db.from("orders").select("id,order_number,status,total,item_count,points_awarded,created_at,order_items(product_title,unit_price,quantity)").eq("user_id", userId).order("created_at", { ascending: false })
+        db.from("orders").select("id,order_number,status,total,item_count,points_awarded,created_at,order_items(product_id,product_title,unit_price,quantity)").eq("user_id", userId).order("created_at", { ascending: false })
       ]);
       if (!profileResult.error) state.profile = profileResult.data;
       state.customerOrders = orderResult.error ? [] : (orderResult.data || []);
@@ -4859,7 +4873,7 @@
       const query = $("#searchInput").value.trim().toLowerCase();
       const results = state.products
         .filter((product) => product.published)
-        .filter((product) => !query || [product.title, productName(product), product.category, categoryName(product.category), product.description].join(" ").toLowerCase().includes(query))
+        .filter((product) => !query || [product.title, productName(product), product.category, categoryName(product.category), product.description, productDescription(product)].join(" ").toLowerCase().includes(query))
         .slice(0, 6);
       $("#searchResults").innerHTML = results.map((product) => `
         <div class="result-item">
