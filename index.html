@@ -4896,7 +4896,7 @@
             <td>${escapeHtml(customer.full_name || customer.email || "Customer")}<div class="muted">${escapeHtml(customer.email || "")}</div></td>
             <td>${formatPrice(order.total)}<div class="muted">${Number(order.item_count)} items</div></td>
             <td><span class="status ${order.status === "confirmed" ? "live" : "featured"}">${escapeHtml(orderStatusLabel(order.status))}</span></td>
-            <td>${Number(order.points_awarded || Math.floor(Number(order.total) || 0))}</td>
+            <td>${Number(order.points_awarded ?? Math.round(Number(order.total) || 0))}</td>
             <td>${order.status === "pending" ? `<button class="button" type="button" data-edit-order="${order.id}"><i data-lucide="pencil"></i> Edit</button> <button class="button" type="button" data-confirm-order="${order.id}"><i data-lucide="check"></i> Confirm</button>` : `<span class="muted">${order.confirmed_at ? new Date(order.confirmed_at).toLocaleDateString("en-NZ") : "-"}</span>`} <button class="button ghost" type="button" data-delete-order="${order.id}" title="Delete order"><i data-lucide="trash-2"></i></button></td>
           </tr>
           <tr><td colspan="6" class="muted">${(order.order_items || []).map((item) => `${escapeHtml(item.product_title)} × ${Number(item.quantity)}`).join(" · ")}</td></tr>
