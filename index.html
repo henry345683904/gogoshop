@@ -1106,6 +1106,17 @@
       margin-right: 12px;
     }
 
+    #accountDrawer [data-auth-signed-in] > .section-heading {
+      margin: 12px 12px 4px !important;
+      min-height: 30px;
+      align-items: center;
+    }
+
+    #accountDrawer [data-auth-signed-in] > .section-heading h2 {
+      margin: 0;
+      line-height: 1.15;
+    }
+
     #accountDrawer .account-summary strong {
       font-size: 18px;
     }
@@ -1184,7 +1195,7 @@
     .auth-view,
     .account-order-list {
       display: grid;
-      gap: 14px;
+      gap: 8px;
       max-height: none;
       overflow: visible;
       padding: 0 12px 2px;
@@ -2701,8 +2712,12 @@
 
       #accountDrawer .account-order-list {
         max-height: none;
-        gap: 8px;
+        gap: 6px;
         padding: 0 10px 2px;
+      }
+
+      #accountDrawer [data-auth-signed-in] > .section-heading {
+        margin: 8px 10px 2px !important;
       }
 
       #accountDrawer .account-order-head {
