@@ -1147,6 +1147,9 @@
     .account-order-list {
       display: grid;
       gap: 14px;
+      max-height: min(52vh, 520px);
+      overflow-y: auto;
+      padding-right: 3px;
     }
 
     .oauth-grid,
@@ -1183,6 +1186,46 @@
       border-radius: 8px;
       padding: 14px;
       background: #fff;
+      cursor: pointer;
+      transition: border-color 160ms ease, box-shadow 160ms ease;
+    }
+
+    .account-order:hover,
+    .account-order:focus-visible {
+      border-color: var(--ink);
+      box-shadow: 0 4px 14px rgba(20, 24, 24, .08);
+      outline: none;
+    }
+
+    .account-actions {
+      position: sticky;
+      bottom: 0;
+      z-index: 2;
+      margin-top: 4px;
+      padding-top: 12px;
+      background: var(--paper);
+    }
+
+    .order-detail-modal[hidden] { display: none; }
+    .order-detail-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 80;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      background: rgba(20, 24, 24, .42);
+    }
+    .order-detail-dialog {
+      width: min(100%, 520px);
+      max-height: min(78vh, 680px);
+      overflow: auto;
+      padding: 22px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      box-shadow: 0 18px 60px rgba(20, 24, 24, .2);
+    }
     }
 
     .account-summary span,
@@ -3405,6 +3448,7 @@
         </form>
       </section>
       <section class="auth-view" data-auth-signed-in hidden>
+        <div class="account-actions"><button class="button ghost" type="button" data-customer-logout><i data-lucide="log-out"></i> <span data-i18n="signOut">Sign out</span></button></div>
         <div><h3 id="accountName" style="margin: 0 0 5px;">Customer</h3><p class="muted" id="accountEmail" style="margin: 0;"></p></div>
         <div class="account-summary">
           <div><span data-i18n="rewardPoints">Reward points</span><strong id="accountPoints">0</strong></div>
@@ -3412,10 +3456,16 @@
         </div>
         <div class="section-heading" style="margin: 4px 0 0;"><h2 style="font-size: 20px;" data-i18n="myOrders">My orders</h2></div>
         <div class="account-order-list" id="accountOrders"></div>
-        <button class="button ghost" type="button" data-customer-logout><i data-lucide="log-out"></i> <span data-i18n="signOut">Sign out</span></button>
       </section>
     </div>
   </aside>
+
+  <section class="order-detail-modal" id="orderDetailModal" data-order-detail-backdrop hidden>
+    <div class="order-detail-dialog" role="dialog" aria-modal="true" aria-labelledby="orderDetailTitle">
+      <div class="panel-head"><h2 class="panel-title" id="orderDetailTitle">Order details</h2><button class="icon-button" type="button" data-close-order-detail aria-label="Close"><i data-lucide="x"></i></button></div>
+      <div id="orderDetailContent"></div>
+    </div>
+  </section>
 
   <section class="search-panel" id="searchPanel" aria-hidden="true">
     <div class="panel-head">
@@ -4350,7 +4400,7 @@
       $("#accountSpent").textContent = formatPrice(state.profile?.total_spent || 0);
       const target = $("#accountOrders");
       target.innerHTML = state.customerOrders.length ? state.customerOrders.map((order) => `
-        <article class="account-order">
+        <article class="account-order" tabindex="0" role="button" data-order-detail="${order.id}">
           <div class="account-order-head">
             <div><strong>${escapeHtml(order.order_number)}</strong><div class="account-order-meta">${new Date(order.created_at).toLocaleString(state.lang === "zh" ? "zh-CN" : "en-NZ")}</div></div>
             <span class="status ${order.status === "confirmed" ? "live" : "featured"}">${escapeHtml(orderStatusLabel(order.status))}</span>
@@ -4360,6 +4410,26 @@
           <div class="account-order-items">${(order.order_items || []).map((item) => `${escapeHtml(item.product_title)} × ${Number(item.quantity)} · ${formatPrice(item.unit_price)}`).join("<br>")}</div>
         </article>
       `).join("") : `<div class="empty-state">${t("noOrders")}</div>`;
+      refreshIcons();
+    }
+
+    function closeOrderDetail() {
+      const modal = $("#orderDetailModal");
+      if (modal) modal.hidden = true;
+    }
+
+    function showOrderDetail(orderId) {
+      const order = state.customerOrders.find((item) => item.id === orderId);
+      const modal = $("#orderDetailModal");
+      const content = $("#orderDetailContent");
+      if (!order || !modal || !content) return;
+      content.innerHTML = `
+        <div class="account-order-meta">${escapeHtml(order.order_number)} · ${new Date(order.created_at).toLocaleString(state.lang === "zh" ? "zh-CN" : "en-NZ")}</div>
+        <p><span class="status ${order.status === "confirmed" ? "live" : "featured"}">${escapeHtml(orderStatusLabel(order.status))}</span></p>
+        <div class="account-order-items">${(order.order_items || []).map((item) => `<div style="display:flex;justify-content:space-between;gap:12px;padding:6px 0;"><span>${escapeHtml(item.product_title)} × ${Number(item.quantity)}</span><span>${formatPrice(Number(item.unit_price) * Number(item.quantity))}</span></div>`).join("")}</div>
+        <p><strong>Total: ${formatPrice(order.total)}</strong> · ${Number(order.item_count || 0)} items</p>
+        ${order.status === "confirmed" ? `<div class="account-order-meta">+${Number(order.points_awarded || 0)} ${t("rewardPoints")}</div>` : ""}`;
+      modal.hidden = false;
       refreshIcons();
     }
 
@@ -5406,6 +5476,11 @@
         return;
       }
 
+      if (clickedElement.matches("[data-order-detail-backdrop]") || clickedElement.matches("[data-close-order-detail]")) {
+        closeOrderDetail();
+        return;
+      }
+
       const productEditRow = clickedElement.closest("[data-edit-product-row]");
       if (productEditRow && !clickedElement.closest("button, a")) {
         editProduct(productEditRow.dataset.editProductRow);
@@ -5413,6 +5488,11 @@
       }
 
       const target = clickedElement.closest("button, a");
+      const orderCard = clickedElement.closest("[data-order-detail]");
+      if (orderCard && !target) {
+        showOrderDetail(orderCard.dataset.orderDetail);
+        return;
+      }
       if (!target) return;
 
       if (target.matches("[data-description-format]")) {
