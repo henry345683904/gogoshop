@@ -1102,7 +1102,12 @@
     }
 
     #accountDrawer .account-summary > div {
-      padding: 7px 10px 8px;
+      height: 56px;
+      min-height: 56px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 4px 10px;
     }
 
     #accountDrawer [data-auth-signed-in] > :not(.account-actions) {
@@ -1123,7 +1128,7 @@
 
     #accountDrawer .account-summary strong {
       margin-top: 2px;
-      font-size: 17px;
+      font-size: 21px;
     }
 
     .drawer-foot {
