@@ -3990,6 +3990,10 @@
       productReturnScroll: 0
     };
 
+    const retiredLegacyProductIds = new Set(["phone-case", "phone-case-1", "phone-case-2", "phone-case-3"]);
+    state.products = state.products.filter((product) => !retiredLegacyProductIds.has(product.id));
+    state.cart = state.cart.filter((line) => !retiredLegacyProductIds.has(line.id));
+
     const money = new Intl.NumberFormat("en-NZ", { style: "currency", currency: "NZD" });
     const $ = (selector, root = document) => root.querySelector(selector);
     const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
