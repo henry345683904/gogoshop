@@ -1045,6 +1045,8 @@
     #accountDrawer .drawer-body {
       width: 100%;
       max-width: none;
+      overflow-y: scroll;
+      scrollbar-gutter: stable;
     }
 
     .menu-drawer {
@@ -1183,8 +1185,8 @@
     .account-order-list {
       display: grid;
       gap: 14px;
-      max-height: min(62vh, 620px);
-      overflow-y: auto;
+      max-height: none;
+      overflow: visible;
       padding: 0 12px 2px;
     }
 
@@ -2686,7 +2688,7 @@
       }
 
       #accountDrawer .account-order-list {
-        max-height: 64vh;
+        max-height: none;
         gap: 8px;
         padding: 0 10px 2px;
       }
