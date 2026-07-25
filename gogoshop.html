@@ -3918,11 +3918,23 @@
       return state.lang === "zh" ? productLabels[category]?.zh || category : category;
     }
 
+    function customerWelcomeText() {
+      const user = state.session?.user;
+      if (!user) return t("announcement");
+      const metadata = user.user_metadata || {};
+      const name = state.profile?.full_name
+        || metadata.full_name
+        || metadata.name
+        || state.profile?.email
+        || user.email;
+      return name ? `Hi, ${name}` : t("announcement");
+    }
+
     function effectiveDesign() {
       const design = normalizeDesign(state.design);
       return {
         ...design,
-        announcementText: design.announcement || t("announcement"),
+        announcementText: state.session?.user ? customerWelcomeText() : (design.announcement || t("announcement")),
         heroTitleText: design.heroTitle || t("heroTitle"),
         heroButtonText: design.heroButton || t("shopAll")
       };
@@ -4391,6 +4403,7 @@
       state.session = session;
       await loadCustomerData();
       state.authReady = true;
+      applyStoreDesign();
       if (isAdminRoute()) showAdmin();
     }
 
