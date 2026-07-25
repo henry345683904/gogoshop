@@ -3564,8 +3564,8 @@
     <div class="drawer-body">
       <section class="auth-view" data-auth-signed-out>
         <div class="oauth-grid">
-          <button class="button ghost" type="button" data-oauth-provider="google"><i data-lucide="chrome"></i> Google</button>
-          <button class="button ghost" type="button" data-oauth-provider="apple"><i data-lucide="apple"></i> Apple</button>
+          <button class="button ghost" type="button" data-oauth-provider="google" aria-label="Continue with Google"><i data-lucide="chrome"></i> Google</button>
+          <button class="button ghost" type="button" data-oauth-provider="apple" aria-label="Continue with Apple"><i data-lucide="apple"></i> Apple</button>
         </div>
         <div class="auth-divider"><span data-i18n="orEmail">or use email</span></div>
         <form class="auth-view" data-customer-auth-form>
@@ -4499,11 +4499,16 @@
       refreshIcons();
     }
 
-    function authErrorMessage(error) {
+    function authErrorMessage(error, provider = "") {
       const message = String(error?.message || error || "Unknown error");
       if (/schema cache|could not find.*function|relation .* does not exist|PGRST20/i.test(`${error?.code || ""} ${message}`)) return t("backendNotReady");
       if (/invalid login/i.test(message)) return state.lang === "zh" ? "邮箱或密码错误" : "Invalid email or password";
       if (/email not confirmed/i.test(message)) return state.lang === "zh" ? "请先完成邮箱验证" : "Confirm your email first";
+      if (provider === "apple" && /provider.*not enabled|unsupported provider|apple.*disabled/i.test(message)) {
+        return state.lang === "zh"
+          ? "Apple 登录尚未在后台启用，请先在 Supabase > Authentication > Providers > Apple 中保存设置。"
+          : "Apple sign-in is not enabled yet. Enable and save it in Supabase > Authentication > Providers > Apple.";
+      }
       return message;
     }
 
@@ -4646,11 +4651,15 @@
 
     async function signInWithProvider(provider) {
       if (!db) return;
+      const options = {
+        redirectTo: `${location.origin}${location.pathname}${location.search}`
+      };
+      if (provider === "apple") options.scopes = "name email";
       const { error } = await db.auth.signInWithOAuth({
         provider,
-        options: { redirectTo: `${location.origin}${location.pathname}${location.search}` }
+        options
       });
-      if (error) $("#customerAuthMessage").textContent = authErrorMessage(error);
+      if (error) $("#customerAuthMessage").textContent = authErrorMessage(error, provider);
     }
 
     async function customerSignOut() {
