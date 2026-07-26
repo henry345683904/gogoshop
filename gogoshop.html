@@ -3839,6 +3839,10 @@
         <a class="menu-link" href="#home" data-close-panels>
           <span><i data-lucide="home"></i><span data-i18n="navHome">Home</span></span>
         </a>
+        <button class="menu-account" type="button" data-open-account>
+          <span><i data-lucide="user-round"></i><span data-i18n="accountTitle">Account</span></span>
+          <i data-lucide="chevron-right"></i>
+        </button>
         <section class="menu-section">
           <button class="menu-section-toggle" type="button" data-menu-toggle="categories" aria-expanded="false">
             <span><i data-lucide="layout-grid"></i><span data-i18n="menuCategories">Product categories</span></span>
@@ -3865,18 +3869,14 @@
             <button class="button ghost" type="button" data-open-contact><i data-lucide="message-square"></i><span data-i18n="openContactForm">Open contact form</span></button>
           </div>
         </section>
-        <a class="menu-link menu-app-download" href="downloads/GO-GO-SHOP.apk" download data-close-panels>
-          <span><i data-lucide="smartphone"></i><span data-i18n="androidApp">APP FOR ANDROID</span></span>
-          <i data-lucide="download"></i>
-        </a>
-        <button class="menu-account" type="button" data-open-account>
-          <span><i data-lucide="user-round"></i><span data-i18n="accountTitle">Account</span></span>
-          <i data-lucide="chevron-right"></i>
-        </button>
         <button class="menu-account menu-admin-link" type="button" data-open-admin data-admin-menu-link hidden>
           <span><i data-lucide="shield-check"></i><span data-i18n="adminDashboard">Admin dashboard</span></span>
           <i data-lucide="chevron-right"></i>
         </button>
+        <a class="menu-link menu-app-download" href="downloads/GO-GO-SHOP.apk" download data-close-panels>
+          <span><i data-lucide="smartphone"></i><span data-i18n="androidApp">App for android</span></span>
+          <i data-lucide="download"></i>
+        </a>
       </nav>
     </div>
   </aside>
@@ -4037,7 +4037,7 @@
         menuCategories: "Product categories",
         menuAbout: "About us",
         menuContact: "Contact us",
-        androidApp: "APP FOR ANDROID",
+        androidApp: "App for android",
         adminDashboard: "Admin dashboard",
         aboutCompanyText: "GO GO SHOP is a New Zealand online store for practical phone accessories, small electronics and everyday gifts.",
         contactCompanyText: "Questions about products or an order? Send us a message and we will get back to you.",
@@ -4572,8 +4572,10 @@
 
       const heroContent = $(".hero-content", store);
       if (heroContent) {
-        heroContent.style.textAlign = design.heroAlign;
-        heroContent.style.justifyItems = design.heroAlign === "left" ? "start" : design.heroAlign === "right" ? "end" : "center";
+        const heroAlign = state.lang === "zh" ? "center" : design.heroAlign;
+        heroContent.style.textAlign = heroAlign;
+        heroContent.style.justifyItems = heroAlign === "left" ? "start" : heroAlign === "right" ? "end" : "center";
+        heroContent.style.justifySelf = heroAlign === "left" ? "start" : heroAlign === "right" ? "end" : "center";
       }
 
       const heroTitle = $(".hero h1", store);
