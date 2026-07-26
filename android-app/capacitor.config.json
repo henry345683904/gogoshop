@@ -1,0 +1,13 @@
+{
+  "appId": "nz.gogoshop.app",
+  "appName": "GO GO SHOP",
+  "webDir": "www",
+  "server": {
+    "url": "https://henry345683904.github.io/gogoshop/?app=1",
+    "cleartext": false
+  },
+  "android": {
+    "allowMixedContent": false,
+    "backgroundColor": "#ffffff"
+  }
+}

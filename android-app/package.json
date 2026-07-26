@@ -1,0 +1,17 @@
+{
+  "name": "gogoshop-android",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Android wrapper for the GO GO SHOP storefront",
+  "scripts": {
+    "sync": "cap sync android",
+    "build:debug": "cap sync android && cd android && gradlew.bat assembleDebug"
+  },
+  "dependencies": {
+    "@capacitor/android": "6.2.1",
+    "@capacitor/core": "6.2.1"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "6.2.1"
+  }
+}

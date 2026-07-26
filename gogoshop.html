@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Go Go Shop</title>
   <meta name="description" content="Go Go Shop online store and admin console">
+  <meta name="theme-color" content="#0b191a">
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/app-icon-192.png">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+  <link rel="manifest" href="site.webmanifest">
   <link rel="preconnect" href="https://cdn.shopify.com">
   <link rel="preconnect" href="https://unpkg.com">
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
@@ -1053,6 +1057,7 @@
       left: 0;
       right: auto;
       transform: translateX(-105%);
+      touch-action: pan-y;
     }
 
     .menu-drawer.open {
@@ -1419,12 +1424,19 @@
       border: 0;
       border-bottom: 1px solid var(--line);
       border-radius: 0;
+      padding: 0;
       background: transparent;
       color: inherit;
       font: inherit;
       text-align: left;
       text-decoration: none;
       cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+
+    .menu-section {
+      margin: 0;
     }
 
     .menu-admin-link[hidden] {
@@ -3853,6 +3865,10 @@
             <button class="button ghost" type="button" data-open-contact><i data-lucide="message-square"></i><span data-i18n="openContactForm">Open contact form</span></button>
           </div>
         </section>
+        <a class="menu-link menu-app-download" href="downloads/GO-GO-SHOP.apk" download data-close-panels>
+          <span><i data-lucide="smartphone"></i><span data-i18n="androidApp">APP FOR ANDROID</span></span>
+          <i data-lucide="download"></i>
+        </a>
         <button class="menu-account" type="button" data-open-account>
           <span><i data-lucide="user-round"></i><span data-i18n="accountTitle">Account</span></span>
           <i data-lucide="chevron-right"></i>
@@ -4021,6 +4037,7 @@
         menuCategories: "Product categories",
         menuAbout: "About us",
         menuContact: "Contact us",
+        androidApp: "APP FOR ANDROID",
         adminDashboard: "Admin dashboard",
         aboutCompanyText: "GO GO SHOP is a New Zealand online store for practical phone accessories, small electronics and everyday gifts.",
         contactCompanyText: "Questions about products or an order? Send us a message and we will get back to you.",
@@ -4091,6 +4108,7 @@
         menuCategories: "商品分类",
         menuAbout: "关于公司",
         menuContact: "联系我们",
+        androidApp: "下载安卓 APP",
         adminDashboard: "管理员后台",
         aboutCompanyText: "GO GO SHOP 是一家位于新西兰的网店，提供实用手机配件、小型电子产品和日常礼品。",
         contactCompanyText: "如需咨询商品或订单，请通过联系表单给我们留言。",
@@ -6561,12 +6579,21 @@
       document.querySelectorAll(".product-editor-media-item.is-dragging, .product-editor-media-item.is-drag-target").forEach((node) => node.classList.remove("is-dragging", "is-drag-target"));
     });
 
+    let menuSwipeGesture = null;
     let galleryGesture = null;
     let detailGalleryGesture = null;
 
     document.addEventListener("pointerdown", (event) => {
       if (!event.isPrimary || event.button > 0) return;
       const target = event.target instanceof Element ? event.target : null;
+      if ($("#menuDrawer").classList.contains("open")) {
+        menuSwipeGesture = {
+          pointerId: event.pointerId,
+          startX: event.clientX,
+          startY: event.clientY
+        };
+        return;
+      }
       const detailGallery = target?.closest("[data-detail-gallery]");
       if (detailGallery && Number(detailGallery.dataset.detailGalleryCount || 0) > 1) {
         detailGallery.classList.add("dragging");
@@ -6590,6 +6617,15 @@
     });
 
     document.addEventListener("pointerup", (event) => {
+      if (menuSwipeGesture && menuSwipeGesture.pointerId === event.pointerId) {
+        const deltaX = event.clientX - menuSwipeGesture.startX;
+        const deltaY = event.clientY - menuSwipeGesture.startY;
+        if (deltaX < -48 && Math.abs(deltaX) > Math.abs(deltaY) * 1.15) {
+          closePanels();
+        }
+        menuSwipeGesture = null;
+        return;
+      }
       if (detailGalleryGesture && detailGalleryGesture.pointerId === event.pointerId) {
         const deltaX = event.clientX - detailGalleryGesture.startX;
         const deltaY = event.clientY - detailGalleryGesture.startY;
@@ -6619,6 +6655,7 @@
     });
 
     document.addEventListener("pointercancel", () => {
+      menuSwipeGesture = null;
       if (detailGalleryGesture?.gallery) detailGalleryGesture.gallery.classList.remove("dragging");
       detailGalleryGesture = null;
       galleryGesture = null;
