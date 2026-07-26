@@ -2041,32 +2041,137 @@
 
     .shopify-media-layout {
       display: grid;
-      grid-template-columns: 148px minmax(0, 1fr);
       gap: 14px;
-      align-items: stretch;
     }
 
-    .product-editor-image {
+    .product-editor-media-list {
       display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
+      gap: 10px;
+    }
+
+    .product-editor-media-list[hidden],
+    .product-editor-empty[hidden] {
+      display: none;
+    }
+
+    .product-editor-media-item {
+      position: relative;
       overflow: hidden;
-      width: 148px;
+      min-width: 0;
       aspect-ratio: 1;
-      place-items: center;
       border: 1px solid #dcdede;
       border-radius: 8px;
       background: #f5f5f5;
+      cursor: grab;
+      touch-action: manipulation;
     }
 
-    .product-editor-image img {
+    .product-editor-media-item:active {
+      cursor: grabbing;
+    }
+
+    .product-editor-media-item.is-dragging {
+      opacity: 0.45;
+    }
+
+    .product-editor-media-item.is-drag-target {
+      border-color: #111;
+      box-shadow: inset 0 0 0 2px #111;
+    }
+
+    .product-editor-media-item img {
+      display: block;
       width: 100%;
       height: 100%;
       object-fit: cover;
+      pointer-events: none;
+    }
+
+    .product-editor-media-item.has-error img {
+      display: none;
+    }
+
+    .product-editor-media-error {
+      display: none;
+      height: 100%;
+      place-items: center;
+      padding: 12px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .product-editor-media-item.has-error .product-editor-media-error {
+      display: grid;
+    }
+
+    .product-editor-media-primary,
+    .product-editor-media-order {
+      position: absolute;
+      z-index: 1;
+      left: 6px;
+      border: 1px solid rgba(0, 0, 0, 0.12);
+      border-radius: 5px;
+      padding: 3px 6px;
+      background: rgba(255, 255, 255, 0.94);
+      color: #111;
+      font-size: 11px;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+
+    .product-editor-media-primary {
+      top: 6px;
+    }
+
+    .product-editor-media-order {
+      bottom: 6px;
+    }
+
+    .product-editor-media-actions {
+      position: absolute;
+      z-index: 2;
+      right: 6px;
+      bottom: 6px;
+      display: flex;
+      gap: 3px;
+    }
+
+    .product-editor-media-action {
+      display: inline-grid;
+      width: 26px;
+      height: 26px;
+      place-items: center;
+      border: 1px solid rgba(0, 0, 0, 0.14);
+      border-radius: 5px;
+      padding: 0;
+      background: rgba(255, 255, 255, 0.94);
+      color: #111;
+    }
+
+    .product-editor-media-action:hover:not(:disabled) {
+      background: #fff;
+    }
+
+    .product-editor-media-action:disabled {
+      opacity: 0.38;
+    }
+
+    .product-editor-media-action svg {
+      width: 14px;
+      height: 14px;
     }
 
     .product-editor-empty {
       display: grid;
+      min-height: 148px;
       place-items: center;
       gap: 7px;
+      border: 1px dashed #c9cccc;
+      border-radius: 8px;
+      background: #fafafa;
       color: var(--muted);
       font-size: 12px;
       font-weight: 700;
@@ -3008,12 +3113,27 @@
       }
 
       .shopify-media-layout {
-        grid-template-columns: 112px minmax(0, 1fr);
         gap: 12px;
       }
 
-      .product-editor-image {
-        width: 112px;
+      .product-editor-media-list {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+      }
+
+      .product-editor-media-order {
+        display: none;
+      }
+
+      .product-editor-media-actions {
+        right: 4px;
+        bottom: 4px;
+        gap: 2px;
+      }
+
+      .product-editor-media-action {
+        width: 24px;
+        height: 24px;
       }
 
       .shopify-media-actions {
@@ -3505,7 +3625,7 @@
   </section>
 
   <section class="product-editor-modal" id="productEditorModal" data-product-editor-backdrop hidden>
-    <div class="product-editor-dialog" role="dialog" aria-modal="true" aria-labelledby="productFormTitle">
+    <div class="product-editor-dialog" role="dialog" aria-modal="true" aria-labelledby="productFormTitle" tabindex="-1">
       <form class="product-editor-form" data-product-form>
         <input type="hidden" name="id">
         <header class="product-editor-head">
@@ -3547,26 +3667,24 @@
                 <button class="button ghost" type="button" data-open-product-image-file><i data-lucide="upload"></i> 添加媒体</button>
               </div>
               <div class="shopify-media-layout">
-                <div class="product-editor-image">
-                  <img src="" alt="商品预览" data-product-editor-image hidden>
-                  <div class="product-editor-empty" data-product-editor-empty>
-                    <i data-lucide="image-plus"></i>
-                    <span>添加商品图片</span>
-                  </div>
+                <div class="product-editor-media-list" data-product-media-list aria-label="商品图片"></div>
+                <div class="product-editor-empty" data-product-editor-empty>
+                  <i data-lucide="image-plus"></i>
+                  <span>添加商品图片</span>
                 </div>
                 <div class="shopify-media-controls">
                   <label class="field">
                     <span>图片 URL</span>
-                    <input type="url" name="image" data-product-image-url required>
+                    <input type="text" name="image" inputmode="url" data-product-image-url required>
                   </label>
                   <label class="field">
                     <span>更多图片 URL（每行一个）</span>
                     <textarea name="images" rows="5" placeholder="https://..."></textarea>
                   </label>
-                  <input type="file" accept="image/jpeg,image/png,image/webp" data-product-image-file hidden>
+                  <input type="file" accept="image/jpeg,image/png,image/webp" data-product-image-file multiple hidden>
                   <div class="shopify-media-actions">
                     <button class="button ghost" type="button" data-open-product-image-file><i data-lucide="upload"></i> 上传文件</button>
-                    <button class="button ghost" type="button" data-clear-product-image><i data-lucide="trash-2"></i> 移除</button>
+                    <button class="button ghost" type="button" data-clear-product-image><i data-lucide="trash-2"></i> 清空图片</button>
                   </div>
                 </div>
               </div>
@@ -5726,35 +5844,85 @@
       updateProductEditorPreview();
     }
 
+    let productMediaRenderSignature = null;
+    let productMediaDragIndex = null;
+
+    function getProductMediaUrls(form = $("[data-product-form]")) {
+      if (!form) return [];
+      const fields = form.elements;
+      const primary = fields.namedItem("image")?.value.trim() || "";
+      const additional = String(fields.namedItem("images")?.value || "")
+        .split(/\r?\n/)
+        .map((value) => value.trim())
+        .filter(Boolean);
+      return [...new Set([primary, ...additional].filter(Boolean))];
+    }
+
+    function setProductMediaUrls(urls, form = $("[data-product-form]")) {
+      if (!form) return;
+      const normalized = [...new Set(urls.map((url) => String(url || "").trim()).filter(Boolean))];
+      form.elements.namedItem("image").value = normalized[0] || "";
+      form.elements.namedItem("images").value = normalized.slice(1).join("\n");
+      updateProductEditorPreview();
+    }
+
+    function renderProductMediaEditor(form) {
+      const list = $("[data-product-media-list]", form);
+      const empty = $("[data-product-editor-empty]", form);
+      if (!list || !empty) return;
+      const urls = getProductMediaUrls(form);
+      const signature = JSON.stringify(urls);
+      list.hidden = urls.length === 0;
+      empty.hidden = urls.length > 0;
+      if (signature === productMediaRenderSignature) return;
+      productMediaRenderSignature = signature;
+      list.innerHTML = urls.map((url, index) => `
+        <div class="product-editor-media-item" draggable="true" data-product-media-index="${index}">
+          <img src="${escapeHtml(url)}" alt="商品图片 ${index + 1}" draggable="false" data-product-media-image>
+          <span class="product-editor-media-error">图片无法加载</span>
+          ${index === 0 ? '<span class="product-editor-media-primary">主图</span>' : ""}
+          <span class="product-editor-media-order">${index + 1}</span>
+          <div class="product-editor-media-actions">
+            <button class="product-editor-media-action" type="button" data-move-product-media="${index}" data-direction="-1" aria-label="向左移动图片" title="向左移动" ${index === 0 ? "disabled" : ""}><i data-lucide="arrow-left"></i></button>
+            <button class="product-editor-media-action" type="button" data-move-product-media="${index}" data-direction="1" aria-label="向右移动图片" title="向右移动" ${index === urls.length - 1 ? "disabled" : ""}><i data-lucide="arrow-right"></i></button>
+            <button class="product-editor-media-action" type="button" data-remove-product-media="${index}" aria-label="删除图片" title="删除图片"><i data-lucide="trash-2"></i></button>
+          </div>
+        </div>
+      `).join("");
+      $$('[data-product-media-image]', list).forEach((image) => {
+        image.addEventListener("error", () => image.closest("[data-product-media-index]")?.classList.add("has-error"), { once: true });
+      });
+      refreshIcons();
+    }
+
+    function moveProductMedia(index, nextIndex) {
+      const urls = getProductMediaUrls();
+      const from = Number(index);
+      const to = Math.max(0, Math.min(urls.length - 1, Number(nextIndex)));
+      if (!Number.isInteger(from) || from < 0 || from >= urls.length || from === to) return;
+      const [moved] = urls.splice(from, 1);
+      urls.splice(to, 0, moved);
+      setProductMediaUrls(urls);
+    }
+
+    function removeProductMedia(index) {
+      const urls = getProductMediaUrls();
+      const targetIndex = Number(index);
+      if (!Number.isInteger(targetIndex) || targetIndex < 0 || targetIndex >= urls.length) return;
+      urls.splice(targetIndex, 1);
+      setProductMediaUrls(urls);
+    }
+
     function updateProductEditorPreview() {
       const form = $("[data-product-form]");
       if (!form) return;
       const fields = form.elements;
-      const imageUrl = fields.namedItem("image").value.trim();
-      const image = $("[data-product-editor-image]");
-      const empty = $("[data-product-editor-empty]");
       const active = fields.namedItem("status").value === "active";
       const published = active && fields.namedItem("onlineStore").checked;
       const status = $("[data-product-editor-status]");
       const sideStatus = $("[data-product-editor-side-status]");
 
-      image.onload = () => {
-        image.hidden = false;
-        empty.hidden = true;
-      };
-      image.onerror = () => {
-        image.hidden = true;
-        empty.hidden = false;
-      };
-      if (imageUrl) {
-        image.hidden = false;
-        empty.hidden = true;
-        if (image.src !== imageUrl) image.src = imageUrl;
-      } else {
-        image.removeAttribute("src");
-        image.hidden = true;
-        empty.hidden = false;
-      }
+      renderProductMediaEditor(form);
 
       $("[data-product-editor-title]").textContent = fields.namedItem("title").value.trim() || (fields.namedItem("id").value ? "编辑商品" : "添加商品");
       const statusText = !active ? "草稿" : published ? "活跃" : "未发布";
@@ -5771,7 +5939,7 @@
       updateProductEditorPreview();
       refreshIcons();
       $("#productEditorModal").scrollTop = 0;
-      window.setTimeout(() => $("[data-product-form] [name='title']")?.focus(), 60);
+      window.setTimeout(() => $("#productEditorModal .product-editor-dialog")?.focus({ preventScroll: true }), 60);
     }
 
     function openNewProductEditor() {
@@ -5801,30 +5969,45 @@
       field.focus();
     }
 
-    function handleProductImageFile(input) {
-      const file = input?.files?.[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = () => {
-        const source = new Image();
-        source.onload = () => {
-          const maxSide = 1200;
-          const scale = Math.min(1, maxSide / Math.max(source.width, source.height));
-          const canvas = document.createElement("canvas");
-          canvas.width = Math.max(1, Math.round(source.width * scale));
-          canvas.height = Math.max(1, Math.round(source.height * scale));
-          canvas.getContext("2d").drawImage(source, 0, 0, canvas.width, canvas.height);
-          const imageUrl = canvas.toDataURL(file.type === "image/png" ? "image/png" : "image/jpeg", 0.84);
-          const urlField = $("[data-product-image-url]");
-          if (urlField) {
-            urlField.value = imageUrl;
-            urlField.dispatchEvent(new Event("input", { bubbles: true }));
-          }
-          showToast("商品图片已添加");
+    function resizeProductImageFile(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onerror = () => reject(reader.error || new Error("Unable to read image"));
+        reader.onload = () => {
+          const source = new Image();
+          source.onerror = () => reject(new Error("Unable to load image"));
+          source.onload = () => {
+            const maxSide = 1200;
+            const scale = Math.min(1, maxSide / Math.max(source.width, source.height));
+            const canvas = document.createElement("canvas");
+            canvas.width = Math.max(1, Math.round(source.width * scale));
+            canvas.height = Math.max(1, Math.round(source.height * scale));
+            const context = canvas.getContext("2d");
+            if (!context) {
+              reject(new Error("Unable to resize image"));
+              return;
+            }
+            context.drawImage(source, 0, 0, canvas.width, canvas.height);
+            resolve(canvas.toDataURL(file.type === "image/png" ? "image/png" : "image/jpeg", 0.84));
+          };
+          source.src = reader.result;
         };
-        source.src = reader.result;
-      };
-      reader.readAsDataURL(file);
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function handleProductImageFile(input) {
+      const files = [...(input?.files || [])];
+      if (!files.length) return;
+      try {
+        const imageUrls = await Promise.all(files.map(resizeProductImageFile));
+        setProductMediaUrls([...getProductMediaUrls(), ...imageUrls]);
+        showToast(files.length > 1 ? `${files.length} 张商品图片已添加` : "商品图片已添加");
+      } catch (error) {
+        showToast("图片处理失败，请重试");
+      } finally {
+        input.value = "";
+      }
     }
 
     function clearDesignBlockForm() {
@@ -6184,11 +6367,18 @@
         return;
       }
       if (target.matches("[data-clear-product-image]")) {
-        const imageField = $("[data-product-image-url]");
         const imageFile = $("[data-product-image-file]");
-        if (imageField) imageField.value = "";
         if (imageFile) imageFile.value = "";
-        updateProductEditorPreview();
+        setProductMediaUrls([]);
+        return;
+      }
+      if (target.matches("[data-move-product-media]")) {
+        const index = Number(target.dataset.moveProductMedia);
+        moveProductMedia(index, index + Number(target.dataset.direction || 0));
+        return;
+      }
+      if (target.matches("[data-remove-product-media]")) {
+        removeProductMedia(target.dataset.removeProductMedia);
         return;
       }
       if (target.matches("[data-gallery-dot]")) {
@@ -6335,6 +6525,40 @@
       if (event.target instanceof Element && event.target.closest("[data-product-form]")) {
         updateProductEditorPreview();
       }
+    });
+
+    document.addEventListener("dragstart", (event) => {
+      const item = event.target instanceof Element ? event.target.closest("[data-product-media-index]") : null;
+      if (!item) return;
+      productMediaDragIndex = Number(item.dataset.productMediaIndex);
+      item.classList.add("is-dragging");
+      if (event.dataTransfer) {
+        event.dataTransfer.effectAllowed = "move";
+        event.dataTransfer.setData("text/plain", String(productMediaDragIndex));
+      }
+    });
+
+    document.addEventListener("dragover", (event) => {
+      const item = event.target instanceof Element ? event.target.closest("[data-product-media-index]") : null;
+      if (!item || !Number.isInteger(productMediaDragIndex)) return;
+      event.preventDefault();
+      document.querySelectorAll(".product-editor-media-item.is-drag-target").forEach((node) => node.classList.remove("is-drag-target"));
+      item.classList.add("is-drag-target");
+      if (event.dataTransfer) event.dataTransfer.dropEffect = "move";
+    });
+
+    document.addEventListener("drop", (event) => {
+      const item = event.target instanceof Element ? event.target.closest("[data-product-media-index]") : null;
+      if (!item || !Number.isInteger(productMediaDragIndex)) return;
+      event.preventDefault();
+      moveProductMedia(productMediaDragIndex, Number(item.dataset.productMediaIndex));
+      productMediaDragIndex = null;
+      document.querySelectorAll(".product-editor-media-item.is-dragging, .product-editor-media-item.is-drag-target").forEach((node) => node.classList.remove("is-dragging", "is-drag-target"));
+    });
+
+    document.addEventListener("dragend", () => {
+      productMediaDragIndex = null;
+      document.querySelectorAll(".product-editor-media-item.is-dragging, .product-editor-media-item.is-drag-target").forEach((node) => node.classList.remove("is-dragging", "is-drag-target"));
     });
 
     let galleryGesture = null;
