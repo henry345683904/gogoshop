@@ -4,6 +4,9 @@ import path from "node:path";
 const inputPath = path.resolve(process.argv[2] || "imports/1688-products.json");
 const outputPath = path.resolve(process.argv[3] || "imports/1688-products.sql");
 const payload = JSON.parse(fs.readFileSync(inputPath, "utf8"));
+const SOURCE_COST_MULTIPLIER = 4;
+const SOURCE_PRICE_MULTIPLIER = 1.5 * 1.15;
+const roundMoney = (value) => Math.round((Number(value) + Number.EPSILON) * 100) / 100;
 
 const products = (payload.products || []).map((source) => {
   const attributes = Array.isArray(source.attributes) ? source.attributes : [];
@@ -13,6 +16,7 @@ const products = (payload.products || []).map((source) => {
   const variantText = variants
     .map((item) => `${item.name}: CNY ${Number(item.priceCny || 0).toFixed(2)}, stock ${Number(item.stock || 0)}`)
     .join("\n");
+  const sourcePrice = Number(source.priceCny || 0);
 
   return {
     id: `1688-${source.offerId}`,
@@ -24,9 +28,9 @@ const products = (payload.products || []).map((source) => {
       variantText,
       source.sourceUrl ? `Source: ${source.sourceUrl}` : ""
     ].filter(Boolean).join("\n\n"),
-    price: Number(source.priceCny || 0),
+    price: roundMoney(sourcePrice * SOURCE_PRICE_MULTIPLIER),
     compare_at_price: 0,
-    cost_per_item: Number(source.priceCny || 0),
+    cost_per_item: roundMoney(sourcePrice * SOURCE_COST_MULTIPLIER),
     stock: Math.max(0, Number(source.stock || 0)),
     sales: 0,
     published: false,
@@ -37,7 +41,7 @@ const products = (payload.products || []).map((source) => {
     tags: "1688, imported, draft",
     source_url: source.sourceUrl || "",
     source_currency: "CNY",
-    source_price: Number(source.priceCny || 0),
+    source_price: sourcePrice,
     source_variants: variants,
     source_attributes: attributes
   };
