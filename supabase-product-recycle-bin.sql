@@ -10,8 +10,9 @@ create index if not exists products_deleted_at_idx
   on public.products(deleted_at);
 
 drop policy if exists "products public read" on public.products;
-create policy "products public read" on public.products
+drop policy if exists "products admin read" on public.products;
+create policy "products admin read" on public.products
   for select
-  using (deleted_at is null or public.is_admin());
+  using (public.is_admin());
 
 commit;

@@ -135,6 +135,42 @@ as $$
   select email from public.profiles where is_admin = true order by created_at limit 1;
 $$;
 
+drop function if exists public.get_storefront_products();
+create function public.get_storefront_products()
+returns table (
+  id text,
+  title text,
+  category text,
+  description text,
+  price numeric,
+  compare_at_price numeric,
+  stock integer,
+  published boolean,
+  image text,
+  images jsonb
+)
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select
+    products.id,
+    products.title,
+    products.category,
+    case when products.id like '1688-%' then '' else products.description end,
+    products.price,
+    products.compare_at_price,
+    products.stock,
+    products.published,
+    products.image,
+    products.images
+  from public.products
+  where products.deleted_at is null
+    and products.published = true
+  order by products.updated_at desc, products.id;
+$$;
+
 alter table public.profiles enable row level security;
 alter table public.products enable row level security;
 alter table public.orders enable row level security;
@@ -146,8 +182,9 @@ create policy "profiles read own or admin" on public.profiles
 drop policy if exists "profiles update own" on public.profiles;
 
 drop policy if exists "products public read" on public.products;
-create policy "products public read" on public.products for select
-  using (deleted_at is null or public.is_admin());
+drop policy if exists "products admin read" on public.products;
+create policy "products admin read" on public.products for select
+  using (public.is_admin());
 drop policy if exists "products admin write" on public.products;
 create policy "products admin write" on public.products for all
   using (public.is_admin()) with check (public.is_admin());
@@ -275,10 +312,13 @@ $$;
 revoke all on function public.create_order(jsonb) from public, anon;
 revoke all on function public.confirm_order(uuid) from public, anon;
 revoke all on function public.get_admin_login_email() from public;
+revoke all on function public.get_storefront_products() from public;
 grant execute on function public.create_order(jsonb) to authenticated;
 grant execute on function public.confirm_order(uuid) to authenticated;
 grant execute on function public.get_admin_login_email() to anon, authenticated;
-grant select on public.products to anon, authenticated;
+grant execute on function public.get_storefront_products() to anon, authenticated;
+revoke select on public.products from anon;
+grant select on public.products to authenticated;
 grant insert, update, delete on public.products to authenticated;
 grant select on public.profiles, public.orders, public.order_items to authenticated;
 
