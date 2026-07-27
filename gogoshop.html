@@ -546,6 +546,63 @@
       line-height: 1.1;
     }
 
+    .catalog-heading-actions {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      margin-left: auto;
+    }
+
+    .catalog-heading-actions .text-link {
+      white-space: nowrap;
+    }
+
+    .catalog-category-toggle {
+      min-height: 34px;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      border: 0;
+      padding: 0;
+      background: transparent;
+      color: var(--ink);
+      font: inherit;
+      font-size: 15px;
+      font-weight: 500;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    .catalog-category-toggle svg {
+      width: 16px;
+      height: 16px;
+      stroke-width: 1.8;
+    }
+
+    .catalog-category-toggle .catalog-category-chevron {
+      width: 14px;
+      transition: transform 160ms ease;
+    }
+
+    .catalog-category-toggle[aria-expanded="true"] .catalog-category-chevron {
+      transform: rotate(180deg);
+    }
+
+    .catalog-category-toggle.active {
+      font-weight: 700;
+    }
+
+    .catalog-category-panel {
+      margin: -8px 0 22px;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      padding: 14px 0;
+    }
+
+    .catalog-category-panel[hidden] {
+      display: none;
+    }
+
     .text-link {
       border: 0;
       background: transparent;
@@ -2841,6 +2898,7 @@
       }
 
       #catalog > .section-heading,
+      #catalog > .catalog-category-panel,
       #catalog > .catalog-tools {
         margin-right: 16px;
         margin-left: 16px;
@@ -3382,10 +3440,19 @@
       <section class="section" id="catalog">
         <div class="section-heading">
           <h2 data-i18n="productsTitle">Products</h2>
-          <button class="text-link" type="button" data-view-all data-i18n="viewAll">View all</button>
+          <div class="catalog-heading-actions">
+            <button class="catalog-category-toggle" type="button" data-toggle-catalog-categories aria-expanded="false" aria-controls="catalogCategoryPanel">
+              <i data-lucide="layout-grid"></i>
+              <span data-i18n="categoriesButton">Categories</span>
+              <i class="catalog-category-chevron" data-lucide="chevron-down"></i>
+            </button>
+            <button class="text-link" type="button" data-view-all data-i18n="viewAll">View all</button>
+          </div>
+        </div>
+        <div class="catalog-category-panel" id="catalogCategoryPanel" hidden>
+          <div class="chips" data-category-tabs></div>
         </div>
         <div class="catalog-tools" hidden>
-          <div class="chips" data-category-tabs hidden></div>
           <select class="sort-select" id="sortProducts" aria-label="Sort products">
             <option value="featured" data-i18n="sortFeatured">Featured</option>
             <option value="price-low" data-i18n="sortLow">Price low to high</option>
@@ -4136,6 +4203,7 @@
         heroTitle: "Browse our latest products",
         shopAll: "Shop all",
         productsTitle: "Products",
+        categoriesButton: "Categories",
         viewAll: "View all",
         sortFeatured: "Featured",
         sortLow: "Price low to high",
@@ -4217,6 +4285,7 @@
         heroTitle: "浏览我们的最新商品",
         shopAll: "查看全部",
         productsTitle: "商品",
+        categoriesButton: "分类",
         viewAll: "全部",
         sortFeatured: "推荐排序",
         sortLow: "价格从低到高",
@@ -5118,6 +5187,19 @@
           ${categoryName(category)}
         </button>
       `).join("");
+      const toggle = $("[data-toggle-catalog-categories]");
+      if (toggle) toggle.classList.toggle("active", state.category !== "All");
+    }
+
+    function toggleCatalogCategories(forceOpen) {
+      const button = $("[data-toggle-catalog-categories]");
+      const panel = $("#catalogCategoryPanel");
+      if (!button || !panel) return;
+      const open = typeof forceOpen === "boolean"
+        ? forceOpen
+        : button.getAttribute("aria-expanded") !== "true";
+      button.setAttribute("aria-expanded", String(open));
+      panel.hidden = !open;
     }
 
     function renderMenuCategories() {
@@ -6798,6 +6880,9 @@
       if (target.matches("[data-view-all]")) {
         state.category = "All";
         renderProducts();
+      }
+      if (target.matches("[data-toggle-catalog-categories]")) {
+        toggleCatalogCategories();
       }
       if (target.matches("[data-category]")) {
         state.category = target.dataset.category;
