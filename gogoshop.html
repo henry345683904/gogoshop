@@ -1385,6 +1385,7 @@
       width: min(100%, 680px);
       max-height: min(88vh, 760px);
       max-height: min(88dvh, 760px);
+      margin: auto;
       display: flex;
       flex-direction: column;
       overflow: hidden;
@@ -3489,7 +3490,7 @@
       }
 
       .order-detail-modal {
-        align-items: end;
+        place-items: center;
         padding: 10px;
       }
 
@@ -3935,7 +3936,10 @@
           <div class="admin-panel">
             <div class="admin-panel-head">
               <div><h2>Orders</h2><span class="muted">Inventory is deducted only after confirmation.</span></div>
-              <button class="button ghost" type="button" data-refresh-admin-data><i data-lucide="refresh-cw"></i> Refresh</button>
+              <div class="form-actions">
+                <button class="button ghost" type="button" data-toggle-order-trash aria-expanded="false"><i data-lucide="recycle"></i> Recycle bin <span id="adminOrderTrashCount">0</span></button>
+                <button class="button ghost" type="button" data-refresh-admin-data><i data-lucide="refresh-cw"></i> Refresh</button>
+              </div>
             </div>
             <div class="table-wrap">
               <table>
@@ -3943,6 +3947,18 @@
                 <tbody id="adminOrderRows"></tbody>
               </table>
             </div>
+            <section class="product-trash-panel" data-order-trash-panel hidden>
+              <div class="product-trash-head">
+                <div><h3>Order recycle bin</h3><span class="muted">Deleted orders can be restored with their inventory and customer totals.</span></div>
+                <button class="action-button" type="button" data-close-order-trash aria-label="Close order recycle bin" title="Close"><i data-lucide="x"></i></button>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>Order</th><th>Customer</th><th>Total</th><th>Previous status</th><th>Deleted</th><th>Action</th></tr></thead>
+                  <tbody id="adminOrderTrashRows"></tbody>
+                </table>
+              </div>
+            </section>
           </div>
         </section>
 
@@ -4952,6 +4968,9 @@
       profile: null,
       customerOrders: [],
       adminOrders: [],
+      deletedOrders: [],
+      orderTrashOpen: false,
+      orderRecycleSupported: true,
       customers: [],
       unreadOrderIds: load(ORDER_NOTIFICATION_UNREAD_KEY, []),
       notifiedOrderEvents: load(ORDER_NOTIFICATION_SEEN_KEY, []),
@@ -5696,12 +5715,19 @@
 
     function closeOrderDetail() {
       const modal = $("#orderDetailModal");
-      if (modal) {
-        modal.hidden = true;
-        modal.setAttribute("aria-hidden", "true");
-      }
+      if (!modal || modal.hidden) return;
+      modal.hidden = true;
+      modal.setAttribute("aria-hidden", "true");
       if (showOrderDetail.lastFocus instanceof HTMLElement) showOrderDetail.lastFocus.focus();
       showOrderDetail.lastFocus = null;
+    }
+
+    function dismissOrderDetailImmediately(event) {
+      const element = event.target instanceof Element ? event.target : event.target?.parentElement;
+      if (!element?.closest("[data-close-order-detail]")) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      closeOrderDetail();
     }
 
     function showOrderDetail(orderId) {
@@ -5851,17 +5877,21 @@
         return;
       }
       const userId = state.session.user.id;
-      const [profileResult, paymentOrderResult] = await Promise.all([
-        db.from("profiles").select("id,email,full_name,points,total_spent,is_admin,created_at").eq("id", userId).single(),
-        db.from("orders").select("id,order_number,status,total,item_count,points_awarded,payment_provider,payment_status,paid_at,created_at,confirmed_at,order_items(product_id,product_title,unit_price,quantity)").eq("user_id", userId).order("created_at", { ascending: false })
-      ]);
-      let orderResult = paymentOrderResult;
-      if (paymentOrderResult.error && /payment_provider|payment_status|paid_at/i.test(paymentOrderResult.error.message || "")) {
-        orderResult = await db.from("orders")
-          .select("id,order_number,status,total,item_count,points_awarded,created_at,confirmed_at,order_items(product_id,product_title,unit_price,quantity)")
-          .eq("user_id", userId)
-          .order("created_at", { ascending: false });
+      const profilePromise = db.from("profiles").select("id,email,full_name,points,total_spent,is_admin,created_at").eq("id", userId).single();
+      const paymentFields = "id,order_number,status,total,item_count,points_awarded,payment_provider,payment_status,paid_at,created_at,confirmed_at,order_items(product_id,product_title,unit_price,quantity)";
+      const basicFields = "id,order_number,status,total,item_count,points_awarded,created_at,confirmed_at,order_items(product_id,product_title,unit_price,quantity)";
+      let supportsOrderRecycle = true;
+      let orderResult = await db.from("orders").select(paymentFields).eq("user_id", userId).is("deleted_at", null).order("created_at", { ascending: false });
+      if (orderResult.error && /deleted_at/i.test(orderResult.error.message || "")) {
+        supportsOrderRecycle = false;
+        orderResult = await db.from("orders").select(paymentFields).eq("user_id", userId).order("created_at", { ascending: false });
       }
+      if (orderResult.error && /payment_provider|payment_status|paid_at/i.test(orderResult.error.message || "")) {
+        let basicQuery = db.from("orders").select(basicFields).eq("user_id", userId);
+        if (supportsOrderRecycle) basicQuery = basicQuery.is("deleted_at", null);
+        orderResult = await basicQuery.order("created_at", { ascending: false });
+      }
+      const profileResult = await profilePromise;
       if (!profileResult.error) state.profile = profileResult.data;
       state.customerOrders = orderResult.error ? [] : (orderResult.data || []);
       renderAccount();
@@ -6076,7 +6106,7 @@
     }
 
     async function handleAdminOrderRealtime(order, eventType) {
-      if (!state.profile?.is_admin || !order?.id) return;
+      if (!state.profile?.is_admin || !order?.id || order.deleted_at) return;
       const isPaid = order.payment_status === "paid";
       const isStripe = order.payment_provider === "stripe";
       if (eventType === "INSERT" && isStripe && !isPaid) return;
@@ -6604,17 +6634,27 @@
 
     async function loadAdminData() {
       if (!db || !state.profile?.is_admin) return;
-      const [paymentOrdersResult, customersResult] = await Promise.all([
-        db.from("orders").select("id,order_number,user_id,status,total,item_count,points_awarded,payment_provider,payment_status,paid_at,created_at,confirmed_at,profiles!orders_user_id_fkey(email,full_name),order_items(product_id,product_title,quantity,unit_price)").order("created_at", { ascending: false }),
-        db.from("profiles").select("id,email,full_name,points,total_spent,created_at,is_admin").order("created_at", { ascending: false })
-      ]);
-      let ordersResult = paymentOrdersResult;
-      if (paymentOrdersResult.error && /payment_provider|payment_status|paid_at/i.test(paymentOrdersResult.error.message || "")) {
-        ordersResult = await db.from("orders")
-          .select("id,order_number,user_id,status,total,item_count,points_awarded,created_at,confirmed_at,profiles!orders_user_id_fkey(email,full_name),order_items(product_id,product_title,quantity,unit_price)")
-          .order("created_at", { ascending: false });
+      const customerPromise = db.from("profiles").select("id,email,full_name,points,total_spent,created_at,is_admin").order("created_at", { ascending: false });
+      const paymentFields = "id,order_number,user_id,status,total,item_count,points_awarded,payment_provider,payment_status,paid_at,created_at,confirmed_at,deleted_at,deleted_by,profiles!orders_user_id_fkey(email,full_name),order_items(product_id,product_title,quantity,unit_price)";
+      const paymentFieldsWithoutRecycle = "id,order_number,user_id,status,total,item_count,points_awarded,payment_provider,payment_status,paid_at,created_at,confirmed_at,profiles!orders_user_id_fkey(email,full_name),order_items(product_id,product_title,quantity,unit_price)";
+      const basicFields = "id,order_number,user_id,status,total,item_count,points_awarded,created_at,confirmed_at,deleted_at,deleted_by,profiles!orders_user_id_fkey(email,full_name),order_items(product_id,product_title,quantity,unit_price)";
+      const basicFieldsWithoutRecycle = "id,order_number,user_id,status,total,item_count,points_awarded,created_at,confirmed_at,profiles!orders_user_id_fkey(email,full_name),order_items(product_id,product_title,quantity,unit_price)";
+      state.orderRecycleSupported = true;
+      let ordersResult = await db.from("orders").select(paymentFields).order("created_at", { ascending: false });
+      if (ordersResult.error && /deleted_at|deleted_by/i.test(ordersResult.error.message || "")) {
+        state.orderRecycleSupported = false;
+        ordersResult = await db.from("orders").select(paymentFieldsWithoutRecycle).order("created_at", { ascending: false });
       }
-      if (!ordersResult.error) state.adminOrders = ordersResult.data || [];
+      if (ordersResult.error && /payment_provider|payment_status|paid_at/i.test(ordersResult.error.message || "")) {
+        const fields = state.orderRecycleSupported ? basicFields : basicFieldsWithoutRecycle;
+        ordersResult = await db.from("orders").select(fields).order("created_at", { ascending: false });
+      }
+      const customersResult = await customerPromise;
+      if (!ordersResult.error) {
+        const orders = ordersResult.data || [];
+        state.adminOrders = orders.filter((order) => !order.deleted_at);
+        state.deletedOrders = state.orderRecycleSupported ? orders.filter((order) => Boolean(order.deleted_at)) : [];
+      }
       if (!customersResult.error) state.customers = customersResult.data || [];
       renderAdmin();
     }
@@ -6622,6 +6662,14 @@
     function renderAdminOrders() {
       const target = $("#adminOrderRows");
       if (!target) return;
+      const trashToggle = $("[data-toggle-order-trash]");
+      const trashPanel = $("[data-order-trash-panel]");
+      const trashRows = $("#adminOrderTrashRows");
+      $("#adminOrderTrashCount").textContent = String(state.deletedOrders.length);
+      trashToggle.setAttribute("aria-expanded", String(state.orderTrashOpen));
+      trashToggle.disabled = !state.orderRecycleSupported;
+      trashToggle.title = state.orderRecycleSupported ? "View deleted orders" : "Run the order recycle bin database migration first";
+      trashPanel.hidden = !state.orderTrashOpen;
       target.innerHTML = state.adminOrders.length ? state.adminOrders.map((order) => {
         const customer = order.profiles || {};
         const canEdit = order.status === "pending" && order.payment_provider !== "stripe";
@@ -6650,6 +6698,20 @@
           <tr><td colspan="6" class="muted">${(order.order_items || []).map((item) => `${escapeHtml(item.product_title)} × ${Number(item.quantity)}`).join(" · ")}</td></tr>
         `;
       }).join("") : `<tr><td colspan="6"><div class="empty-state">No customer orders yet</div></td></tr>`;
+      trashRows.innerHTML = state.deletedOrders.length ? state.deletedOrders.map((order) => {
+        const customer = order.profiles || {};
+        return `
+          <tr>
+            <td><strong>${escapeHtml(order.order_number)}</strong><div class="muted">${new Date(order.created_at).toLocaleString("en-NZ")}</div></td>
+            <td>${escapeHtml(customer.full_name || customer.email || "Customer")}<div class="muted">${escapeHtml(customer.email || "")}</div></td>
+            <td>${formatPrice(order.total)}<div class="muted">${Number(order.item_count)} items</div></td>
+            <td><span class="status ${order.status === "confirmed" ? "live" : "featured"}">${escapeHtml(orderStatusLabel(order.status))}</span></td>
+            <td>${new Date(order.deleted_at).toLocaleString("en-NZ")}</td>
+            <td><button class="button" type="button" data-restore-order="${escapeHtml(order.id)}"><i data-lucide="rotate-ccw"></i> Restore</button></td>
+          </tr>
+          <tr><td colspan="6" class="muted">${(order.order_items || []).map((item) => `${escapeHtml(item.product_title)} x ${Number(item.quantity)}`).join(" | ")}</td></tr>
+        `;
+      }).join("") : `<tr><td colspan="6"><div class="empty-state">Order recycle bin is empty</div></td></tr>`;
       refreshIcons();
     }
 
@@ -6685,12 +6747,51 @@
 
     async function deleteSupabaseOrder(orderId) {
       const order = state.adminOrders.find((item) => item.id === orderId);
-      if (!order || !window.confirm(`Delete order ${order.order_number}?`)) return;
-      const { error } = await db.rpc("delete_order", { p_order_id: orderId });
-      if (error) return showToast(authErrorMessage(error));
+      if (!order) return;
+      const firstConfirmed = window.confirm(
+        `Move order ${order.order_number} to the recycle bin?\n\n` +
+        "For a confirmed order, inventory, sales, customer points and total spending will be rolled back."
+      );
+      if (!firstConfirmed) return;
+      const typedOrderNumber = window.prompt(
+        `Second confirmation: type ${order.order_number} to continue.`,
+        ""
+      );
+      if (typedOrderNumber !== order.order_number) {
+        showToast("Order deletion cancelled: order number did not match");
+        return;
+      }
+      const button = $(`[data-delete-order="${CSS.escape(orderId)}"]`);
+      if (button) button.disabled = true;
+      const { error } = await db.rpc("soft_delete_order", { p_order_id: orderId });
+      if (error) {
+        if (button) button.disabled = false;
+        return showToast(authErrorMessage(error));
+      }
       await Promise.all([loadAdminData(), loadStoreInventory(), loadCustomerData()]);
       renderAll();
-      showToast("Order deleted");
+      showToast("Order moved to recycle bin");
+    }
+
+    async function restoreSupabaseOrder(orderId) {
+      const order = state.deletedOrders.find((item) => item.id === orderId);
+      if (!order || !window.confirm(`Restore order ${order.order_number}?`)) return;
+      const button = $(`[data-restore-order="${CSS.escape(orderId)}"]`);
+      if (button) button.disabled = true;
+      const { error } = await db.rpc("restore_order", { p_order_id: orderId });
+      if (error) {
+        if (button) button.disabled = false;
+        return showToast(authErrorMessage(error));
+      }
+      await Promise.all([loadAdminData(), loadStoreInventory(), loadCustomerData()]);
+      renderAll();
+      showToast("Order restored");
+    }
+
+    function toggleOrderTrash(forceOpen) {
+      state.orderTrashOpen = typeof forceOpen === "boolean" ? forceOpen : !state.orderTrashOpen;
+      renderAdminOrders();
+      refreshIcons();
     }
 
     async function confirmSupabaseOrder(orderId) {
@@ -7476,6 +7577,9 @@
       if (state.activeProductId) renderProductDetail();
     }
 
+    document.addEventListener("pointerup", dismissOrderDetailImmediately, true);
+    document.addEventListener("click", dismissOrderDetailImmediately, true);
+
     document.addEventListener("click", (event) => {
       const clickedElement = event.target instanceof Element ? event.target : event.target.parentElement;
       if (!clickedElement) return;
@@ -7646,6 +7750,9 @@
       if (target.matches("[data-confirm-order]")) confirmSupabaseOrder(target.dataset.confirmOrder);
       if (target.matches("[data-edit-order]")) editSupabaseOrder(target.dataset.editOrder);
       if (target.matches("[data-delete-order]")) deleteSupabaseOrder(target.dataset.deleteOrder);
+      if (target.matches("[data-restore-order]")) restoreSupabaseOrder(target.dataset.restoreOrder);
+      if (target.matches("[data-toggle-order-trash]")) toggleOrderTrash();
+      if (target.matches("[data-close-order-trash]")) toggleOrderTrash(false);
       if (target.matches("[data-refresh-admin-data]")) loadAdminData();
       if (target.matches("[data-open-product-tab], [data-new-product]")) openNewProductEditor();
       if (target.matches("[data-close-product-editor]")) closeProductEditor();

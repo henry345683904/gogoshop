@@ -73,7 +73,9 @@ create table if not exists public.orders (
   paid_at timestamptz,
   created_at timestamptz not null default now(),
   confirmed_at timestamptz,
-  confirmed_by uuid references public.profiles(id) on delete set null
+  confirmed_by uuid references public.profiles(id) on delete set null,
+  deleted_at timestamptz,
+  deleted_by uuid references public.profiles(id) on delete set null
 );
 
 alter table public.orders add column if not exists payment_provider text not null default 'manual';
@@ -81,6 +83,8 @@ alter table public.orders add column if not exists payment_status text not null 
 alter table public.orders add column if not exists stripe_checkout_session_id text;
 alter table public.orders add column if not exists stripe_payment_intent_id text;
 alter table public.orders add column if not exists paid_at timestamptz;
+alter table public.orders add column if not exists deleted_at timestamptz;
+alter table public.orders add column if not exists deleted_by uuid references public.profiles(id) on delete set null;
 
 create table if not exists public.order_items (
   id bigint generated always as identity primary key,
@@ -95,6 +99,7 @@ create table if not exists public.order_items (
 create index if not exists orders_user_id_idx on public.orders(user_id, created_at desc);
 create index if not exists orders_status_idx on public.orders(status, created_at desc);
 create index if not exists orders_payment_status_idx on public.orders(payment_status, created_at desc);
+create index if not exists orders_deleted_at_idx on public.orders(deleted_at, created_at desc);
 create unique index if not exists orders_stripe_checkout_session_idx on public.orders(stripe_checkout_session_id) where stripe_checkout_session_id is not null;
 create index if not exists order_items_order_id_idx on public.order_items(order_id);
 create unique index if not exists order_items_order_product_idx on public.order_items(order_id, product_id);
@@ -204,14 +209,20 @@ create policy "products admin write" on public.products for all
 
 drop policy if exists "orders read own or admin" on public.orders;
 create policy "orders read own or admin" on public.orders
-  for select using (user_id = auth.uid() or public.is_admin());
+  for select using (
+    public.is_admin()
+    or (user_id = auth.uid() and deleted_at is null)
+  );
 drop policy if exists "order items read own or admin" on public.order_items;
 create policy "order items read own or admin" on public.order_items
   for select using (
     exists (
       select 1 from public.orders
       where orders.id = order_items.order_id
-        and (orders.user_id = auth.uid() or public.is_admin())
+        and (
+          public.is_admin()
+          or (orders.user_id = auth.uid() and orders.deleted_at is null)
+        )
     )
   );
 
@@ -325,6 +336,97 @@ begin
 end;
 $$;
 
+create or replace function public.soft_delete_order(p_order_id uuid)
+returns public.orders
+language plpgsql
+security definer set search_path = public
+as $$
+declare
+  v_order public.orders%rowtype;
+  v_item public.order_items%rowtype;
+begin
+  if not public.is_admin() then raise exception 'Administrator access required'; end if;
+
+  select * into v_order from public.orders where id = p_order_id for update;
+  if not found then raise exception 'Order not found'; end if;
+  if v_order.deleted_at is not null then raise exception 'Order is already in the recycle bin'; end if;
+
+  if v_order.status = 'confirmed' then
+    for v_item in select * from public.order_items where order_id = p_order_id
+    loop
+      update public.products
+      set stock = stock + v_item.quantity,
+          sales = greatest(0, sales - v_item.quantity),
+          updated_at = now()
+      where id = v_item.product_id;
+    end loop;
+
+    update public.profiles
+    set points = greatest(0, points - v_order.points_awarded),
+        total_spent = greatest(0, total_spent - v_order.total),
+        updated_at = now()
+    where id = v_order.user_id;
+  end if;
+
+  update public.orders
+  set deleted_at = now(), deleted_by = auth.uid()
+  where id = p_order_id
+  returning * into v_order;
+
+  return v_order;
+end;
+$$;
+
+create or replace function public.restore_order(p_order_id uuid)
+returns public.orders
+language plpgsql
+security definer set search_path = public
+as $$
+declare
+  v_order public.orders%rowtype;
+  v_item public.order_items%rowtype;
+  v_stock integer;
+begin
+  if not public.is_admin() then raise exception 'Administrator access required'; end if;
+
+  select * into v_order from public.orders where id = p_order_id for update;
+  if not found then raise exception 'Order not found'; end if;
+  if v_order.deleted_at is null then raise exception 'Order is not in the recycle bin'; end if;
+
+  if v_order.status = 'confirmed' then
+    for v_item in select * from public.order_items where order_id = p_order_id
+    loop
+      select stock into v_stock from public.products where id = v_item.product_id for update;
+      if v_stock is null or v_stock < v_item.quantity then
+        raise exception 'Insufficient stock to restore %', v_item.product_title;
+      end if;
+    end loop;
+
+    for v_item in select * from public.order_items where order_id = p_order_id
+    loop
+      update public.products
+      set stock = stock - v_item.quantity,
+          sales = sales + v_item.quantity,
+          updated_at = now()
+      where id = v_item.product_id;
+    end loop;
+
+    update public.profiles
+    set points = points + v_order.points_awarded,
+        total_spent = total_spent + v_order.total,
+        updated_at = now()
+    where id = v_order.user_id;
+  end if;
+
+  update public.orders
+  set deleted_at = null, deleted_by = null
+  where id = p_order_id
+  returning * into v_order;
+
+  return v_order;
+end;
+$$;
+
 create or replace function public.create_payment_order(p_items jsonb)
 returns uuid
 language plpgsql
@@ -346,10 +448,14 @@ $$;
 revoke all on function public.create_order(jsonb) from public, anon, authenticated;
 revoke all on function public.create_payment_order(jsonb) from public, anon;
 revoke all on function public.confirm_order(uuid) from public, anon;
+revoke all on function public.soft_delete_order(uuid) from public, anon;
+revoke all on function public.restore_order(uuid) from public, anon;
 revoke all on function public.get_admin_login_email() from public;
 revoke all on function public.get_storefront_products() from public;
 grant execute on function public.create_payment_order(jsonb) to authenticated;
 grant execute on function public.confirm_order(uuid) to authenticated;
+grant execute on function public.soft_delete_order(uuid) to authenticated;
+grant execute on function public.restore_order(uuid) to authenticated;
 grant execute on function public.get_admin_login_email() to anon, authenticated;
 grant execute on function public.get_storefront_products() to anon, authenticated;
 revoke select on public.products from anon;
