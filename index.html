@@ -1374,21 +1374,174 @@
     .order-detail-modal {
       position: fixed;
       inset: 0;
-      z-index: 80;
+      z-index: 240;
       display: grid;
       place-items: center;
       padding: 18px;
-      background: rgba(20, 24, 24, .42);
+      background: rgba(20, 24, 24, .56);
     }
+
     .order-detail-dialog {
-      width: min(100%, 520px);
-      max-height: min(78vh, 680px);
-      overflow: auto;
-      padding: 22px;
+      width: min(100%, 680px);
+      max-height: min(88vh, 760px);
+      max-height: min(88dvh, 760px);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
       border: 1px solid var(--line);
       border-radius: 8px;
       background: #fff;
-      box-shadow: 0 18px 60px rgba(20, 24, 24, .2);
+      box-shadow: 0 24px 80px rgba(20, 24, 24, .28);
+    }
+
+    .order-detail-head {
+      flex: 0 0 auto;
+      background: #fff;
+    }
+
+    .order-detail-content {
+      min-height: 0;
+      overflow: auto;
+      overscroll-behavior: contain;
+      padding: 22px 24px 26px;
+    }
+
+    .order-detail-statuses {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-bottom: 18px;
+    }
+
+    .order-detail-meta-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1px;
+      margin: 0;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--line);
+    }
+
+    .order-detail-meta-grid > div {
+      min-width: 0;
+      padding: 13px 14px;
+      background: #fff;
+    }
+
+    .order-detail-meta-grid dt {
+      margin: 0 0 4px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 650;
+    }
+
+    .order-detail-meta-grid dd {
+      margin: 0;
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1.35;
+      overflow-wrap: anywhere;
+    }
+
+    .order-detail-section {
+      margin-top: 22px;
+    }
+
+    .order-detail-section h3 {
+      margin: 0 0 10px;
+      font-size: 15px;
+      line-height: 1.3;
+    }
+
+    .order-detail-items {
+      border-top: 1px solid var(--line);
+    }
+
+    .order-detail-item {
+      display: grid;
+      grid-template-columns: 52px minmax(0, 1fr) auto;
+      gap: 12px;
+      align-items: center;
+      border-bottom: 1px solid var(--line);
+      padding: 12px 0;
+    }
+
+    .order-detail-item-media {
+      width: 52px;
+      height: 52px;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--soft);
+      color: var(--muted);
+    }
+
+    .order-detail-item-media img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .order-detail-item-media svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .order-detail-item-copy {
+      min-width: 0;
+    }
+
+    .order-detail-item-copy strong {
+      display: block;
+      font-size: 14px;
+      line-height: 1.4;
+      overflow-wrap: anywhere;
+    }
+
+    .order-detail-item-copy span {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .order-detail-item-total {
+      align-self: center;
+      font-size: 14px;
+      white-space: nowrap;
+    }
+
+    .order-detail-totals {
+      display: grid;
+      gap: 9px;
+      margin-top: 18px;
+      margin-left: auto;
+      width: min(100%, 330px);
+    }
+
+    .order-detail-total-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .order-detail-total-row strong {
+      color: var(--ink);
+    }
+
+    .order-detail-total-row.final {
+      margin-top: 3px;
+      border-top: 1px solid var(--line);
+      padding-top: 12px;
+      color: var(--ink);
+      font-size: 16px;
+      font-weight: 800;
     }
 
     .payment-modal[hidden] {
@@ -3222,6 +3375,40 @@
         min-width: 0;
       }
 
+      .order-detail-modal {
+        align-items: end;
+        padding: 10px;
+      }
+
+      .order-detail-dialog {
+        width: 100%;
+        max-height: calc(100vh - 20px);
+        max-height: calc(100dvh - 20px);
+      }
+
+      .order-detail-head {
+        min-height: 58px;
+        padding: 0 16px;
+      }
+
+      .order-detail-content {
+        padding: 16px 16px 22px;
+      }
+
+      .order-detail-meta-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .order-detail-item {
+        grid-template-columns: 46px minmax(0, 1fr) auto;
+        gap: 10px;
+      }
+
+      .order-detail-item-media {
+        width: 46px;
+        height: 46px;
+      }
+
       .newsletter-form,
       .search-input-wrap {
         grid-template-columns: 1fr;
@@ -4157,8 +4344,8 @@
 
   <section class="order-detail-modal" id="orderDetailModal" data-order-detail-backdrop hidden>
     <div class="order-detail-dialog" role="dialog" aria-modal="true" aria-labelledby="orderDetailTitle">
-      <div class="panel-head"><h2 class="panel-title" id="orderDetailTitle">Order details</h2><button class="icon-button" type="button" data-close-order-detail aria-label="Close"><i data-lucide="x"></i></button></div>
-      <div id="orderDetailContent"></div>
+      <div class="panel-head order-detail-head"><h2 class="panel-title" id="orderDetailTitle" data-i18n="orderDetails">Order details</h2><button class="icon-button" type="button" data-close-order-detail aria-label="Close"><i data-lucide="x"></i></button></div>
+      <div class="order-detail-content" id="orderDetailContent"></div>
     </div>
   </section>
 
@@ -4266,6 +4453,18 @@
         pendingOrder: "Pending confirmation",
         confirmedOrder: "Confirmed",
         noOrders: "No orders yet",
+        orderDetails: "Order details",
+        orderNumber: "Order number",
+        orderDate: "Order date",
+        orderItems: "Items",
+        itemCount: "Item count",
+        unitPrice: "Unit price",
+        subtotal: "Subtotal",
+        paymentMethod: "Payment method",
+        paidAt: "Paid at",
+        confirmedAt: "Confirmed at",
+        pointsEarned: "Points earned",
+        manualPaymentMethod: "Manual payment",
         allCategory: "All products",
         otherCategory: "Other products",
         menuCategories: "Product Categories",
@@ -4348,6 +4547,18 @@
         pendingOrder: "等待商家确认",
         confirmedOrder: "已确认",
         noOrders: "暂无订单",
+        orderDetails: "订单详情",
+        orderNumber: "订单号",
+        orderDate: "下单时间",
+        orderItems: "商品明细",
+        itemCount: "商品数量",
+        unitPrice: "单价",
+        subtotal: "小计",
+        paymentMethod: "付款方式",
+        paidAt: "付款时间",
+        confirmedAt: "确认时间",
+        pointsEarned: "获得积分",
+        manualPaymentMethod: "线下付款",
         allCategory: "全部商品",
         otherCategory: "其他商品",
         menuCategories: "商品分类",
@@ -5327,6 +5538,8 @@
     function closeOrderDetail() {
       const modal = $("#orderDetailModal");
       if (modal) modal.hidden = true;
+      if (showOrderDetail.lastFocus instanceof HTMLElement) showOrderDetail.lastFocus.focus();
+      showOrderDetail.lastFocus = null;
     }
 
     function showOrderDetail(orderId) {
@@ -5334,17 +5547,57 @@
       const modal = $("#orderDetailModal");
       const content = $("#orderDetailContent");
       if (!order || !modal || !content) return;
+      const locale = state.lang === "zh" ? "zh-CN" : "en-NZ";
+      const items = order.order_items || [];
+      const subtotal = items.reduce((sum, item) => (
+        sum + Number(item.unit_price || 0) * Number(item.quantity || 0)
+      ), 0);
+      const itemCount = items.reduce((sum, item) => sum + Number(item.quantity || 0), 0)
+        || Number(order.item_count || 0);
+      const paymentMethod = order.payment_provider === "stripe" ? "Stripe" : t("manualPaymentMethod");
+      const formatDate = (value) => value ? new Date(value).toLocaleString(locale) : "-";
+      $("#orderDetailTitle").textContent = t("orderDetails");
       content.innerHTML = `
-        <div class="account-order-meta">${escapeHtml(order.order_number)} · ${new Date(order.created_at).toLocaleString(state.lang === "zh" ? "zh-CN" : "en-NZ")}</div>
-        <div class="order-statuses" style="justify-content: flex-start; margin: 12px 0;">
+        <div class="order-detail-statuses">
           <span class="status ${paymentStatusClass(order)}">${escapeHtml(paymentStatusLabel(order))}</span>
           <span class="status ${order.status === "confirmed" ? "live" : "featured"}">${escapeHtml(orderStatusLabel(order.status))}</span>
         </div>
-        <div class="account-order-items">${(order.order_items || []).map((item) => `<div style="display:flex;justify-content:space-between;gap:12px;padding:6px 0;"><span>${escapeHtml(orderItemName(item))} × ${Number(item.quantity)}</span><span>${formatPrice(Number(item.unit_price) * Number(item.quantity))}</span></div>`).join("")}</div>
-        <p><strong>Total: ${formatPrice(order.total)}</strong> · ${Number(order.item_count || 0)} items</p>
-        ${order.status === "confirmed" ? `<div class="account-order-meta">+${Number(order.points_awarded || 0)} ${t("rewardPoints")}</div>` : ""}`;
+        <dl class="order-detail-meta-grid">
+          <div><dt>${t("orderNumber")}</dt><dd>${escapeHtml(order.order_number)}</dd></div>
+          <div><dt>${t("orderDate")}</dt><dd>${escapeHtml(formatDate(order.created_at))}</dd></div>
+          <div><dt>${t("paymentMethod")}</dt><dd>${escapeHtml(paymentMethod)}</dd></div>
+          <div><dt>${order.paid_at ? t("paidAt") : t("confirmedAt")}</dt><dd>${escapeHtml(formatDate(order.paid_at || order.confirmed_at))}</dd></div>
+        </dl>
+        <section class="order-detail-section">
+          <h3>${t("orderItems")}</h3>
+          <div class="order-detail-items">
+            ${items.map((item) => {
+              const product = state.products.find((entry) => entry.id === item.product_id);
+              const image = product?.image || "";
+              return `
+                <div class="order-detail-item">
+                  <div class="order-detail-item-media">
+                    ${image ? `<img src="${escapeHtml(image)}" alt="">` : '<i data-lucide="package"></i>'}
+                  </div>
+                  <div class="order-detail-item-copy">
+                    <strong>${escapeHtml(orderItemName(item))}</strong>
+                    <span>${Number(item.quantity)} × ${t("unitPrice")} ${formatPrice(item.unit_price)}</span>
+                  </div>
+                  <strong class="order-detail-item-total">${formatPrice(Number(item.unit_price) * Number(item.quantity))}</strong>
+                </div>`;
+            }).join("") || `<div class="empty-state">${t("noProducts")}</div>`}
+          </div>
+        </section>
+        <div class="order-detail-totals">
+          <div class="order-detail-total-row"><span>${t("subtotal")}</span><strong>${formatPrice(subtotal || order.total)}</strong></div>
+          <div class="order-detail-total-row"><span>${t("itemCount")}</span><strong>${itemCount}</strong></div>
+          ${order.status === "confirmed" ? `<div class="order-detail-total-row"><span>${t("pointsEarned")}</span><strong>+${Number(order.points_awarded || 0)}</strong></div>` : ""}
+          <div class="order-detail-total-row final"><span>${t("total")}</span><strong>${formatPrice(order.total)}</strong></div>
+        </div>`;
+      showOrderDetail.lastFocus = document.activeElement;
       modal.hidden = false;
       refreshIcons();
+      window.requestAnimationFrame(() => modal.querySelector("[data-close-order-detail]")?.focus());
     }
 
     async function loadStoreInventory() {
@@ -5436,12 +5689,12 @@
       const userId = state.session.user.id;
       const [profileResult, paymentOrderResult] = await Promise.all([
         db.from("profiles").select("id,email,full_name,points,total_spent,is_admin,created_at").eq("id", userId).single(),
-        db.from("orders").select("id,order_number,status,total,item_count,points_awarded,payment_provider,payment_status,paid_at,created_at,order_items(product_id,product_title,unit_price,quantity)").eq("user_id", userId).order("created_at", { ascending: false })
+        db.from("orders").select("id,order_number,status,total,item_count,points_awarded,payment_provider,payment_status,paid_at,created_at,confirmed_at,order_items(product_id,product_title,unit_price,quantity)").eq("user_id", userId).order("created_at", { ascending: false })
       ]);
       let orderResult = paymentOrderResult;
       if (paymentOrderResult.error && /payment_provider|payment_status|paid_at/i.test(paymentOrderResult.error.message || "")) {
         orderResult = await db.from("orders")
-          .select("id,order_number,status,total,item_count,points_awarded,created_at,order_items(product_id,product_title,unit_price,quantity)")
+          .select("id,order_number,status,total,item_count,points_awarded,created_at,confirmed_at,order_items(product_id,product_title,unit_price,quantity)")
           .eq("user_id", userId)
           .order("created_at", { ascending: false });
       }
@@ -7181,6 +7434,12 @@
     });
 
     document.addEventListener("keydown", (event) => {
+      const orderCard = event.target instanceof Element ? event.target.closest("[data-order-detail]") : null;
+      if (orderCard && (event.key === "Enter" || event.key === " ")) {
+        event.preventDefault();
+        showOrderDetail(orderCard.dataset.orderDetail);
+        return;
+      }
       const productRow = event.target instanceof Element ? event.target.closest("[data-edit-product-row]") : null;
       if (productRow && (event.key === "Enter" || event.key === " ")) {
         event.preventDefault();
@@ -7193,6 +7452,10 @@
       }
       if (event.key === "Escape" && !$("#paymentModal").hidden) {
         closePaymentModal();
+        return;
+      }
+      if (event.key === "Escape" && !$("#orderDetailModal").hidden) {
+        closeOrderDetail();
         return;
       }
       if (!$("#productDetail").hidden && !event.target.matches("input, textarea, select")) {
