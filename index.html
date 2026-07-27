@@ -4087,7 +4087,7 @@
               <div class="shopify-card-head"><h3>定价</h3></div>
               <div class="form-row">
                 <label class="field">
-                  <span>价格 NZD（供应价 × 1.5 × 1.15）</span>
+                  <span>售价 NZD（可手动修改；供应价变化时自动计算）</span>
                   <input type="number" name="price" min="0" step="0.01" required>
                 </label>
                 <label class="field">
@@ -6942,13 +6942,18 @@
       const images = [...new Set([image, ...String(data.images || "").split(/\r?\n/).map((value) => value.trim()).filter(Boolean)])];
       const sourcePriceCny = Number(data.sourcePriceCny || 0);
       const sourcePricing = calculateSourcePricing(sourcePriceCny);
+      const manualPrice = Number(data.price);
+      if (!Number.isFinite(manualPrice) || manualPrice < 0) {
+        showToast(state.lang === "zh" ? "请输入有效的商品售价" : "Enter a valid product price");
+        return;
+      }
       const product = {
         id,
         title: data.title.trim(),
         handle: id,
         category: data.category,
         description: data.description.trim(),
-        price: sourcePricing?.price ?? Number(data.price),
+        price: Math.round((manualPrice + Number.EPSILON) * 100) / 100,
         compareAtPrice: Number(data.compareAtPrice || 0),
         costPerItem: sourcePricing?.cost ?? Number(data.costPerItem || 0),
         sourcePriceCny,
