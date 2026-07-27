@@ -1,4 +1,5 @@
 -- Run this entire file once in Supabase Dashboard > SQL Editor.
+-- Then run supabase-vouchers.sql to enable voucher redemption and discounts.
 -- After creating your first account, promote it with:
 -- update public.profiles set is_admin = true where email = 'YOUR_EMAIL';
 

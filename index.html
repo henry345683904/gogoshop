@@ -1370,6 +1370,146 @@
       min-width: max-content;
     }
 
+    .voucher-redeem-form {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+
+    .voucher-redeem-form input {
+      min-width: 0;
+      text-transform: uppercase;
+    }
+
+    .voucher-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .voucher-card {
+      display: grid;
+      grid-template-columns: 78px minmax(0, 1fr);
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .voucher-card-value {
+      display: grid;
+      place-items: center;
+      padding: 14px 8px;
+      background: #173f43;
+      color: #fff;
+      text-align: center;
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .voucher-card-copy {
+      min-width: 0;
+      display: grid;
+      gap: 5px;
+      padding: 12px 14px;
+    }
+
+    .voucher-card-copy strong,
+    .voucher-card-copy span {
+      overflow-wrap: anywhere;
+    }
+
+    .voucher-card-meta {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .voucher-card-status {
+      width: max-content;
+      border-radius: 999px;
+      padding: 3px 8px;
+      background: #edf7f1;
+      color: #24623e;
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .voucher-card.unavailable {
+      opacity: .62;
+    }
+
+    .voucher-card.unavailable .voucher-card-value {
+      background: #777d7d;
+    }
+
+    .cart-voucher-area {
+      display: grid;
+      gap: 7px;
+      margin-bottom: 14px;
+    }
+
+    .cart-voucher-area[hidden] {
+      display: none;
+    }
+
+    .cart-voucher-area label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 750;
+    }
+
+    .cart-voucher-area select {
+      width: 100%;
+      min-height: 42px;
+    }
+
+    .voucher-quote-message {
+      min-height: 16px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .voucher-quote-message.error {
+      color: #a33131;
+    }
+
+    .cart-total-breakdown,
+    .payment-total-breakdown {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .cart-total-row,
+    .payment-total-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .cart-total-row[hidden],
+    .payment-total-row[hidden] {
+      display: none;
+    }
+
+    .cart-total-row.discount,
+    .payment-total-row.discount {
+      color: #24623e;
+    }
+
+    .cart-total-row.final,
+    .payment-total-row.final {
+      border-top: 1px solid var(--line);
+      padding-top: 10px;
+      color: var(--ink);
+      font-size: 18px;
+      font-weight: 800;
+    }
+
     .order-detail-modal[hidden] { display: none; }
     .order-detail-modal {
       position: fixed;
@@ -1591,6 +1731,12 @@
 
     .payment-total strong {
       font-size: 25px;
+    }
+
+    .payment-total-breakdown {
+      margin: 0;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--line);
     }
 
     .payment-methods {
@@ -2191,6 +2337,46 @@
 
     .admin-panel-body {
       padding: 18px;
+    }
+
+    .voucher-admin-layout {
+      display: grid;
+      grid-template-columns: minmax(310px, 380px) minmax(0, 1fr);
+      gap: 16px;
+      align-items: start;
+    }
+
+    .voucher-admin-column {
+      display: grid;
+      gap: 16px;
+    }
+
+    .voucher-admin-form {
+      display: grid;
+      gap: 12px;
+    }
+
+    .voucher-admin-message {
+      min-height: 18px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .voucher-code-cell {
+      display: grid;
+      gap: 3px;
+    }
+
+    .voucher-code-cell code {
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    @media (max-width: 1120px) {
+      .voucher-admin-layout {
+        grid-template-columns: 1fr;
+      }
     }
 
     .product-form {
@@ -3542,6 +3728,10 @@
         grid-template-columns: 1fr;
       }
 
+      .voucher-redeem-form {
+        grid-template-columns: 1fr;
+      }
+
       .admin-topbar {
         align-items: flex-start;
         flex-direction: column;
@@ -3855,6 +4045,7 @@
           <button class="tab-button" type="button" data-admin-tab="products" aria-label="Products" title="Products"><i data-lucide="package-plus"></i><span>Products</span></button>
           <button class="tab-button" type="button" data-admin-tab="orders" aria-label="Orders" title="Orders"><i data-lucide="receipt-text"></i><span>Orders</span><span class="admin-order-badge" id="adminOrderBadge" hidden>0</span></button>
           <button class="tab-button" type="button" data-admin-tab="customers" aria-label="Customers" title="Customers"><i data-lucide="users"></i><span>Customers</span></button>
+          <button class="tab-button" type="button" data-admin-tab="vouchers" aria-label="Vouchers" title="Vouchers"><i data-lucide="ticket-percent"></i><span>Vouchers</span></button>
           <button class="tab-button" type="button" data-admin-tab="analytics" aria-label="Analytics" title="Analytics"><i data-lucide="chart-column"></i><span>Analytics</span></button>
           <button class="tab-button" type="button" data-admin-tab="design" aria-label="Design" title="Design"><i data-lucide="paintbrush"></i><span>Design</span></button>
           <button class="tab-button" type="button" data-back-store aria-label="Storefront" title="Storefront"><i data-lucide="store"></i><span>Store</span></button>
@@ -3973,6 +4164,80 @@
                 <thead><tr><th>Customer</th><th>Email</th><th>Points</th><th>Total spent</th><th>Joined</th></tr></thead>
                 <tbody id="customerRows"></tbody>
               </table>
+            </div>
+          </div>
+        </section>
+
+        <section class="admin-section" data-admin-section="vouchers">
+          <div class="voucher-admin-layout">
+            <div class="voucher-admin-column">
+              <div class="admin-panel">
+                <div class="admin-panel-head"><h2 id="voucherFormTitle">Create voucher</h2></div>
+                <div class="admin-panel-body">
+                  <form class="voucher-admin-form" data-voucher-form>
+                    <input type="hidden" name="id">
+                    <div class="form-row">
+                      <label class="field"><span>Code</span><input type="text" name="code" placeholder="WELCOME10" maxlength="40" required></label>
+                      <label class="field"><span>Name</span><input type="text" name="name" placeholder="Welcome voucher" maxlength="80" required></label>
+                    </div>
+                    <div class="form-row">
+                      <label class="field"><span>Discount type</span><select name="discountType"><option value="fixed">Fixed amount</option><option value="percent">Percentage</option></select></label>
+                      <label class="field"><span>Discount value</span><input type="number" name="discountValue" min="0.01" step="0.01" required></label>
+                    </div>
+                    <div class="form-row">
+                      <label class="field"><span>Minimum spend (NZD)</span><input type="number" name="minimumSpend" min="0" step="0.01" value="0"></label>
+                      <label class="field"><span>Maximum discount (NZD)</span><input type="number" name="maximumDiscount" min="0.01" step="0.01" placeholder="No limit"></label>
+                    </div>
+                    <div class="form-row">
+                      <label class="field"><span>Starts</span><input type="datetime-local" name="startsAt"></label>
+                      <label class="field"><span>Expires</span><input type="datetime-local" name="expiresAt"></label>
+                    </div>
+                    <div class="form-row">
+                      <label class="field"><span>Total issue limit</span><input type="number" name="totalLimit" min="1" step="1" placeholder="Unlimited"></label>
+                      <label class="field"><span>Per customer</span><input type="number" name="customerLimit" min="1" step="1" value="1" required></label>
+                    </div>
+                    <label class="switch"><span>Active</span><input type="checkbox" name="active" checked></label>
+                    <div class="form-actions">
+                      <button class="button" type="submit"><i data-lucide="save"></i> Save voucher</button>
+                      <button class="button ghost" type="button" data-reset-voucher-form><i data-lucide="plus"></i> New</button>
+                    </div>
+                    <p class="voucher-admin-message" id="voucherAdminMessage" role="status"></p>
+                  </form>
+                </div>
+              </div>
+
+              <div class="admin-panel">
+                <div class="admin-panel-head"><h2>Issue to customer</h2></div>
+                <div class="admin-panel-body">
+                  <form class="voucher-admin-form" data-voucher-issue-form>
+                    <label class="field"><span>Voucher</span><select name="voucherId" id="voucherIssueVoucher" required></select></label>
+                    <label class="field"><span>Customer</span><select name="userId" id="voucherIssueCustomer" required></select></label>
+                    <button class="button" type="submit"><i data-lucide="send"></i> Issue voucher</button>
+                    <p class="voucher-admin-message" id="voucherIssueMessage" role="status"></p>
+                  </form>
+                </div>
+              </div>
+            </div>
+
+            <div class="voucher-admin-column">
+              <div class="admin-panel">
+                <div class="admin-panel-head"><div><h2>Vouchers</h2><span class="muted" id="adminVoucherCount"></span></div><button class="button ghost" type="button" data-refresh-admin-data><i data-lucide="refresh-cw"></i> Refresh</button></div>
+                <div class="table-wrap">
+                  <table>
+                    <thead><tr><th>Voucher</th><th>Discount</th><th>Conditions</th><th>Claims / Used</th><th>Status</th><th>Action</th></tr></thead>
+                    <tbody id="adminVoucherRows"></tbody>
+                  </table>
+                </div>
+              </div>
+              <div class="admin-panel">
+                <div class="admin-panel-head"><h2>Recent issues</h2></div>
+                <div class="table-wrap">
+                  <table>
+                    <thead><tr><th>Voucher</th><th>Customer</th><th>Source</th><th>Status</th><th>Date</th></tr></thead>
+                    <tbody id="adminVoucherAssignmentRows"></tbody>
+                  </table>
+                </div>
+              </div>
             </div>
           </div>
         </section>
@@ -4387,6 +4652,10 @@
           <span><i data-lucide="user-round"></i><span data-i18n="accountTitle">Account</span></span>
           <i data-lucide="chevron-right"></i>
         </button>
+        <button class="menu-account" type="button" data-open-vouchers>
+          <span><i data-lucide="ticket-percent"></i><span data-i18n="vouchersTitle">Vouchers</span></span>
+          <i data-lucide="chevron-right"></i>
+        </button>
         <section class="menu-section">
           <button class="menu-section-toggle" type="button" data-menu-toggle="categories" aria-expanded="false">
             <span><i data-lucide="layout-grid"></i><span data-i18n="menuCategories">Product Categories</span></span>
@@ -4432,11 +4701,39 @@
     </div>
     <div class="drawer-body" id="cartLines"></div>
     <div class="drawer-foot">
-      <div class="section-heading" style="margin-bottom: 16px;">
-        <h2 style="font-size: 20px;" data-i18n="total">Total</h2>
-        <strong id="cartTotal">$0.00</strong>
+      <div class="cart-voucher-area" id="cartVoucherArea" hidden>
+        <label for="cartVoucherSelect" data-i18n="applyVoucher">Apply voucher</label>
+        <select id="cartVoucherSelect" data-cart-voucher-select></select>
+        <span class="voucher-quote-message" id="cartVoucherMessage"></span>
+      </div>
+      <div class="cart-total-breakdown">
+        <div class="cart-total-row"><span data-i18n="subtotal">Subtotal</span><strong id="cartSubtotal">$0.00</strong></div>
+        <div class="cart-total-row discount" id="cartDiscountRow" hidden><span data-i18n="voucherDiscount">Voucher discount</span><strong id="cartDiscount">-$0.00</strong></div>
+        <div class="cart-total-row final"><span data-i18n="total">Total</span><strong id="cartTotal">$0.00</strong></div>
       </div>
       <button class="button" type="button" data-checkout style="width: 100%;"><i data-lucide="credit-card"></i> <span data-i18n="checkout">Checkout</span></button>
+    </div>
+  </aside>
+
+  <aside class="drawer" id="voucherDrawer" aria-hidden="true">
+    <div class="drawer-head">
+      <h2 class="drawer-title" data-i18n="vouchersTitle">Vouchers</h2>
+      <button class="icon-button" type="button" data-close-panels aria-label="Close"><i data-lucide="x"></i></button>
+    </div>
+    <div class="drawer-body">
+      <section data-vouchers-signed-out>
+        <div class="empty-state">
+          <div><h2 data-i18n="signInForVouchers">Sign in to use vouchers</h2><button class="button" type="button" data-open-account data-i18n="signIn">Sign in</button></div>
+        </div>
+      </section>
+      <section data-vouchers-signed-in hidden>
+        <form class="voucher-redeem-form" data-voucher-redeem-form>
+          <input type="text" name="code" maxlength="40" autocomplete="off" data-i18n-placeholder="voucherCodePlaceholder" placeholder="Enter voucher code" required>
+          <button class="button" type="submit" data-i18n="redeemVoucher">Redeem</button>
+        </form>
+        <p class="auth-message" id="voucherRedeemMessage" role="status" aria-live="polite"></p>
+        <div class="voucher-list" id="customerVoucherList"></div>
+      </section>
     </div>
   </aside>
 
@@ -4483,9 +4780,10 @@
         <button class="icon-button" type="button" data-close-payment aria-label="Close"><i data-lucide="x"></i></button>
       </div>
       <div class="payment-body">
-        <div class="payment-total">
-          <span data-i18n="total">Total</span>
-          <strong data-payment-total>$0.00</strong>
+        <div class="payment-total-breakdown">
+          <div class="payment-total-row"><span data-i18n="subtotal">Subtotal</span><strong data-payment-subtotal>$0.00</strong></div>
+          <div class="payment-total-row discount" data-payment-discount-row hidden><span data-i18n="voucherDiscount">Voucher discount</span><strong data-payment-discount>-$0.00</strong></div>
+          <div class="payment-total-row final"><span data-i18n="total">Total</span><strong data-payment-total>$0.00</strong></div>
         </div>
         <div>
           <p class="muted" style="margin: 0 0 8px; font-size: 13px; font-weight: 700;" data-i18n="paymentMethods">Payment methods</p>
@@ -4644,6 +4942,24 @@
         menuContact: "Contact Us",
         androidApp: "App For Android",
         adminDashboard: "Admin Dashboard",
+        vouchersTitle: "Vouchers",
+        signInForVouchers: "Sign in to use vouchers",
+        voucherCodePlaceholder: "Enter voucher code",
+        redeemVoucher: "Redeem",
+        noVouchers: "No vouchers yet",
+        voucherRedeemed: "Voucher redeemed",
+        applyVoucher: "Apply voucher",
+        noVoucher: "Do not use a voucher",
+        voucherDiscount: "Voucher discount",
+        voucherAvailable: "Available",
+        voucherUsed: "Used",
+        voucherReserved: "Reserved",
+        voucherExpired: "Expired",
+        voucherInactive: "Inactive",
+        minimumSpend: "Minimum spend",
+        validUntil: "Valid until",
+        noExpiry: "No expiry",
+        voucherApplied: "Voucher applied",
         aboutCompanyText: "GO GO SHOP is a New Zealand online store for practical phone accessories, small electronics and everyday gifts.",
         contactCompanyText: "Questions about products or an order? Send us a message and we will get back to you.",
         openContactForm: "Open contact form"
@@ -4738,6 +5054,24 @@
         menuContact: "联系我们",
         androidApp: "下载安卓 APP",
         adminDashboard: "管理员后台",
+        vouchersTitle: "代金券",
+        signInForVouchers: "登录后使用代金券",
+        voucherCodePlaceholder: "输入兑换码",
+        redeemVoucher: "兑换",
+        noVouchers: "暂无代金券",
+        voucherRedeemed: "代金券兑换成功",
+        applyVoucher: "使用代金券",
+        noVoucher: "不使用代金券",
+        voucherDiscount: "代金券优惠",
+        voucherAvailable: "可使用",
+        voucherUsed: "已使用",
+        voucherReserved: "结账处理中",
+        voucherExpired: "已过期",
+        voucherInactive: "已停用",
+        minimumSpend: "最低消费",
+        validUntil: "有效期至",
+        noExpiry: "长期有效",
+        voucherApplied: "已使用代金券",
         aboutCompanyText: "GO GO SHOP 是一家位于新西兰的网店，提供实用手机配件、小型电子产品和日常礼品。",
         contactCompanyText: "如需咨询商品或订单，请通过联系表单给我们留言。",
         openContactForm: "打开联系表单"
@@ -4967,11 +5301,16 @@
       session: null,
       profile: null,
       customerOrders: [],
+      customerVouchers: [],
+      selectedCustomerVoucherId: null,
+      voucherQuote: null,
       adminOrders: [],
       deletedOrders: [],
       orderTrashOpen: false,
       orderRecycleSupported: true,
       customers: [],
+      vouchers: [],
+      voucherAssignments: [],
       unreadOrderIds: load(ORDER_NOTIFICATION_UNREAD_KEY, []),
       notifiedOrderEvents: load(ORDER_NOTIFICATION_SEEN_KEY, []),
       latestOrderAlert: null,
@@ -5671,9 +6010,155 @@
       return "featured";
     }
 
+    function voucherValueLabel(voucher) {
+      return voucher.discount_type === "percent"
+        ? `${Number(voucher.discount_value || 0).toLocaleString()}%`
+        : formatPrice(voucher.discount_value || 0);
+    }
+
+    function voucherStatus(voucher) {
+      const now = Date.now();
+      if (voucher.used_at) return { key: "used", label: t("voucherUsed"), available: false };
+      if (voucher.order_id) return { key: "reserved", label: t("voucherReserved"), available: false };
+      if (!voucher.active) return { key: "inactive", label: t("voucherInactive"), available: false };
+      if (voucher.starts_at && now < new Date(voucher.starts_at).getTime()) {
+        return { key: "upcoming", label: state.lang === "zh" ? "尚未开始" : "Not active yet", available: false };
+      }
+      if (voucher.expires_at && now >= new Date(voucher.expires_at).getTime()) {
+        return { key: "expired", label: t("voucherExpired"), available: false };
+      }
+      return { key: "available", label: t("voucherAvailable"), available: true };
+    }
+
+    function voucherCartKey() {
+      return state.cart
+        .map((line) => `${line.id}:${Number(line.quantity) || 0}`)
+        .sort()
+        .join("|");
+    }
+
+    function voucherDiscount() {
+      const quote = state.voucherQuote;
+      if (!quote || !quote.eligible || quote.cartKey !== voucherCartKey() || quote.customerVoucherId !== state.selectedCustomerVoucherId) return 0;
+      return Math.max(0, Number(quote.discount) || 0);
+    }
+
+    function cartFinalTotal() {
+      return Math.max(0, cartTotal() - voucherDiscount());
+    }
+
+    function renderCustomerVouchers() {
+      const signedIn = Boolean(state.session?.user);
+      const signedOut = $(`[data-vouchers-signed-out]`);
+      const signedInView = $(`[data-vouchers-signed-in]`);
+      if (!signedOut || !signedInView) return;
+      signedOut.hidden = signedIn;
+      signedInView.hidden = !signedIn;
+      if (!signedIn) return;
+
+      const list = $("#customerVoucherList");
+      list.innerHTML = state.customerVouchers.length ? state.customerVouchers.map((voucher) => {
+        const status = voucherStatus(voucher);
+        const expiry = voucher.expires_at
+          ? `${t("validUntil")} ${new Date(voucher.expires_at).toLocaleDateString(state.lang === "zh" ? "zh-CN" : "en-NZ")}`
+          : t("noExpiry");
+        const condition = Number(voucher.minimum_spend || 0) > 0
+          ? `${t("minimumSpend")} ${formatPrice(voucher.minimum_spend)}`
+          : (state.lang === "zh" ? "无最低消费" : "No minimum spend");
+        return `
+          <article class="voucher-card ${status.available ? "" : "unavailable"}">
+            <div class="voucher-card-value">${escapeHtml(voucherValueLabel(voucher))}</div>
+            <div class="voucher-card-copy">
+              <strong>${escapeHtml(voucher.name)}</strong>
+              <span><code>${escapeHtml(voucher.code)}</code></span>
+              <span class="voucher-card-meta">${escapeHtml(condition)} · ${escapeHtml(expiry)}</span>
+              <span class="voucher-card-status">${escapeHtml(status.label)}</span>
+            </div>
+          </article>`;
+      }).join("") : `<div class="empty-state">${t("noVouchers")}</div>`;
+      refreshIcons();
+    }
+
+    function voucherErrorMessage(error) {
+      const message = String(error?.message || error || "");
+      if (state.lang !== "zh") return message;
+      const translations = [
+        [/not found/i, "兑换码不存在"],
+        [/inactive/i, "代金券已停用"],
+        [/not active yet/i, "代金券尚未开始"],
+        [/expired/i, "代金券已过期"],
+        [/limit reached|fully redeemed/i, "代金券领取数量已达上限"],
+        [/already been used/i, "代金券已使用"],
+        [/reserved/i, "代金券正在另一笔订单中使用"],
+        [/minimum spend/i, "未达到代金券最低消费金额"]
+      ];
+      return translations.find(([pattern]) => pattern.test(message))?.[1] || message;
+    }
+
+    async function redeemCustomerVoucher(form) {
+      if (!db || !state.session?.user || !form) {
+        openPanel("account");
+        return;
+      }
+      const message = $("#voucherRedeemMessage");
+      const button = form.querySelector("button[type='submit']");
+      const code = String(new FormData(form).get("code") || "").trim();
+      button.disabled = true;
+      message.textContent = state.lang === "zh" ? "正在兑换..." : "Redeeming...";
+      const { error } = await db.rpc("redeem_voucher", { p_code: code });
+      button.disabled = false;
+      if (error) {
+        message.textContent = voucherErrorMessage(error);
+        return;
+      }
+      form.reset();
+      message.textContent = t("voucherRedeemed");
+      await loadCustomerVouchers();
+    }
+
+    async function loadCustomerVouchers() {
+      if (!db || !state.session?.user) {
+        state.customerVouchers = [];
+        state.selectedCustomerVoucherId = null;
+        state.voucherQuote = null;
+        renderCustomerVouchers();
+        renderCart();
+        return;
+      }
+      const { data, error } = await db.rpc("get_my_vouchers");
+      state.customerVouchers = error ? [] : (data || []);
+      const selectedVoucher = state.customerVouchers.find((item) => item.customer_voucher_id === state.selectedCustomerVoucherId);
+      if (state.selectedCustomerVoucherId && (!selectedVoucher || !voucherStatus(selectedVoucher).available)) {
+        state.selectedCustomerVoucherId = null;
+        state.voucherQuote = null;
+      }
+      renderCustomerVouchers();
+      renderCart();
+    }
+
+    async function refreshVoucherQuote() {
+      if (!db || !state.session?.user || !state.cart.length || !state.selectedCustomerVoucherId) {
+        state.voucherQuote = null;
+        renderCart();
+        return true;
+      }
+      const cartKey = voucherCartKey();
+      const selectedId = state.selectedCustomerVoucherId;
+      const { data, error } = await db.rpc("get_voucher_quote", {
+        p_items: state.cart.map((line) => ({ product_id: line.id, quantity: line.quantity })),
+        p_customer_voucher_id: selectedId
+      });
+      state.voucherQuote = error
+        ? { eligible: false, reason: error.message, discount: 0, cartKey, customerVoucherId: selectedId }
+        : { ...(data || {}), cartKey, customerVoucherId: selectedId };
+      renderCart();
+      return Boolean(state.voucherQuote.eligible);
+    }
+
     function renderAccount() {
       const signedIn = Boolean(state.session?.user);
       updateAdminMenuVisibility();
+      renderCustomerVouchers();
       const signedOutView = $("[data-auth-signed-out]");
       const signedInView = $("[data-auth-signed-in]");
       if (!signedOutView || !signedInView) return;
@@ -5738,9 +6223,11 @@
       if (!order || !modal || !content) return;
       const locale = state.lang === "zh" ? "zh-CN" : "en-NZ";
       const items = order.order_items || [];
-      const subtotal = items.reduce((sum, item) => (
+      const calculatedSubtotal = items.reduce((sum, item) => (
         sum + Number(item.unit_price || 0) * Number(item.quantity || 0)
       ), 0);
+      const subtotal = Number(order.subtotal ?? calculatedSubtotal ?? order.total);
+      const discount = Number(order.discount_amount || 0);
       const itemCount = items.reduce((sum, item) => sum + Number(item.quantity || 0), 0)
         || Number(order.item_count || 0);
       const paymentMethod = order.payment_provider === "stripe" ? "Stripe" : t("manualPaymentMethod");
@@ -5779,6 +6266,7 @@
         </section>
         <div class="order-detail-totals">
           <div class="order-detail-total-row"><span>${t("subtotal")}</span><strong>${formatPrice(subtotal || order.total)}</strong></div>
+          ${discount > 0 ? `<div class="order-detail-total-row"><span>${t("voucherDiscount")} · ${escapeHtml(order.voucher_code || "")}</span><strong>-${formatPrice(discount)}</strong></div>` : ""}
           <div class="order-detail-total-row"><span>${t("itemCount")}</span><strong>${itemCount}</strong></div>
           ${order.status === "confirmed" ? `<div class="order-detail-total-row"><span>${t("pointsEarned")}</span><strong>+${Number(order.points_awarded || 0)}</strong></div>` : ""}
           <div class="order-detail-total-row final"><span>${t("total")}</span><strong>${formatPrice(order.total)}</strong></div>
@@ -5873,18 +6361,27 @@
       if (!db || !state.session?.user) {
         state.profile = null;
         state.customerOrders = [];
+        state.customerVouchers = [];
+        state.selectedCustomerVoucherId = null;
+        state.voucherQuote = null;
         renderAccount();
         return;
       }
       const userId = state.session.user.id;
       const profilePromise = db.from("profiles").select("id,email,full_name,points,total_spent,is_admin,created_at").eq("id", userId).single();
+      const voucherPaymentFields = "id,order_number,status,subtotal,discount_amount,voucher_code,total,item_count,points_awarded,payment_provider,payment_status,paid_at,created_at,confirmed_at,order_items(product_id,product_title,unit_price,quantity)";
       const paymentFields = "id,order_number,status,total,item_count,points_awarded,payment_provider,payment_status,paid_at,created_at,confirmed_at,order_items(product_id,product_title,unit_price,quantity)";
       const basicFields = "id,order_number,status,total,item_count,points_awarded,created_at,confirmed_at,order_items(product_id,product_title,unit_price,quantity)";
       let supportsOrderRecycle = true;
-      let orderResult = await db.from("orders").select(paymentFields).eq("user_id", userId).is("deleted_at", null).order("created_at", { ascending: false });
+      let orderResult = await db.from("orders").select(voucherPaymentFields).eq("user_id", userId).is("deleted_at", null).order("created_at", { ascending: false });
       if (orderResult.error && /deleted_at/i.test(orderResult.error.message || "")) {
         supportsOrderRecycle = false;
-        orderResult = await db.from("orders").select(paymentFields).eq("user_id", userId).order("created_at", { ascending: false });
+        orderResult = await db.from("orders").select(voucherPaymentFields).eq("user_id", userId).order("created_at", { ascending: false });
+      }
+      if (orderResult.error && /subtotal|discount_amount|voucher_code/i.test(orderResult.error.message || "")) {
+        let paymentQuery = db.from("orders").select(paymentFields).eq("user_id", userId);
+        if (supportsOrderRecycle) paymentQuery = paymentQuery.is("deleted_at", null);
+        orderResult = await paymentQuery.order("created_at", { ascending: false });
       }
       if (orderResult.error && /payment_provider|payment_status|paid_at/i.test(orderResult.error.message || "")) {
         let basicQuery = db.from("orders").select(basicFields).eq("user_id", userId);
@@ -5894,6 +6391,7 @@
       const profileResult = await profilePromise;
       if (!profileResult.error) state.profile = profileResult.data;
       state.customerOrders = orderResult.error ? [] : (orderResult.data || []);
+      await loadCustomerVouchers();
       renderAccount();
     }
 
@@ -6254,6 +6752,9 @@
       state.session = null;
       state.profile = null;
       state.customerOrders = [];
+      state.customerVouchers = [];
+      state.selectedCustomerVoucherId = null;
+      state.voucherQuote = null;
       renderAccount();
       showToast(state.lang === "zh" ? "已退出登录" : "Signed out");
     }
@@ -6271,9 +6772,38 @@
 
     function renderCart() {
       const count = cartQuantity();
+      const subtotal = cartTotal();
+      const discount = voucherDiscount();
       $("[data-cart-count]").textContent = count;
       $("[data-cart-count-mobile]").textContent = count;
-      $("#cartTotal").textContent = formatPrice(cartTotal());
+      $("#cartSubtotal").textContent = formatPrice(subtotal);
+      $("#cartDiscount").textContent = `-${formatPrice(discount)}`;
+      $("#cartDiscountRow").hidden = discount <= 0;
+      $("#cartTotal").textContent = formatPrice(Math.max(0, subtotal - discount));
+      const voucherArea = $("#cartVoucherArea");
+      const voucherSelect = $("#cartVoucherSelect");
+      const voucherMessage = $("#cartVoucherMessage");
+      const availableVouchers = state.customerVouchers.filter((voucher) => voucherStatus(voucher).available);
+      voucherArea.hidden = !state.session?.user || !state.cart.length || !availableVouchers.length;
+      if (!voucherArea.hidden) {
+        voucherSelect.innerHTML = [
+          `<option value="">${t("noVoucher")}</option>`,
+          ...availableVouchers.map((voucher) => {
+            const belowMinimum = subtotal < Number(voucher.minimum_spend || 0);
+            const label = `${voucher.code} · ${voucherValueLabel(voucher)}${belowMinimum ? ` · ${t("minimumSpend")} ${formatPrice(voucher.minimum_spend)}` : ""}`;
+            return `<option value="${escapeHtml(voucher.customer_voucher_id)}" ${belowMinimum ? "disabled" : ""}>${escapeHtml(label)}</option>`;
+          })
+        ].join("");
+        voucherSelect.value = state.selectedCustomerVoucherId || "";
+        voucherMessage.classList.toggle("error", Boolean(state.voucherQuote && !state.voucherQuote.eligible));
+        voucherMessage.textContent = state.voucherQuote
+          ? (state.voucherQuote.eligible
+            ? `${t("voucherApplied")}: -${formatPrice(state.voucherQuote.discount || 0)}`
+            : voucherErrorMessage(state.voucherQuote.reason))
+          : "";
+      } else {
+        voucherMessage.textContent = "";
+      }
       const lines = $("#cartLines");
       if (!state.cart.length) {
         lines.innerHTML = `
@@ -6325,6 +6855,7 @@
       }
       persistCart();
       renderCart();
+      if (state.selectedCustomerVoucherId) refreshVoucherQuote();
       renderAdmin();
       showToast(t("addedToCart"));
       return true;
@@ -6341,6 +6872,7 @@
       }
       persistCart();
       renderCart();
+      if (state.selectedCustomerVoucherId) refreshVoucherQuote();
     }
 
     async function checkout() {
@@ -6353,8 +6885,17 @@
         showToast(t("loginToCheckout"));
         return;
       }
+      if (state.selectedCustomerVoucherId && !await refreshVoucherQuote()) {
+        showToast(voucherErrorMessage(state.voucherQuote?.reason || "Voucher unavailable"));
+        return;
+      }
       closePanels();
-      $("[data-payment-total]").textContent = formatPrice(cartTotal());
+      const subtotal = cartTotal();
+      const discount = voucherDiscount();
+      $("[data-payment-subtotal]").textContent = formatPrice(subtotal);
+      $("[data-payment-discount]").textContent = `-${formatPrice(discount)}`;
+      $("[data-payment-discount-row]").hidden = discount <= 0;
+      $("[data-payment-total]").textContent = formatPrice(Math.max(0, subtotal - discount));
       $("#paymentMessage").textContent = "";
       $("#paymentModal").hidden = false;
       refreshIcons();
@@ -6394,6 +6935,7 @@
           },
           body: JSON.stringify({
             items: state.cart.map((line) => ({ product_id: line.id, quantity: line.quantity })),
+            customer_voucher_id: state.selectedCustomerVoucherId || null,
             locale: state.lang
           })
         });
@@ -6415,12 +6957,16 @@
       const url = new URL(window.location.href);
       const paymentResult = url.searchParams.get("payment");
       if (!paymentResult) return;
+      const cancelledOrderId = url.searchParams.get("order_id");
       url.searchParams.delete("payment");
       url.searchParams.delete("session_id");
+      url.searchParams.delete("order_id");
       history.replaceState(null, "", url.pathname + url.search + url.hash);
 
       if (paymentResult === "success") {
         state.cart = [];
+        state.selectedCustomerVoucherId = null;
+        state.voucherQuote = null;
         persistCart();
         renderCart();
         await loadCustomerData();
@@ -6430,6 +6976,24 @@
         return;
       }
 
+      if (cancelledOrderId && db && state.session?.user) {
+        try {
+          const { data: sessionData } = await db.auth.getSession();
+          const accessToken = sessionData.session?.access_token;
+          if (accessToken) {
+            await fetch(SUPABASE_URL + "/functions/v1/create-checkout-session", {
+              method: "POST",
+              headers: {
+                "Authorization": "Bearer " + accessToken,
+                "apikey": SUPABASE_PUBLISHABLE_KEY,
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({ action: "cancel", order_id: cancelledOrderId })
+            });
+            await loadCustomerData();
+          }
+        } catch (error) {}
+      }
       openPanel("cart");
       showToast(t("paymentCancelled"));
     }
@@ -6472,6 +7036,11 @@
         $("#accountDrawer").classList.add("open");
         renderAccount();
       }
+      if (name === "vouchers") {
+        $("#voucherDrawer").classList.add("open");
+        renderCustomerVouchers();
+        if (state.session?.user) loadCustomerVouchers();
+      }
       if (name === "search") {
         $("#searchPanel").classList.add("open");
         window.setTimeout(() => $("#searchInput").focus(), 60);
@@ -6483,6 +7052,7 @@
       $("#cartDrawer").classList.remove("open");
       $("#menuDrawer").classList.remove("open");
       $("#accountDrawer").classList.remove("open");
+      $("#voucherDrawer").classList.remove("open");
       $("#searchPanel").classList.remove("open");
       if (removeBackdrop) {
         $("[data-backdrop]").classList.remove("open");
@@ -6623,6 +7193,7 @@
         products: ["Products", "Add, edit and publish items."],
         orders: ["Orders", "Confirm orders before inventory and points are updated."],
         customers: ["Customers", "Accounts, spending and reward points."],
+        vouchers: ["Vouchers", "Create voucher codes, issue them to customers and track usage."],
         analytics: ["Analytics", "Revenue, orders and product performance."],
         design: ["Store design", "Customize typography, colors, hero content and plugin blocks."]
       };
@@ -6635,27 +7206,37 @@
     async function loadAdminData() {
       if (!db || !state.profile?.is_admin) return;
       const customerPromise = db.from("profiles").select("id,email,full_name,points,total_spent,created_at,is_admin").order("created_at", { ascending: false });
+      const voucherPromise = db.from("vouchers").select("*").order("created_at", { ascending: false });
+      const voucherAssignmentPromise = db.from("customer_vouchers").select("id,voucher_id,user_id,source,redeemed_at,reserved_at,used_at,order_id,vouchers(code,name),profiles!customer_vouchers_user_id_fkey(email,full_name)").order("redeemed_at", { ascending: false });
+      const voucherPaymentFields = "id,order_number,user_id,status,subtotal,discount_amount,voucher_code,total,item_count,points_awarded,payment_provider,payment_status,paid_at,created_at,confirmed_at,deleted_at,deleted_by,profiles!orders_user_id_fkey(email,full_name),order_items(product_id,product_title,quantity,unit_price)";
+      const voucherPaymentFieldsWithoutRecycle = "id,order_number,user_id,status,subtotal,discount_amount,voucher_code,total,item_count,points_awarded,payment_provider,payment_status,paid_at,created_at,confirmed_at,profiles!orders_user_id_fkey(email,full_name),order_items(product_id,product_title,quantity,unit_price)";
       const paymentFields = "id,order_number,user_id,status,total,item_count,points_awarded,payment_provider,payment_status,paid_at,created_at,confirmed_at,deleted_at,deleted_by,profiles!orders_user_id_fkey(email,full_name),order_items(product_id,product_title,quantity,unit_price)";
       const paymentFieldsWithoutRecycle = "id,order_number,user_id,status,total,item_count,points_awarded,payment_provider,payment_status,paid_at,created_at,confirmed_at,profiles!orders_user_id_fkey(email,full_name),order_items(product_id,product_title,quantity,unit_price)";
       const basicFields = "id,order_number,user_id,status,total,item_count,points_awarded,created_at,confirmed_at,deleted_at,deleted_by,profiles!orders_user_id_fkey(email,full_name),order_items(product_id,product_title,quantity,unit_price)";
       const basicFieldsWithoutRecycle = "id,order_number,user_id,status,total,item_count,points_awarded,created_at,confirmed_at,profiles!orders_user_id_fkey(email,full_name),order_items(product_id,product_title,quantity,unit_price)";
       state.orderRecycleSupported = true;
-      let ordersResult = await db.from("orders").select(paymentFields).order("created_at", { ascending: false });
+      let ordersResult = await db.from("orders").select(voucherPaymentFields).order("created_at", { ascending: false });
       if (ordersResult.error && /deleted_at|deleted_by/i.test(ordersResult.error.message || "")) {
         state.orderRecycleSupported = false;
-        ordersResult = await db.from("orders").select(paymentFieldsWithoutRecycle).order("created_at", { ascending: false });
+        ordersResult = await db.from("orders").select(voucherPaymentFieldsWithoutRecycle).order("created_at", { ascending: false });
+      }
+      if (ordersResult.error && /subtotal|discount_amount|voucher_code/i.test(ordersResult.error.message || "")) {
+        const fields = state.orderRecycleSupported ? paymentFields : paymentFieldsWithoutRecycle;
+        ordersResult = await db.from("orders").select(fields).order("created_at", { ascending: false });
       }
       if (ordersResult.error && /payment_provider|payment_status|paid_at/i.test(ordersResult.error.message || "")) {
         const fields = state.orderRecycleSupported ? basicFields : basicFieldsWithoutRecycle;
         ordersResult = await db.from("orders").select(fields).order("created_at", { ascending: false });
       }
-      const customersResult = await customerPromise;
+      const [customersResult, vouchersResult, voucherAssignmentsResult] = await Promise.all([customerPromise, voucherPromise, voucherAssignmentPromise]);
       if (!ordersResult.error) {
         const orders = ordersResult.data || [];
         state.adminOrders = orders.filter((order) => !order.deleted_at);
         state.deletedOrders = state.orderRecycleSupported ? orders.filter((order) => Boolean(order.deleted_at)) : [];
       }
       if (!customersResult.error) state.customers = customersResult.data || [];
+      state.vouchers = vouchersResult.error ? [] : (vouchersResult.data || []);
+      state.voucherAssignments = voucherAssignmentsResult.error ? [] : (voucherAssignmentsResult.data || []);
       renderAdmin();
     }
 
@@ -6685,7 +7266,7 @@
           <tr data-admin-order-row="${escapeHtml(order.id)}">
             <td><strong>${escapeHtml(order.order_number)}</strong><div class="muted">${new Date(order.created_at).toLocaleString("en-NZ")}</div></td>
             <td>${escapeHtml(customer.full_name || customer.email || "Customer")}<div class="muted">${escapeHtml(customer.email || "")}</div></td>
-            <td>${formatPrice(order.total)}<div class="muted">${Number(order.item_count)} items</div></td>
+            <td>${formatPrice(order.total)}<div class="muted">${Number(order.item_count)} items${Number(order.discount_amount || 0) > 0 ? ` · ${escapeHtml(order.voucher_code || "Voucher")} -${formatPrice(order.discount_amount)}` : ""}</div></td>
             <td>
               <div class="order-statuses" style="justify-content: flex-start;">
                 <span class="status ${paymentStatusClass(order)}">${escapeHtml(paymentStatusLabel(order))}</span>
@@ -6727,6 +7308,182 @@
           <td>${new Date(customer.created_at).toLocaleDateString("en-NZ")}</td>
         </tr>
       `).join("") : `<tr><td colspan="5"><div class="empty-state">No customers yet</div></td></tr>`;
+    }
+
+    function voucherDateTimeLocal(value) {
+      if (!value) return "";
+      const date = new Date(value);
+      const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+      return local.toISOString().slice(0, 16);
+    }
+
+    function voucherAdminStatus(voucher) {
+      const now = Date.now();
+      if (!voucher.active) return { label: "Inactive", className: "draft" };
+      if (voucher.expires_at && new Date(voucher.expires_at).getTime() <= now) return { label: "Expired", className: "draft" };
+      if (voucher.starts_at && new Date(voucher.starts_at).getTime() > now) return { label: "Scheduled", className: "featured" };
+      return { label: "Active", className: "live" };
+    }
+
+    function renderAdminVouchers() {
+      const rows = $("#adminVoucherRows");
+      const assignmentRows = $("#adminVoucherAssignmentRows");
+      if (!rows || !assignmentRows) return;
+      $("#adminVoucherCount").textContent = `${state.vouchers.length} vouchers`;
+      rows.innerHTML = state.vouchers.length ? state.vouchers.map((voucher) => {
+        const assignments = state.voucherAssignments.filter((item) => item.voucher_id === voucher.id);
+        const usedCount = assignments.filter((item) => item.used_at).length;
+        const status = voucherAdminStatus(voucher);
+        const conditionParts = [
+          Number(voucher.minimum_spend || 0) > 0 ? `Min ${formatPrice(voucher.minimum_spend)}` : "No minimum",
+          voucher.expires_at ? `Ends ${new Date(voucher.expires_at).toLocaleDateString("en-NZ")}` : "No expiry"
+        ];
+        const discount = voucher.discount_type === "percent"
+          ? `${Number(voucher.discount_value)}%${voucher.maximum_discount ? ` (max ${formatPrice(voucher.maximum_discount)})` : ""}`
+          : formatPrice(voucher.discount_value);
+        return `
+          <tr>
+            <td><div class="voucher-code-cell"><code>${escapeHtml(voucher.code)}</code><span class="muted">${escapeHtml(voucher.name)}</span></div></td>
+            <td><strong>${escapeHtml(discount)}</strong></td>
+            <td>${escapeHtml(conditionParts.join(" · "))}</td>
+            <td>${assignments.length} / ${usedCount}${voucher.total_redemption_limit ? ` · limit ${Number(voucher.total_redemption_limit)}` : ""}</td>
+            <td><span class="status ${status.className}">${status.label}</span></td>
+            <td><div class="row-actions"><button class="action-button" type="button" data-edit-voucher="${voucher.id}" aria-label="Edit voucher"><i data-lucide="pencil"></i></button><button class="action-button" type="button" data-toggle-voucher="${voucher.id}" aria-label="${voucher.active ? "Deactivate" : "Activate"} voucher" title="${voucher.active ? "Deactivate" : "Activate"}"><i data-lucide="${voucher.active ? "pause" : "play"}"></i></button></div></td>
+          </tr>`;
+      }).join("") : `<tr><td colspan="6"><div class="empty-state">No vouchers yet</div></td></tr>`;
+
+      assignmentRows.innerHTML = state.voucherAssignments.length ? state.voucherAssignments.slice(0, 100).map((assignment) => {
+        const voucher = assignment.vouchers || {};
+        const customer = assignment.profiles || {};
+        const status = assignment.used_at ? "Used" : assignment.order_id ? "Reserved" : "Available";
+        const statusClass = assignment.used_at ? "live" : assignment.order_id ? "featured" : "live";
+        return `
+          <tr>
+            <td><code>${escapeHtml(voucher.code || "-")}</code><div class="muted">${escapeHtml(voucher.name || "")}</div></td>
+            <td>${escapeHtml(customer.full_name || customer.email || "Customer")}<div class="muted">${escapeHtml(customer.email || "")}</div></td>
+            <td>${assignment.source === "admin" ? "Admin issue" : "Code"}</td>
+            <td><span class="status ${statusClass}">${status}</span></td>
+            <td>${new Date(assignment.redeemed_at).toLocaleString("en-NZ")}</td>
+          </tr>`;
+      }).join("") : `<tr><td colspan="5"><div class="empty-state">No vouchers issued yet</div></td></tr>`;
+
+      const voucherSelect = $("#voucherIssueVoucher");
+      const customerSelect = $("#voucherIssueCustomer");
+      const currentVoucher = voucherSelect.value;
+      const currentCustomer = customerSelect.value;
+      voucherSelect.innerHTML = state.vouchers
+        .filter((voucher) => voucher.active)
+        .map((voucher) => `<option value="${voucher.id}">${escapeHtml(voucher.code)} · ${escapeHtml(voucher.name)}</option>`)
+        .join("");
+      customerSelect.innerHTML = state.customers
+        .filter((customer) => !customer.is_admin)
+        .map((customer) => `<option value="${customer.id}">${escapeHtml(customer.full_name || customer.email || "Customer")} · ${escapeHtml(customer.email || "")}</option>`)
+        .join("");
+      if ([...voucherSelect.options].some((option) => option.value === currentVoucher)) voucherSelect.value = currentVoucher;
+      if ([...customerSelect.options].some((option) => option.value === currentCustomer)) customerSelect.value = currentCustomer;
+      refreshIcons();
+    }
+
+    function resetVoucherForm() {
+      const form = $("[data-voucher-form]");
+      if (!form) return;
+      form.reset();
+      form.elements.namedItem("id").value = "";
+      form.elements.namedItem("minimumSpend").value = "0";
+      form.elements.namedItem("customerLimit").value = "1";
+      form.elements.namedItem("active").checked = true;
+      $("#voucherFormTitle").textContent = "Create voucher";
+      $("#voucherAdminMessage").textContent = "";
+    }
+
+    function editVoucher(voucherId) {
+      const voucher = state.vouchers.find((item) => item.id === voucherId);
+      const form = $("[data-voucher-form]");
+      if (!voucher || !form) return;
+      form.elements.namedItem("id").value = voucher.id;
+      form.elements.namedItem("code").value = voucher.code;
+      form.elements.namedItem("name").value = voucher.name;
+      form.elements.namedItem("discountType").value = voucher.discount_type;
+      form.elements.namedItem("discountValue").value = voucher.discount_value;
+      form.elements.namedItem("minimumSpend").value = voucher.minimum_spend || 0;
+      form.elements.namedItem("maximumDiscount").value = voucher.maximum_discount || "";
+      form.elements.namedItem("startsAt").value = voucherDateTimeLocal(voucher.starts_at);
+      form.elements.namedItem("expiresAt").value = voucherDateTimeLocal(voucher.expires_at);
+      form.elements.namedItem("totalLimit").value = voucher.total_redemption_limit || "";
+      form.elements.namedItem("customerLimit").value = voucher.per_customer_limit || 1;
+      form.elements.namedItem("active").checked = Boolean(voucher.active);
+      $("#voucherFormTitle").textContent = `Edit ${voucher.code}`;
+      $("#voucherAdminMessage").textContent = "";
+      form.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    async function saveVoucher(event) {
+      event.preventDefault();
+      if (!db || !state.profile?.is_admin) return;
+      const form = event.target;
+      const values = Object.fromEntries(new FormData(form).entries());
+      const startsAt = values.startsAt ? new Date(values.startsAt).toISOString() : null;
+      const expiresAt = values.expiresAt ? new Date(values.expiresAt).toISOString() : null;
+      if (startsAt && expiresAt && new Date(expiresAt) <= new Date(startsAt)) {
+        $("#voucherAdminMessage").textContent = "Expiry must be after the start date";
+        return;
+      }
+      const payload = {
+        code: String(values.code || "").replace(/\s+/g, "").toUpperCase(),
+        name: String(values.name || "").trim(),
+        discount_type: values.discountType,
+        discount_value: Number(values.discountValue),
+        minimum_spend: Number(values.minimumSpend || 0),
+        maximum_discount: values.maximumDiscount ? Number(values.maximumDiscount) : null,
+        starts_at: startsAt,
+        expires_at: expiresAt,
+        total_redemption_limit: values.totalLimit ? Number.parseInt(values.totalLimit, 10) : null,
+        per_customer_limit: Math.max(1, Number.parseInt(values.customerLimit, 10) || 1),
+        active: form.elements.namedItem("active").checked,
+        created_by: state.session.user.id
+      };
+      if (values.id) payload.id = values.id;
+      const button = form.querySelector("button[type='submit']");
+      button.disabled = true;
+      const { error } = await db.from("vouchers").upsert(payload);
+      button.disabled = false;
+      if (error) {
+        $("#voucherAdminMessage").textContent = authErrorMessage(error);
+        return;
+      }
+      resetVoucherForm();
+      await loadAdminData();
+      showToast("Voucher saved");
+    }
+
+    async function toggleVoucher(voucherId) {
+      const voucher = state.vouchers.find((item) => item.id === voucherId);
+      if (!voucher || !db || !state.profile?.is_admin) return;
+      const { error } = await db.from("vouchers").update({ active: !voucher.active }).eq("id", voucherId);
+      if (error) return showToast(authErrorMessage(error));
+      await loadAdminData();
+      showToast(voucher.active ? "Voucher deactivated" : "Voucher activated");
+    }
+
+    async function issueVoucher(event) {
+      event.preventDefault();
+      if (!db || !state.profile?.is_admin) return;
+      const form = event.target;
+      const values = Object.fromEntries(new FormData(form).entries());
+      const message = $("#voucherIssueMessage");
+      const button = form.querySelector("button[type='submit']");
+      if (!values.voucherId || !values.userId) return;
+      button.disabled = true;
+      message.textContent = "Issuing...";
+      const { error } = await db.rpc("issue_voucher", { p_voucher_id: values.voucherId, p_user_id: values.userId });
+      button.disabled = false;
+      if (error) {
+        message.textContent = authErrorMessage(error);
+        return;
+      }
+      message.textContent = "Voucher issued";
+      await loadAdminData();
+      showToast("Voucher issued to customer");
     }
 
     async function editSupabaseOrder(orderId) {
@@ -7071,6 +7828,7 @@
       renderAdminProducts();
       renderAdminOrders();
       renderCustomers();
+      renderAdminVouchers();
       renderTopProducts();
       renderOrders();
       renderAdminDesign();
@@ -7572,6 +8330,7 @@
       renderCart();
       renderSearch();
       renderAccount();
+      renderCustomerVouchers();
       applyStoreDesign();
       renderAdmin();
       if (state.activeProductId) renderProductDetail();
@@ -7691,6 +8450,7 @@
       if (target.matches("[data-open-cart]")) openPanel("cart");
       if (target.matches("[data-open-menu]")) openPanel("menu");
       if (target.matches("[data-open-account]")) openPanel("account");
+      if (target.matches("[data-open-vouchers]")) openPanel("vouchers");
       if (target.matches("[data-close-panels]")) closePanels();
       if (target.matches("[data-close-payment]")) closePaymentModal();
       if (target.matches("[data-start-payment]")) startStripeCheckout();
@@ -7724,6 +8484,7 @@
         state.cart = state.cart.filter((line) => line.id !== target.dataset.cartRemove);
         persistCart();
         renderCart();
+        if (state.selectedCustomerVoucherId) refreshVoucherQuote();
       }
       if (target.matches("[data-checkout]")) checkout();
       if (target.matches("[data-clear-search]")) {
@@ -7744,6 +8505,9 @@
       if (target.matches("[data-back-store]")) exitAdminToStore();
       if (target.matches("[data-admin-logout]")) logoutAdmin();
       if (target.matches("[data-admin-tab]")) setAdminTab(target.dataset.adminTab);
+      if (target.matches("[data-edit-voucher]")) editVoucher(target.dataset.editVoucher);
+      if (target.matches("[data-toggle-voucher]")) toggleVoucher(target.dataset.toggleVoucher);
+      if (target.matches("[data-reset-voucher-form]")) resetVoucherForm();
       if (target.matches("[data-enable-order-notifications]")) enableAdminOrderNotifications();
       if (target.matches("[data-view-new-order]")) viewLatestAdminOrder();
       if (target.matches("[data-dismiss-order-alert]")) dismissAdminOrderAlert();
@@ -7803,6 +8567,11 @@
       }
       if (event.target instanceof Element && event.target.closest("[data-product-form]")) {
         updateProductEditorPreview();
+      }
+      if (event.target instanceof Element && event.target.matches("[data-cart-voucher-select]")) {
+        state.selectedCustomerVoucherId = event.target.value || null;
+        state.voucherQuote = null;
+        refreshVoucherQuote();
       }
     });
 
@@ -7982,6 +8751,12 @@
         event.preventDefault();
         submitCustomerAuth(event.target, event.submitter?.dataset.authAction || "signin");
       }
+      if (event.target.matches("[data-voucher-redeem-form]")) {
+        event.preventDefault();
+        redeemCustomerVoucher(event.target);
+      }
+      if (event.target.matches("[data-voucher-form]")) saveVoucher(event);
+      if (event.target.matches("[data-voucher-issue-form]")) issueVoucher(event);
       if (event.target.matches("[data-product-form]")) saveProduct(event);
       if (event.target.matches("[data-design-block-form]")) saveDesignBlock(event);
     });

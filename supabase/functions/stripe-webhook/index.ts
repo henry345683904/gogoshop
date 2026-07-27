@@ -79,6 +79,11 @@ Deno.serve(async (request: Request) => {
       .eq("id", orderId)
       .neq("payment_status", "refunded");
     if (error) return new Response("Database update failed", { status: 500 });
+    const { error: voucherError } = await adminClient
+      .from("customer_vouchers")
+      .update({ used_at: new Date().toISOString() })
+      .eq("order_id", orderId);
+    if (voucherError) return new Response("Voucher update failed", { status: 500 });
   }
 
   if ([
@@ -93,19 +98,43 @@ Deno.serve(async (request: Request) => {
       .neq("payment_status", "paid")
       .neq("payment_status", "refunded");
     if (error) return new Response("Database update failed", { status: 500 });
+    const { error: voucherError } = await adminClient
+      .from("customer_vouchers")
+      .update({ order_id: null, reserved_at: null })
+      .eq("order_id", orderId)
+      .is("used_at", null);
+    if (voucherError) return new Response("Voucher update failed", { status: 500 });
   }
 
   const fullyRefunded = object?.refunded === true
     || (Number(object?.amount) > 0 && Number(object?.amount_refunded) >= Number(object?.amount));
   if (event.type === "charge.refunded" && fullyRefunded && (orderId || paymentIntentId)) {
+    let refundedOrderId = orderId;
+    if (!refundedOrderId && paymentIntentId) {
+      const { data: refundedOrder, error: lookupError } = await adminClient
+        .from("orders")
+        .select("id")
+        .eq("stripe_payment_intent_id", paymentIntentId)
+        .maybeSingle();
+      if (lookupError) return new Response("Order lookup failed", { status: 500 });
+      refundedOrderId = refundedOrder?.id;
+    }
+
     let query = adminClient
       .from("orders")
       .update({ payment_status: "refunded" });
-    query = orderId
-      ? query.eq("id", orderId)
+    query = refundedOrderId
+      ? query.eq("id", refundedOrderId)
       : query.eq("stripe_payment_intent_id", paymentIntentId);
     const { error } = await query;
     if (error) return new Response("Database update failed", { status: 500 });
+    if (refundedOrderId) {
+      const { error: voucherError } = await adminClient
+        .from("customer_vouchers")
+        .update({ order_id: null, reserved_at: null, used_at: null })
+        .eq("order_id", refundedOrderId);
+      if (voucherError) return new Response("Voucher update failed", { status: 500 });
+    }
   }
 
   return new Response("ok", { status: 200 });
