@@ -52,6 +52,26 @@ update public.orders
 set subtotal = total
 where subtotal is null;
 
+create or replace function public.ensure_order_subtotal()
+returns trigger
+language plpgsql
+set search_path = public
+as $$
+begin
+  if tg_op = 'INSERT' then
+    new.subtotal := coalesce(new.subtotal, new.total);
+  elsif new.subtotal is null or (coalesce(new.discount_amount, 0) = 0 and new.voucher_id is null) then
+    new.subtotal := new.total;
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists ensure_order_subtotal_trigger on public.orders;
+create trigger ensure_order_subtotal_trigger
+  before insert or update of total on public.orders
+  for each row execute procedure public.ensure_order_subtotal();
+
 alter table public.orders alter column subtotal set not null;
 
 create or replace function public.normalize_voucher_code()
