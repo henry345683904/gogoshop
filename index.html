@@ -4401,7 +4401,7 @@
           <span><i data-lucide="shield-check"></i><span data-i18n="adminDashboard">Admin Dashboard</span></span>
           <i data-lucide="chevron-right"></i>
         </button>
-        <a class="menu-link menu-app-download" href="downloads/GO-GO-SHOP.apk" download data-close-panels>
+        <a class="menu-link menu-app-download" href="downloads/GO-GO-SHOP.apk?v=3" download data-close-panels>
           <span><i data-lucide="smartphone"></i><span data-i18n="androidApp">App For Android</span></span>
           <i data-lucide="download"></i>
         </a>
@@ -4533,6 +4533,9 @@
     let adminOrderChannel = null;
     let adminOrderChannelUserId = null;
     let notificationServiceWorkerPromise = null;
+    let nativeNotificationPermissionStatus = "prompt";
+    let nativeNotificationListenersReady = false;
+    let pendingNotificationOrderId = null;
 
     const translations = {
       en: {
@@ -5859,7 +5862,14 @@
       renderAccount();
     }
 
+    function nativeNotificationPlugin() {
+      const capacitor = window.Capacitor;
+      if (!capacitor?.isNativePlatform?.()) return null;
+      return capacitor.Plugins?.LocalNotifications || null;
+    }
+
     function notificationPermission() {
+      if (nativeNotificationPlugin()) return nativeNotificationPermissionStatus;
       return "Notification" in window ? Notification.permission : "unsupported";
     }
 
@@ -5879,6 +5889,63 @@
       return notificationServiceWorkerPromise;
     }
 
+    function nativeNotificationId(value) {
+      const input = String(value || "gogoshop-order");
+      let hash = 0;
+      for (let index = 0; index < input.length; index += 1) {
+        hash = (Math.imul(hash, 31) + input.charCodeAt(index)) | 0;
+      }
+      return 100000 + Math.abs(hash % 2000000000);
+    }
+
+    function openAdminOrderFromNotification(orderId) {
+      pendingNotificationOrderId = orderId || null;
+      location.hash = "admin";
+      if (!state.profile?.is_admin) return;
+      showAdmin();
+      setAdminTab("orders");
+      const targetOrderId = pendingNotificationOrderId;
+      pendingNotificationOrderId = null;
+      window.setTimeout(() => {
+        const row = targetOrderId ? $(`[data-admin-order-row="${CSS.escape(String(targetOrderId))}"]`) : null;
+        if (!row) return;
+        row.classList.add("admin-order-highlight");
+        row.scrollIntoView({ behavior: "smooth", block: "center" });
+        window.setTimeout(() => row.classList.remove("admin-order-highlight"), 2500);
+      }, 250);
+    }
+
+    async function initNativeOrderNotifications() {
+      const plugin = nativeNotificationPlugin();
+      if (!plugin) {
+        registerNotificationServiceWorker();
+        return;
+      }
+      try {
+        const permissions = await plugin.checkPermissions();
+        nativeNotificationPermissionStatus = permissions.display || "prompt";
+        if (window.Capacitor?.getPlatform?.() === "android") {
+          await plugin.createChannel({
+            id: "gogoshop-orders",
+            name: "Order alerts",
+            description: "New GO GO SHOP customer orders",
+            importance: 5,
+            visibility: 1,
+            vibration: true
+          });
+        }
+        if (!nativeNotificationListenersReady) {
+          nativeNotificationListenersReady = true;
+          await plugin.addListener("localNotificationActionPerformed", (action) => {
+            openAdminOrderFromNotification(action.notification?.extra?.orderId);
+          });
+        }
+      } catch (error) {
+        nativeNotificationPermissionStatus = "unsupported";
+      }
+      renderAdminOrderNotificationUi();
+    }
+
     function renderAdminOrderNotificationUi() {
       const badge = $("#adminOrderBadge");
       const button = $("[data-enable-order-notifications]");
@@ -5896,7 +5963,7 @@
         const label = enabled
           ? "Order notifications enabled. Tap to send a test."
           : permission === "denied"
-            ? "Order notifications are blocked in browser settings"
+            ? "Order notifications are blocked in device settings"
             : "Enable order notifications";
         button.setAttribute("aria-label", label);
         button.title = label;
@@ -5910,8 +5977,7 @@
     }
 
     async function showAdminSystemNotification(order, isTest = false) {
-      if (notificationPermission() !== "granted" || !orderNotificationSettings().enabled) return;
-      const registration = await registerNotificationServiceWorker();
+      if (!orderNotificationSettings().enabled) return;
       const orderNumber = order.order_number || "";
       const title = isTest ? "GO GO SHOP notifications are ready" : `New order ${orderNumber}`.trim();
       const body = isTest
@@ -5928,6 +5994,25 @@
         data: { url: adminUrl.href, orderId: order.id || null }
       };
       try {
+        const nativePlugin = nativeNotificationPlugin();
+        if (nativePlugin) {
+          const permissions = await nativePlugin.checkPermissions();
+          nativeNotificationPermissionStatus = permissions.display || "prompt";
+          if (nativeNotificationPermissionStatus !== "granted") return;
+          await nativePlugin.schedule({
+            notifications: [{
+              id: nativeNotificationId(isTest ? "notification-test" : order.id),
+              title,
+              body,
+              sound: "default",
+              channelId: "gogoshop-orders",
+              extra: { url: adminUrl.href, orderId: order.id || null }
+            }]
+          });
+          return;
+        }
+        if (notificationPermission() !== "granted") return;
+        const registration = await registerNotificationServiceWorker();
         if (registration) await registration.showNotification(title, options);
         else new Notification(title, options);
       } catch (error) {
@@ -5936,6 +6021,29 @@
     }
 
     async function enableAdminOrderNotifications() {
+      const nativePlugin = nativeNotificationPlugin();
+      if (nativePlugin) {
+        try {
+          const current = await nativePlugin.checkPermissions();
+          const result = current.display === "granted"
+            ? current
+            : await nativePlugin.requestPermissions();
+          nativeNotificationPermissionStatus = result.display || "denied";
+        } catch (error) {
+          nativeNotificationPermissionStatus = "unsupported";
+        }
+        if (nativeNotificationPermissionStatus !== "granted") {
+          save(ORDER_NOTIFICATION_SETTINGS_KEY, { enabled: false });
+          showToast("Notifications are blocked. Allow them in device settings.");
+          renderAdminOrderNotificationUi();
+          return;
+        }
+        save(ORDER_NOTIFICATION_SETTINGS_KEY, { enabled: true });
+        renderAdminOrderNotificationUi();
+        await showAdminSystemNotification({ id: "test", order_number: "", total: 0, item_count: 0 }, true);
+        showToast("Order notifications enabled");
+        return;
+      }
       if (notificationPermission() === "unsupported") {
         showToast("This browser does not support system notifications");
         renderAdminOrderNotificationUi();
@@ -6043,6 +6151,7 @@
       if (state.profile?.is_admin) {
         await loadStoreInventory();
         await subscribeToAdminOrderRealtime();
+        if (pendingNotificationOrderId && isAdminRoute()) openAdminOrderFromNotification(pendingNotificationOrderId);
       } else if (state.deletedProducts.length) {
         await stopAdminOrderRealtime();
         state.deletedProducts = [];
@@ -7834,7 +7943,7 @@
     document.documentElement.lang = state.lang === "zh" ? "zh-CN" : "en";
     applyLanguage();
     renderAll();
-    registerNotificationServiceWorker();
+    initNativeOrderNotifications();
     initSupabase().then(handlePaymentReturn);
     if (isAdminRoute()) {
       showAdmin();
