@@ -1978,6 +1978,7 @@
     }
 
     .tab-button {
+      position: relative;
       display: flex;
       width: 100%;
       min-height: 42px;
@@ -1990,6 +1991,26 @@
       color: #3d4242;
       font-weight: 700;
       text-align: left;
+    }
+
+    .admin-order-badge {
+      display: inline-flex;
+      min-width: 20px;
+      height: 20px;
+      align-items: center;
+      justify-content: center;
+      margin-left: auto;
+      border-radius: 10px;
+      padding: 0 6px;
+      background: #b3261e;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .admin-order-badge[hidden] {
+      display: none;
     }
 
     .tab-button.active {
@@ -2009,6 +2030,83 @@
       justify-content: space-between;
       gap: 20px;
       margin-bottom: 24px;
+    }
+
+    .admin-notification-button {
+      position: relative;
+      width: 42px;
+      min-width: 42px;
+      padding: 0;
+    }
+
+    .admin-notification-button.enabled {
+      border-color: #177245;
+      background: #edf8f1;
+      color: #12613a;
+    }
+
+    .admin-notification-button.blocked {
+      border-color: #b3261e;
+      color: #8f201a;
+    }
+
+    .admin-order-alert {
+      display: grid;
+      grid-template-columns: 38px minmax(0, 1fr) auto;
+      gap: 12px;
+      align-items: center;
+      margin: -8px 0 18px;
+      border: 1px solid #b8d8c6;
+      border-left: 4px solid #177245;
+      border-radius: 8px;
+      padding: 12px 14px;
+      background: #f1faf5;
+      box-shadow: 0 8px 24px rgba(14, 82, 48, 0.08);
+    }
+
+    .admin-order-alert[hidden] {
+      display: none;
+    }
+
+    .admin-order-alert-icon {
+      display: grid;
+      width: 38px;
+      height: 38px;
+      place-items: center;
+      border-radius: 50%;
+      background: #d9f0e2;
+      color: #12613a;
+    }
+
+    .admin-order-alert-copy {
+      display: grid;
+      min-width: 0;
+      gap: 3px;
+    }
+
+    .admin-order-alert-copy strong,
+    .admin-order-alert-copy span {
+      overflow-wrap: anywhere;
+    }
+
+    .admin-order-alert-copy span {
+      color: #52605a;
+      font-size: 13px;
+    }
+
+    .admin-order-alert-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    tr.admin-order-highlight td {
+      animation: admin-order-highlight 2.4s ease-out;
+    }
+
+    @keyframes admin-order-highlight {
+      0%, 35% { background: #dff4e7; }
+      100% { background: transparent; }
     }
 
     .admin-title h1 {
@@ -3179,12 +3277,27 @@
         display: none;
       }
 
+      .tab-button .admin-order-badge:not([hidden]) {
+        position: absolute;
+        top: 1px;
+        right: 2px;
+        display: inline-flex;
+        min-width: 17px;
+        height: 17px;
+        padding: 0 4px;
+        font-size: 10px;
+      }
+
       .admin-main {
         padding: 12px 10px 24px;
       }
 
       .admin-topbar {
         margin-bottom: 12px;
+      }
+
+      .admin-order-alert {
+        margin: 0 0 10px;
       }
 
       .admin-title h1 {
@@ -3437,8 +3550,13 @@
       .admin-topbar .form-actions {
         display: grid;
         width: 100%;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: 42px repeat(3, minmax(0, 1fr));
         gap: 6px;
+      }
+
+      .admin-topbar .admin-notification-button {
+        width: 42px;
+        padding: 0;
       }
 
       .admin-topbar .form-actions .button {
@@ -3448,6 +3566,22 @@
         line-height: 1.2;
         text-align: center;
         white-space: normal;
+      }
+
+      .admin-order-alert {
+        grid-template-columns: 34px minmax(0, 1fr);
+        gap: 9px;
+        padding: 10px;
+      }
+
+      .admin-order-alert-icon {
+        width: 34px;
+        height: 34px;
+      }
+
+      .admin-order-alert-actions {
+        grid-column: 2;
+        justify-content: flex-start;
       }
 
       .bar-row {
@@ -3718,7 +3852,7 @@
         <nav class="admin-nav">
           <button class="tab-button active" type="button" data-admin-tab="overview" aria-label="Overview" title="Overview"><i data-lucide="layout-dashboard"></i><span>Overview</span></button>
           <button class="tab-button" type="button" data-admin-tab="products" aria-label="Products" title="Products"><i data-lucide="package-plus"></i><span>Products</span></button>
-          <button class="tab-button" type="button" data-admin-tab="orders" aria-label="Orders" title="Orders"><i data-lucide="receipt-text"></i><span>Orders</span></button>
+          <button class="tab-button" type="button" data-admin-tab="orders" aria-label="Orders" title="Orders"><i data-lucide="receipt-text"></i><span>Orders</span><span class="admin-order-badge" id="adminOrderBadge" hidden>0</span></button>
           <button class="tab-button" type="button" data-admin-tab="customers" aria-label="Customers" title="Customers"><i data-lucide="users"></i><span>Customers</span></button>
           <button class="tab-button" type="button" data-admin-tab="analytics" aria-label="Analytics" title="Analytics"><i data-lucide="chart-column"></i><span>Analytics</span></button>
           <button class="tab-button" type="button" data-admin-tab="design" aria-label="Design" title="Design"><i data-lucide="paintbrush"></i><span>Design</span></button>
@@ -3733,9 +3867,22 @@
             <p id="adminPageSub">Products, inventory, orders and storefront signals.</p>
           </div>
           <div class="form-actions">
+            <button class="button ghost admin-notification-button" type="button" data-enable-order-notifications aria-label="Enable order notifications" title="Enable order notifications"><i data-lucide="bell"></i></button>
             <button class="button ghost" type="button" data-export-products><i data-lucide="download"></i> Export</button>
             <button class="button ghost" type="button" data-admin-logout><i data-lucide="log-out"></i> 退出</button>
             <button class="button" type="button" data-open-product-tab><i data-lucide="plus"></i> Add product</button>
+          </div>
+        </div>
+
+        <div class="admin-order-alert" id="adminOrderAlert" role="status" aria-live="polite" hidden>
+          <div class="admin-order-alert-icon"><i data-lucide="bell-ring"></i></div>
+          <div class="admin-order-alert-copy">
+            <strong id="adminOrderAlertTitle">New order</strong>
+            <span id="adminOrderAlertMeta"></span>
+          </div>
+          <div class="admin-order-alert-actions">
+            <button class="button" type="button" data-view-new-order>View order</button>
+            <button class="action-button" type="button" data-dismiss-order-alert aria-label="Dismiss order alert" title="Dismiss"><i data-lucide="x"></i></button>
           </div>
         </div>
 
@@ -4375,11 +4522,17 @@
     const TRASH_KEY = "gogoshop_product_trash_v1";
     const ADMIN_KEY = "gogoshop_admin_unlocked_v1";
     const LANG_KEY = "gogoshop_lang_v1";
+    const ORDER_NOTIFICATION_SETTINGS_KEY = "gogoshop_admin_order_notification_settings_v1";
+    const ORDER_NOTIFICATION_UNREAD_KEY = "gogoshop_admin_order_unread_v1";
+    const ORDER_NOTIFICATION_SEEN_KEY = "gogoshop_admin_order_notified_v1";
     const SUPABASE_URL = "https://ucnkcddhrptqpdlvcohy.supabase.co";
     const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_zv6WbyD1hZKUx-Zyak-fPw_e1mURTN8";
     const SOURCE_COST_MULTIPLIER = 4;
     const SOURCE_PRICE_MULTIPLIER = 1.5 * 1.15;
     const db = window.supabase?.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY) || null;
+    let adminOrderChannel = null;
+    let adminOrderChannelUserId = null;
+    let notificationServiceWorkerPromise = null;
 
     const translations = {
       en: {
@@ -4797,6 +4950,9 @@
       customerOrders: [],
       adminOrders: [],
       customers: [],
+      unreadOrderIds: load(ORDER_NOTIFICATION_UNREAD_KEY, []),
+      notifiedOrderEvents: load(ORDER_NOTIFICATION_SEEN_KEY, []),
+      latestOrderAlert: null,
       authReady: false,
       activeProductId: null,
       detailImageIndex: 0,
@@ -5703,14 +5859,196 @@
       renderAccount();
     }
 
+    function notificationPermission() {
+      return "Notification" in window ? Notification.permission : "unsupported";
+    }
+
+    function orderNotificationSettings() {
+      return { enabled: false, ...load(ORDER_NOTIFICATION_SETTINGS_KEY, {}) };
+    }
+
+    function registerNotificationServiceWorker() {
+      if (!("serviceWorker" in navigator)) return Promise.resolve(null);
+      if (!notificationServiceWorkerPromise) {
+        notificationServiceWorkerPromise = navigator.serviceWorker.register("./sw.js", { scope: "./" })
+          .catch(() => {
+            notificationServiceWorkerPromise = null;
+            return null;
+          });
+      }
+      return notificationServiceWorkerPromise;
+    }
+
+    function renderAdminOrderNotificationUi() {
+      const badge = $("#adminOrderBadge");
+      const button = $("[data-enable-order-notifications]");
+      const alert = $("#adminOrderAlert");
+      const unreadIds = Array.isArray(state.unreadOrderIds) ? state.unreadOrderIds : [];
+      if (badge) {
+        badge.textContent = String(Math.min(unreadIds.length, 99));
+        badge.hidden = unreadIds.length === 0;
+      }
+      if (button) {
+        const permission = notificationPermission();
+        const enabled = permission === "granted" && orderNotificationSettings().enabled;
+        button.classList.toggle("enabled", enabled);
+        button.classList.toggle("blocked", permission === "denied" || permission === "unsupported");
+        const label = enabled
+          ? "Order notifications enabled. Tap to send a test."
+          : permission === "denied"
+            ? "Order notifications are blocked in browser settings"
+            : "Enable order notifications";
+        button.setAttribute("aria-label", label);
+        button.title = label;
+      }
+      if (!alert) return;
+      const order = state.latestOrderAlert;
+      alert.hidden = !order;
+      if (!order) return;
+      $("#adminOrderAlertTitle").textContent = `New order ${order.order_number || ""}`.trim();
+      $("#adminOrderAlertMeta").textContent = `${formatPrice(order.total)} | ${Number(order.item_count) || 0} items`;
+    }
+
+    async function showAdminSystemNotification(order, isTest = false) {
+      if (notificationPermission() !== "granted" || !orderNotificationSettings().enabled) return;
+      const registration = await registerNotificationServiceWorker();
+      const orderNumber = order.order_number || "";
+      const title = isTest ? "GO GO SHOP notifications are ready" : `New order ${orderNumber}`.trim();
+      const body = isTest
+        ? "New customer orders will appear here and in the admin dashboard."
+        : `${formatPrice(order.total)} | ${Number(order.item_count) || 0} items`;
+      const adminUrl = new URL(location.href);
+      adminUrl.hash = "admin";
+      const options = {
+        body,
+        icon: "./assets/app-icon-192.png",
+        badge: "./assets/app-icon-192.png",
+        tag: isTest ? "gogoshop-order-test" : `gogoshop-order-${order.id}`,
+        renotify: !isTest,
+        data: { url: adminUrl.href, orderId: order.id || null }
+      };
+      try {
+        if (registration) await registration.showNotification(title, options);
+        else new Notification(title, options);
+      } catch (error) {
+        showToast("System notification could not be displayed");
+      }
+    }
+
+    async function enableAdminOrderNotifications() {
+      if (notificationPermission() === "unsupported") {
+        showToast("This browser does not support system notifications");
+        renderAdminOrderNotificationUi();
+        return;
+      }
+      const permission = Notification.permission === "granted"
+        ? "granted"
+        : await Notification.requestPermission();
+      if (permission !== "granted") {
+        save(ORDER_NOTIFICATION_SETTINGS_KEY, { enabled: false });
+        showToast("Notifications are blocked. Allow them in browser site settings.");
+        renderAdminOrderNotificationUi();
+        return;
+      }
+      save(ORDER_NOTIFICATION_SETTINGS_KEY, { enabled: true });
+      renderAdminOrderNotificationUi();
+      await showAdminSystemNotification({ id: "test", order_number: "", total: 0, item_count: 0 }, true);
+      showToast("Order notifications enabled");
+    }
+
+    function rememberAdminOrderEvent(eventKey) {
+      const events = Array.isArray(state.notifiedOrderEvents) ? state.notifiedOrderEvents : [];
+      state.notifiedOrderEvents = [...events.filter((key) => key !== eventKey), eventKey].slice(-200);
+      save(ORDER_NOTIFICATION_SEEN_KEY, state.notifiedOrderEvents);
+    }
+
+    async function handleAdminOrderRealtime(order, eventType) {
+      if (!state.profile?.is_admin || !order?.id) return;
+      const isPaid = order.payment_status === "paid";
+      const isStripe = order.payment_provider === "stripe";
+      if (eventType === "INSERT" && isStripe && !isPaid) return;
+      if (eventType === "UPDATE" && !isPaid) return;
+      const eventKey = `${order.id}:${isPaid ? "paid" : "created"}`;
+      const notifiedEvents = Array.isArray(state.notifiedOrderEvents) ? state.notifiedOrderEvents : [];
+      if (notifiedEvents.includes(eventKey)) return;
+      rememberAdminOrderEvent(eventKey);
+      const unreadIds = Array.isArray(state.unreadOrderIds) ? state.unreadOrderIds : [];
+      state.unreadOrderIds = [...unreadIds.filter((id) => id !== order.id), order.id];
+      state.latestOrderAlert = order;
+      save(ORDER_NOTIFICATION_UNREAD_KEY, state.unreadOrderIds);
+      renderAdminOrderNotificationUi();
+      showToast(`New order ${order.order_number || "received"}`);
+      await Promise.all([showAdminSystemNotification(order), loadAdminData()]);
+    }
+
+    async function stopAdminOrderRealtime() {
+      const channel = adminOrderChannel;
+      adminOrderChannel = null;
+      adminOrderChannelUserId = null;
+      if (db && channel) {
+        try {
+          await db.removeChannel(channel);
+        } catch (error) {}
+      }
+    }
+
+    async function subscribeToAdminOrderRealtime() {
+      const userId = state.profile?.is_admin ? state.session?.user?.id : null;
+      if (!db || !userId) {
+        await stopAdminOrderRealtime();
+        return;
+      }
+      if (adminOrderChannel && adminOrderChannelUserId === userId) return;
+      await stopAdminOrderRealtime();
+      if (!state.profile?.is_admin || state.session?.user?.id !== userId) return;
+      adminOrderChannelUserId = userId;
+      adminOrderChannel = db.channel(`admin-order-alerts-${userId}`)
+        .on("postgres_changes", { event: "INSERT", schema: "public", table: "orders" }, (payload) => {
+          handleAdminOrderRealtime(payload.new, "INSERT");
+        })
+        .on("postgres_changes", { event: "UPDATE", schema: "public", table: "orders" }, (payload) => {
+          handleAdminOrderRealtime(payload.new, "UPDATE");
+        })
+        .subscribe();
+    }
+
+    function clearAdminOrderUnread() {
+      state.unreadOrderIds = [];
+      save(ORDER_NOTIFICATION_UNREAD_KEY, state.unreadOrderIds);
+      renderAdminOrderNotificationUi();
+    }
+
+    function dismissAdminOrderAlert() {
+      state.latestOrderAlert = null;
+      renderAdminOrderNotificationUi();
+    }
+
+    function viewLatestAdminOrder() {
+      const orderId = state.latestOrderAlert?.id;
+      setAdminTab("orders");
+      state.latestOrderAlert = null;
+      renderAdminOrderNotificationUi();
+      window.setTimeout(() => {
+        const row = orderId ? $(`[data-admin-order-row="${CSS.escape(String(orderId))}"]`) : null;
+        if (!row) return;
+        row.classList.add("admin-order-highlight");
+        row.scrollIntoView({ behavior: "smooth", block: "center" });
+        window.setTimeout(() => row.classList.remove("admin-order-highlight"), 2500);
+      }, 0);
+    }
+
     async function handleAuthSession(session) {
       state.session = session;
       await loadCustomerData();
       if (state.profile?.is_admin) {
         await loadStoreInventory();
+        await subscribeToAdminOrderRealtime();
       } else if (state.deletedProducts.length) {
+        await stopAdminOrderRealtime();
         state.deletedProducts = [];
         persistDeletedProducts();
+      } else {
+        await stopAdminOrderRealtime();
       }
       state.authReady = true;
       applyStoreDesign();
@@ -5767,6 +6105,7 @@
 
     async function customerSignOut() {
       if (!db) return;
+      await stopAdminOrderRealtime();
       await db.auth.signOut();
       state.session = null;
       state.profile = null;
@@ -6074,7 +6413,10 @@
       const unlocked = Boolean(state.profile?.is_admin);
       $("#loginScreen").hidden = unlocked;
       $("#adminShell").hidden = !unlocked;
-      if (unlocked) loadAdminData();
+      if (unlocked) {
+        loadAdminData();
+        subscribeToAdminOrderRealtime();
+      }
       renderAdmin();
       refreshIcons();
     }
@@ -6112,6 +6454,7 @@
     async function logoutAdmin() {
       closeProductEditor();
       clearAdminAccess();
+      await stopAdminOrderRealtime();
       if (db) await db.auth.signOut();
       state.session = null;
       state.profile = null;
@@ -6128,6 +6471,7 @@
 
     function setAdminTab(tab) {
       state.adminTab = tab;
+      if (tab === "orders") clearAdminOrderUnread();
       $$("[data-admin-tab]").forEach((button) => button.classList.toggle("active", button.dataset.adminTab === tab));
       $$("[data-admin-section]").forEach((section) => section.classList.toggle("active", section.dataset.adminSection === tab));
       const titleMap = {
@@ -6176,7 +6520,7 @@
           `<button class="button ghost" type="button" data-delete-order="${order.id}" title="Delete order"><i data-lucide="trash-2"></i></button>`
         ].filter(Boolean).join(" ");
         return `
-          <tr>
+          <tr data-admin-order-row="${escapeHtml(order.id)}">
             <td><strong>${escapeHtml(order.order_number)}</strong><div class="muted">${new Date(order.created_at).toLocaleString("en-NZ")}</div></td>
             <td>${escapeHtml(customer.full_name || customer.email || "Customer")}<div class="muted">${escapeHtml(customer.email || "")}</div></td>
             <td>${formatPrice(order.total)}<div class="muted">${Number(order.item_count)} items</div></td>
@@ -6504,6 +6848,7 @@
 
     function renderAdmin() {
       if ($("#adminShell").hidden) return;
+      renderAdminOrderNotificationUi();
       renderMetrics("#metricGrid");
       renderMetrics("#analyticsMetrics", true);
       renderRevenueChart();
@@ -7180,6 +7525,9 @@
       if (target.matches("[data-back-store]")) exitAdminToStore();
       if (target.matches("[data-admin-logout]")) logoutAdmin();
       if (target.matches("[data-admin-tab]")) setAdminTab(target.dataset.adminTab);
+      if (target.matches("[data-enable-order-notifications]")) enableAdminOrderNotifications();
+      if (target.matches("[data-view-new-order]")) viewLatestAdminOrder();
+      if (target.matches("[data-dismiss-order-alert]")) dismissAdminOrderAlert();
       if (target.matches("[data-confirm-order]")) confirmSupabaseOrder(target.dataset.confirmOrder);
       if (target.matches("[data-edit-order]")) editSupabaseOrder(target.dataset.editOrder);
       if (target.matches("[data-delete-order]")) deleteSupabaseOrder(target.dataset.deleteOrder);
@@ -7486,6 +7834,7 @@
     document.documentElement.lang = state.lang === "zh" ? "zh-CN" : "en";
     applyLanguage();
     renderAll();
+    registerNotificationServiceWorker();
     initSupabase().then(handlePaymentReturn);
     if (isAdminRoute()) {
       showAdmin();
