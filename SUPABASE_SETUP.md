@@ -97,7 +97,8 @@ Apple Client Secret 通常最长有效 6 个月，到期前需要重新生成。
    - `payment_intent.payment_failed`
    - `charge.refunded`
 6. 把 Stripe Webhook 的 Signing secret 保存为 Supabase Secret `STRIPE_WEBHOOK_SECRET`。
-7. 在 Stripe **Settings > Payment methods** 中启用 Cards、Apple Pay 和 Google Pay，然后先使用测试模式完成一次付款。
+7. 在 Stripe **Settings > Payment methods** 中启用 Cards、Apple Pay 和 Google Pay。网站使用 Stripe 托管 Checkout，支付域名应显示 `checkout.stripe.com` 已启用；无需为 GitHub Pages 单独部署 Apple Pay 验证文件。
+8. 结账函数启用了 Stripe 自动支付方式。Apple Pay 只会在已设置 Apple Wallet 的兼容 Apple 设备上显示，Google Pay 只会在支持的浏览器和已设置 Google Wallet 的设备上显示。
 
 在线订单只有 Stripe 回调确认为“已付款”后，后台才能确认订单并扣除库存。
 

@@ -126,7 +126,7 @@ Deno.serve(async (request: Request) => {
 
   const form = new URLSearchParams();
   form.set("mode", "payment");
-  form.set("payment_method_types[0]", "card");
+  form.set("automatic_payment_methods[enabled]", "true");
   form.set("submit_type", "pay");
   form.set("success_url", checkoutReturnUrl("success"));
   form.set("cancel_url", checkoutReturnUrl("cancelled", order.id));
