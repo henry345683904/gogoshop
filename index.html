@@ -4489,7 +4489,7 @@
     </div>
   </section>
 
-  <section class="order-detail-modal" id="orderDetailModal" data-order-detail-backdrop hidden>
+  <section class="order-detail-modal" id="orderDetailModal" data-order-detail-backdrop aria-hidden="true" hidden>
     <div class="order-detail-dialog" role="dialog" aria-modal="true" aria-labelledby="orderDetailTitle">
       <div class="panel-head order-detail-head"><h2 class="panel-title" id="orderDetailTitle" data-i18n="orderDetails">Order details</h2><button class="icon-button" type="button" data-close-order-detail aria-label="Close"><i data-lucide="x"></i></button></div>
       <div class="order-detail-content" id="orderDetailContent"></div>
@@ -5696,13 +5696,17 @@
 
     function closeOrderDetail() {
       const modal = $("#orderDetailModal");
-      if (modal) modal.hidden = true;
+      if (modal) {
+        modal.hidden = true;
+        modal.setAttribute("aria-hidden", "true");
+      }
       if (showOrderDetail.lastFocus instanceof HTMLElement) showOrderDetail.lastFocus.focus();
       showOrderDetail.lastFocus = null;
     }
 
     function showOrderDetail(orderId) {
-      const order = state.customerOrders.find((item) => item.id === orderId);
+      const normalizedOrderId = String(orderId || "");
+      const order = state.customerOrders.find((item) => String(item.id) === normalizedOrderId);
       const modal = $("#orderDetailModal");
       const content = $("#orderDetailContent");
       if (!order || !modal || !content) return;
@@ -5755,6 +5759,7 @@
         </div>`;
       showOrderDetail.lastFocus = document.activeElement;
       modal.hidden = false;
+      modal.setAttribute("aria-hidden", "false");
       refreshIcons();
       window.requestAnimationFrame(() => modal.querySelector("[data-close-order-detail]")?.focus());
     }
@@ -7492,7 +7497,7 @@
         return;
       }
 
-      if (clickedElement.matches("[data-order-detail-backdrop]") || clickedElement.matches("[data-close-order-detail]")) {
+      if (clickedElement.matches("[data-order-detail-backdrop]") || clickedElement.closest("[data-close-order-detail]")) {
         closeOrderDetail();
         return;
       }
@@ -7508,12 +7513,13 @@
         return;
       }
 
-      const target = clickedElement.closest("button, a");
       const orderCard = clickedElement.closest("[data-order-detail]");
-      if (orderCard && !target) {
+      if (orderCard) {
+        event.preventDefault();
         showOrderDetail(orderCard.dataset.orderDetail);
         return;
       }
+      const target = clickedElement.closest("button, a");
       if (!target) return;
 
       if (target.matches("[data-description-format]")) {
