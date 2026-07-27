@@ -66,10 +66,21 @@ create table if not exists public.orders (
   total numeric(12,2) not null check (total >= 0),
   item_count integer not null check (item_count > 0),
   points_awarded integer not null default 0 check (points_awarded >= 0),
+  payment_provider text not null default 'manual' check (payment_provider in ('manual', 'stripe')),
+  payment_status text not null default 'unpaid' check (payment_status in ('unpaid', 'pending', 'paid', 'failed', 'refunded')),
+  stripe_checkout_session_id text,
+  stripe_payment_intent_id text,
+  paid_at timestamptz,
   created_at timestamptz not null default now(),
   confirmed_at timestamptz,
   confirmed_by uuid references public.profiles(id) on delete set null
 );
+
+alter table public.orders add column if not exists payment_provider text not null default 'manual';
+alter table public.orders add column if not exists payment_status text not null default 'unpaid';
+alter table public.orders add column if not exists stripe_checkout_session_id text;
+alter table public.orders add column if not exists stripe_payment_intent_id text;
+alter table public.orders add column if not exists paid_at timestamptz;
 
 create table if not exists public.order_items (
   id bigint generated always as identity primary key,
@@ -83,6 +94,8 @@ create table if not exists public.order_items (
 
 create index if not exists orders_user_id_idx on public.orders(user_id, created_at desc);
 create index if not exists orders_status_idx on public.orders(status, created_at desc);
+create index if not exists orders_payment_status_idx on public.orders(payment_status, created_at desc);
+create unique index if not exists orders_stripe_checkout_session_idx on public.orders(stripe_checkout_session_id) where stripe_checkout_session_id is not null;
 create index if not exists order_items_order_id_idx on public.order_items(order_id);
 create unique index if not exists order_items_order_product_idx on public.order_items(order_id, product_id);
 create index if not exists products_deleted_at_idx on public.products(deleted_at);
@@ -277,6 +290,9 @@ begin
   select * into v_order from public.orders where id = p_order_id for update;
   if not found then raise exception 'Order not found'; end if;
   if v_order.status <> 'pending' then raise exception 'Order has already been processed'; end if;
+  if v_order.payment_provider = 'stripe' and v_order.payment_status <> 'paid' then
+    raise exception 'Online payment has not been completed';
+  end if;
 
   for v_item in select * from public.order_items where order_id = p_order_id
   loop
@@ -295,7 +311,7 @@ begin
       where id = v_item.product_id;
   end loop;
 
-  v_points := floor(v_order.total)::integer;
+  v_points := round(v_order.total)::integer;
   update public.orders set
     status = 'confirmed', points_awarded = v_points,
     confirmed_at = now(), confirmed_by = auth.uid()
@@ -309,11 +325,30 @@ begin
 end;
 $$;
 
-revoke all on function public.create_order(jsonb) from public, anon;
+create or replace function public.create_payment_order(p_items jsonb)
+returns uuid
+language plpgsql
+security definer set search_path = public
+as $$
+declare
+  v_order_id uuid;
+begin
+  v_order_id := public.create_order(p_items);
+  update public.orders
+  set payment_provider = 'stripe',
+      payment_status = 'pending'
+  where id = v_order_id
+    and user_id = auth.uid();
+  return v_order_id;
+end;
+$$;
+
+revoke all on function public.create_order(jsonb) from public, anon, authenticated;
+revoke all on function public.create_payment_order(jsonb) from public, anon;
 revoke all on function public.confirm_order(uuid) from public, anon;
 revoke all on function public.get_admin_login_email() from public;
 revoke all on function public.get_storefront_products() from public;
-grant execute on function public.create_order(jsonb) to authenticated;
+grant execute on function public.create_payment_order(jsonb) to authenticated;
 grant execute on function public.confirm_order(uuid) to authenticated;
 grant execute on function public.get_admin_login_email() to anon, authenticated;
 grant execute on function public.get_storefront_products() to anon, authenticated;

@@ -74,4 +74,29 @@ Apple 的 Return URL 使用：
 
 Apple Client Secret 通常最长有效 6 个月，到期前需要重新生成。
 
-不要把 Supabase secret key、service_role key、Google Client Secret 或 Apple 私钥写进网页文件或提交到 GitHub。
+## 6. Stripe、Apple Pay、Google Pay 和银行卡
+
+网站使用 Stripe 托管结账，因此银行卡号不会进入网页或 Supabase 数据库。Stripe 会根据客户的设备和浏览器自动显示 Apple Pay、Google Pay 和银行卡。
+
+1. 在 SQL Editor 运行一次 `supabase-payments.sql`。
+2. 部署 `supabase/functions/create-checkout-session` 和 `supabase/functions/stripe-webhook`。
+3. 在 Supabase **Edge Functions > Secrets** 添加：
+   - `STRIPE_SECRET_KEY`：Stripe 后台提供的 Secret key。
+   - `SITE_URL`：`https://henry345683904.github.io/gogoshop/`
+4. 在 Stripe **Developers > Webhooks** 添加 Endpoint：
+
+   `https://ucnkcddhrptqpdlvcohy.supabase.co/functions/v1/stripe-webhook`
+
+5. 订阅事件：
+   - `checkout.session.completed`
+   - `checkout.session.async_payment_succeeded`
+   - `checkout.session.async_payment_failed`
+   - `checkout.session.expired`
+   - `payment_intent.payment_failed`
+   - `charge.refunded`
+6. 把 Stripe Webhook 的 Signing secret 保存为 Supabase Secret `STRIPE_WEBHOOK_SECRET`。
+7. 在 Stripe **Settings > Payment methods** 中启用 Cards、Apple Pay 和 Google Pay，然后先使用测试模式完成一次付款。
+
+在线订单只有 Stripe 回调确认为“已付款”后，后台才能确认订单并扣除库存。
+
+不要把 Supabase secret key、service_role key、Stripe Secret Key、Stripe Webhook Secret、Google Client Secret 或 Apple 私钥写进网页文件或提交到 GitHub。

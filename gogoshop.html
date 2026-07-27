@@ -1333,6 +1333,110 @@
       background: #fff;
       box-shadow: 0 18px 60px rgba(20, 24, 24, .2);
     }
+
+    .payment-modal[hidden] {
+      display: none;
+    }
+
+    .payment-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 96;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      background: rgba(20, 24, 24, .48);
+    }
+
+    .payment-dialog {
+      width: min(100%, 480px);
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      box-shadow: 0 20px 70px rgba(20, 24, 24, .24);
+    }
+
+    .payment-body {
+      display: grid;
+      gap: 18px;
+      padding: 20px 22px 22px;
+    }
+
+    .payment-total {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 16px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .payment-total span {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 650;
+    }
+
+    .payment-total strong {
+      font-size: 25px;
+    }
+
+    .payment-methods {
+      display: grid;
+      border-top: 1px solid var(--line);
+    }
+
+    .payment-method {
+      min-height: 52px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid var(--line);
+      color: var(--ink);
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .payment-method svg {
+      width: 20px;
+      height: 20px;
+      color: var(--muted);
+      stroke-width: 1.8;
+    }
+
+    .payment-secure-note {
+      display: flex;
+      align-items: flex-start;
+      gap: 9px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .payment-secure-note svg {
+      width: 16px;
+      height: 16px;
+      flex: 0 0 auto;
+      margin-top: 1px;
+    }
+
+    .payment-error {
+      min-height: 18px;
+      margin: -6px 0 0;
+      color: var(--danger);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .payment-actions {
+      display: grid;
+      gap: 9px;
+    }
+
+    .payment-actions .button {
+      width: 100%;
     }
 
     .account-summary span,
@@ -1353,6 +1457,13 @@
       justify-content: space-between;
       gap: 10px;
       margin-bottom: 8px;
+    }
+
+    .order-statuses {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 6px;
     }
 
     .account-order-items {
@@ -3948,6 +4059,35 @@
     </div>
   </aside>
 
+  <section class="payment-modal" id="paymentModal" data-payment-backdrop hidden>
+    <div class="payment-dialog" role="dialog" aria-modal="true" aria-labelledby="paymentTitle">
+      <div class="panel-head">
+        <h2 class="panel-title" id="paymentTitle" data-i18n="paymentTitle">Secure payment</h2>
+        <button class="icon-button" type="button" data-close-payment aria-label="Close"><i data-lucide="x"></i></button>
+      </div>
+      <div class="payment-body">
+        <div class="payment-total">
+          <span data-i18n="total">Total</span>
+          <strong data-payment-total>$0.00</strong>
+        </div>
+        <div>
+          <p class="muted" style="margin: 0 0 8px; font-size: 13px; font-weight: 700;" data-i18n="paymentMethods">Payment methods</p>
+          <div class="payment-methods">
+            <div class="payment-method"><i data-lucide="apple"></i><span>Apple Pay</span></div>
+            <div class="payment-method"><i data-lucide="wallet-cards"></i><span>Google Pay</span></div>
+            <div class="payment-method"><i data-lucide="credit-card"></i><span data-i18n="cardPayment">Credit or debit card</span></div>
+          </div>
+        </div>
+        <p class="payment-secure-note"><i data-lucide="shield-check"></i><span data-i18n="paymentRedirect">Payment details are securely handled by Stripe.</span></p>
+        <p class="payment-error" id="paymentMessage" role="alert" aria-live="polite"></p>
+        <div class="payment-actions">
+          <button class="button" type="button" data-start-payment><i data-lucide="lock-keyhole"></i><span data-i18n="paySecurely">Continue to secure payment</span></button>
+          <button class="button ghost" type="button" data-close-payment data-i18n="cancelPayment">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <section class="order-detail-modal" id="orderDetailModal" data-order-detail-backdrop hidden>
     <div class="order-detail-dialog" role="dialog" aria-modal="true" aria-labelledby="orderDetailTitle">
       <div class="panel-head"><h2 class="panel-title" id="orderDetailTitle">Order details</h2><button class="icon-button" type="button" data-close-order-detail aria-label="Close"><i data-lucide="x"></i></button></div>
@@ -4013,6 +4153,16 @@
         cartTitle: "Cart",
         total: "Total",
         checkout: "Checkout",
+        paymentTitle: "Secure payment",
+        paymentMethods: "Payment methods",
+        cardPayment: "Credit or debit card",
+        paymentRedirect: "Payment details are securely handled by Stripe.",
+        paySecurely: "Continue to secure payment",
+        cancelPayment: "Cancel",
+        paymentProcessing: "Opening secure payment...",
+        paymentSuccess: "Payment received. Your order is waiting for confirmation.",
+        paymentCancelled: "Payment was cancelled.",
+        paymentUnavailable: "Online payments are not configured yet.",
         searchTitle: "Search",
         searchPlaceholder: "Search products",
         clear: "Clear",
@@ -4084,6 +4234,16 @@
         cartTitle: "购物车",
         total: "合计",
         checkout: "结账",
+        paymentTitle: "安全付款",
+        paymentMethods: "付款方式",
+        cardPayment: "信用卡或借记卡",
+        paymentRedirect: "付款信息由 Stripe 安全处理。",
+        paySecurely: "前往安全付款",
+        cancelPayment: "取消",
+        paymentProcessing: "正在打开安全付款页面...",
+        paymentSuccess: "付款成功，订单正在等待商家确认。",
+        paymentCancelled: "已取消付款。",
+        paymentUnavailable: "在线付款尚未完成配置。",
         searchTitle: "搜索",
         searchPlaceholder: "搜索商品",
         clear: "清除",
@@ -5024,6 +5184,22 @@
       return t("pendingOrder");
     }
 
+    function paymentStatusLabel(order) {
+      if (order.payment_provider !== "stripe") {
+        return state.lang === "zh" ? "线下付款" : "Manual payment";
+      }
+      if (order.payment_status === "paid") return state.lang === "zh" ? "已付款" : "Paid";
+      if (order.payment_status === "failed") return state.lang === "zh" ? "付款失败" : "Payment failed";
+      if (order.payment_status === "refunded") return state.lang === "zh" ? "已退款" : "Refunded";
+      return state.lang === "zh" ? "等待付款" : "Awaiting payment";
+    }
+
+    function paymentStatusClass(order) {
+      if (order.payment_status === "paid") return "live";
+      if (["failed", "refunded"].includes(order.payment_status)) return "draft";
+      return "featured";
+    }
+
     function renderAccount() {
       const signedIn = Boolean(state.session?.user);
       updateAdminMenuVisibility();
@@ -5047,7 +5223,10 @@
         <article class="account-order" tabindex="0" role="button" data-order-detail="${order.id}">
           <div class="account-order-head">
             <div><strong>${escapeHtml(order.order_number)}</strong><div class="account-order-meta">${new Date(order.created_at).toLocaleString(state.lang === "zh" ? "zh-CN" : "en-NZ")}</div></div>
-            <span class="status ${order.status === "confirmed" ? "live" : "featured"}">${escapeHtml(orderStatusLabel(order.status))}</span>
+            <div class="order-statuses">
+              <span class="status ${paymentStatusClass(order)}">${escapeHtml(paymentStatusLabel(order))}</span>
+              <span class="status ${order.status === "confirmed" ? "live" : "featured"}">${escapeHtml(orderStatusLabel(order.status))}</span>
+            </div>
           </div>
           <strong>${formatPrice(order.total)}</strong> · ${Number(order.item_count || 0)} ${state.lang === "zh" ? "件" : "items"}
           ${order.status === "confirmed" ? `<div class="account-order-meta">+${Number(order.points_awarded || 0)} ${t("rewardPoints")}</div>` : ""}
@@ -5075,7 +5254,10 @@
       if (!order || !modal || !content) return;
       content.innerHTML = `
         <div class="account-order-meta">${escapeHtml(order.order_number)} · ${new Date(order.created_at).toLocaleString(state.lang === "zh" ? "zh-CN" : "en-NZ")}</div>
-        <p><span class="status ${order.status === "confirmed" ? "live" : "featured"}">${escapeHtml(orderStatusLabel(order.status))}</span></p>
+        <div class="order-statuses" style="justify-content: flex-start; margin: 12px 0;">
+          <span class="status ${paymentStatusClass(order)}">${escapeHtml(paymentStatusLabel(order))}</span>
+          <span class="status ${order.status === "confirmed" ? "live" : "featured"}">${escapeHtml(orderStatusLabel(order.status))}</span>
+        </div>
         <div class="account-order-items">${(order.order_items || []).map((item) => `<div style="display:flex;justify-content:space-between;gap:12px;padding:6px 0;"><span>${escapeHtml(orderItemName(item))} × ${Number(item.quantity)}</span><span>${formatPrice(Number(item.unit_price) * Number(item.quantity))}</span></div>`).join("")}</div>
         <p><strong>Total: ${formatPrice(order.total)}</strong> · ${Number(order.item_count || 0)} items</p>
         ${order.status === "confirmed" ? `<div class="account-order-meta">+${Number(order.points_awarded || 0)} ${t("rewardPoints")}</div>` : ""}`;
@@ -5170,10 +5352,17 @@
         return;
       }
       const userId = state.session.user.id;
-      const [profileResult, orderResult] = await Promise.all([
+      const [profileResult, paymentOrderResult] = await Promise.all([
         db.from("profiles").select("id,email,full_name,points,total_spent,is_admin,created_at").eq("id", userId).single(),
-        db.from("orders").select("id,order_number,status,total,item_count,points_awarded,created_at,order_items(product_id,product_title,unit_price,quantity)").eq("user_id", userId).order("created_at", { ascending: false })
+        db.from("orders").select("id,order_number,status,total,item_count,points_awarded,payment_provider,payment_status,paid_at,created_at,order_items(product_id,product_title,unit_price,quantity)").eq("user_id", userId).order("created_at", { ascending: false })
       ]);
+      let orderResult = paymentOrderResult;
+      if (paymentOrderResult.error && /payment_provider|payment_status|paid_at/i.test(paymentOrderResult.error.message || "")) {
+        orderResult = await db.from("orders")
+          .select("id,order_number,status,total,item_count,points_awarded,created_at,order_items(product_id,product_title,unit_price,quantity)")
+          .eq("user_id", userId)
+          .order("created_at", { ascending: false });
+      }
       if (!profileResult.error) state.profile = profileResult.data;
       state.customerOrders = orderResult.error ? [] : (orderResult.data || []);
       renderAccount();
@@ -5346,22 +5535,85 @@
         showToast(t("loginToCheckout"));
         return;
       }
-      const checkoutButton = $("[data-checkout]");
-      checkoutButton.disabled = true;
-      const { error } = await db.rpc("create_order", {
-        p_items: state.cart.map((line) => ({ product_id: line.id, quantity: line.quantity }))
-      });
-      checkoutButton.disabled = false;
-      if (error) {
-        showToast(authErrorMessage(error));
+      closePanels();
+      $("[data-payment-total]").textContent = formatPrice(cartTotal());
+      $("#paymentMessage").textContent = "";
+      $("#paymentModal").hidden = false;
+      refreshIcons();
+    }
+
+    function closePaymentModal() {
+      const modal = $("#paymentModal");
+      if (modal) modal.hidden = true;
+      const message = $("#paymentMessage");
+      if (message) message.textContent = "";
+    }
+
+    async function startStripeCheckout() {
+      const button = $("[data-start-payment]");
+      const message = $("#paymentMessage");
+      if (!button || !message || !state.cart.length || !db) return;
+      button.disabled = true;
+      message.textContent = t("paymentProcessing");
+
+      const { data: sessionData } = await db.auth.getSession();
+      const accessToken = sessionData.session?.access_token;
+      if (!accessToken) {
+        button.disabled = false;
+        closePaymentModal();
+        openPanel("account");
+        showToast(t("loginToCheckout"));
         return;
       }
-      state.cart = [];
-      persistCart();
-      await loadCustomerData();
-      renderCart();
-      openPanel("account");
-      showToast(t("orderCreated"));
+
+      try {
+        const response = await fetch(SUPABASE_URL + "/functions/v1/create-checkout-session", {
+          method: "POST",
+          headers: {
+            "Authorization": "Bearer " + accessToken,
+            "apikey": SUPABASE_PUBLISHABLE_KEY,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            items: state.cart.map((line) => ({ product_id: line.id, quantity: line.quantity })),
+            locale: state.lang
+          })
+        });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok || !result.checkout_url) {
+          const unavailable = response.status === 404
+            || response.status === 503
+            || /not configured|not found/i.test(result.error || "");
+          throw new Error(unavailable ? t("paymentUnavailable") : (result.error || "Unable to start payment"));
+        }
+        window.location.assign(result.checkout_url);
+      } catch (error) {
+        button.disabled = false;
+        message.textContent = error.message || t("paymentUnavailable");
+      }
+    }
+
+    async function handlePaymentReturn() {
+      const url = new URL(window.location.href);
+      const paymentResult = url.searchParams.get("payment");
+      if (!paymentResult) return;
+      url.searchParams.delete("payment");
+      url.searchParams.delete("session_id");
+      history.replaceState(null, "", url.pathname + url.search + url.hash);
+
+      if (paymentResult === "success") {
+        state.cart = [];
+        persistCart();
+        renderCart();
+        await loadCustomerData();
+        if (state.session?.user) openPanel("account");
+        showToast(t("paymentSuccess"));
+        window.setTimeout(() => loadCustomerData(), 1800);
+        return;
+      }
+
+      openPanel("cart");
+      showToast(t("paymentCancelled"));
     }
 
     function toggleMenuSection(name) {
@@ -5559,10 +5811,16 @@
 
     async function loadAdminData() {
       if (!db || !state.profile?.is_admin) return;
-      const [ordersResult, customersResult] = await Promise.all([
-        db.from("orders").select("id,order_number,user_id,status,total,item_count,points_awarded,created_at,confirmed_at,profiles!orders_user_id_fkey(email,full_name),order_items(product_id,product_title,quantity,unit_price)").order("created_at", { ascending: false }),
+      const [paymentOrdersResult, customersResult] = await Promise.all([
+        db.from("orders").select("id,order_number,user_id,status,total,item_count,points_awarded,payment_provider,payment_status,paid_at,created_at,confirmed_at,profiles!orders_user_id_fkey(email,full_name),order_items(product_id,product_title,quantity,unit_price)").order("created_at", { ascending: false }),
         db.from("profiles").select("id,email,full_name,points,total_spent,created_at,is_admin").order("created_at", { ascending: false })
       ]);
+      let ordersResult = paymentOrdersResult;
+      if (paymentOrdersResult.error && /payment_provider|payment_status|paid_at/i.test(paymentOrdersResult.error.message || "")) {
+        ordersResult = await db.from("orders")
+          .select("id,order_number,user_id,status,total,item_count,points_awarded,created_at,confirmed_at,profiles!orders_user_id_fkey(email,full_name),order_items(product_id,product_title,quantity,unit_price)")
+          .order("created_at", { ascending: false });
+      }
       if (!ordersResult.error) state.adminOrders = ordersResult.data || [];
       if (!customersResult.error) state.customers = customersResult.data || [];
       renderAdmin();
@@ -5573,14 +5831,28 @@
       if (!target) return;
       target.innerHTML = state.adminOrders.length ? state.adminOrders.map((order) => {
         const customer = order.profiles || {};
+        const canEdit = order.status === "pending" && order.payment_provider !== "stripe";
+        const canConfirm = order.status === "pending"
+          && (order.payment_provider !== "stripe" || order.payment_status === "paid");
+        const actions = [
+          canEdit ? `<button class="button" type="button" data-edit-order="${order.id}"><i data-lucide="pencil"></i> Edit</button>` : "",
+          canConfirm ? `<button class="button" type="button" data-confirm-order="${order.id}"><i data-lucide="check"></i> Confirm</button>` : "",
+          order.status !== "pending" ? `<span class="muted">${order.confirmed_at ? new Date(order.confirmed_at).toLocaleDateString("en-NZ") : "-"}</span>` : "",
+          `<button class="button ghost" type="button" data-delete-order="${order.id}" title="Delete order"><i data-lucide="trash-2"></i></button>`
+        ].filter(Boolean).join(" ");
         return `
           <tr>
             <td><strong>${escapeHtml(order.order_number)}</strong><div class="muted">${new Date(order.created_at).toLocaleString("en-NZ")}</div></td>
             <td>${escapeHtml(customer.full_name || customer.email || "Customer")}<div class="muted">${escapeHtml(customer.email || "")}</div></td>
             <td>${formatPrice(order.total)}<div class="muted">${Number(order.item_count)} items</div></td>
-            <td><span class="status ${order.status === "confirmed" ? "live" : "featured"}">${escapeHtml(orderStatusLabel(order.status))}</span></td>
+            <td>
+              <div class="order-statuses" style="justify-content: flex-start;">
+                <span class="status ${paymentStatusClass(order)}">${escapeHtml(paymentStatusLabel(order))}</span>
+                <span class="status ${order.status === "confirmed" ? "live" : "featured"}">${escapeHtml(orderStatusLabel(order.status))}</span>
+              </div>
+            </td>
             <td>${Number(order.points_awarded ?? Math.round(Number(order.total) || 0))}</td>
-            <td>${order.status === "pending" ? `<button class="button" type="button" data-edit-order="${order.id}"><i data-lucide="pencil"></i> Edit</button> <button class="button" type="button" data-confirm-order="${order.id}"><i data-lucide="check"></i> Confirm</button>` : `<span class="muted">${order.confirmed_at ? new Date(order.confirmed_at).toLocaleDateString("en-NZ") : "-"}</span>`} <button class="button ghost" type="button" data-delete-order="${order.id}" title="Delete order"><i data-lucide="trash-2"></i></button></td>
+            <td>${actions}</td>
           </tr>
           <tr><td colspan="6" class="muted">${(order.order_items || []).map((item) => `${escapeHtml(item.product_title)} × ${Number(item.quantity)}`).join(" · ")}</td></tr>
         `;
@@ -5605,6 +5877,7 @@
     async function editSupabaseOrder(orderId) {
       const order = state.adminOrders.find((item) => item.id === orderId);
       if (!order || order.status !== "pending") return showToast("Only pending orders can be edited");
+      if (order.payment_provider === "stripe") return showToast("Online payment orders cannot be edited");
       const items = (order.order_items || []).map((item) => {
         const value = window.prompt(`${item.product_title} quantity`, String(item.quantity));
         if (value === null) return null;
@@ -6430,6 +6703,11 @@
         return;
       }
 
+      if (clickedElement.matches("[data-payment-backdrop]")) {
+        closePaymentModal();
+        return;
+      }
+
       const productEditRow = clickedElement.closest("[data-edit-product-row]");
       if (productEditRow && !clickedElement.closest("button, a")) {
         editProduct(productEditRow.dataset.editProductRow);
@@ -6510,6 +6788,8 @@
       if (target.matches("[data-open-menu]")) openPanel("menu");
       if (target.matches("[data-open-account]")) openPanel("account");
       if (target.matches("[data-close-panels]")) closePanels();
+      if (target.matches("[data-close-payment]")) closePaymentModal();
+      if (target.matches("[data-start-payment]")) startStripeCheckout();
       if (target.matches("[data-oauth-provider]")) signInWithProvider(target.dataset.oauthProvider);
       if (target.matches("[data-customer-logout]")) customerSignOut();
       if (target.matches("[data-lang]")) {
@@ -6826,6 +7106,10 @@
         closeProductEditor();
         return;
       }
+      if (event.key === "Escape" && !$("#paymentModal").hidden) {
+        closePaymentModal();
+        return;
+      }
       if (!$("#productDetail").hidden && !event.target.matches("input, textarea, select")) {
         if (event.key === "ArrowRight") {
           event.preventDefault();
@@ -6849,7 +7133,7 @@
     document.documentElement.lang = state.lang === "zh" ? "zh-CN" : "en";
     applyLanguage();
     renderAll();
-    initSupabase();
+    initSupabase().then(handlePaymentReturn);
     if (isAdminRoute()) {
       showAdmin();
     } else {
