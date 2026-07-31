@@ -7183,8 +7183,8 @@
       showToast(state.lang === "zh" ? "已退出登录" : "Signed out");
     }
 
-    function cartQuantity() {
-      return state.cart.reduce((sum, line) => sum + line.quantity, 0);
+    function cartProductCount() {
+      return new Set(state.cart.map((line) => line.id)).size;
     }
 
     function cartTotal() {
@@ -7195,7 +7195,7 @@
     }
 
     function renderCart() {
-      const count = cartQuantity();
+      const count = cartProductCount();
       const subtotal = cartTotal();
       const discount = voucherDiscount();
       $("[data-cart-count]").textContent = count;
