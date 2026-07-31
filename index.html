@@ -1308,6 +1308,33 @@
       gap: 10px;
     }
 
+    .account-name-row {
+      display: flex;
+      min-width: 0;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .account-name-row h3 {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .account-vip-progress {
+      margin-top: 7px;
+    }
+
+    .account-vip-progress .vip-progress-copy {
+      font-size: 11px;
+    }
+
+    .account-vip-progress .vip-progress-track {
+      height: 4px;
+      margin-top: 5px;
+    }
+
     .oauth-grid .button {
       min-width: 0;
       padding: 0 12px;
@@ -2377,6 +2404,312 @@
       .voucher-admin-layout {
         grid-template-columns: 1fr;
       }
+    }
+
+    .vip-tier-legend {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(120px, 1fr));
+      gap: 1px;
+      overflow: auto;
+      border-bottom: 1px solid #e3e4e4;
+      background: #e3e4e4;
+    }
+
+    .vip-tier-legend-item {
+      min-width: 120px;
+      padding: 12px 14px;
+      background: #fafafa;
+    }
+
+    .vip-tier-legend-item strong,
+    .vip-tier-legend-item span {
+      display: block;
+    }
+
+    .vip-tier-legend-item span {
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .vip-tier-badge {
+      display: inline-flex;
+      min-height: 25px;
+      align-items: center;
+      border: 1px solid transparent;
+      border-radius: 999px;
+      padding: 0 9px;
+      font-size: 11px;
+      font-weight: 850;
+      white-space: nowrap;
+    }
+
+    .vip-tier-badge.silver { border-color: #aeb5b8; background: #f1f3f4; color: #465055; }
+    .vip-tier-badge.gold { border-color: #cda83b; background: #fff7dc; color: #745b0c; }
+    .vip-tier-badge.platinum { border-color: #77a9ad; background: #eaf5f5; color: #285e62; }
+    .vip-tier-badge.diamond { border-color: #568c73; background: #eaf6ef; color: #225d42; }
+    .vip-tier-badge.black { border-color: #111; background: #171717; color: #fff; }
+
+    .customer-table-row {
+      cursor: pointer;
+    }
+
+    .customer-table-row:hover {
+      background: #f7f8f8;
+    }
+
+    .customer-detail-modal[hidden] { display: none; }
+    .customer-detail-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 340;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      background: rgba(20, 24, 24, .58);
+    }
+
+    .customer-detail-dialog {
+      display: flex;
+      width: min(100%, 980px);
+      max-height: min(92vh, 860px);
+      max-height: min(92dvh, 860px);
+      flex-direction: column;
+      overflow: hidden;
+      border: 1px solid #d7dada;
+      border-radius: 8px;
+      background: #f5f6f6;
+      box-shadow: 0 24px 80px rgba(20, 24, 24, .3);
+    }
+
+    .customer-detail-head {
+      flex: 0 0 auto;
+      background: #fff;
+    }
+
+    .customer-detail-title-wrap {
+      min-width: 0;
+    }
+
+    .customer-detail-title-row {
+      display: flex;
+      min-width: 0;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .customer-detail-title-row h2 {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .customer-detail-title-wrap > span {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 12px;
+      overflow-wrap: anywhere;
+    }
+
+    .customer-detail-content {
+      min-height: 0;
+      overflow: auto;
+      overscroll-behavior: contain;
+      padding: 18px;
+    }
+
+    .customer-detail-metrics {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .customer-detail-metric {
+      min-width: 0;
+      border: 1px solid #dfe1e1;
+      border-radius: 8px;
+      padding: 13px 14px;
+      background: #fff;
+    }
+
+    .customer-detail-metric span,
+    .customer-detail-metric strong {
+      display: block;
+    }
+
+    .customer-detail-metric span {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .customer-detail-metric strong {
+      margin-top: 6px;
+      font-size: 21px;
+      line-height: 1.1;
+      overflow-wrap: anywhere;
+    }
+
+    .vip-progress-panel {
+      margin-top: 10px;
+      border: 1px solid #dfe1e1;
+      border-radius: 8px;
+      padding: 13px 14px;
+      background: #fff;
+    }
+
+    .vip-progress-copy {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .vip-progress-track {
+      height: 7px;
+      margin-top: 10px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: #e7e9e9;
+    }
+
+    .vip-progress-track > span {
+      display: block;
+      width: var(--vip-progress, 0%);
+      height: 100%;
+      border-radius: inherit;
+      background: #376e73;
+    }
+
+    .customer-detail-info {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1px;
+      margin-top: 10px;
+      overflow: hidden;
+      border: 1px solid #dfe1e1;
+      border-radius: 8px;
+      background: #dfe1e1;
+    }
+
+    .customer-detail-info > div {
+      min-width: 0;
+      padding: 12px 14px;
+      background: #fff;
+    }
+
+    .customer-detail-info span,
+    .customer-detail-info strong {
+      display: block;
+    }
+
+    .customer-detail-info span {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .customer-detail-info strong {
+      margin-top: 5px;
+      font-size: 13px;
+      overflow-wrap: anywhere;
+    }
+
+    .customer-detail-columns {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(280px, .8fr);
+      gap: 12px;
+      margin-top: 12px;
+      align-items: start;
+    }
+
+    .customer-detail-section {
+      overflow: hidden;
+      border: 1px solid #dfe1e1;
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .customer-detail-section-head {
+      display: flex;
+      min-height: 48px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      border-bottom: 1px solid #e5e6e6;
+      padding: 0 14px;
+    }
+
+    .customer-detail-section-head h3 {
+      margin: 0;
+      font-size: 14px;
+    }
+
+    .customer-detail-list {
+      max-height: 310px;
+      overflow: auto;
+    }
+
+    .customer-detail-order,
+    .customer-detail-voucher {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+      border-bottom: 1px solid #eceeee;
+      padding: 11px 14px;
+    }
+
+    .customer-detail-order:last-child,
+    .customer-detail-voucher:last-child {
+      border-bottom: 0;
+    }
+
+    .customer-detail-order strong,
+    .customer-detail-order span,
+    .customer-detail-voucher strong,
+    .customer-detail-voucher span {
+      display: block;
+    }
+
+    .customer-detail-order span,
+    .customer-detail-voucher span {
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .customer-voucher-issue {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 8px;
+      border-bottom: 1px solid #e5e6e6;
+      padding: 12px 14px;
+    }
+
+    .customer-voucher-issue select {
+      min-width: 0;
+    }
+
+    .customer-voucher-issue-message {
+      grid-column: 1 / -1;
+      min-height: 16px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    @media (max-width: 760px) {
+      .customer-detail-modal { padding: 8px; }
+      .customer-detail-dialog { max-height: calc(100dvh - 16px); }
+      .customer-detail-content { padding: 10px; }
+      .customer-detail-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .customer-detail-info { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .customer-detail-columns { grid-template-columns: 1fr; }
+      .customer-detail-list { max-height: 230px; }
     }
 
     .product-form {
@@ -4156,12 +4489,13 @@
         <section class="admin-section" data-admin-section="customers">
           <div class="admin-panel">
             <div class="admin-panel-head">
-              <div><h2>Customers</h2><span class="muted">Accounts, spending and reward points.</span></div>
+              <div><h2>Customers</h2><span class="muted" id="adminCustomerCount">Accounts, VIP levels and purchase history.</span></div>
               <button class="button ghost" type="button" data-refresh-admin-data><i data-lucide="refresh-cw"></i> Refresh</button>
             </div>
+            <div class="vip-tier-legend" id="vipTierLegend"></div>
             <div class="table-wrap">
               <table>
-                <thead><tr><th>Customer</th><th>Email</th><th>Points</th><th>Total spent</th><th>Joined</th></tr></thead>
+                <thead><tr><th>Customer</th><th>VIP</th><th>Orders</th><th>Total spent</th><th>Points</th><th>Last order</th><th>Joined</th><th>Action</th></tr></thead>
                 <tbody id="customerRows"></tbody>
               </table>
             </div>
@@ -4213,7 +4547,7 @@
                     <label class="field"><span>Voucher</span><select name="voucherId" id="voucherIssueVoucher" required></select></label>
                     <label class="field"><span>Customer</span><select name="userId" id="voucherIssueCustomer" required></select></label>
                     <button class="button" type="submit"><i data-lucide="send"></i> Issue voucher</button>
-                    <p class="voucher-admin-message" id="voucherIssueMessage" role="status"></p>
+                    <p class="voucher-admin-message" id="voucherIssueMessage" data-voucher-issue-message role="status"></p>
                   </form>
                 </div>
               </div>
@@ -4442,6 +4776,19 @@
           </div>
         </section>
       </main>
+    </div>
+  </section>
+
+  <section class="customer-detail-modal" id="customerDetailModal" data-customer-detail-backdrop hidden>
+    <div class="customer-detail-dialog" role="dialog" aria-modal="true" aria-labelledby="customerDetailTitle">
+      <div class="panel-head customer-detail-head">
+        <div class="customer-detail-title-wrap">
+          <div class="customer-detail-title-row"><h2 class="panel-title" id="customerDetailTitle">Customer</h2><span class="vip-tier-badge silver" id="customerDetailVip">Silver</span></div>
+          <span id="customerDetailEmail"></span>
+        </div>
+        <button class="icon-button" type="button" data-close-customer-detail aria-label="Close customer details" title="Close"><i data-lucide="x"></i></button>
+      </div>
+      <div class="customer-detail-content" id="customerDetailContent"></div>
     </div>
   </section>
 
@@ -4760,7 +5107,14 @@
         </form>
       </section>
       <section class="auth-view" data-auth-signed-in hidden>
-        <div><h3 id="accountName" style="margin: 0 0 5px;">Customer</h3><p class="muted" id="accountEmail" style="margin: 0;"></p></div>
+        <div>
+          <div class="account-name-row"><h3 id="accountName" style="margin: 0;">Customer</h3><span class="vip-tier-badge silver" id="accountVipBadge">Silver</span></div>
+          <p class="muted" id="accountEmail" style="margin: 4px 0 0;"></p>
+          <div class="account-vip-progress" id="accountVipProgress">
+            <div class="vip-progress-copy"><span id="accountVipMessage"></span><span id="accountVipAmount"></span></div>
+            <div class="vip-progress-track"><span id="accountVipBar"></span></div>
+          </div>
+        </div>
         <div class="account-summary">
           <div><span data-i18n="rewardPoints">Reward points</span><strong id="accountPoints">0</strong></div>
           <div><span data-i18n="totalSpent">Total spent</span><strong id="accountSpent">$0.00</strong></div>
@@ -4842,6 +5196,13 @@
     const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_zv6WbyD1hZKUx-Zyak-fPw_e1mURTN8";
     const SOURCE_COST_MULTIPLIER = 4;
     const SOURCE_PRICE_MULTIPLIER = 1.5 * 1.15;
+    const VIP_TIERS = Object.freeze([
+      { key: "silver", minSpend: 0, labelKey: "vipSilver" },
+      { key: "gold", minSpend: 500, labelKey: "vipGold" },
+      { key: "platinum", minSpend: 1500, labelKey: "vipPlatinum" },
+      { key: "diamond", minSpend: 3000, labelKey: "vipDiamond" },
+      { key: "black", minSpend: 6000, labelKey: "vipBlack" }
+    ]);
     const db = window.supabase?.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY) || null;
     let adminOrderChannel = null;
     let adminOrderChannelUserId = null;
@@ -4917,6 +5278,14 @@
         rewardPoints: "Reward points",
         totalSpent: "Total spent",
         myOrders: "My orders",
+        vipLevel: "VIP level",
+        vipNext: "to {level}",
+        vipHighest: "Highest VIP level",
+        vipSilver: "Silver",
+        vipGold: "Gold",
+        vipPlatinum: "Platinum",
+        vipDiamond: "Diamond",
+        vipBlack: "Black Card",
         loginToCheckout: "Sign in before checkout",
         backendNotReady: "Order service is not initialized. Run supabase-schema.sql first.",
         pendingOrder: "Pending confirmation",
@@ -5029,6 +5398,14 @@
         rewardPoints: "积分",
         totalSpent: "累计消费",
         myOrders: "我的订单",
+        vipLevel: "VIP 等级",
+        vipNext: "距离{level}",
+        vipHighest: "已达到最高 VIP 等级",
+        vipSilver: "白银",
+        vipGold: "黄金",
+        vipPlatinum: "白金",
+        vipDiamond: "钻石",
+        vipBlack: "黑卡",
         loginToCheckout: "请先登录后再结账",
         backendNotReady: "订单数据库尚未初始化，请先运行 supabase-schema.sql",
         pendingOrder: "等待商家确认",
@@ -5309,6 +5686,7 @@
       orderTrashOpen: false,
       orderRecycleSupported: true,
       customers: [],
+      activeCustomerId: null,
       vouchers: [],
       voucherAssignments: [],
       unreadOrderIds: load(ORDER_NOTIFICATION_UNREAD_KEY, []),
@@ -5457,6 +5835,42 @@
 
     function formatPrice(value) {
       return money.format(Number(value || 0));
+    }
+
+    function vipStatus(totalSpent) {
+      const spent = Math.max(0, Number(totalSpent || 0));
+      let tierIndex = 0;
+      VIP_TIERS.forEach((tier, index) => {
+        if (spent >= tier.minSpend) tierIndex = index;
+      });
+      const tier = VIP_TIERS[tierIndex];
+      const nextTier = VIP_TIERS[tierIndex + 1] || null;
+      const range = nextTier ? nextTier.minSpend - tier.minSpend : 0;
+      const progress = nextTier ? Math.max(0, Math.min(100, ((spent - tier.minSpend) / range) * 100)) : 100;
+      return {
+        spent,
+        tier,
+        nextTier,
+        progress,
+        remaining: nextTier ? Math.max(0, nextTier.minSpend - spent) : 0
+      };
+    }
+
+    function vipTierLabel(tier) {
+      return tier ? t(tier.labelKey) : t("vipSilver");
+    }
+
+    function vipProgressText(status) {
+      if (!status.nextTier) return t("vipHighest");
+      const nextLabel = vipTierLabel(status.nextTier);
+      return state.lang === "zh"
+        ? `距离${nextLabel}还差 ${formatPrice(status.remaining)}`
+        : `${formatPrice(status.remaining)} to ${nextLabel}`;
+    }
+
+    function vipBadge(status, id = "") {
+      const idAttribute = id ? ` id="${escapeHtml(id)}"` : "";
+      return `<span class="vip-tier-badge ${status.tier.key}"${idAttribute}>${escapeHtml(vipTierLabel(status.tier))}</span>`;
     }
 
     function calculateSourcePricing(value) {
@@ -6175,6 +6589,15 @@
       $("#accountEmail").textContent = state.profile?.email || user.email || "";
       $("#accountPoints").textContent = Number(state.profile?.points || 0).toLocaleString();
       $("#accountSpent").textContent = formatPrice(state.profile?.total_spent || 0);
+      const accountVip = vipStatus(state.profile?.total_spent || 0);
+      const accountVipBadge = $("#accountVipBadge");
+      accountVipBadge.className = `vip-tier-badge ${accountVip.tier.key}`;
+      accountVipBadge.textContent = vipTierLabel(accountVip.tier);
+      $("#accountVipMessage").textContent = vipProgressText(accountVip);
+      $("#accountVipAmount").textContent = accountVip.nextTier
+        ? `${formatPrice(accountVip.spent)} / ${formatPrice(accountVip.nextTier.minSpend)}`
+        : formatPrice(accountVip.spent);
+      $("#accountVipBar").style.setProperty("--vip-progress", `${accountVip.progress}%`);
       const target = $("#accountOrders");
       target.innerHTML = state.customerOrders.length ? state.customerOrders.map((order) => `
         <article class="account-order" tabindex="0" role="button" data-order-detail="${order.id}">
@@ -7137,6 +7560,7 @@
     }
 
     function showStore() {
+      closeCustomerDetail();
       $("#storeView").style.display = "";
       $("#admin").classList.remove("active");
       $("#admin").style.display = "none";
@@ -7168,6 +7592,7 @@
 
     async function logoutAdmin() {
       closeProductEditor();
+      closeCustomerDetail();
       clearAdminAccess();
       await stopAdminOrderRealtime();
       if (db) await db.auth.signOut();
@@ -7193,7 +7618,7 @@
         overview: ["Overview", "Products, inventory, orders and storefront signals."],
         products: ["Products", "Add, edit and publish items."],
         orders: ["Orders", "Confirm orders before inventory and points are updated."],
-        customers: ["Customers", "Accounts, spending and reward points."],
+        customers: ["Customers", "VIP levels, purchase history, points and vouchers."],
         vouchers: ["Vouchers", "Create voucher codes, issue them to customers and track usage."],
         analytics: ["Analytics", "Revenue, orders and product performance."],
         design: ["Store design", "Customize typography, colors, hero content and plugin blocks."]
@@ -7206,9 +7631,9 @@
 
     async function loadAdminData() {
       if (!db || !state.profile?.is_admin) return;
-      const customerPromise = db.from("profiles").select("id,email,full_name,points,total_spent,created_at,is_admin").order("created_at", { ascending: false });
+      const customerPromise = db.from("profiles").select("id,email,full_name,points,total_spent,created_at,updated_at,is_admin").order("created_at", { ascending: false });
       const voucherPromise = db.from("vouchers").select("*").order("created_at", { ascending: false });
-      const voucherAssignmentPromise = db.from("customer_vouchers").select("id,voucher_id,user_id,source,redeemed_at,reserved_at,used_at,order_id,vouchers(code,name),profiles!customer_vouchers_user_id_fkey(email,full_name)").order("redeemed_at", { ascending: false });
+      const voucherAssignmentPromise = db.from("customer_vouchers").select("id,voucher_id,user_id,source,redeemed_at,reserved_at,used_at,order_id,vouchers(code,name,active,starts_at,expires_at),profiles!customer_vouchers_user_id_fkey(email,full_name)").order("redeemed_at", { ascending: false });
       const voucherPaymentFields = "id,order_number,user_id,status,subtotal,discount_amount,voucher_code,total,item_count,points_awarded,payment_provider,payment_status,paid_at,created_at,confirmed_at,deleted_at,deleted_by,profiles!orders_user_id_fkey(email,full_name),order_items(product_id,product_title,quantity,unit_price)";
       const voucherPaymentFieldsWithoutRecycle = "id,order_number,user_id,status,subtotal,discount_amount,voucher_code,total,item_count,points_awarded,payment_provider,payment_status,paid_at,created_at,confirmed_at,profiles!orders_user_id_fkey(email,full_name),order_items(product_id,product_title,quantity,unit_price)";
       const paymentFields = "id,order_number,user_id,status,total,item_count,points_awarded,payment_provider,payment_status,paid_at,created_at,confirmed_at,deleted_at,deleted_by,profiles!orders_user_id_fkey(email,full_name),order_items(product_id,product_title,quantity,unit_price)";
@@ -7297,18 +7722,168 @@
       refreshIcons();
     }
 
+    function customerStats(customer) {
+      const orders = state.adminOrders
+        .filter((order) => order.user_id === customer.id)
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      const confirmedOrders = orders.filter((order) => order.status === "confirmed");
+      const pendingOrders = orders.filter((order) => order.status === "pending");
+      const assignments = state.voucherAssignments.filter((assignment) => assignment.user_id === customer.id);
+      const totalSpent = Number(customer.total_spent || 0);
+      return {
+        orders,
+        confirmedOrders,
+        pendingOrders,
+        assignments,
+        lastOrder: orders[0] || null,
+        totalItems: confirmedOrders.reduce((sum, order) => sum + Number(order.item_count || 0), 0),
+        averageOrder: confirmedOrders.length ? totalSpent / confirmedOrders.length : 0,
+        availableVouchers: assignments.filter((assignment) => {
+          const voucher = assignment.vouchers || {};
+          const now = Date.now();
+          return !assignment.used_at
+            && !assignment.order_id
+            && voucher.active !== false
+            && (!voucher.starts_at || new Date(voucher.starts_at).getTime() <= now)
+            && (!voucher.expires_at || new Date(voucher.expires_at).getTime() > now);
+        }).length
+      };
+    }
+
+    function renderVipTierLegend() {
+      const legend = $("#vipTierLegend");
+      if (!legend) return;
+      legend.innerHTML = VIP_TIERS.map((tier) => `
+        <div class="vip-tier-legend-item">
+          ${vipBadge({ tier })}
+          <span>${tier.minSpend === 0 ? "From account creation" : `From ${formatPrice(tier.minSpend)}`}</span>
+        </div>
+      `).join("");
+    }
+
     function renderCustomers() {
       const target = $("#customerRows");
       if (!target) return;
-      target.innerHTML = state.customers.length ? state.customers.map((customer) => `
-        <tr>
-          <td><strong>${escapeHtml(customer.full_name || "Customer")}</strong>${customer.is_admin ? `<div class="status featured">Admin</div>` : ""}</td>
-          <td>${escapeHtml(customer.email)}</td>
-          <td>${Number(customer.points || 0).toLocaleString()}</td>
-          <td>${formatPrice(customer.total_spent)}</td>
-          <td>${new Date(customer.created_at).toLocaleDateString("en-NZ")}</td>
-        </tr>
-      `).join("") : `<tr><td colspan="5"><div class="empty-state">No customers yet</div></td></tr>`;
+      $("#adminCustomerCount").textContent = `${state.customers.filter((customer) => !customer.is_admin).length} customer accounts`;
+      renderVipTierLegend();
+      target.innerHTML = state.customers.length ? state.customers.map((customer) => {
+        const stats = customerStats(customer);
+        const vip = vipStatus(customer.total_spent);
+        return `
+          <tr class="customer-table-row" data-view-customer="${escapeHtml(customer.id)}">
+            <td><strong>${escapeHtml(customer.full_name || customer.email || "Customer")}</strong><div class="muted">${escapeHtml(customer.email || "")}</div>${customer.is_admin ? `<div class="status featured">Admin</div>` : ""}</td>
+            <td>${vipBadge(vip)}</td>
+            <td><strong>${stats.orders.length}</strong><div class="muted">${stats.confirmedOrders.length} confirmed</div></td>
+            <td>${formatPrice(customer.total_spent)}</td>
+            <td>${Number(customer.points || 0).toLocaleString()}</td>
+            <td>${stats.lastOrder ? `<strong>${escapeHtml(stats.lastOrder.order_number)}</strong><div class="muted">${new Date(stats.lastOrder.created_at).toLocaleDateString("en-NZ")}</div>` : "-"}</td>
+            <td>${new Date(customer.created_at).toLocaleDateString("en-NZ")}</td>
+            <td><button class="action-button" type="button" data-view-customer="${escapeHtml(customer.id)}" aria-label="View customer details" title="View customer"><i data-lucide="eye"></i></button></td>
+          </tr>`;
+      }).join("") : `<tr><td colspan="8"><div class="empty-state">No customers yet</div></td></tr>`;
+    }
+
+    function closeCustomerDetail() {
+      const modal = $("#customerDetailModal");
+      if (!modal || modal.hidden) return;
+      modal.hidden = true;
+      state.activeCustomerId = null;
+      document.body.classList.remove("editor-open");
+      if (openCustomerDetail.lastFocus instanceof HTMLElement) openCustomerDetail.lastFocus.focus();
+      openCustomerDetail.lastFocus = null;
+    }
+
+    function openCustomerDetail(customerId) {
+      const customer = state.customers.find((item) => item.id === customerId);
+      if (!customer) return;
+      openCustomerDetail.lastFocus = document.activeElement;
+      state.activeCustomerId = customer.id;
+      renderCustomerDetail();
+      const modal = $("#customerDetailModal");
+      modal.hidden = false;
+      document.body.classList.add("editor-open");
+      refreshIcons();
+      window.requestAnimationFrame(() => modal.querySelector("[data-close-customer-detail]")?.focus());
+    }
+
+    function renderCustomerDetail() {
+      if (!state.activeCustomerId) return;
+      const customer = state.customers.find((item) => item.id === state.activeCustomerId);
+      const modal = $("#customerDetailModal");
+      const content = $("#customerDetailContent");
+      if (!customer || !modal || !content) {
+        closeCustomerDetail();
+        return;
+      }
+      const stats = customerStats(customer);
+      const vip = vipStatus(customer.total_spent);
+      const locale = state.lang === "zh" ? "zh-CN" : "en-NZ";
+      const formatDate = (value) => value ? new Date(value).toLocaleString(locale) : "-";
+      const activeVouchers = state.vouchers.filter((voucher) => voucherAdminStatus(voucher).label === "Active");
+      const voucherOptions = activeVouchers.map((voucher) => (
+        `<option value="${escapeHtml(voucher.id)}">${escapeHtml(voucher.code)} · ${escapeHtml(voucher.name)} · ${escapeHtml(voucherValueLabel(voucher))}</option>`
+      )).join("");
+      const issueForm = customer.is_admin ? "" : `
+        <form class="customer-voucher-issue" data-voucher-issue-form data-customer-voucher-issue-form>
+          <input type="hidden" name="userId" value="${escapeHtml(customer.id)}">
+          <select name="voucherId" aria-label="Voucher" ${activeVouchers.length ? "required" : "disabled"}>
+            ${voucherOptions || '<option value="">No active vouchers</option>'}
+          </select>
+          <button class="button" type="submit" ${activeVouchers.length ? "" : "disabled"}><i data-lucide="send"></i> Issue</button>
+          <span class="customer-voucher-issue-message" data-voucher-issue-message role="status"></span>
+        </form>`;
+      $("#customerDetailTitle").textContent = customer.full_name || customer.email || "Customer";
+      $("#customerDetailEmail").textContent = customer.email || customer.id;
+      const badge = $("#customerDetailVip");
+      badge.className = `vip-tier-badge ${vip.tier.key}`;
+      badge.textContent = vipTierLabel(vip.tier);
+      content.innerHTML = `
+        <div class="customer-detail-metrics">
+          <div class="customer-detail-metric"><span>Total spent</span><strong>${formatPrice(customer.total_spent)}</strong></div>
+          <div class="customer-detail-metric"><span>Reward points</span><strong>${Number(customer.points || 0).toLocaleString()}</strong></div>
+          <div class="customer-detail-metric"><span>Confirmed orders</span><strong>${stats.confirmedOrders.length}</strong></div>
+          <div class="customer-detail-metric"><span>Vouchers</span><strong>${stats.availableVouchers} available</strong></div>
+        </div>
+        <div class="vip-progress-panel">
+          <div class="vip-progress-copy"><strong>${escapeHtml(vipProgressText(vip))}</strong><span>${vip.nextTier ? `${formatPrice(vip.spent)} / ${formatPrice(vip.nextTier.minSpend)}` : formatPrice(vip.spent)}</span></div>
+          <div class="vip-progress-track"><span style="--vip-progress: ${vip.progress}%"></span></div>
+        </div>
+        <div class="customer-detail-info">
+          <div><span>Customer ID</span><strong>${escapeHtml(customer.id)}</strong></div>
+          <div><span>Joined</span><strong>${escapeHtml(formatDate(customer.created_at))}</strong></div>
+          <div><span>Profile updated</span><strong>${escapeHtml(formatDate(customer.updated_at))}</strong></div>
+          <div><span>Last order</span><strong>${stats.lastOrder ? `${escapeHtml(stats.lastOrder.order_number)} · ${escapeHtml(formatDate(stats.lastOrder.created_at))}` : "-"}</strong></div>
+          <div><span>Average confirmed order</span><strong>${formatPrice(stats.averageOrder)}</strong></div>
+          <div><span>Confirmed items</span><strong>${stats.totalItems}</strong></div>
+        </div>
+        <div class="customer-detail-columns">
+          <section class="customer-detail-section">
+            <div class="customer-detail-section-head"><h3>Order history</h3><span class="muted">${stats.pendingOrders.length} pending · ${stats.orders.length} total</span></div>
+            <div class="customer-detail-list">
+              ${stats.orders.map((order) => `
+                <div class="customer-detail-order">
+                  <div><strong>${escapeHtml(order.order_number)}</strong><span>${escapeHtml(formatDate(order.created_at))} · ${Number(order.item_count || 0)} items</span></div>
+                  <div><strong>${formatPrice(order.total)}</strong><span class="status ${order.status === "confirmed" ? "live" : order.status === "cancelled" ? "draft" : "featured"}">${escapeHtml(orderStatusLabel(order.status))}</span></div>
+                </div>`).join("") || '<div class="empty-state">No orders yet</div>'}
+            </div>
+          </section>
+          <section class="customer-detail-section">
+            <div class="customer-detail-section-head"><h3>Vouchers</h3><span class="muted">${stats.assignments.length} issued</span></div>
+            ${issueForm}
+            <div class="customer-detail-list">
+              ${stats.assignments.map((assignment) => {
+                const voucher = assignment.vouchers || {};
+                const status = assignment.used_at ? "Used" : assignment.order_id ? "Reserved" : "Available";
+                return `
+                  <div class="customer-detail-voucher">
+                    <div><strong>${escapeHtml(voucher.code || "-")}</strong><span>${escapeHtml(voucher.name || "")} · ${assignment.source === "admin" ? "Admin issue" : "Code"}</span></div>
+                    <div><span class="status ${assignment.used_at ? "featured" : "live"}">${status}</span><span>${escapeHtml(formatDate(assignment.redeemed_at))}</span></div>
+                  </div>`;
+              }).join("") || '<div class="empty-state">No vouchers issued</div>'}
+            </div>
+          </section>
+        </div>`;
+      refreshIcons();
     }
 
     function voucherDateTimeLocal(value) {
@@ -7471,7 +8046,7 @@
       if (!db || !state.profile?.is_admin) return;
       const form = event.target;
       const values = Object.fromEntries(new FormData(form).entries());
-      const message = $("#voucherIssueMessage");
+      const message = form.querySelector("[data-voucher-issue-message]") || $("#voucherIssueMessage");
       const button = form.querySelector("button[type='submit']");
       if (!values.voucherId || !values.userId) return;
       button.disabled = true;
@@ -7482,8 +8057,11 @@
         message.textContent = authErrorMessage(error);
         return;
       }
-      message.textContent = "Voucher issued";
       await loadAdminData();
+      const refreshedMessage = state.activeCustomerId === values.userId
+        ? $("#customerDetailModal [data-voucher-issue-message]")
+        : $("#voucherIssueMessage");
+      if (refreshedMessage) refreshedMessage.textContent = "Voucher issued";
       showToast("Voucher issued to customer");
     }
 
@@ -7830,6 +8408,7 @@
       renderAdminOrders();
       renderCustomers();
       renderAdminVouchers();
+      renderCustomerDetail();
       renderTopProducts();
       renderOrders();
       renderAdminDesign();
@@ -8366,6 +8945,11 @@
         return;
       }
 
+      if (clickedElement.matches("[data-customer-detail-backdrop]") || clickedElement.closest("[data-close-customer-detail]")) {
+        closeCustomerDetail();
+        return;
+      }
+
       if (clickedElement.matches("[data-payment-backdrop]")) {
         closePaymentModal();
         return;
@@ -8374,6 +8958,12 @@
       const productEditRow = clickedElement.closest("[data-edit-product-row]");
       if (productEditRow && !clickedElement.closest("button, a")) {
         editProduct(productEditRow.dataset.editProductRow);
+        return;
+      }
+
+      const customerRow = clickedElement.closest("[data-view-customer]");
+      if (customerRow) {
+        openCustomerDetail(customerRow.dataset.viewCustomer);
         return;
       }
 
@@ -8807,6 +9397,10 @@
       }
       if (event.key === "Escape" && !$("#orderDetailModal").hidden) {
         closeOrderDetail();
+        return;
+      }
+      if (event.key === "Escape" && !$("#customerDetailModal").hidden) {
+        closeCustomerDetail();
         return;
       }
       if (!$("#productDetail").hidden && !event.target.matches("input, textarea, select")) {
