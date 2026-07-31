@@ -7342,7 +7342,6 @@
               <span class="price">${formatPrice(product.price)}</span>
               <span class="product-code-chip">${state.lang === "zh" ? "货号" : "Code"} ${escapeHtml(productItemCode(product))}</span>
             </a>
-            ${renderProductBarcode(product, { compact: true })}
           </div>
         </article>
       `).join("");
