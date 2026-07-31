@@ -4595,12 +4595,12 @@
               <label class="field">
                 <span>商品类别</span>
                 <select name="category">
-                  <option>Blind Box</option>
-                  <option>Phone Case</option>
-                  <option>Key Chain</option>
-                  <option>Soft Toy</option>
-                  <option>Smart Glasses</option>
-                  <option>1688 Imports</option>
+                  <option value="mobile-protection">手机壳与屏幕保护</option>
+                  <option value="phone-accessories">手机配件</option>
+                  <option value="collectibles">盲盒与毛绒</option>
+                  <option value="electronics">电子产品</option>
+                  <option value="gifts-lifestyle">礼品与生活</option>
+                  <option value="other">其他商品</option>
                 </select>
               </label>
               <label class="field">
@@ -4827,7 +4827,7 @@
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="product-localizations.js?v=2"></script>
+  <script src="product-localizations.js?v=3"></script>
   <script>
     const STORAGE_KEY = "gogoshop_products_v1";
     const CART_KEY = "gogoshop_cart_v1";
@@ -5093,6 +5093,7 @@
     storefrontCategories.forEach((category) => {
       (category.ids || []).forEach((id) => storefrontCategoryByProductId.set(id, category.key));
     });
+    const storefrontCategoryKeys = new Set(storefrontCategories.map((category) => category.key));
 
     const seedProducts = [
       {
@@ -5529,7 +5530,8 @@
     }
 
     function productCategoryKey(product) {
-      return storefrontCategoryByProductId.get(product.id) || "other";
+      return storefrontCategoryByProductId.get(product.id)
+        || (storefrontCategoryKeys.has(product.category) ? product.category : "other");
     }
 
     function customerWelcomeText() {
@@ -8116,7 +8118,7 @@
       const fields = form.elements;
       fields.namedItem("id").value = product.id;
       fields.namedItem("title").value = product.title;
-      fields.namedItem("category").value = product.category;
+      fields.namedItem("category").value = productCategoryKey(product);
       fields.namedItem("price").value = product.price;
       fields.namedItem("stock").value = product.stock;
       fields.namedItem("image").value = product.image;
