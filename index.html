@@ -5283,7 +5283,6 @@
                 <button class="button" type="button" data-new-product><i data-lucide="plus"></i> Add product</button>
               </div>
             </div>
-            <div class="admin-product-list" id="adminProductRows"></div>
             <section class="product-trash-panel" data-product-trash-panel hidden>
               <div class="product-trash-head">
                 <div><h3>回收站</h3><span class="muted">已删除的商品可恢复到原来的发布状态。</span></div>
@@ -5291,6 +5290,7 @@
               </div>
               <div class="admin-product-list" id="adminTrashRows"></div>
             </section>
+            <div class="admin-product-list" id="adminProductRows"></div>
           </div>
         </section>
 
@@ -9129,24 +9129,25 @@
         "For a confirmed order, inventory, sales, customer points and total spending will be rolled back."
       );
       if (!firstConfirmed) return;
-      const typedOrderNumber = window.prompt(
-        `Second confirmation: type ${order.order_number} to continue.`,
-        ""
+      const secondConfirmed = window.confirm(
+        `Final confirmation: delete order ${order.order_number}?\n\n` +
+        "The order will remain available in the recycle bin."
       );
-      if (typedOrderNumber !== order.order_number) {
-        showToast("Order deletion cancelled: order number did not match");
-        return;
-      }
-      const button = $(`[data-delete-order="${CSS.escape(orderId)}"]`);
+      if (!secondConfirmed) return;
+      const button = $$(`[data-delete-order]`).find((item) => item.dataset.deleteOrder === orderId);
       if (button) button.disabled = true;
-      const { error } = await db.rpc("soft_delete_order", { p_order_id: orderId });
-      if (error) {
+      try {
+        const { error } = await db.rpc("soft_delete_order", { p_order_id: orderId });
+        if (error) throw error;
+        await Promise.all([loadAdminData(), loadStoreInventory(), loadCustomerData()]);
+        renderAll();
+        showToast("Order moved to recycle bin");
+      } catch (error) {
         if (button) button.disabled = false;
-        return showToast(authErrorMessage(error));
+        const message = authErrorMessage(error);
+        showToast(message);
+        window.alert(`Order deletion failed: ${message}`);
       }
-      await Promise.all([loadAdminData(), loadStoreInventory(), loadCustomerData()]);
-      renderAll();
-      showToast("Order moved to recycle bin");
     }
 
     async function restoreSupabaseOrder(orderId) {
