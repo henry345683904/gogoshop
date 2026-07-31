@@ -12,6 +12,7 @@ create table if not exists public.profiles (
   points integer not null default 0 check (points >= 0),
   total_spent numeric(12,2) not null default 0 check (total_spent >= 0),
   is_admin boolean not null default false,
+  customer_barcode text not null default '',
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -60,6 +61,14 @@ alter table public.products add column if not exists source_variants jsonb not n
 alter table public.products add column if not exists source_attributes jsonb not null default '[]'::jsonb;
 alter table public.products add column if not exists deleted_at timestamptz;
 alter table public.products add column if not exists deleted_was_published boolean not null default false;
+
+alter table public.profiles add column if not exists customer_barcode text not null default '';
+update public.profiles
+set customer_barcode = 'CUST-' || upper(substr(replace(id::text, '-', ''), 1, 10))
+where nullif(trim(customer_barcode), '') is null;
+create unique index if not exists profiles_customer_barcode_unique_idx
+  on public.profiles (customer_barcode)
+  where nullif(trim(customer_barcode), '') is not null;
 
 create table if not exists public.orders (
   id uuid primary key default gen_random_uuid(),
@@ -114,15 +123,17 @@ language plpgsql
 security definer set search_path = public
 as $$
 begin
-  insert into public.profiles (id, email, full_name)
+  insert into public.profiles (id, email, full_name, customer_barcode)
   values (
     new.id,
     coalesce(new.email, ''),
-    coalesce(new.raw_user_meta_data ->> 'full_name', new.raw_user_meta_data ->> 'name', '')
+    coalesce(new.raw_user_meta_data ->> 'full_name', new.raw_user_meta_data ->> 'name', ''),
+    'CUST-' || upper(substr(replace(new.id::text, '-', ''), 1, 10))
   )
   on conflict (id) do update set
     email = excluded.email,
     full_name = coalesce(nullif(public.profiles.full_name, ''), excluded.full_name),
+    customer_barcode = coalesce(nullif(public.profiles.customer_barcode, ''), excluded.customer_barcode),
     updated_at = now();
   return new;
 end;
@@ -133,10 +144,15 @@ create trigger on_auth_user_created
   after insert or update of email, raw_user_meta_data on auth.users
   for each row execute procedure public.handle_new_user();
 
-insert into public.profiles (id, email, full_name)
-select id, coalesce(email, ''), coalesce(raw_user_meta_data ->> 'full_name', raw_user_meta_data ->> 'name', '')
+insert into public.profiles (id, email, full_name, customer_barcode)
+select id,
+  coalesce(email, ''),
+  coalesce(raw_user_meta_data ->> 'full_name', raw_user_meta_data ->> 'name', ''),
+  'CUST-' || upper(substr(replace(id::text, '-', ''), 1, 10))
 from auth.users
-on conflict (id) do update set email = excluded.email;
+on conflict (id) do update set
+  email = excluded.email,
+  customer_barcode = coalesce(nullif(public.profiles.customer_barcode, ''), excluded.customer_barcode);
 
 create or replace function public.is_admin()
 returns boolean

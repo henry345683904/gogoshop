@@ -1,14 +1,13 @@
--- Run once in Supabase Dashboard > SQL Editor to enable in-store POS orders.
+-- Run once in Supabase Dashboard > SQL Editor.
+-- Adds customer loyalty barcodes and awards rounded POS points at checkout.
 
-alter table public.products add column if not exists barcode text not null default '';
-create unique index if not exists products_barcode_unique_idx
-  on public.products (barcode) where nullif(trim(barcode), '') is not null;
-create index if not exists products_sku_idx on public.products (sku);
+alter table public.profiles
+  add column if not exists customer_barcode text not null default '';
 
-alter table public.profiles add column if not exists customer_barcode text not null default '';
 update public.profiles
 set customer_barcode = 'CUST-' || upper(substr(replace(id::text, '-', ''), 1, 10))
 where nullif(trim(customer_barcode), '') is null;
+
 create unique index if not exists profiles_customer_barcode_unique_idx
   on public.profiles (customer_barcode)
   where nullif(trim(customer_barcode), '') is not null;
@@ -75,8 +74,6 @@ begin
     if not found then raise exception 'Customer barcode not found'; end if;
   end if;
 
-  -- Product rows are locked until the complete sale is committed. Nothing is
-  -- deducted while the cashier is still building the cart.
   for v_item in
     select jsonb_build_object(
       'product_id', item ->> 'product_id',
@@ -97,6 +94,7 @@ begin
 
   v_order_number := 'POS-' || to_char(clock_timestamp(), 'YYMMDDHH24MISS') || '-' || upper(substr(gen_random_uuid()::text, 1, 4));
   v_points := case when v_customer is null then 0 else round(v_total)::integer end;
+
   insert into public.orders (
     order_number, user_id, status, total, item_count, points_awarded,
     payment_provider, payment_status, paid_at, confirmed_at, confirmed_by, order_source
@@ -118,10 +116,10 @@ begin
     insert into public.order_items (order_id, product_id, product_title, unit_price, quantity)
     values (v_order.id, v_product.id, v_product.title, v_product.price, v_quantity);
     update public.products
-      set stock = stock - v_quantity,
-          sales = sales + v_quantity,
-          updated_at = now()
-      where id = v_product.id;
+    set stock = stock - v_quantity,
+        sales = sales + v_quantity,
+        updated_at = now()
+    where id = v_product.id;
   end loop;
 
   if v_customer is not null then
