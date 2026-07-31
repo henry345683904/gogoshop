@@ -6129,6 +6129,7 @@
     const ORDER_NOTIFICATION_SETTINGS_KEY = "gogoshop_admin_order_notification_settings_v1";
     const ORDER_NOTIFICATION_UNREAD_KEY = "gogoshop_admin_order_unread_v1";
     const ORDER_NOTIFICATION_SEEN_KEY = "gogoshop_admin_order_notified_v1";
+    const OAUTH_PENDING_KEY = "gogoshop_oauth_pending_v1";
     const SUPABASE_URL = "https://ucnkcddhrptqpdlvcohy.supabase.co";
     const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_zv6WbyD1hZKUx-Zyak-fPw_e1mURTN8";
     const SOURCE_COST_MULTIPLIER = 4;
@@ -8199,8 +8200,47 @@
       }, 0);
     }
 
+    function oauthRedirectUrl() {
+      const url = /^(www\.)?gogoshop\.nz$/i.test(location.hostname)
+        ? new URL("https://gogoshop.nz/")
+        : new URL(`${location.origin}${location.pathname}`);
+      url.searchParams.set("oauth", "return");
+      return url.href;
+    }
+
+    function setPendingOAuth(provider = "") {
+      try {
+        if (provider) sessionStorage.setItem(OAUTH_PENDING_KEY, provider);
+        else sessionStorage.removeItem(OAUTH_PENDING_KEY);
+      } catch (error) {}
+    }
+
+    function hasPendingOAuth() {
+      if (new URLSearchParams(location.search).get("oauth") === "return") return true;
+      try {
+        return Boolean(sessionStorage.getItem(OAUTH_PENDING_KEY));
+      } catch (error) {
+        return false;
+      }
+    }
+
+    function clearPendingOAuth() {
+      setPendingOAuth();
+      const url = new URL(location.href);
+      url.searchParams.delete("oauth");
+      const authHash = new URLSearchParams(url.hash.replace(/^#/, ""));
+      if (authHash.has("access_token") || authHash.has("refresh_token") || authHash.has("error")) url.hash = "";
+      history.replaceState(null, "", `${url.pathname}${url.search}${url.hash}`);
+    }
+
     async function handleAuthSession(session) {
       state.session = session;
+      renderAccount();
+      if (session?.user && hasPendingOAuth()) {
+        clearPendingOAuth();
+        applyStoreDesign();
+        openPanel("account");
+      }
       await loadCustomerData();
       if (state.profile?.is_admin) {
         await loadStoreInventory();
@@ -8255,15 +8295,26 @@
 
     async function signInWithProvider(provider) {
       if (!db) return;
+      const message = $("#customerAuthMessage");
+      const providerButtons = $$('[data-oauth-provider]');
       const options = {
-        redirectTo: `${location.origin}${location.pathname}${location.search}`
+        redirectTo: oauthRedirectUrl(),
+        skipBrowserRedirect: true
       };
       if (provider === "apple") options.scopes = "name email";
-      const { error } = await db.auth.signInWithOAuth({
-        provider,
-        options
-      });
-      if (error) $("#customerAuthMessage").textContent = authErrorMessage(error, provider);
+      providerButtons.forEach((button) => { button.disabled = true; });
+      message.textContent = state.lang === "zh" ? "正在打开登录页面..." : "Opening sign-in...";
+      setPendingOAuth(provider);
+      try {
+        const { data, error } = await db.auth.signInWithOAuth({ provider, options });
+        if (error) throw error;
+        if (!data?.url) throw new Error("Unable to open the sign-in page");
+        window.location.assign(data.url);
+      } catch (error) {
+        setPendingOAuth();
+        providerButtons.forEach((button) => { button.disabled = false; });
+        message.textContent = authErrorMessage(error, provider);
+      }
     }
 
     async function customerSignOut() {
