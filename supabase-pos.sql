@@ -41,9 +41,11 @@ alter table public.orders add constraint orders_order_source_check
   check (order_source in ('online', 'pos'));
 
 drop function if exists public.create_pos_order(jsonb);
+drop function if exists public.create_pos_order(jsonb, text);
 create or replace function public.create_pos_order(
   p_items jsonb,
-  p_customer_barcode text default null
+  p_customer_barcode text default null,
+  p_customer_voucher_id uuid default null
 )
 returns public.orders
 language plpgsql
@@ -58,6 +60,9 @@ declare
   v_total numeric(12,2) := 0;
   v_item_count integer := 0;
   v_points integer := 0;
+  v_discount numeric(12,2) := 0;
+  v_customer_voucher public.customer_vouchers%rowtype;
+  v_voucher public.vouchers%rowtype;
   v_item jsonb;
   v_product public.products%rowtype;
   v_quantity integer;
@@ -73,6 +78,10 @@ begin
     where customer_barcode = v_customer_barcode
       and is_admin = false;
     if not found then raise exception 'Customer barcode not found'; end if;
+  end if;
+
+  if p_customer_voucher_id is not null and v_customer is null then
+    raise exception 'Select a customer before using a voucher';
   end if;
 
   -- Product rows are locked until the complete sale is committed. Nothing is
@@ -95,13 +104,43 @@ begin
     v_item_count := v_item_count + v_quantity;
   end loop;
 
+  if p_customer_voucher_id is not null then
+    select * into v_customer_voucher
+    from public.customer_vouchers
+    where id = p_customer_voucher_id and user_id = v_customer
+    for update;
+    if not found then raise exception 'Voucher not found for this customer'; end if;
+    if v_customer_voucher.used_at is not null then raise exception 'Voucher has already been used'; end if;
+    if v_customer_voucher.order_id is not null then raise exception 'Voucher is reserved for another order'; end if;
+
+    select * into v_voucher from public.vouchers where id = v_customer_voucher.voucher_id for update;
+    if not found or not v_voucher.active then raise exception 'Voucher is inactive'; end if;
+    if v_voucher.starts_at is not null and now() < v_voucher.starts_at then raise exception 'Voucher is not active yet'; end if;
+    if v_voucher.expires_at is not null and now() >= v_voucher.expires_at then raise exception 'Voucher has expired'; end if;
+    if v_total < v_voucher.minimum_spend then raise exception 'Minimum spend not reached'; end if;
+
+    if v_voucher.discount_type = 'fixed' then
+      v_discount := least(v_total, v_voucher.discount_value);
+    else
+      v_discount := round(v_total * v_voucher.discount_value / 100, 2);
+      if v_voucher.maximum_discount is not null then
+        v_discount := least(v_discount, v_voucher.maximum_discount);
+      end if;
+      v_discount := least(v_total, v_discount);
+    end if;
+  end if;
+
   v_order_number := 'POS-' || to_char(clock_timestamp(), 'YYMMDDHH24MISS') || '-' || upper(substr(gen_random_uuid()::text, 1, 4));
-  v_points := case when v_customer is null then 0 else round(v_total)::integer end;
+  v_points := case when v_customer is null then 0 else round(v_total - v_discount)::integer end;
   insert into public.orders (
-    order_number, user_id, status, total, item_count, points_awarded,
+    order_number, user_id, status, subtotal, discount_amount, total,
+    voucher_id, voucher_code, customer_voucher_id, item_count, points_awarded,
     payment_provider, payment_status, paid_at, confirmed_at, confirmed_by, order_source
   ) values (
-    v_order_number, coalesce(v_customer, v_admin), 'confirmed', round(v_total, 2), v_item_count, v_points,
+    v_order_number, coalesce(v_customer, v_admin), 'confirmed', round(v_total, 2), round(v_discount, 2), round(v_total - v_discount, 2),
+    case when p_customer_voucher_id is null then null else v_voucher.id end,
+    case when p_customer_voucher_id is null then null else v_voucher.code end,
+    p_customer_voucher_id, v_item_count, v_points,
     'manual', 'paid', now(), now(), v_admin, 'pos'
   ) returning * into v_order;
 
@@ -127,14 +166,22 @@ begin
   if v_customer is not null then
     update public.profiles
     set points = points + v_points,
-        total_spent = total_spent + round(v_total, 2),
+        total_spent = total_spent + round(v_total - v_discount, 2),
         updated_at = now()
     where id = v_customer;
+  end if;
+
+  if p_customer_voucher_id is not null then
+    update public.customer_vouchers
+    set reserved_at = coalesce(reserved_at, now()),
+        used_at = now(),
+        order_id = v_order.id
+    where id = p_customer_voucher_id;
   end if;
 
   return v_order;
 end;
 $$;
 
-revoke all on function public.create_pos_order(jsonb, text) from public, anon;
-grant execute on function public.create_pos_order(jsonb, text) to authenticated;
+revoke all on function public.create_pos_order(jsonb, text, uuid) from public, anon;
+grant execute on function public.create_pos_order(jsonb, text, uuid) to authenticated;
