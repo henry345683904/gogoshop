@@ -31,6 +31,7 @@ create table if not exists public.products (
   images jsonb not null default '[]'::jsonb,
   vendor text not null default '',
   sku text not null default '',
+  barcode text not null default '',
   tags text not null default '',
   source_url text not null default '',
   source_currency text not null default '',
@@ -50,6 +51,7 @@ alter table public.products add column if not exists image text not null default
 alter table public.products add column if not exists images jsonb not null default '[]'::jsonb;
 alter table public.products add column if not exists vendor text not null default '';
 alter table public.products add column if not exists sku text not null default '';
+alter table public.products add column if not exists barcode text not null default '';
 alter table public.products add column if not exists tags text not null default '';
 alter table public.products add column if not exists source_url text not null default '';
 alter table public.products add column if not exists source_currency text not null default '';

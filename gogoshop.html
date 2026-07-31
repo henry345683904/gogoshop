@@ -4377,6 +4377,7 @@
           <button class="tab-button active" type="button" data-admin-tab="overview" aria-label="Overview" title="Overview"><i data-lucide="layout-dashboard"></i><span>Overview</span></button>
           <button class="tab-button" type="button" data-admin-tab="products" aria-label="Products" title="Products"><i data-lucide="package-plus"></i><span>Products</span></button>
           <button class="tab-button" type="button" data-admin-tab="orders" aria-label="Orders" title="Orders"><i data-lucide="receipt-text"></i><span>Orders</span><span class="admin-order-badge" id="adminOrderBadge" hidden>0</span></button>
+          <a class="tab-button" href="./pos.html" aria-label="扫码收银" title="扫码收银"><i data-lucide="scan-barcode"></i><span>扫码收银</span></a>
           <button class="tab-button" type="button" data-admin-tab="customers" aria-label="Customers" title="Customers"><i data-lucide="users"></i><span>Customers</span></button>
           <button class="tab-button" type="button" data-admin-tab="vouchers" aria-label="Vouchers" title="Vouchers"><i data-lucide="ticket-percent"></i><span>Vouchers</span></button>
           <button class="tab-button" type="button" data-admin-tab="analytics" aria-label="Analytics" title="Analytics"><i data-lucide="chart-column"></i><span>Analytics</span></button>
@@ -6709,10 +6710,10 @@
       let data;
       let error;
       if (isAdmin) {
-        ({ data, error } = await db.from("products").select("id,title,category,description,price,compare_at_price,cost_per_item,stock,sales,published,image,images,vendor,sku,tags,source_url,source_currency,source_price,source_variants,source_attributes,deleted_at,deleted_was_published"));
+        ({ data, error } = await db.from("products").select("id,title,category,description,price,compare_at_price,cost_per_item,stock,sales,published,image,images,vendor,sku,barcode,tags,source_url,source_currency,source_price,source_variants,source_attributes,deleted_at,deleted_was_published"));
         if (error) {
           supportsRecycleBin = false;
-          ({ data, error } = await db.from("products").select("id,title,category,description,price,compare_at_price,cost_per_item,stock,sales,published,image,images,vendor,sku,tags,source_url,source_currency,source_price,source_variants,source_attributes"));
+          ({ data, error } = await db.from("products").select("id,title,category,description,price,compare_at_price,cost_per_item,stock,sales,published,image,images,vendor,sku,barcode,tags,source_url,source_currency,source_price,source_variants,source_attributes"));
         }
       } else {
         ({ data, error } = await db.rpc("get_storefront_products"));
@@ -6751,6 +6752,7 @@
           images: Array.isArray(remote.images) ? remote.images : (localProduct?.images || []),
           vendor: isAdmin ? (remote.vendor || localProduct?.vendor || "Go Go Shop") : "",
           sku: isAdmin ? (remote.sku ?? localProduct?.sku ?? "") : "",
+          barcode: isAdmin ? (remote.barcode ?? localProduct?.barcode ?? "") : "",
           tags: isAdmin ? (remote.tags ?? localProduct?.tags ?? "") : "",
           sourceUrl: isAdmin ? (remote.source_url ?? localProduct?.sourceUrl ?? "") : "",
           sourceCurrency: isAdmin ? (remote.source_currency ?? localProduct?.sourceCurrency ?? "") : "",
@@ -7691,7 +7693,7 @@
         return `
           <tr data-admin-order-row="${escapeHtml(order.id)}">
             <td><strong>${escapeHtml(order.order_number)}</strong><div class="muted">${new Date(order.created_at).toLocaleString("en-NZ")}</div></td>
-            <td>${escapeHtml(customer.full_name || customer.email || "Customer")}<div class="muted">${escapeHtml(customer.email || "")}</div></td>
+            <td>${order.order_number?.startsWith("POS-") ? '<strong>到店顾客</strong><div class="muted">线下扫码</div>' : `${escapeHtml(customer.full_name || customer.email || "Customer")}<div class="muted">${escapeHtml(customer.email || "")}</div>`}</td>
             <td>${formatPrice(order.total)}<div class="muted">${Number(order.item_count)} items${Number(order.discount_amount || 0) > 0 ? ` · ${escapeHtml(order.voucher_code || "Voucher")} -${formatPrice(order.discount_amount)}` : ""}</div></td>
             <td>
               <div class="order-statuses" style="justify-content: flex-start;">
@@ -8162,6 +8164,7 @@
         images: Array.isArray(product.images) ? product.images : [],
         vendor: product.vendor || "",
         sku: product.sku || "",
+        barcode: product.barcode || "",
         tags: product.tags || "",
         source_url: product.sourceUrl || "",
         source_currency: product.sourceCurrency || "",

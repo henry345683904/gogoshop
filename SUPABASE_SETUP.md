@@ -36,6 +36,7 @@ where email = '你的管理员邮箱';
 - Redirect URLs:
   - `https://henry345683904.github.io/gogoshop/**`
   - `http://127.0.0.1:8769/**`
+  - `http://127.0.0.1:8771/**`
 
 ## 4. Google 登录
 
@@ -103,3 +104,6 @@ Apple Client Secret 通常最长有效 6 个月，到期前需要重新生成。
 在线订单只有 Stripe 回调确认为“已付款”后，后台才能确认订单并扣除库存。
 
 不要把 Supabase secret key、service_role key、Stripe Secret Key、Stripe Webhook Secret、Google Client Secret 或 Apple 私钥写进网页文件或提交到 GitHub。
+## 扫码收银
+
+在 Supabase 的 **SQL Editor** 中运行一次 `supabase-pos.sql`，即可启用商品条码、线下订单和成交时自动扣库存。完成后从网页后台左侧点击“扫码收银”。
