@@ -4600,7 +4600,6 @@
                   <option value="collectibles">盲盒与毛绒</option>
                   <option value="electronics">电子产品</option>
                   <option value="gifts-lifestyle">礼品与生活</option>
-                  <option value="other">其他商品</option>
                 </select>
               </label>
               <label class="field">
@@ -5531,7 +5530,7 @@
 
     function productCategoryKey(product) {
       return storefrontCategoryByProductId.get(product.id)
-        || (storefrontCategoryKeys.has(product.category) ? product.category : "other");
+        || (storefrontCategoryKeys.has(product.category) ? product.category : "gifts-lifestyle");
     }
 
     function customerWelcomeText() {
