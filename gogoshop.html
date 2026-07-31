@@ -798,6 +798,72 @@
       font-weight: 650;
     }
 
+    .product-code-chip {
+      display: inline-flex;
+      width: max-content;
+      align-items: center;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 3px 8px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 750;
+      letter-spacing: 0.04em;
+    }
+
+    .product-barcode {
+      display: grid;
+      gap: 5px;
+      width: 100%;
+      max-width: 330px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 10px 12px;
+      background: #fff;
+    }
+
+    .product-barcode.compact {
+      max-width: none;
+      padding: 8px 9px 7px;
+    }
+
+    .product-barcode svg {
+      display: block;
+      width: 100%;
+      height: auto;
+      color: #111;
+    }
+
+    .product-barcode-value {
+      color: var(--ink);
+      font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      line-height: 1;
+      text-align: center;
+    }
+
+    .product-barcode-label {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      line-height: 1;
+      text-align: center;
+    }
+
+    .product-detail-code {
+      display: grid;
+      gap: 8px;
+    }
+
+    .product-detail-code-title {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
     #productDetail[hidden] {
       display: none;
     }
@@ -1191,6 +1257,7 @@
     }
 
     #accountDrawer [data-auth-signed-in] > div:first-child,
+    #accountDrawer [data-auth-signed-in] > .account-customer-code,
     #accountDrawer [data-auth-signed-in] > .account-summary,
     #accountDrawer [data-auth-signed-in] > .section-heading {
       margin-left: 12px;
@@ -1333,6 +1400,56 @@
     .account-vip-progress .vip-progress-track {
       height: 4px;
       margin-top: 5px;
+    }
+
+    .account-customer-code {
+      display: grid;
+      gap: 9px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 11px;
+      background: var(--soft);
+    }
+
+    .account-customer-code-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .account-customer-code-head strong {
+      font-size: 13px;
+    }
+
+    .account-customer-code-head span {
+      color: var(--muted);
+      font-size: 11px;
+      text-align: right;
+    }
+
+    .account-customer-barcode {
+      display: grid;
+      gap: 6px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 9px 10px 8px;
+      background: #fff;
+    }
+
+    .account-customer-barcode svg {
+      display: block;
+      width: 100%;
+      height: 68px;
+      color: #111;
+    }
+
+    .account-customer-barcode strong {
+      color: var(--ink);
+      font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+      font-size: 13px;
+      letter-spacing: 0.08em;
+      text-align: center;
     }
 
     .oauth-grid .button {
@@ -4634,6 +4751,7 @@
       }
 
       #accountDrawer [data-auth-signed-in] > div:first-child,
+      #accountDrawer [data-auth-signed-in] > .account-customer-code,
       #accountDrawer [data-auth-signed-in] > .account-summary,
       #accountDrawer [data-auth-signed-in] > .account-order-list {
         margin-left: 10px;
@@ -5805,6 +5923,10 @@
             <div class="vip-progress-track"><span id="accountVipBar"></span></div>
           </div>
         </div>
+        <div class="account-customer-code">
+          <div class="account-customer-code-head"><strong data-i18n="customerBarcodeTitle">Customer barcode</strong><span data-i18n="customerBarcodeHint">Show at checkout to collect points</span></div>
+          <div class="account-customer-barcode" id="accountCustomerBarcode"></div>
+        </div>
         <div class="account-summary">
           <div><span data-i18n="rewardPoints">Reward points</span><strong id="accountPoints">0</strong></div>
           <div><span data-i18n="totalSpent">Total spent</span><strong id="accountSpent">$0.00</strong></div>
@@ -5886,6 +6008,53 @@
     const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_zv6WbyD1hZKUx-Zyak-fPw_e1mURTN8";
     const SOURCE_COST_MULTIPLIER = 4;
     const SOURCE_PRICE_MULTIPLIER = 1.5 * 1.15;
+    const EXPERIMENTAL_ITEM_CODE_START = 1001;
+    const CODE39_PATTERNS = Object.freeze({
+      "0": "nnnwwnwnn",
+      "1": "wnnwnnnnw",
+      "2": "nnwwnnnnw",
+      "3": "wnwwnnnnn",
+      "4": "nnnwwnnnw",
+      "5": "wnnwwnnnn",
+      "6": "nnwwwnnnn",
+      "7": "nnnwnnwnw",
+      "8": "wnnwnnwnn",
+      "9": "nnwwnnwnn",
+      A: "wnnnnwnnw",
+      B: "nnwnnwnnw",
+      C: "wnwnnwnnn",
+      D: "nnnnwwnnw",
+      E: "wnnnwwnnn",
+      F: "nnwnwwnnn",
+      G: "nnnnnwwnw",
+      H: "wnnnnwwnn",
+      I: "nnwnnwwnn",
+      J: "nnnnwwwnn",
+      K: "wnnnnnwnw",
+      L: "nnwnnnwnw",
+      M: "wnwnnnwnn",
+      N: "nnnnwnwnw",
+      O: "wnnnwnwnn",
+      P: "nnwnwnwnn",
+      Q: "nnnnnnwww",
+      R: "wnnnnnwwn",
+      S: "nnwnnnwwn",
+      T: "nnnnwnwwn",
+      U: "wwnnnnnnw",
+      V: "nwwnnnnnw",
+      W: "wwwnnnnnn",
+      X: "nwnnwnnnw",
+      Y: "wwnnwnnnn",
+      Z: "nwwnwnnnn",
+      "-": "nwnnnnwnw",
+      ".": "wwnnnnwnn",
+      " ": "nwwnnnwnn",
+      "$": "nwnwnwnnn",
+      "/": "nwnwnnnwn",
+      "+": "nwnnnwnwn",
+      "%": "nnnwnwnwn",
+      "*": "nwnnwnwnn"
+    });
     const VIP_TIERS = Object.freeze([
       { key: "silver", minSpend: 0, labelKey: "vipSilver" },
       { key: "gold", minSpend: 500, labelKey: "vipGold" },
@@ -5967,6 +6136,9 @@
         signOut: "Sign out",
         rewardPoints: "Reward points",
         totalSpent: "Total spent",
+        customerBarcodeTitle: "Customer barcode",
+        customerBarcodeHint: "Show at checkout to collect points",
+        customerBarcodeUnavailable: "Customer barcode is not ready yet",
         myOrders: "My orders",
         vipLevel: "VIP level",
         vipNext: "to {level}",
@@ -6087,6 +6259,9 @@
         signOut: "退出登录",
         rewardPoints: "积分",
         totalSpent: "累计消费",
+        customerBarcodeTitle: "专属条形码",
+        customerBarcodeHint: "结账时出示即可获得积分",
+        customerBarcodeUnavailable: "专属条形码尚未启用",
         myOrders: "我的订单",
         vipLevel: "VIP 等级",
         vipNext: "距离{level}",
@@ -6398,6 +6573,7 @@
     const retiredLegacyProductIds = new Set(["phone-case", "phone-case-1", "phone-case-2", "phone-case-3"]);
     state.products = state.products.filter((product) => !retiredLegacyProductIds.has(product.id));
     state.cart = state.cart.filter((line) => !retiredLegacyProductIds.has(line.id));
+    assignExperimentalItemCodes(state.products);
 
     const money = new Intl.NumberFormat("en-NZ", { style: "currency", currency: "NZD" });
     const $ = (selector, root = document) => root.querySelector(selector);
@@ -6415,6 +6591,75 @@
         '"': "&quot;",
         "'": "&#39;"
       })[char]);
+    }
+
+    function assignExperimentalItemCodes(products = []) {
+      [...products]
+        .filter((product) => product && product.id)
+        .sort((a, b) => String(a.id).localeCompare(String(b.id), undefined, { numeric: true, sensitivity: "base" }))
+        .forEach((product, index) => {
+          const code = String(EXPERIMENTAL_ITEM_CODE_START + index);
+          product.experimentalCode = code;
+          product.sku = product.sku || code;
+          product.barcode = product.barcode || code;
+        });
+      return products;
+    }
+
+    function productItemCode(product) {
+      return String(product?.experimentalCode || product?.barcode || product?.sku || "").trim();
+    }
+
+    function code39BarcodeSvg(value, options = {}) {
+      const barcodeValue = String(value || "").toUpperCase().replace(/[^0-9A-Z .$/+%-]/g, "");
+      if (!barcodeValue) return "";
+      const narrow = options.compact ? 2 : 3;
+      const wide = narrow * 3;
+      const height = options.compact ? 46 : 72;
+      const quiet = narrow * 10;
+      const encoded = `*${barcodeValue}*`;
+      let x = quiet;
+      const bars = [];
+      for (const char of encoded) {
+        const pattern = CODE39_PATTERNS[char];
+        if (!pattern) continue;
+        [...pattern].forEach((unit, index) => {
+          const width = unit === "w" ? wide : narrow;
+          if (index % 2 === 0) bars.push(`<rect x="${x}" y="0" width="${width}" height="${height}" fill="currentColor"></rect>`);
+          x += width;
+        });
+        x += narrow;
+      }
+      const width = x + quiet;
+      return `<svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" aria-hidden="true" focusable="false">${bars.join("")}</svg>`;
+    }
+
+    function renderProductBarcode(product, options = {}) {
+      const code = productItemCode(product);
+      if (!code) return "";
+      const label = state.lang === "zh" ? "实验货号" : "Trial item code";
+      return `
+        <div class="product-barcode ${options.compact ? "compact" : ""}" aria-label="${escapeHtml(label)} ${escapeHtml(code)}">
+          ${code39BarcodeSvg(code, options)}
+          <div class="product-barcode-value">${escapeHtml(code)}</div>
+          ${options.compact ? "" : `<div class="product-barcode-label">${escapeHtml(label)}</div>`}
+        </div>
+      `;
+    }
+
+    function customerBarcodeForUser(user = state.session?.user, profile = state.profile) {
+      const stored = String(profile?.customer_barcode || "").trim().toUpperCase();
+      if (stored) return stored;
+      const compactId = String(user?.id || "").replace(/-/g, "").slice(0, 10).toUpperCase();
+      return compactId ? `CUST-${compactId}` : "";
+    }
+
+    function renderCustomerBarcode(code) {
+      if (!code) return "";
+      return `
+        ${code39BarcodeSvg(code)}
+        <strong>${escapeHtml(code)}</strong>
+      `;
     }
 
     function clampNumber(value, min, max, fallback) {
@@ -6499,6 +6744,7 @@
     }
 
     function persistProducts() {
+      assignExperimentalItemCodes(state.products);
       save(STORAGE_KEY, state.products.map(publicProductSnapshot));
     }
 
@@ -6835,6 +7081,7 @@
       const currentImage = images[state.detailImageIndex] || product.image;
       const soldOut = !available(product);
       const description = productDescription(product);
+      const itemCode = productItemCode(product);
 
       content.innerHTML = `
         <button class="product-detail-back" type="button" data-close-product>
@@ -6860,6 +7107,12 @@
             <p class="product-detail-category">${escapeHtml(categoryName(productCategoryKey(product)))}</p>
             <h1>${escapeHtml(productName(product))}</h1>
             <p class="product-detail-price">${formatPrice(product.price)}</p>
+            ${itemCode ? `
+              <div class="product-detail-code">
+                <p class="product-detail-code-title">${state.lang === "zh" ? "扫码点单实验码" : "Scan-to-order trial code"}</p>
+                ${renderProductBarcode(product)}
+              </div>
+            ` : ""}
             ${description ? `<p class="product-detail-description">${escapeHtml(description)}</p>` : ""}
             <p class="product-detail-stock">
               <span class="stock-dot ${soldOut ? "sold-out" : ""}"></span>
@@ -7087,7 +7340,9 @@
             <a class="product-summary-link" href="#product=${encodeURIComponent(product.id)}" data-product-view="${escapeHtml(product.id)}">
               <span class="product-title">${escapeHtml(productName(product))}</span>
               <span class="price">${formatPrice(product.price)}</span>
+              <span class="product-code-chip">${state.lang === "zh" ? "货号" : "Code"} ${escapeHtml(productItemCode(product))}</span>
             </a>
+            ${renderProductBarcode(product, { compact: true })}
           </div>
         </article>
       `).join("");
@@ -7298,11 +7553,18 @@
       accountVipBadge.className = `vip-tier-badge ${accountVip.tier.key}`;
       accountVipBadge.textContent = vipTierLabel(accountVip.tier);
       $("#accountVipMessage").textContent = vipProgressText(accountVip);
-      $("#accountVipAmount").textContent = accountVip.nextTier
-        ? `${formatPrice(accountVip.spent)} / ${formatPrice(accountVip.nextTier.minSpend)}`
-        : formatPrice(accountVip.spent);
-      $("#accountVipBar").style.setProperty("--vip-progress", `${accountVip.progress}%`);
-      const target = $("#accountOrders");
+     $("#accountVipAmount").textContent = accountVip.nextTier
+       ? `${formatPrice(accountVip.spent)} / ${formatPrice(accountVip.nextTier.minSpend)}`
+       : formatPrice(accountVip.spent);
+     $("#accountVipBar").style.setProperty("--vip-progress", `${accountVip.progress}%`);
+      const customerBarcode = customerBarcodeForUser(user, state.profile);
+      const customerBarcodeTarget = $("#accountCustomerBarcode");
+      if (customerBarcodeTarget) {
+        customerBarcodeTarget.innerHTML = customerBarcode
+          ? renderCustomerBarcode(customerBarcode)
+          : `<span class="muted">${escapeHtml(t("customerBarcodeUnavailable"))}</span>`;
+      }
+     const target = $("#accountOrders");
       target.innerHTML = state.customerOrders.length ? state.customerOrders.map((order) => `
         <article class="account-order" tabindex="0" role="button" data-order-detail="${order.id}">
           <div class="account-order-head">
@@ -7497,7 +7759,11 @@
         return;
       }
       const userId = state.session.user.id;
-      const profilePromise = db.from("profiles").select("id,email,full_name,points,total_spent,is_admin,created_at").eq("id", userId).single();
+      let profilePromise = db.from("profiles").select("id,email,full_name,points,total_spent,is_admin,customer_barcode,created_at").eq("id", userId).single();
+      profilePromise = profilePromise.then((result) => {
+        if (!result.error || !/customer_barcode/i.test(result.error.message || "")) return result;
+        return db.from("profiles").select("id,email,full_name,points,total_spent,is_admin,created_at").eq("id", userId).single();
+      });
       const voucherPaymentFields = "id,order_number,status,subtotal,discount_amount,voucher_code,total,item_count,points_awarded,payment_provider,payment_status,paid_at,created_at,confirmed_at,order_items(product_id,product_title,unit_price,quantity)";
       const paymentFields = "id,order_number,status,total,item_count,points_awarded,payment_provider,payment_status,paid_at,created_at,confirmed_at,order_items(product_id,product_title,unit_price,quantity)";
       const basicFields = "id,order_number,status,total,item_count,points_awarded,created_at,confirmed_at,order_items(product_id,product_title,unit_price,quantity)";
@@ -8193,7 +8459,7 @@
       const query = $("#searchInput").value.trim().toLowerCase();
       const results = state.products
         .filter((product) => product.published)
-        .filter((product) => !query || [productName(product), categoryName(productCategoryKey(product)), productDescription(product)].join(" ").toLowerCase().includes(query))
+        .filter((product) => !query || [productName(product), categoryName(productCategoryKey(product)), productDescription(product), productItemCode(product), product.sku, product.barcode].join(" ").toLowerCase().includes(query))
         .slice(0, 6);
       $("#searchResults").innerHTML = results.map((product) => `
         <div class="result-item">
@@ -8396,7 +8662,7 @@
         return `
           <tr data-admin-order-row="${escapeHtml(order.id)}">
             <td><strong>${escapeHtml(order.order_number)}</strong><div class="muted">${new Date(order.created_at).toLocaleString("en-NZ")}</div></td>
-            <td>${order.order_number?.startsWith("POS-") ? '<strong>到店顾客</strong><div class="muted">线下扫码</div>' : `${escapeHtml(customer.full_name || customer.email || "Customer")}<div class="muted">${escapeHtml(customer.email || "")}</div>`}</td>
+            <td>${order.order_number?.startsWith("POS-") && order.user_id === state.session?.user?.id ? '<strong>到店顾客</strong><div class="muted">线下扫码</div>' : `${escapeHtml(customer.full_name || customer.email || "Customer")}<div class="muted">${escapeHtml(customer.email || "")}</div>`}</td>
             <td>${formatPrice(order.total)}<div class="muted">${Number(order.item_count)} items${Number(order.discount_amount || 0) > 0 ? ` · ${escapeHtml(order.voucher_code || "Voucher")} -${formatPrice(order.discount_amount)}` : ""}</div></td>
             <td>
               <div class="order-statuses" style="justify-content: flex-start;">
@@ -8952,6 +9218,7 @@
           <div class="admin-product-summary">
             <strong>${escapeHtml(product.title)}</strong>
             <span>${product.featured ? "Pinned · " : ""}${escapeHtml([product.category, product.vendor, product.sourcePriceCny ? `¥${product.sourcePriceCny} CNY` : ""].filter(Boolean).join(" · "))}</span>
+            <span>实验货号 ${escapeHtml(productItemCode(product))}</span>
           </div>
           <div class="admin-product-meta">
             <span>${formatPrice(product.price)}</span>
