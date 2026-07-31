@@ -451,12 +451,103 @@ create trigger sync_recycled_order_voucher_trigger
   before update of deleted_at on public.orders
   for each row execute procedure public.sync_recycled_order_voucher();
 
+create or replace function public.import_game_voucher(
+  p_code text,
+  p_name text,
+  p_discount_type text,
+  p_discount_value numeric,
+  p_minimum_spend numeric default 0,
+  p_maximum_discount numeric default null,
+  p_starts_at timestamptz default now(),
+  p_expires_at timestamptz default null,
+  p_total_redemption_limit integer default 1,
+  p_per_customer_limit integer default 1,
+  p_token text default ''
+)
+returns uuid
+language plpgsql
+security definer set search_path = public
+as $$
+declare
+  v_code text := upper(regexp_replace(trim(coalesce(p_code, '')), '\s+', '', 'g'));
+  v_name text := trim(coalesce(p_name, ''));
+  v_token text := trim(coalesce(p_token, ''));
+  v_existing public.vouchers%rowtype;
+  v_voucher_id uuid;
+  v_discount_value numeric(12,2) := round(coalesce(p_discount_value, 0)::numeric, 2);
+begin
+  if v_token <> 'HAPPY_SHEEP_FARM_2026_IMPORT' then
+    raise exception 'Unauthorized import';
+  end if;
+  if v_code = '' then raise exception 'Voucher code is required'; end if;
+  if v_name = '' then raise exception 'Voucher name is required'; end if;
+  if p_discount_type not in ('fixed', 'percent') then raise exception 'Invalid discount type'; end if;
+  if v_discount_value <= 0 then raise exception 'Discount value must be greater than zero'; end if;
+  if p_discount_type = 'percent' and v_discount_value > 100 then raise exception 'Percent discount cannot exceed 100'; end if;
+  if p_per_customer_limit is null or p_per_customer_limit <= 0 then raise exception 'Per customer limit must be positive'; end if;
+  if p_total_redemption_limit is not null and p_total_redemption_limit <= 0 then raise exception 'Total redemption limit must be positive'; end if;
+
+  select * into v_existing
+  from public.vouchers
+  where upper(code) = v_code
+  for update;
+
+  if found then
+    update public.vouchers
+    set
+      code = v_code,
+      name = v_name,
+      discount_type = p_discount_type,
+      discount_value = v_discount_value,
+      minimum_spend = coalesce(p_minimum_spend, 0),
+      maximum_discount = p_maximum_discount,
+      starts_at = p_starts_at,
+      expires_at = p_expires_at,
+      total_redemption_limit = p_total_redemption_limit,
+      per_customer_limit = p_per_customer_limit,
+      active = true
+    where id = v_existing.id
+    returning id into v_voucher_id;
+  else
+    insert into public.vouchers (
+      code,
+      name,
+      discount_type,
+      discount_value,
+      minimum_spend,
+      maximum_discount,
+      starts_at,
+      expires_at,
+      total_redemption_limit,
+      per_customer_limit,
+      active
+    ) values (
+      v_code,
+      v_name,
+      p_discount_type,
+      v_discount_value,
+      coalesce(p_minimum_spend, 0),
+      p_maximum_discount,
+      p_starts_at,
+      p_expires_at,
+      p_total_redemption_limit,
+      p_per_customer_limit,
+      true
+    )
+    returning id into v_voucher_id;
+  end if;
+
+  return v_voucher_id;
+end;
+$$;
+
 revoke all on function public.redeem_voucher(text) from public, anon;
 revoke all on function public.issue_voucher(uuid, uuid) from public, anon;
 revoke all on function public.get_my_vouchers() from public, anon;
 revoke all on function public.get_voucher_quote(jsonb, uuid) from public, anon;
 revoke all on function public.create_payment_order(jsonb, uuid) from public, anon;
 revoke all on function public.cancel_payment_order(uuid) from public, anon;
+revoke all on function public.import_game_voucher(text, text, text, numeric, numeric, numeric, timestamptz, timestamptz, integer, integer, text) from public, anon;
 
 grant execute on function public.redeem_voucher(text) to authenticated;
 grant execute on function public.issue_voucher(uuid, uuid) to authenticated;
@@ -464,6 +555,7 @@ grant execute on function public.get_my_vouchers() to authenticated;
 grant execute on function public.get_voucher_quote(jsonb, uuid) to authenticated;
 grant execute on function public.create_payment_order(jsonb, uuid) to authenticated;
 grant execute on function public.cancel_payment_order(uuid) to authenticated;
+grant execute on function public.import_game_voucher(text, text, text, numeric, numeric, numeric, timestamptz, timestamptz, integer, integer, text) to anon, authenticated;
 
 grant select, insert, update, delete on public.vouchers to authenticated;
 grant select, insert, update, delete on public.customer_vouchers to authenticated;
