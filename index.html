@@ -2908,6 +2908,45 @@
       font-size: 15px;
     }
 
+    .admin-recycle-modal[hidden] {
+      display: none;
+    }
+
+    .admin-recycle-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 360;
+      display: grid;
+      place-items: center;
+      padding: 20px;
+      background: rgba(20, 24, 24, .58);
+    }
+
+    .admin-recycle-dialog {
+      display: flex;
+      width: min(100%, 1100px);
+      max-height: min(88vh, 760px);
+      max-height: min(88dvh, 760px);
+      flex-direction: column;
+      overflow: hidden;
+      border: 1px solid #d7dada;
+      border-radius: 8px;
+      background: #fff;
+      box-shadow: 0 24px 70px rgba(12, 18, 16, .24);
+    }
+
+    .admin-recycle-dialog .product-trash-head {
+      flex: 0 0 auto;
+      border-bottom: 1px solid #d8dada;
+      background: #fafafa;
+    }
+
+    .admin-recycle-body {
+      min-height: 0;
+      overflow: auto;
+      overscroll-behavior: contain;
+    }
+
     .admin-product-item.trashed {
       cursor: default;
     }
@@ -4807,6 +4846,20 @@
         min-width: 0;
       }
 
+      .admin-recycle-modal {
+        padding: 10px;
+      }
+
+      .admin-recycle-dialog {
+        width: 100%;
+        max-height: calc(100vh - 20px);
+        max-height: calc(100dvh - 20px);
+      }
+
+      .admin-recycle-dialog .product-trash-head {
+        padding: 12px;
+      }
+
       .order-detail-modal {
         place-items: center;
         padding: 10px;
@@ -5299,7 +5352,7 @@
             <div class="admin-panel-head">
               <div><h2>Orders</h2><span class="muted">Inventory is deducted only after confirmation.</span></div>
               <div class="form-actions">
-                <button class="button ghost" type="button" data-toggle-order-trash aria-expanded="false"><i data-lucide="recycle"></i> Recycle bin <span id="adminOrderTrashCount">0</span></button>
+                <button class="button ghost" type="button" data-toggle-order-trash aria-expanded="false" aria-controls="adminOrderTrashDialog"><i data-lucide="recycle"></i> Recycle bin <span id="adminOrderTrashCount">0</span></button>
                 <button class="button ghost" type="button" data-refresh-admin-data><i data-lucide="refresh-cw"></i> Refresh</button>
               </div>
             </div>
@@ -5309,16 +5362,20 @@
                 <tbody id="adminOrderRows"></tbody>
               </table>
             </div>
-            <section class="product-trash-panel" data-order-trash-panel hidden>
-              <div class="product-trash-head">
-                <div><h3>Order recycle bin</h3><span class="muted">Deleted orders can be restored with their inventory and customer totals.</span></div>
-                <button class="action-button" type="button" data-close-order-trash aria-label="Close order recycle bin" title="Close"><i data-lucide="x"></i></button>
-              </div>
-              <div class="table-wrap">
-                <table>
-                  <thead><tr><th>Order</th><th>Customer</th><th>Total</th><th>Previous status</th><th>Deleted</th><th>Action</th></tr></thead>
-                  <tbody id="adminOrderTrashRows"></tbody>
-                </table>
+            <section class="admin-recycle-modal" data-order-trash-panel data-order-trash-backdrop hidden aria-hidden="true">
+              <div class="admin-recycle-dialog" id="adminOrderTrashDialog" role="dialog" aria-modal="true" aria-labelledby="adminOrderTrashTitle">
+                <div class="product-trash-head">
+                  <div><h3 id="adminOrderTrashTitle">Order recycle bin</h3><span class="muted">Deleted orders can be restored with their inventory and customer totals.</span></div>
+                  <button class="action-button" type="button" data-close-order-trash aria-label="Close order recycle bin" title="Close"><i data-lucide="x"></i></button>
+                </div>
+                <div class="admin-recycle-body">
+                  <div class="table-wrap">
+                    <table>
+                      <thead><tr><th>Order</th><th>Customer</th><th>Total</th><th>Previous status</th><th>Deleted</th><th>Action</th></tr></thead>
+                      <tbody id="adminOrderTrashRows"></tbody>
+                    </table>
+                  </div>
+                </div>
               </div>
             </section>
           </div>
@@ -9166,9 +9223,20 @@
     }
 
     function toggleOrderTrash(forceOpen) {
-      state.orderTrashOpen = typeof forceOpen === "boolean" ? forceOpen : !state.orderTrashOpen;
+      const wasOpen = state.orderTrashOpen;
+      const nextOpen = typeof forceOpen === "boolean" ? forceOpen : !wasOpen;
+      if (nextOpen && !wasOpen) toggleOrderTrash.lastFocus = document.activeElement;
+      state.orderTrashOpen = nextOpen;
       renderAdminOrders();
       refreshIcons();
+      const panel = $(`[data-order-trash-panel]`);
+      panel?.setAttribute("aria-hidden", String(!nextOpen));
+      if (nextOpen) {
+        window.requestAnimationFrame(() => panel?.querySelector("[data-close-order-trash]")?.focus());
+      } else if (wasOpen && toggleOrderTrash.lastFocus instanceof HTMLElement) {
+        toggleOrderTrash.lastFocus.focus();
+        toggleOrderTrash.lastFocus = null;
+      }
     }
 
     async function confirmSupabaseOrder(orderId) {
@@ -10119,6 +10187,11 @@
         return;
       }
 
+      if (clickedElement.matches("[data-order-trash-backdrop]")) {
+        toggleOrderTrash(false);
+        return;
+      }
+
       if (clickedElement.matches("[data-product-editor-backdrop]")) {
         closeProductEditor();
         return;
@@ -10586,6 +10659,10 @@
       if (productRow && (event.key === "Enter" || event.key === " ")) {
         event.preventDefault();
         editProduct(productRow.dataset.editProductRow);
+        return;
+      }
+      if (event.key === "Escape" && state.orderTrashOpen) {
+        toggleOrderTrash(false);
         return;
       }
       if (event.key === "Escape" && !$("#productEditorModal").hidden) {
