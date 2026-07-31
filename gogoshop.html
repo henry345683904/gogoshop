@@ -786,6 +786,14 @@
       text-decoration: none;
     }
 
+    .product-price-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      min-width: 0;
+    }
+
     .product-title {
       overflow-wrap: anywhere;
       font-size: 15px;
@@ -800,6 +808,7 @@
 
     .product-code-chip {
       display: inline-flex;
+      flex: 0 0 auto;
       width: max-content;
       align-items: center;
       border: 1px solid var(--line);
@@ -7339,8 +7348,10 @@
           <div class="product-info">
             <a class="product-summary-link" href="#product=${encodeURIComponent(product.id)}" data-product-view="${escapeHtml(product.id)}">
               <span class="product-title">${escapeHtml(productName(product))}</span>
-              <span class="price">${formatPrice(product.price)}</span>
-              <span class="product-code-chip">${state.lang === "zh" ? "货号" : "Code"} ${escapeHtml(productItemCode(product))}</span>
+              <span class="product-price-row">
+                <span class="price">${formatPrice(product.price)}</span>
+                <span class="product-code-chip">${state.lang === "zh" ? "货号" : "Code"} ${escapeHtml(productItemCode(product))}</span>
+              </span>
             </a>
           </div>
         </article>
