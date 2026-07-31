@@ -1,0 +1,56 @@
+{
+  "name": "gogoshop-manager",
+  "version": "1.0.0",
+  "description": "Private Windows manager for the GO GO SHOP storefront and admin console.",
+  "main": "main.js",
+  "private": true,
+  "scripts": {
+    "dev": "electron .",
+    "prepare-icon": "node scripts/prepare-icon.js",
+    "build": "pnpm run prepare-icon && electron-builder --win --x64 --publish never"
+  },
+  "devDependencies": {
+    "electron": "37.2.0",
+    "electron-builder": "26.0.12",
+    "png-to-ico": "3.0.1"
+  },
+  "build": {
+    "appId": "nz.gogoshop.manager",
+    "productName": "GO GO SHOP Manager",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "assets/gogoshop.png",
+      "assets/gogoshop.ico",
+      "package.json"
+    ],
+    "asar": true,
+    "win": {
+      "icon": "assets/gogoshop.ico",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        },
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ]
+    },
+    "nsis": {
+      "artifactName": "GO-GO-SHOP-Manager-Setup-${version}-${arch}.${ext}",
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "GO GO SHOP Manager"
+    },
+    "portable": {
+      "artifactName": "GO-GO-SHOP-Manager-Portable-${version}-${arch}.${ext}"
+    }
+  }
+}
