@@ -3232,69 +3232,417 @@
       min-height: 38px;
     }
 
-    .design-grid {
+    .theme-editor {
+      display: flex;
+      height: calc(100vh - 150px);
+      min-height: 650px;
+      flex-direction: column;
+      overflow: hidden;
+      border: 1px solid #cfd2d2;
+      border-radius: 8px;
+      background: #fff;
+      box-shadow: 0 1px 2px rgba(20, 24, 24, 0.06);
+    }
+
+    .theme-editor-toolbar {
       display: grid;
-      grid-template-columns: minmax(300px, 0.86fr) minmax(420px, 1.14fr);
-      gap: 16px;
-      align-items: start;
+      min-height: 58px;
+      flex: 0 0 auto;
+      grid-template-columns: minmax(220px, 1fr) auto minmax(220px, 1fr);
+      gap: 12px;
+      align-items: center;
+      border-bottom: 1px solid #dfe1e1;
+      padding: 8px 12px;
+      background: #fff;
     }
 
-    .design-form,
-    .block-form {
+    .theme-editor-title {
+      display: flex;
+      min-width: 0;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .theme-editor-title-icon {
       display: grid;
-      gap: 14px;
+      width: 34px;
+      height: 34px;
+      flex: 0 0 auto;
+      place-items: center;
+      border-radius: 7px;
+      background: #303030;
+      color: #fff;
     }
 
-    .block-builder {
-      margin-top: 18px;
-      border-top: 1px solid #e3e4e4;
-      padding-top: 18px;
+    .theme-editor-title-icon svg {
+      width: 17px;
+      height: 17px;
     }
 
-    .block-builder h3 {
-      margin: 0 0 12px;
-      font-size: 15px;
+    .theme-editor-title strong,
+    .theme-editor-title span {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
-    .color-field input[type="color"] {
+    .theme-editor-title strong {
+      font-size: 14px;
+    }
+
+    .theme-editor-title span {
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .theme-editor-devices {
+      display: inline-grid;
+      grid-template-columns: repeat(2, 38px);
+      gap: 2px;
+      border: 1px solid #d7dada;
+      border-radius: 8px;
+      padding: 2px;
+      background: #f1f2f2;
+    }
+
+    .theme-device-button {
+      display: grid;
+      width: 38px;
+      height: 32px;
+      place-items: center;
+      border: 0;
+      border-radius: 6px;
+      background: transparent;
+      color: #616767;
+    }
+
+    .theme-device-button.active {
+      background: #fff;
+      color: #202323;
+      box-shadow: 0 1px 3px rgba(20, 24, 24, 0.16);
+    }
+
+    .theme-device-button svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .theme-editor-toolbar-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 7px;
+    }
+
+    .theme-editor-toolbar-actions .button {
+      min-height: 34px;
+      padding: 0 11px;
+      font-size: 12px;
+    }
+
+    .theme-editor-workspace {
+      display: grid;
+      min-height: 0;
+      flex: 1 1 auto;
+      grid-template-columns: 250px minmax(400px, 1fr) 320px;
+    }
+
+    .theme-editor-sections,
+    .theme-editor-inspector {
+      min-width: 0;
+      overflow: auto;
+      overscroll-behavior: contain;
+      background: #fff;
+    }
+
+    .theme-editor-sections {
+      border-right: 1px solid #dfe1e1;
+    }
+
+    .theme-editor-inspector {
+      border-left: 1px solid #dfe1e1;
+    }
+
+    .theme-sidebar-head,
+    .theme-inspector-head {
+      display: flex;
+      min-height: 54px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      border-bottom: 1px solid #e5e7e7;
+      padding: 10px 14px;
+    }
+
+    .theme-sidebar-head strong,
+    .theme-inspector-head h2 {
+      margin: 0;
+      font-size: 14px;
+    }
+
+    .theme-inspector-head > div {
+      min-width: 0;
+    }
+
+    .theme-inspector-head p {
+      margin: 3px 0 0;
+      overflow: hidden;
+      color: var(--muted);
+      font-size: 11px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .theme-section-list {
+      display: grid;
+      gap: 4px;
+      padding: 10px 8px;
+    }
+
+    .theme-section-group-label {
+      margin: 10px 10px 4px;
+      color: #777d7d;
+      font-size: 11px;
+      font-weight: 750;
+      text-transform: uppercase;
+    }
+
+    .theme-section-item {
+      display: grid;
+      width: 100%;
       min-height: 42px;
-      padding: 4px;
+      grid-template-columns: 28px minmax(0, 1fr) 18px;
+      gap: 8px;
+      align-items: center;
+      border: 1px solid transparent;
+      border-radius: 7px;
+      padding: 6px 8px;
+      background: transparent;
+      color: #303333;
+      text-align: left;
+    }
+
+    .theme-section-item:hover {
+      background: #f4f5f5;
+    }
+
+    .theme-section-item.active {
+      border-color: #c8d8ec;
+      background: #eef4fb;
+      color: #1d4f86;
+    }
+
+    .theme-section-item > svg:first-child,
+    .theme-section-icon svg {
+      width: 17px;
+      height: 17px;
+    }
+
+    .theme-section-icon {
+      display: grid;
+      width: 28px;
+      height: 28px;
+      place-items: center;
+      border: 1px solid #dedfdf;
+      border-radius: 6px;
+      background: #fff;
+      color: #4b5050;
+    }
+
+    .theme-section-copy {
+      min-width: 0;
+    }
+
+    .theme-section-copy strong,
+    .theme-section-copy span {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .theme-section-copy strong {
+      font-size: 12px;
+    }
+
+    .theme-section-copy span {
+      margin-top: 2px;
+      color: #777d7d;
+      font-size: 10px;
+    }
+
+    .theme-section-item > svg:last-child {
+      width: 14px;
+      height: 14px;
+      justify-self: end;
+      color: #8a9090;
+    }
+
+    .block-list {
+      display: grid;
+      gap: 4px;
+    }
+
+    .block-list-item {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 4px;
+      align-items: center;
+    }
+
+    .block-list-item .theme-section-item {
+      grid-template-columns: 28px minmax(0, 1fr);
+    }
+
+    .block-list-item .row-actions {
+      gap: 1px;
+    }
+
+    .block-list-item .action-button {
+      width: 27px;
+      height: 27px;
+      border: 0;
+      background: transparent;
+    }
+
+    .theme-add-section {
+      display: flex;
+      width: calc(100% - 16px);
+      min-height: 40px;
+      align-items: center;
+      gap: 9px;
+      margin: 6px 8px 12px;
+      border: 1px dashed #c9cccc;
+      border-radius: 7px;
+      padding: 0 11px;
+      background: #fff;
+      color: #303333;
+      font-size: 12px;
+      font-weight: 700;
+      text-align: left;
+    }
+
+    .theme-add-section:hover {
+      border-style: solid;
+      background: #f6f7f7;
+    }
+
+    .theme-add-section svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .theme-editor-preview-pane {
+      min-width: 0;
+      overflow: hidden;
+      background: #e9ebeb;
     }
 
     .design-preview {
       display: grid;
-      gap: 12px;
-      min-height: 420px;
-      border: 1px solid #d7dada;
-      border-radius: 8px;
-      padding: 14px;
-      background: #f6f7f7;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      place-items: start center;
+      padding: 24px;
+      overscroll-behavior: contain;
+    }
+
+    .preview-frame {
+      width: 100%;
+      max-width: 920px;
+      min-width: 0;
+      margin: 0 auto;
+      transition: width 180ms ease;
+    }
+
+    .preview-frame.mobile {
+      width: min(390px, 100%);
     }
 
     .preview-store {
       overflow: hidden;
-      border: 1px solid #d7dada;
-      border-radius: 8px;
+      min-height: 540px;
+      border: 1px solid #cfd2d2;
+      border-radius: 5px;
       background: var(--preview-bg, #fff);
       color: var(--preview-text, #111);
+      box-shadow: 0 10px 30px rgba(25, 29, 29, 0.12);
       font-family: var(--preview-font, inherit);
       font-size: var(--preview-size, 14px);
     }
 
+    .preview-section {
+      position: relative;
+      width: 100%;
+      border: 0;
+      border-radius: 0;
+      cursor: pointer;
+      transition: box-shadow 120ms ease;
+    }
+
+    .preview-section:hover {
+      z-index: 1;
+      box-shadow: inset 0 0 0 1px #6a9bd2;
+    }
+
+    .preview-section.is-selected {
+      z-index: 2;
+      box-shadow: inset 0 0 0 2px #2c6ecb;
+    }
+
     .preview-announcement {
       display: grid;
-      min-height: 32px;
+      min-height: 30px;
       place-items: center;
-      border-bottom: 1px solid #e3e4e4;
-      font-size: 12px;
+      border-bottom: 1px solid rgba(100, 105, 105, 0.18);
+      padding: 4px 18px;
+      background: var(--preview-accent, #111);
+      color: #fff;
+      font-size: 10px;
       font-weight: 700;
+      text-align: center;
+    }
+
+    .preview-header {
+      display: grid;
+      min-height: 50px;
+      grid-template-columns: 32px minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+      border-bottom: 1px solid rgba(100, 105, 105, 0.16);
+      padding: 8px 16px;
+      background: var(--preview-bg, #fff);
+      color: var(--preview-text, #111);
+      text-align: left;
+    }
+
+    .preview-header-brand {
+      overflow: hidden;
+      font-size: 13px;
+      font-weight: 850;
+      text-align: center;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .preview-header-icons {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .preview-header svg {
+      width: 15px;
+      height: 15px;
     }
 
     .preview-hero {
       display: grid;
-      min-height: 180px;
+      min-height: 210px;
       place-items: center;
-      padding: 24px;
+      padding: 28px;
       background:
         linear-gradient(rgba(0, 0, 0, var(--preview-overlay, 0.45)), rgba(0, 0, 0, var(--preview-overlay, 0.45))),
         var(--preview-hero-bg, linear-gradient(135deg, #4d9298, #d88a76));
@@ -3302,6 +3650,10 @@
       background-size: cover;
       color: #fff;
       text-align: var(--preview-align, center);
+    }
+
+    .preview-hero > div {
+      width: 100%;
     }
 
     .preview-hero h3 {
@@ -3321,28 +3673,91 @@
       align-items: center;
       justify-content: center;
       margin-top: 16px;
-      border-radius: 8px;
+      border-radius: 6px;
       padding: 0 14px;
       background: var(--preview-accent, #111);
       color: #fff;
       font-weight: 800;
     }
 
+    .preview-products {
+      display: block;
+      padding: 18px;
+      background: var(--preview-bg, #fff);
+      color: var(--preview-text, #111);
+      text-align: left;
+    }
+
+    .preview-products h4 {
+      margin: 0 0 12px;
+      font-size: calc(17px * var(--preview-heading-scale, 1));
+    }
+
+    .preview-product-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 9px;
+    }
+
+    .preview-product-card {
+      min-width: 0;
+    }
+
+    .preview-product-card img,
+    .preview-product-placeholder {
+      display: block;
+      width: 100%;
+      aspect-ratio: 1;
+      border-radius: 3px;
+      background: #edf0f0;
+      object-fit: cover;
+    }
+
+    .preview-product-card strong,
+    .preview-product-card span {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .preview-product-card strong {
+      margin-top: 7px;
+      font-size: 10px;
+    }
+
+    .preview-product-card span {
+      margin-top: 3px;
+      font-size: 9px;
+    }
+
     .preview-blocks {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 10px;
-      padding: 12px;
+      padding: 12px 18px 18px;
+      background: var(--preview-bg, #fff);
     }
 
     .preview-block {
-      min-height: 72px;
+      display: grid;
+      min-height: 88px;
+      align-content: center;
       border: 1px solid #e3e4e4;
-      border-radius: 8px;
+      border-radius: 6px;
       padding: 12px;
       background: var(--block-bg, #fff);
       color: var(--block-text, inherit);
       font-size: var(--block-size, 14px);
+      text-align: left;
+    }
+
+    .preview-block img {
+      width: 100%;
+      max-height: 130px;
+      margin-bottom: 8px;
+      border-radius: 4px;
+      object-fit: cover;
     }
 
     .preview-block strong,
@@ -3353,25 +3768,181 @@
       white-space: nowrap;
     }
 
-    .block-list {
-      display: grid;
-      gap: 10px;
+    .preview-frame.mobile .preview-hero {
+      min-height: 180px;
+      padding: 22px 18px;
     }
 
-    .block-list-item {
+    .preview-frame.mobile .preview-product-grid,
+    .preview-frame.mobile .preview-blocks {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .preview-frame.mobile .preview-products {
+      padding: 14px 10px;
+    }
+
+    .preview-frame.mobile .preview-blocks {
+      padding: 8px 10px 14px;
+    }
+
+    .design-form,
+    .block-form {
+      display: grid;
+      gap: 14px;
+    }
+
+    .theme-inspector-content {
+      padding: 16px;
+    }
+
+    .theme-inspector-panel[hidden] {
+      display: none;
+    }
+
+    .theme-inspector-panel h3 {
+      margin: 0 0 14px;
+      font-size: 13px;
+    }
+
+    .theme-inspector-panel .field > span:first-child,
+    .theme-range-label {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 12px;
-      border: 1px solid #e3e4e4;
-      border-radius: 8px;
-      padding: 10px 12px;
+      gap: 10px;
+    }
+
+    .theme-range-label output {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 650;
+    }
+
+    .theme-inspector-panel input[type="range"] {
+      width: 100%;
+      min-height: 28px;
+      padding: 0;
+      accent-color: #303030;
+    }
+
+    .theme-color-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .theme-color-field {
+      display: grid;
+      min-width: 0;
+      gap: 7px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .theme-color-control {
+      display: flex;
+      min-width: 0;
+      min-height: 40px;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 5px 8px;
       background: #fff;
     }
 
-    .block-list-item strong,
-    .block-list-item span {
-      display: block;
+    .theme-color-control input[type="color"] {
+      width: 26px;
+      min-width: 26px;
+      height: 26px;
+      border: 0;
+      padding: 0;
+      background: transparent;
+    }
+
+    .theme-color-control code {
+      min-width: 0;
+      overflow: hidden;
+      color: #4d5252;
+      font-family: inherit;
+      font-size: 11px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .theme-image-field {
+      display: grid;
+      gap: 8px;
+    }
+
+    .theme-image-upload {
+      display: grid;
+      min-height: 84px;
+      place-items: center;
+      border: 1px dashed #c7caca;
+      border-radius: 7px;
+      padding: 12px;
+      background: #f8f9f9;
+      color: #555b5b;
+      font-size: 12px;
+      font-weight: 700;
+      text-align: center;
+      cursor: pointer;
+    }
+
+    .theme-image-upload:hover {
+      border-style: solid;
+      background: #f2f3f3;
+    }
+
+    .theme-image-upload svg {
+      width: 20px;
+      height: 20px;
+      margin-bottom: 5px;
+    }
+
+    .theme-image-upload input {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      opacity: 0;
+    }
+
+    .theme-setting-summary {
+      display: grid;
+      gap: 1px;
+      overflow: hidden;
+      border: 1px solid #dfe1e1;
+      border-radius: 7px;
+      background: #dfe1e1;
+    }
+
+    .theme-setting-summary > div {
+      display: flex;
+      min-height: 42px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 8px 11px;
+      background: #fff;
+      font-size: 12px;
+    }
+
+    .theme-setting-summary span {
+      color: var(--muted);
+    }
+
+    .theme-inspector-actions {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .theme-inspector-actions .button {
+      min-width: 0;
     }
 
     .form-row {
@@ -3760,12 +4331,16 @@
         align-content: start;
       }
 
-      .design-grid {
-        grid-template-columns: 1fr;
+      .theme-editor {
+        height: calc(100vh - 122px);
       }
 
-      .preview-blocks {
-        grid-template-columns: 1fr;
+      .theme-editor-workspace {
+        grid-template-columns: 210px minmax(320px, 1fr) 280px;
+      }
+
+      .design-preview {
+        padding: 14px;
       }
 
       .admin-sidebar {
@@ -3921,6 +4496,78 @@
       }
     }
 
+    @media (max-width: 760px) {
+      .theme-editor {
+        height: auto;
+        min-height: 0;
+        overflow: visible;
+      }
+
+      .theme-editor-toolbar {
+        position: sticky;
+        z-index: 4;
+        top: 52px;
+        grid-template-columns: minmax(0, 1fr) auto;
+        padding: 7px 9px;
+      }
+
+      .theme-editor-devices {
+        justify-self: end;
+      }
+
+      .theme-editor-toolbar-actions {
+        grid-column: 1 / -1;
+      }
+
+      .theme-editor-toolbar-actions .button {
+        flex: 1 1 0;
+      }
+
+      .theme-editor-workspace {
+        display: flex;
+        overflow: visible;
+        flex-direction: column;
+      }
+
+      .theme-editor-sections,
+      .theme-editor-inspector {
+        overflow: visible;
+        border: 0;
+      }
+
+      .theme-editor-sections {
+        border-bottom: 1px solid #dfe1e1;
+      }
+
+      .theme-editor-inspector {
+        border-top: 1px solid #dfe1e1;
+      }
+
+      .theme-section-list {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .theme-section-group-label,
+      .block-list {
+        grid-column: 1 / -1;
+      }
+
+      .theme-add-section {
+        width: calc(100% - 20px);
+        margin-right: 10px;
+        margin-left: 10px;
+      }
+
+      .theme-editor-preview-pane {
+        height: 560px;
+        flex: 0 0 auto;
+      }
+
+      .design-preview {
+        padding: 12px;
+      }
+    }
+
     @media (max-width: 580px) {
       .mobile-header {
         gap: 10px;
@@ -4059,6 +4706,10 @@
 
       .form-row {
         grid-template-columns: 1fr;
+      }
+
+      .theme-color-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
       .voucher-redeem-form {
@@ -4231,7 +4882,7 @@
 
     <header class="site-header">
       <div class="desktop-header" aria-label="Store navigation">
-        <a class="brand" href="#home">GO GO SHOP</a>
+        <a class="brand" href="#home" data-design-store-brand>GO GO SHOP</a>
         <nav class="nav-links">
           <a href="#home" data-i18n="navHome">Home</a>
           <a href="#catalog" data-i18n="navCatalog">Catalog</a>
@@ -4254,7 +4905,7 @@
       <div class="mobile-header" aria-label="Mobile store navigation">
         <button class="icon-button" type="button" data-open-menu aria-label="Menu"><i data-lucide="menu"></i></button>
         <button class="icon-button" type="button" data-open-search aria-label="Search"><i data-lucide="search"></i></button>
-        <a class="brand" href="#home">GO GO SHOP</a>
+        <a class="brand" href="#home" data-design-store-brand>GO GO SHOP</a>
         <div class="language-toggle" data-language-toggle aria-label="Language">
           <button type="button" data-lang="en">EN</button>
           <button type="button" data-lang="zh">中文</button>
@@ -4284,7 +4935,7 @@
 
       <section class="section" id="catalog">
         <div class="section-heading">
-          <h2 data-i18n="productsTitle">Products</h2>
+          <h2 data-i18n="productsTitle" data-design-product-title>Products</h2>
           <div class="catalog-heading-actions">
             <button class="catalog-category-toggle" type="button" data-toggle-catalog-categories aria-expanded="false" aria-controls="catalogCategoryPanel">
               <i data-lucide="layout-grid"></i>
@@ -4578,102 +5229,175 @@
         </section>
 
         <section class="admin-section" data-admin-section="design">
-          <div class="design-grid">
-            <div class="admin-panel">
-              <div class="admin-panel-head">
-                <h2>Visual store editor</h2>
-                <button class="button ghost" type="button" data-reset-design><i data-lucide="rotate-ccw"></i> Reset</button>
+          <div class="theme-editor">
+            <div class="theme-editor-toolbar">
+              <div class="theme-editor-title">
+                <span class="theme-editor-title-icon"><i data-lucide="paintbrush"></i></span>
+                <div><strong>GO GO SHOP</strong><span>Home page · Saved automatically</span></div>
               </div>
-              <div class="admin-panel-body">
-                <form class="design-form" data-design-form>
-                  <label class="field">
-                    <span>Store font</span>
-                    <select name="fontFamily">
-                      <option value='Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'>Modern sans</option>
-                      <option value='Georgia, "Times New Roman", serif'>Editorial serif</option>
-                      <option value='"Trebuchet MS", Arial, sans-serif'>Rounded casual</option>
-                      <option value='"Courier New", monospace'>Mono</option>
-                    </select>
-                  </label>
-                  <div class="form-row">
-                    <label class="field">
-                      <span>Base font size</span>
-                      <input type="range" name="baseFontSize" min="13" max="19" step="1">
-                    </label>
-                    <label class="field">
-                      <span>Heading scale</span>
-                      <input type="range" name="headingScale" min="0.85" max="1.25" step="0.05">
-                    </label>
-                  </div>
-                  <div class="form-row">
-                    <label class="field color-field">
-                      <span>Text color</span>
-                      <input type="color" name="textColor">
-                    </label>
-                    <label class="field color-field">
-                      <span>Accent color</span>
-                      <input type="color" name="accentColor">
-                    </label>
-                  </div>
-                  <div class="form-row">
-                    <label class="field color-field">
-                      <span>Page background</span>
-                      <input type="color" name="backgroundColor">
-                    </label>
-                    <label class="field color-field">
-                      <span>Soft surface</span>
-                      <input type="color" name="softColor">
-                    </label>
-                  </div>
-                  <label class="field">
-                    <span>Announcement bar</span>
-                    <input type="text" name="announcement" placeholder="Welcome to our store">
-                  </label>
-                  <label class="field">
-                    <span>Hero title</span>
-                    <input type="text" name="heroTitle" placeholder="Browse our latest products">
-                  </label>
-                  <label class="field">
-                    <span>Hero subtitle</span>
-                    <textarea name="heroSubtitle" placeholder="Add a short campaign message"></textarea>
-                  </label>
-                  <div class="form-row">
-                    <label class="field">
-                      <span>Hero button text</span>
-                      <input type="text" name="heroButton" placeholder="Shop all">
-                    </label>
-                    <label class="field">
-                      <span>Hero alignment</span>
-                      <select name="heroAlign">
-                        <option value="center">Center</option>
-                        <option value="left">Left</option>
-                        <option value="right">Right</option>
-                      </select>
-                    </label>
-                  </div>
-                  <label class="field">
-                    <span>Hero image URL</span>
-                    <input type="url" name="heroImage" placeholder="https://...">
-                  </label>
-                  <div class="form-row">
-                    <label class="field">
-                      <span>Hero height</span>
-                      <input type="range" name="heroHeight" min="280" max="560" step="20">
-                    </label>
-                    <label class="field">
-                      <span>Image overlay</span>
-                      <input type="range" name="heroOverlay" min="15" max="75" step="5">
-                    </label>
-                  </div>
-                </form>
+              <div class="theme-editor-devices" aria-label="Preview device">
+                <button class="theme-device-button active" type="button" data-design-device="desktop" aria-label="Desktop preview" title="Desktop preview"><i data-lucide="monitor"></i></button>
+                <button class="theme-device-button" type="button" data-design-device="mobile" aria-label="Mobile preview" title="Mobile preview"><i data-lucide="smartphone"></i></button>
+              </div>
+              <div class="theme-editor-toolbar-actions">
+                <button class="button ghost" type="button" data-reset-design><i data-lucide="rotate-ccw"></i> Reset</button>
+                <a class="button ghost" href="#home" data-back-store><i data-lucide="external-link"></i> Storefront</a>
+              </div>
+            </div>
 
-                <div class="block-builder">
-                  <h3>Add plugin block</h3>
-                  <form class="block-form" data-design-block-form>
-                    <input type="hidden" name="id">
-                    <div class="form-row">
+            <div class="theme-editor-workspace">
+              <aside class="theme-editor-sections" aria-label="Page sections">
+                <div class="theme-sidebar-head"><strong>Home page</strong><i data-lucide="chevron-down"></i></div>
+                <div class="theme-section-list">
+                  <div class="theme-section-group-label">Theme</div>
+                  <button class="theme-section-item" type="button" data-design-section="theme">
+                    <span class="theme-section-icon"><i data-lucide="settings-2"></i></span>
+                    <span class="theme-section-copy"><strong>Theme settings</strong><span>Typography and colors</span></span>
+                    <i data-lucide="chevron-right"></i>
+                  </button>
+                  <div class="theme-section-group-label">Page sections</div>
+                  <button class="theme-section-item" type="button" data-design-section="announcement">
+                    <span class="theme-section-icon"><i data-lucide="megaphone"></i></span>
+                    <span class="theme-section-copy"><strong>Announcement bar</strong><span>Customer greeting</span></span>
+                    <i data-lucide="chevron-right"></i>
+                  </button>
+                  <button class="theme-section-item" type="button" data-design-section="header">
+                    <span class="theme-section-icon"><i data-lucide="panel-top"></i></span>
+                    <span class="theme-section-copy"><strong>Header</strong><span>Store name and navigation</span></span>
+                    <i data-lucide="chevron-right"></i>
+                  </button>
+                  <button class="theme-section-item active" type="button" data-design-section="hero">
+                    <span class="theme-section-icon"><i data-lucide="image"></i></span>
+                    <span class="theme-section-copy"><strong>Image banner</strong><span>Title, image and button</span></span>
+                    <i data-lucide="chevron-right"></i>
+                  </button>
+                  <button class="theme-section-item" type="button" data-design-section="products">
+                    <span class="theme-section-icon"><i data-lucide="layout-grid"></i></span>
+                    <span class="theme-section-copy"><strong>Featured products</strong><span>Product grid heading</span></span>
+                    <i data-lucide="chevron-right"></i>
+                  </button>
+                  <div class="block-list" id="designBlockList"></div>
+                </div>
+                <button class="theme-add-section" type="button" data-add-design-block><i data-lucide="plus"></i> Add section</button>
+              </aside>
+
+              <main class="theme-editor-preview-pane" aria-label="Store preview">
+                <div class="design-preview" id="designPreview"></div>
+              </main>
+
+              <aside class="theme-editor-inspector" aria-label="Section settings">
+                <div class="theme-inspector-head">
+                  <div><h2 id="designInspectorTitle">Image banner</h2><p id="designInspectorSubtitle">Home page section</p></div>
+                  <i data-lucide="sliders-horizontal"></i>
+                </div>
+                <div class="theme-inspector-content">
+                  <form class="design-form" data-design-form>
+                    <section class="theme-inspector-panel" data-design-panel="theme" hidden>
+                      <h3>Typography</h3>
                       <label class="field">
-                        <span>Plugin type</span>
+                        <span>Store font</span>
+                        <select name="fontFamily">
+                          <option value='Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'>Modern sans</option>
+                          <option value='Georgia, "Times New Roman", serif'>Editorial serif</option>
+                          <option value='"Trebuchet MS", Arial, sans-serif'>Rounded casual</option>
+                          <option value='"Courier New", monospace'>Mono</option>
+                        </select>
+                      </label>
+                      <label class="field">
+                        <span class="theme-range-label">Base font size <output data-design-range-output="baseFontSize">15 px</output></span>
+                        <input type="range" name="baseFontSize" min="13" max="19" step="1">
+                      </label>
+                      <label class="field">
+                        <span class="theme-range-label">Heading scale <output data-design-range-output="headingScale">100%</output></span>
+                        <input type="range" name="headingScale" min="0.85" max="1.25" step="0.05">
+                      </label>
+                      <div class="shopify-editor-divider"></div>
+                      <h3>Colors</h3>
+                      <div class="theme-color-grid">
+                        <label class="theme-color-field"><span>Text</span><span class="theme-color-control"><input type="color" name="textColor"><code data-design-color-value="textColor">#0d0d0d</code></span></label>
+                        <label class="theme-color-field"><span>Accent</span><span class="theme-color-control"><input type="color" name="accentColor"><code data-design-color-value="accentColor">#111111</code></span></label>
+                        <label class="theme-color-field"><span>Background</span><span class="theme-color-control"><input type="color" name="backgroundColor"><code data-design-color-value="backgroundColor">#ffffff</code></span></label>
+                        <label class="theme-color-field"><span>Soft surface</span><span class="theme-color-control"><input type="color" name="softColor"><code data-design-color-value="softColor">#f7f7f7</code></span></label>
+                      </div>
+                    </section>
+
+                    <section class="theme-inspector-panel" data-design-panel="announcement" hidden>
+                      <label class="field">
+                        <span>Announcement text</span>
+                        <input type="text" name="announcement" placeholder="Welcome to our store">
+                      </label>
+                      <div class="theme-setting-summary">
+                        <div><span>Signed-in customers</span><strong>Hi, customer name</strong></div>
+                        <div><span>Background</span><strong>Accent color</strong></div>
+                      </div>
+                    </section>
+
+                    <section class="theme-inspector-panel" data-design-panel="header" hidden>
+                      <label class="field">
+                        <span>Store name</span>
+                        <input type="text" name="headerTitle" placeholder="GO GO SHOP" maxlength="60">
+                      </label>
+                      <div class="theme-setting-summary">
+                        <div><span>Menu</span><strong>Main menu</strong></div>
+                        <div><span>Actions</span><strong>Search, account, cart</strong></div>
+                      </div>
+                    </section>
+
+                    <section class="theme-inspector-panel" data-design-panel="hero">
+                      <label class="field">
+                        <span>Heading</span>
+                        <input type="text" name="heroTitle" placeholder="Browse our latest products">
+                      </label>
+                      <label class="field">
+                        <span>Text</span>
+                        <textarea name="heroSubtitle" placeholder="Add a short campaign message"></textarea>
+                      </label>
+                      <label class="field">
+                        <span>Button label</span>
+                        <input type="text" name="heroButton" placeholder="Shop all">
+                      </label>
+                      <label class="field">
+                        <span>Content alignment</span>
+                        <select name="heroAlign">
+                          <option value="center">Center</option>
+                          <option value="left">Left</option>
+                          <option value="right">Right</option>
+                        </select>
+                      </label>
+                      <div class="shopify-editor-divider"></div>
+                      <h3>Image</h3>
+                      <div class="theme-image-field">
+                        <label class="theme-image-upload"><span><i data-lucide="upload"></i><br>Upload image</span><input type="file" accept="image/*" data-design-hero-image-file></label>
+                        <label class="field"><span>Image URL</span><input type="url" name="heroImage" placeholder="https://..."></label>
+                      </div>
+                      <label class="field">
+                        <span class="theme-range-label">Banner height <output data-design-range-output="heroHeight">344 px</output></span>
+                        <input type="range" name="heroHeight" min="280" max="560" step="20">
+                      </label>
+                      <label class="field">
+                        <span class="theme-range-label">Image overlay <output data-design-range-output="heroOverlay">45%</output></span>
+                        <input type="range" name="heroOverlay" min="15" max="75" step="5">
+                      </label>
+                    </section>
+
+                    <section class="theme-inspector-panel" data-design-panel="products" hidden>
+                      <label class="field">
+                        <span>Section heading</span>
+                        <input type="text" name="productTitle" placeholder="Products" maxlength="80">
+                      </label>
+                      <div class="theme-setting-summary">
+                        <div><span>Desktop columns</span><strong>4</strong></div>
+                        <div><span>Mobile columns</span><strong>2</strong></div>
+                      </div>
+                      <button class="button ghost" type="button" data-admin-tab="products"><i data-lucide="package-plus"></i> Manage products</button>
+                    </section>
+                  </form>
+
+                  <section class="theme-inspector-panel" data-design-panel="block" hidden>
+                    <form class="block-form" data-design-block-form>
+                      <input type="hidden" name="id">
+                      <label class="field">
+                        <span>Section type</span>
                         <select name="type">
                           <option value="text">Text</option>
                           <option value="image">Image</option>
@@ -4681,67 +5405,32 @@
                           <option value="cta">Button CTA</option>
                         </select>
                       </label>
+                      <label class="field"><span>Heading</span><input type="text" name="title" placeholder="New arrival"></label>
+                      <label class="field"><span>Text</span><textarea name="text" placeholder="Section content"></textarea></label>
+                      <div class="theme-image-field">
+                        <label class="theme-image-upload"><span><i data-lucide="upload"></i><br>Upload image</span><input type="file" accept="image/*" data-design-block-image-file></label>
+                        <label class="field"><span>Image URL</span><input type="url" name="imageUrl" placeholder="https://..."></label>
+                      </div>
+                      <div class="form-row">
+                        <label class="field"><span>Button label</span><input type="text" name="buttonText" placeholder="Shop now"></label>
+                        <label class="field"><span>Button link</span><input type="text" name="buttonLink" placeholder="#catalog"></label>
+                      </div>
                       <label class="field">
-                        <span>Font size</span>
-                        <input type="number" name="fontSize" min="12" max="32" step="1" value="16">
+                        <span class="theme-range-label">Font size <output data-design-block-font-output>16 px</output></span>
+                        <input type="range" name="fontSize" min="12" max="32" step="1" value="16">
                       </label>
-                    </div>
-                    <label class="field">
-                      <span>Title</span>
-                      <input type="text" name="title" placeholder="New arrival">
-                    </label>
-                    <label class="field">
-                      <span>Text</span>
-                      <textarea name="text" placeholder="Write the content shown on the storefront"></textarea>
-                    </label>
-                    <label class="field">
-                      <span>Image URL</span>
-                      <input type="url" name="imageUrl" placeholder="https://...">
-                    </label>
-                    <div class="form-row">
-                      <label class="field">
-                        <span>Button text</span>
-                        <input type="text" name="buttonText" placeholder="Shop now">
-                      </label>
-                      <label class="field">
-                        <span>Button link</span>
-                        <input type="text" name="buttonLink" placeholder="#catalog">
-                      </label>
-                    </div>
-                    <div class="form-row">
-                      <label class="field color-field">
-                        <span>Block background</span>
-                        <input type="color" name="backgroundColor" value="#ffffff">
-                      </label>
-                      <label class="field color-field">
-                        <span>Block text</span>
-                        <input type="color" name="textColor" value="#111111">
-                      </label>
-                    </div>
-                    <div class="form-actions">
-                      <button class="button" type="submit"><i data-lucide="plus"></i> Save block</button>
-                      <button class="button ghost" type="button" data-clear-design-block>Clear block</button>
-                    </div>
-                  </form>
+                      <div class="theme-color-grid">
+                        <label class="theme-color-field"><span>Background</span><span class="theme-color-control"><input type="color" name="backgroundColor" value="#ffffff"><code data-design-block-color="backgroundColor">#ffffff</code></span></label>
+                        <label class="theme-color-field"><span>Text</span><span class="theme-color-control"><input type="color" name="textColor" value="#111111"><code data-design-block-color="textColor">#111111</code></span></label>
+                      </div>
+                      <div class="theme-inspector-actions">
+                        <button class="button" type="submit"><i data-lucide="save"></i> Save section</button>
+                        <button class="button ghost" type="button" data-delete-active-design-block aria-label="Delete section" title="Delete section"><i data-lucide="trash-2"></i></button>
+                      </div>
+                    </form>
+                  </section>
                 </div>
-              </div>
-            </div>
-
-            <div class="admin-panel">
-              <div class="admin-panel-head">
-                <h2>Live preview</h2>
-                <a class="button ghost" href="#home" data-back-store><i data-lucide="external-link"></i> Storefront</a>
-              </div>
-              <div class="admin-panel-body">
-                <div class="design-preview" id="designPreview"></div>
-              </div>
-              <div class="admin-panel-head">
-                <h2>Plugin blocks</h2>
-                <span class="muted">Text, image, banner, CTA</span>
-              </div>
-              <div class="admin-panel-body">
-                <div class="block-list" id="designBlockList"></div>
-              </div>
+              </aside>
             </div>
           </div>
         </section>
@@ -5653,6 +6342,7 @@
       accentColor: "#111111",
       softColor: "#f7f7f7",
       announcement: "",
+      headerTitle: "",
       heroTitle: "",
       heroSubtitle: "",
       heroButton: "",
@@ -5660,6 +6350,7 @@
       heroAlign: "center",
       heroHeight: 344,
       heroOverlay: 45,
+      productTitle: "",
       blocks: []
     };
 
@@ -5697,6 +6388,9 @@
       activeProductId: null,
       detailImageIndex: 0,
       detailQuantity: 1,
+      designEditorSection: "hero",
+      designEditorBlockId: null,
+      designPreviewDevice: "desktop",
       productReturnHash: "#catalog",
       productReturnScroll: 0
     };
@@ -5965,8 +6659,10 @@
       return {
         ...design,
         announcementText: state.session?.user ? customerWelcomeText() : (design.announcement || t("announcement")),
+        headerTitleText: design.headerTitle || "GO GO SHOP",
         heroTitleText: design.heroTitle || t("heroTitle"),
-        heroButtonText: design.heroButton || t("shopAll")
+        heroButtonText: design.heroButton || t("shopAll"),
+        productTitleText: design.productTitle || t("productsTitle")
       };
     }
 
@@ -5985,6 +6681,13 @@
 
       const announcement = $(".announcement", store);
       if (announcement) announcement.textContent = design.announcementText;
+
+      $$('[data-design-store-brand]', store).forEach((brand) => {
+        brand.textContent = design.headerTitleText;
+      });
+
+      const productTitle = $("[data-design-product-title]", store);
+      if (productTitle) productTitle.textContent = design.productTitleText;
 
       const hero = $(".hero", store);
       if (hero) {
@@ -7623,7 +8326,7 @@
         customers: ["Customers", "VIP levels, purchase history, points and vouchers."],
         vouchers: ["Vouchers", "Create voucher codes, issue them to customers and track usage."],
         analytics: ["Analytics", "Revenue, orders and product performance."],
-        design: ["Store design", "Customize typography, colors, hero content and plugin blocks."]
+        design: ["Store design", "Build the home page with live section editing and responsive previews."]
       };
       $("#adminPageTitle").textContent = titleMap[tab][0];
       $("#adminPageSub").textContent = titleMap[tab][1];
@@ -8317,6 +9020,25 @@
         const field = form.elements.namedItem(key);
         if (field && key !== "blocks") field.value = value;
       });
+      renderDesignControlValues();
+    }
+
+    function renderDesignControlValues() {
+      const design = normalizeDesign(state.design);
+      const rangeValues = {
+        baseFontSize: `${design.baseFontSize} px`,
+        headingScale: `${Math.round(design.headingScale * 100)}%`,
+        heroHeight: `${design.heroHeight} px`,
+        heroOverlay: `${design.heroOverlay}%`
+      };
+      Object.entries(rangeValues).forEach(([key, value]) => {
+        const output = $(`[data-design-range-output="${key}"]`);
+        if (output) output.textContent = value;
+      });
+      ["textColor", "accentColor", "backgroundColor", "softColor"].forEach((key) => {
+        const output = $(`[data-design-color-value="${key}"]`);
+        if (output) output.textContent = design[key];
+      });
     }
 
     function updateDesignFromForm() {
@@ -8333,16 +9055,19 @@
         accentColor: data.accentColor,
         softColor: data.softColor,
         announcement: data.announcement.trim(),
+        headerTitle: data.headerTitle.trim(),
         heroTitle: data.heroTitle.trim(),
         heroSubtitle: data.heroSubtitle.trim(),
         heroButton: data.heroButton.trim(),
         heroImage: data.heroImage.trim(),
         heroAlign: data.heroAlign,
         heroHeight: data.heroHeight,
-        heroOverlay: data.heroOverlay
+        heroOverlay: data.heroOverlay,
+        productTitle: data.productTitle.trim()
       });
       persistDesign();
       applyStoreDesign();
+      renderDesignControlValues();
       renderDesignPreview();
     }
 
@@ -8351,53 +9076,147 @@
       if (!preview) return;
       const design = effectiveDesign();
       const heroBackground = design.heroImage ? `url("${escapeHtml(design.heroImage)}")` : "linear-gradient(135deg, #4d9298, #d88a76)";
+      const previewProducts = state.products
+        .filter((product) => product.published)
+        .sort((a, b) => Number(Boolean(b.featured)) - Number(Boolean(a.featured)))
+        .slice(0, 4);
+      const selectedClass = (section, blockId = null) => (
+        state.designEditorSection === section && (!blockId || state.designEditorBlockId === blockId) ? " is-selected" : ""
+      );
       preview.innerHTML = `
-        <div class="preview-store" style="--preview-bg: ${design.backgroundColor}; --preview-text: ${design.textColor}; --preview-accent: ${design.accentColor}; --preview-font: ${escapeHtml(design.fontFamily)}; --preview-size: ${design.baseFontSize}px; --preview-heading-scale: ${design.headingScale}; --preview-overlay: ${design.heroOverlay / 100}; --preview-hero-bg: ${heroBackground}; --preview-align: ${design.heroAlign};">
-          <div class="preview-announcement">${escapeHtml(design.announcementText)}</div>
-          <div class="preview-hero">
-            <div>
-              <h3>${escapeHtml(design.heroTitleText)}</h3>
-              ${design.heroSubtitle ? `<p>${escapeHtml(design.heroSubtitle)}</p>` : ""}
-              <span class="preview-button">${escapeHtml(design.heroButtonText)}</span>
-            </div>
-          </div>
-          <div class="preview-blocks">
-            ${design.blocks.length ? design.blocks.slice(0, 4).map((block) => `
-              <div class="preview-block" style="--block-bg: ${safeColor(block.backgroundColor, "#ffffff")}; --block-text: ${safeColor(block.textColor, design.textColor)}; --block-size: ${clampNumber(block.fontSize, 12, 32, 16)}px;">
+        <div class="preview-frame ${state.designPreviewDevice === "mobile" ? "mobile" : "desktop"}">
+          <div class="preview-store" style="--preview-bg: ${design.backgroundColor}; --preview-text: ${design.textColor}; --preview-accent: ${design.accentColor}; --preview-font: ${escapeHtml(design.fontFamily)}; --preview-size: ${design.baseFontSize}px; --preview-heading-scale: ${design.headingScale}; --preview-overlay: ${design.heroOverlay / 100}; --preview-hero-bg: ${heroBackground}; --preview-align: ${design.heroAlign};">
+            <button class="preview-announcement preview-section${selectedClass("announcement")}" type="button" data-select-design-section="announcement">${escapeHtml(design.announcementText)}</button>
+            <button class="preview-header preview-section${selectedClass("header")}" type="button" data-select-design-section="header">
+              <i data-lucide="menu"></i>
+              <span class="preview-header-brand">${escapeHtml(design.headerTitleText)}</span>
+              <span class="preview-header-icons"><i data-lucide="search"></i><i data-lucide="user-round"></i><i data-lucide="shopping-bag"></i></span>
+            </button>
+            <button class="preview-hero preview-section${selectedClass("hero")}" type="button" data-select-design-section="hero">
+              <div>
+                <h3>${escapeHtml(design.heroTitleText)}</h3>
+                ${design.heroSubtitle ? `<p>${escapeHtml(design.heroSubtitle)}</p>` : ""}
+                <span class="preview-button">${escapeHtml(design.heroButtonText)}</span>
+              </div>
+            </button>
+            ${design.blocks.length ? `<div class="preview-blocks">${design.blocks.map((block) => `
+              <button class="preview-block preview-section${selectedClass("block", block.id)}" type="button" data-select-design-section="block" data-design-block-id="${escapeHtml(block.id)}" style="--block-bg: ${safeColor(block.backgroundColor, "#ffffff")}; --block-text: ${safeColor(block.textColor, design.textColor)}; --block-size: ${clampNumber(block.fontSize, 12, 32, 16)}px;">
+                ${block.imageUrl ? `<img src="${escapeHtml(block.imageUrl)}" alt="">` : ""}
                 <strong>${escapeHtml(block.title || block.type)}</strong>
                 <span>${escapeHtml(block.text || block.buttonText || block.imageUrl || "Plugin block")}</span>
-              </div>
-            `).join("") : `<div class="preview-block"><strong>Plugin area</strong><span>Add text, image, banner or CTA blocks.</span></div>`}
+              </button>
+            `).join("")}</div>` : ""}
+            <button class="preview-products preview-section${selectedClass("products")}" type="button" data-select-design-section="products">
+              <h4>${escapeHtml(design.productTitleText)}</h4>
+              <span class="preview-product-grid">
+                ${previewProducts.length ? previewProducts.map((product) => `
+                  <span class="preview-product-card">
+                    ${product.image ? `<img src="${escapeHtml(product.image)}" alt="">` : '<span class="preview-product-placeholder"></span>'}
+                    <strong>${escapeHtml(productName(product))}</strong>
+                    <span>${formatPrice(product.price)}</span>
+                  </span>
+                `).join("") : '<span class="preview-product-placeholder"></span>'}
+              </span>
+            </button>
           </div>
         </div>
       `;
+      refreshIcons();
     }
 
     function renderDesignBlocks() {
       const list = $("#designBlockList");
       if (!list) return;
       const blocks = normalizeDesign(state.design).blocks;
-      list.innerHTML = blocks.length ? blocks.map((block, index) => `
+      list.innerHTML = `<div class="theme-section-group-label">Custom sections</div>${blocks.map((block, index) => `
         <div class="block-list-item">
-          <div>
-            <strong>${escapeHtml(block.title || block.type)}</strong>
-            <span class="muted">${escapeHtml(block.type)} · ${clampNumber(block.fontSize, 12, 32, 16)}px</span>
-          </div>
+          <button class="theme-section-item ${state.designEditorSection === "block" && state.designEditorBlockId === block.id ? "active" : ""}" type="button" data-edit-design-block="${escapeHtml(block.id)}">
+            <span class="theme-section-icon"><i data-lucide="${block.type === "image" ? "image" : block.type === "banner" ? "panel-top" : block.type === "cta" ? "mouse-pointer-click" : "type"}"></i></span>
+            <span class="theme-section-copy"><strong>${escapeHtml(block.title || block.type)}</strong><span>${escapeHtml(block.type)} · ${clampNumber(block.fontSize, 12, 32, 16)} px</span></span>
+          </button>
           <div class="row-actions">
-            <button class="action-button" type="button" data-edit-design-block="${block.id}" aria-label="Edit block"><i data-lucide="pencil"></i></button>
-            <button class="action-button" type="button" data-move-design-block="${block.id}" data-direction="-1" aria-label="Move up" ${index === 0 ? "disabled" : ""}><i data-lucide="arrow-up"></i></button>
-            <button class="action-button" type="button" data-move-design-block="${block.id}" data-direction="1" aria-label="Move down" ${index === blocks.length - 1 ? "disabled" : ""}><i data-lucide="arrow-down"></i></button>
-            <button class="action-button" type="button" data-delete-design-block="${block.id}" aria-label="Delete block"><i data-lucide="trash-2"></i></button>
+            <button class="action-button" type="button" data-move-design-block="${escapeHtml(block.id)}" data-direction="-1" aria-label="Move up" title="Move up" ${index === 0 ? "disabled" : ""}><i data-lucide="arrow-up"></i></button>
+            <button class="action-button" type="button" data-move-design-block="${escapeHtml(block.id)}" data-direction="1" aria-label="Move down" title="Move down" ${index === blocks.length - 1 ? "disabled" : ""}><i data-lucide="arrow-down"></i></button>
           </div>
         </div>
-      `).join("") : `<div class="empty-state">No plugin blocks yet</div>`;
+      `).join("")}`;
+    }
+
+    function syncDesignBlockVisuals() {
+      const form = $("[data-design-block-form]");
+      if (!form) return;
+      const fontSize = form.elements.namedItem("fontSize")?.value || 16;
+      const fontOutput = $("[data-design-block-font-output]");
+      if (fontOutput) fontOutput.textContent = `${fontSize} px`;
+      ["backgroundColor", "textColor"].forEach((key) => {
+        const output = $(`[data-design-block-color="${key}"]`);
+        const field = form.elements.namedItem(key);
+        if (output && field) output.textContent = field.value;
+      });
+    }
+
+    function renderDesignInspector() {
+      const validSections = new Set(["theme", "announcement", "header", "hero", "products", "block"]);
+      if (!validSections.has(state.designEditorSection)) state.designEditorSection = "hero";
+      const meta = {
+        theme: ["Theme settings", "Typography and colors"],
+        announcement: ["Announcement bar", "Home page section"],
+        header: ["Header", "Home page section"],
+        hero: ["Image banner", "Home page section"],
+        products: ["Featured products", "Home page section"],
+        block: [state.designEditorBlockId ? "Custom section" : "Add section", "Home page section"]
+      };
+      $("#designInspectorTitle").textContent = meta[state.designEditorSection][0];
+      $("#designInspectorSubtitle").textContent = meta[state.designEditorSection][1];
+      $$('[data-design-panel]').forEach((panel) => {
+        panel.hidden = panel.dataset.designPanel !== state.designEditorSection;
+      });
+      $$('[data-design-section]').forEach((button) => {
+        button.classList.toggle("active", button.dataset.designSection === state.designEditorSection);
+      });
+
+      if (state.designEditorSection === "block") {
+        const form = $("[data-design-block-form]");
+        const block = normalizeDesign(state.design).blocks.find((item) => item.id === state.designEditorBlockId);
+        const currentId = form?.elements.namedItem("id")?.value || "";
+        if (block && currentId !== block.id) {
+          Object.entries(block).forEach(([key, value]) => {
+            const field = form.elements.namedItem(key);
+            if (field) field.value = value;
+          });
+        } else if (!block && currentId) {
+          clearDesignBlockForm();
+        }
+        const deleteButton = $("[data-delete-active-design-block]");
+        if (deleteButton) deleteButton.hidden = !block;
+        $("#designInspectorTitle").textContent = block ? (block.title || "Custom section") : "Add section";
+        syncDesignBlockVisuals();
+      }
+    }
+
+    function selectDesignEditorSection(section, blockId = null) {
+      state.designEditorSection = section;
+      state.designEditorBlockId = section === "block" ? blockId : null;
+      renderAdminDesign();
+    }
+
+    function setDesignPreviewDevice(device) {
+      state.designPreviewDevice = device === "mobile" ? "mobile" : "desktop";
+      $$('[data-design-device]').forEach((button) => {
+        const active = button.dataset.designDevice === state.designPreviewDevice;
+        button.classList.toggle("active", active);
+        button.setAttribute("aria-pressed", String(active));
+      });
+      renderDesignPreview();
     }
 
     function renderAdminDesign() {
       if (!$("#designPreview")) return;
       syncDesignForm();
-      renderDesignPreview();
       renderDesignBlocks();
+      renderDesignInspector();
+      setDesignPreviewDevice(state.designPreviewDevice);
+      refreshIcons();
     }
 
     function renderAdmin() {
@@ -8605,6 +9424,24 @@
       }
     }
 
+    async function handleDesignImageFile(input, targetName) {
+      const file = input?.files?.[0];
+      if (!file) return;
+      try {
+        const imageUrl = await resizeProductImageFile(file);
+        const form = targetName === "heroImage" ? $("[data-design-form]") : $("[data-design-block-form]");
+        const field = form?.elements.namedItem(targetName);
+        if (!field) return;
+        field.value = imageUrl;
+        if (targetName === "heroImage") updateDesignFromForm();
+        showToast("Image added");
+      } catch (error) {
+        showToast("Unable to add image");
+      } finally {
+        input.value = "";
+      }
+    }
+
     function clearDesignBlockForm() {
       const form = $("[data-design-block-form]");
       if (!form) return;
@@ -8613,6 +9450,7 @@
       form.elements.namedItem("fontSize").value = 16;
       form.elements.namedItem("backgroundColor").value = "#ffffff";
       form.elements.namedItem("textColor").value = "#111111";
+      syncDesignBlockVisuals();
     }
 
     function saveDesignBlock(event) {
@@ -8640,21 +9478,20 @@
       }
       state.design = normalizeDesign(design);
       persistDesign();
-      clearDesignBlockForm();
+      state.designEditorSection = "block";
+      state.designEditorBlockId = block.id;
       applyStoreDesign();
       renderAdminDesign();
-      showToast("Design block saved");
+      showToast("Section saved");
     }
 
     function editDesignBlock(id) {
       const block = normalizeDesign(state.design).blocks.find((item) => item.id === id);
-      const form = $("[data-design-block-form]");
-      if (!block || !form) return;
-      Object.entries(block).forEach(([key, value]) => {
-        const field = form.elements.namedItem(key);
-        if (field) field.value = value;
-      });
-      setAdminTab("design");
+      if (!block) return;
+      state.designEditorSection = "block";
+      state.designEditorBlockId = id;
+      if (state.adminTab !== "design") setAdminTab("design");
+      else renderAdminDesign();
     }
 
     function deleteDesignBlock(id) {
@@ -8662,6 +9499,11 @@
         ...state.design,
         blocks: normalizeDesign(state.design).blocks.filter((block) => block.id !== id)
       });
+      if (state.designEditorBlockId === id) {
+        state.designEditorSection = "hero";
+        state.designEditorBlockId = null;
+        clearDesignBlockForm();
+      }
       persistDesign();
       applyStoreDesign();
       renderAdminDesign();
@@ -8683,6 +9525,8 @@
 
     function resetDesign() {
       state.design = clone(seedDesign);
+      state.designEditorSection = "hero";
+      state.designEditorBlockId = null;
       persistDesign();
       syncDesignForm();
       clearDesignBlockForm();
@@ -9099,6 +9943,14 @@
       if (target.matches("[data-back-store]")) exitAdminToStore();
       if (target.matches("[data-admin-logout]")) logoutAdmin();
       if (target.matches("[data-admin-tab]")) setAdminTab(target.dataset.adminTab);
+      if (target.matches("[data-design-section]")) selectDesignEditorSection(target.dataset.designSection);
+      if (target.matches("[data-select-design-section]")) selectDesignEditorSection(target.dataset.selectDesignSection, target.dataset.designBlockId || null);
+      if (target.matches("[data-design-device]")) setDesignPreviewDevice(target.dataset.designDevice);
+      if (target.matches("[data-add-design-block]")) {
+        clearDesignBlockForm();
+        selectDesignEditorSection("block");
+      }
+      if (target.matches("[data-delete-active-design-block]") && state.designEditorBlockId) deleteDesignBlock(state.designEditorBlockId);
       if (target.matches("[data-edit-voucher]")) editVoucher(target.dataset.editVoucher);
       if (target.matches("[data-toggle-voucher]")) toggleVoucher(target.dataset.toggleVoucher);
       if (target.matches("[data-reset-voucher-form]")) resetVoucherForm();
@@ -9144,6 +9996,9 @@
       if (event.target instanceof Element && event.target.closest("[data-design-form]")) {
         updateDesignFromForm();
       }
+      if (event.target instanceof Element && event.target.closest("[data-design-block-form]")) {
+        syncDesignBlockVisuals();
+      }
       if (event.target instanceof Element && event.target.closest("[data-product-form]")) {
         if (event.target.matches('[name="sourcePriceCny"]')) {
           applySourcePricingToForm(event.target.closest("[data-product-form]"));
@@ -9155,6 +10010,12 @@
     document.addEventListener("change", (event) => {
       if (event.target instanceof Element && event.target.matches("[data-product-image-file]")) {
         handleProductImageFile(event.target);
+      }
+      if (event.target instanceof Element && event.target.matches("[data-design-hero-image-file]")) {
+        handleDesignImageFile(event.target, "heroImage");
+      }
+      if (event.target instanceof Element && event.target.matches("[data-design-block-image-file]")) {
+        handleDesignImageFile(event.target, "imageUrl");
       }
       if (event.target instanceof Element && event.target.closest("[data-design-form]")) {
         updateDesignFromForm();
