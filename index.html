@@ -6775,9 +6775,9 @@
 
     function customerBarcodeForUser(user = state.session?.user, profile = state.profile) {
       const stored = String(profile?.customer_barcode || "").trim().toUpperCase();
-      if (stored) return stored;
+      if (stored) return stored.replace(/^CUST-/, "");
       const compactId = String(user?.id || "").replace(/-/g, "").slice(0, 10).toUpperCase();
-      return compactId ? `CUST-${compactId}` : "";
+      return compactId;
     }
 
     function renderCustomerBarcode(code) {
