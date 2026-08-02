@@ -6,3 +6,5 @@ android/local.properties
 dist/
 *.apk
 *.aab
+keystore.properties
+signing/
