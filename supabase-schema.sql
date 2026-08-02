@@ -90,6 +90,8 @@ create table if not exists public.orders (
   deleted_by uuid references public.profiles(id) on delete set null
 );
 
+alter table public.orders add column if not exists order_note text not null default '';
+
 alter table public.orders add column if not exists payment_provider text not null default 'manual';
 alter table public.orders add column if not exists payment_status text not null default 'unpaid';
 alter table public.orders add column if not exists stripe_checkout_session_id text;
@@ -105,8 +107,11 @@ create table if not exists public.order_items (
   product_title text not null,
   unit_price numeric(12,2) not null check (unit_price >= 0),
   quantity integer not null check (quantity > 0),
+  item_note text not null default '',
   unique (order_id, product_id)
 );
+
+alter table public.order_items add column if not exists item_note text not null default '';
 
 create index if not exists orders_user_id_idx on public.orders(user_id, created_at desc);
 create index if not exists orders_status_idx on public.orders(status, created_at desc);

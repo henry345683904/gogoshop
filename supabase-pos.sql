@@ -36,16 +36,20 @@ end;
 $$;
 
 alter table public.orders add column if not exists order_source text not null default 'online';
+alter table public.orders add column if not exists order_note text not null default '';
+alter table public.order_items add column if not exists item_note text not null default '';
 alter table public.orders drop constraint if exists orders_order_source_check;
 alter table public.orders add constraint orders_order_source_check
   check (order_source in ('online', 'pos'));
 
 drop function if exists public.create_pos_order(jsonb);
 drop function if exists public.create_pos_order(jsonb, text);
+drop function if exists public.create_pos_order(jsonb, text, uuid);
 create or replace function public.create_pos_order(
   p_items jsonb,
   p_customer_barcode text default null,
-  p_customer_voucher_id uuid default null
+  p_customer_voucher_id uuid default null,
+  p_order_note text default null
 )
 returns public.orders
 language plpgsql
@@ -89,7 +93,8 @@ begin
   for v_item in
     select jsonb_build_object(
       'product_id', item ->> 'product_id',
-      'quantity', sum(greatest(1, coalesce((item ->> 'quantity')::integer, 1)))
+      'quantity', sum(greatest(1, coalesce((item ->> 'quantity')::integer, 1))),
+      'note', max(left(coalesce(item ->> 'note', ''), 500))
     )
     from jsonb_array_elements(p_items) as entries(item)
     group by item ->> 'product_id'
@@ -135,27 +140,28 @@ begin
   insert into public.orders (
     order_number, user_id, status, subtotal, discount_amount, total,
     voucher_id, voucher_code, customer_voucher_id, item_count, points_awarded,
-    payment_provider, payment_status, paid_at, confirmed_at, confirmed_by, order_source
+    payment_provider, payment_status, paid_at, confirmed_at, confirmed_by, order_source, order_note
   ) values (
     v_order_number, coalesce(v_customer, v_admin), 'confirmed', round(v_total, 2), round(v_discount, 2), round(v_total - v_discount, 2),
     case when p_customer_voucher_id is null then null else v_voucher.id end,
     case when p_customer_voucher_id is null then null else v_voucher.code end,
     p_customer_voucher_id, v_item_count, v_points,
-    'manual', 'paid', now(), now(), v_admin, 'pos'
+    'manual', 'paid', now(), now(), v_admin, 'pos', left(trim(coalesce(p_order_note, '')), 1000)
   ) returning * into v_order;
 
   for v_item in
     select jsonb_build_object(
       'product_id', item ->> 'product_id',
-      'quantity', sum(greatest(1, coalesce((item ->> 'quantity')::integer, 1)))
+      'quantity', sum(greatest(1, coalesce((item ->> 'quantity')::integer, 1))),
+      'note', max(left(coalesce(item ->> 'note', ''), 500))
     )
     from jsonb_array_elements(p_items) as entries(item)
     group by item ->> 'product_id'
   loop
     v_quantity := (v_item ->> 'quantity')::integer;
     select * into v_product from public.products where id = v_item ->> 'product_id';
-    insert into public.order_items (order_id, product_id, product_title, unit_price, quantity)
-    values (v_order.id, v_product.id, v_product.title, v_product.price, v_quantity);
+    insert into public.order_items (order_id, product_id, product_title, unit_price, quantity, item_note)
+    values (v_order.id, v_product.id, v_product.title, v_product.price, v_quantity, trim(coalesce(v_item ->> 'note', '')));
     update public.products
       set stock = stock - v_quantity,
           sales = sales + v_quantity,
@@ -183,5 +189,5 @@ begin
 end;
 $$;
 
-revoke all on function public.create_pos_order(jsonb, text, uuid) from public, anon;
-grant execute on function public.create_pos_order(jsonb, text, uuid) to authenticated;
+revoke all on function public.create_pos_order(jsonb, text, uuid, text) from public, anon;
+grant execute on function public.create_pos_order(jsonb, text, uuid, text) to authenticated;

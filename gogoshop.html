@@ -6183,10 +6183,10 @@
     });
     const VIP_TIERS = Object.freeze([
       { key: "silver", minSpend: 0, labelKey: "vipSilver" },
-      { key: "gold", minSpend: 500, labelKey: "vipGold" },
-      { key: "platinum", minSpend: 1500, labelKey: "vipPlatinum" },
-      { key: "diamond", minSpend: 3000, labelKey: "vipDiamond" },
-      { key: "black", minSpend: 6000, labelKey: "vipBlack" }
+      { key: "gold", minSpend: 50, labelKey: "vipGold" },
+      { key: "platinum", minSpend: 200, labelKey: "vipPlatinum" },
+      { key: "diamond", minSpend: 500, labelKey: "vipDiamond" },
+      { key: "black", minSpend: 1000, labelKey: "vipBlack" }
     ]);
     const db = window.supabase?.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY) || null;
     let adminOrderChannel = null;
@@ -7891,7 +7891,7 @@
         if (!result.error || !/customer_barcode/i.test(result.error.message || "")) return result;
         return db.from("profiles").select("id,email,full_name,points,total_spent,is_admin,created_at").eq("id", userId).single();
       });
-      const voucherPaymentFields = "id,order_number,status,subtotal,discount_amount,voucher_code,total,item_count,points_awarded,payment_provider,payment_status,paid_at,created_at,confirmed_at,order_items(product_id,product_title,unit_price,quantity)";
+      const voucherPaymentFields = "id,order_number,status,order_note,subtotal,discount_amount,voucher_code,total,item_count,points_awarded,payment_provider,payment_status,paid_at,created_at,confirmed_at,order_items(product_id,product_title,unit_price,quantity,item_note)";
       const paymentFields = "id,order_number,status,total,item_count,points_awarded,payment_provider,payment_status,paid_at,created_at,confirmed_at,order_items(product_id,product_title,unit_price,quantity)";
       const basicFields = "id,order_number,status,total,item_count,points_awarded,created_at,confirmed_at,order_items(product_id,product_title,unit_price,quantity)";
       let supportsOrderRecycle = true;
@@ -7900,7 +7900,7 @@
         supportsOrderRecycle = false;
         orderResult = await db.from("orders").select(voucherPaymentFields).eq("user_id", userId).order("created_at", { ascending: false });
       }
-      if (orderResult.error && /subtotal|discount_amount|voucher_code/i.test(orderResult.error.message || "")) {
+      if (orderResult.error && /subtotal|discount_amount|voucher_code|order_note|item_note/i.test(orderResult.error.message || "")) {
         let paymentQuery = db.from("orders").select(paymentFields).eq("user_id", userId);
         if (supportsOrderRecycle) paymentQuery = paymentQuery.is("deleted_at", null);
         orderResult = await paymentQuery.order("created_at", { ascending: false });
@@ -8782,8 +8782,8 @@
       const customerPromise = db.from("profiles").select("id,email,full_name,points,total_spent,created_at,updated_at,is_admin").order("created_at", { ascending: false });
       const voucherPromise = db.from("vouchers").select("*").order("created_at", { ascending: false });
       const voucherAssignmentPromise = db.from("customer_vouchers").select("id,voucher_id,user_id,source,redeemed_at,reserved_at,used_at,order_id,vouchers(code,name,active,starts_at,expires_at),profiles!customer_vouchers_user_id_fkey(email,full_name)").order("redeemed_at", { ascending: false });
-      const voucherPaymentFields = "id,order_number,user_id,status,subtotal,discount_amount,voucher_code,total,item_count,points_awarded,payment_provider,payment_status,paid_at,created_at,confirmed_at,deleted_at,deleted_by,profiles!orders_user_id_fkey(email,full_name),order_items(product_id,product_title,quantity,unit_price)";
-      const voucherPaymentFieldsWithoutRecycle = "id,order_number,user_id,status,subtotal,discount_amount,voucher_code,total,item_count,points_awarded,payment_provider,payment_status,paid_at,created_at,confirmed_at,profiles!orders_user_id_fkey(email,full_name),order_items(product_id,product_title,quantity,unit_price)";
+      const voucherPaymentFields = "id,order_number,user_id,status,order_note,subtotal,discount_amount,voucher_code,total,item_count,points_awarded,payment_provider,payment_status,paid_at,created_at,confirmed_at,deleted_at,deleted_by,profiles!orders_user_id_fkey(email,full_name),order_items(product_id,product_title,quantity,unit_price,item_note)";
+      const voucherPaymentFieldsWithoutRecycle = "id,order_number,user_id,status,order_note,subtotal,discount_amount,voucher_code,total,item_count,points_awarded,payment_provider,payment_status,paid_at,created_at,confirmed_at,profiles!orders_user_id_fkey(email,full_name),order_items(product_id,product_title,quantity,unit_price,item_note)";
       const paymentFields = "id,order_number,user_id,status,total,item_count,points_awarded,payment_provider,payment_status,paid_at,created_at,confirmed_at,deleted_at,deleted_by,profiles!orders_user_id_fkey(email,full_name),order_items(product_id,product_title,quantity,unit_price)";
       const paymentFieldsWithoutRecycle = "id,order_number,user_id,status,total,item_count,points_awarded,payment_provider,payment_status,paid_at,created_at,confirmed_at,profiles!orders_user_id_fkey(email,full_name),order_items(product_id,product_title,quantity,unit_price)";
       const basicFields = "id,order_number,user_id,status,total,item_count,points_awarded,created_at,confirmed_at,deleted_at,deleted_by,profiles!orders_user_id_fkey(email,full_name),order_items(product_id,product_title,quantity,unit_price)";
@@ -8794,7 +8794,7 @@
         state.orderRecycleSupported = false;
         ordersResult = await db.from("orders").select(voucherPaymentFieldsWithoutRecycle).order("created_at", { ascending: false });
       }
-      if (ordersResult.error && /subtotal|discount_amount|voucher_code/i.test(ordersResult.error.message || "")) {
+      if (ordersResult.error && /subtotal|discount_amount|voucher_code|order_note|item_note/i.test(ordersResult.error.message || "")) {
         const fields = state.orderRecycleSupported ? paymentFields : paymentFieldsWithoutRecycle;
         ordersResult = await db.from("orders").select(fields).order("created_at", { ascending: false });
       }
@@ -8850,7 +8850,7 @@
             <td>${Number(order.points_awarded ?? Math.round(Number(order.total) || 0))}</td>
             <td>${actions}</td>
           </tr>
-          <tr><td colspan="6" class="muted">${(order.order_items || []).map((item) => `${escapeHtml(item.product_title)} × ${Number(item.quantity)}`).join(" · ")}</td></tr>
+          <tr><td colspan="6" class="muted">${(order.order_items || []).map((item) => `${escapeHtml(item.product_title)} × ${Number(item.quantity)}${item.item_note ? ` · ${state.lang === "zh" ? "备注" : "Note"}: ${escapeHtml(item.item_note)}` : ""}`).join("<br>")}${order.order_note ? `<div><strong>${state.lang === "zh" ? "订单备注" : "Order note"}:</strong> ${escapeHtml(order.order_note)}</div>` : ""}</td></tr>
         `;
       }).join("") : `<tr><td colspan="6"><div class="empty-state">No customer orders yet</div></td></tr>`;
       trashRows.innerHTML = state.deletedOrders.length ? state.deletedOrders.map((order) => {
