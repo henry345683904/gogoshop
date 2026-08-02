@@ -13,6 +13,37 @@
   <link rel="preconnect" href="https://unpkg.com">
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
   <script>
+    (function prepareNativeOAuthReturn() {
+      try {
+        var query = new URLSearchParams(location.search);
+        var hash = new URLSearchParams(location.hash.replace(/^#/, ""));
+        var isAppReturn = query.get("app") === "1" && query.get("oauth") === "return";
+        var hasAuthResult = query.has("code") || query.has("error") || hash.has("access_token") || hash.has("error");
+        if (!isAppReturn || !hasAuthResult) return;
+        var callbackUrl = "nz.gogoshop.app://auth/callback" + location.search + location.hash;
+        window.__gogoshopNativeOAuthReturnUrl = callbackUrl;
+        document.documentElement.classList.add("app-oauth-return");
+        window.setTimeout(function () { location.replace(callbackUrl); }, 0);
+        document.addEventListener("DOMContentLoaded", function () {
+          var isChinese = localStorage.getItem("gogoshop_lang_v1") === "zh" || /^zh\b/i.test(navigator.language || "");
+          var title = document.querySelector("[data-app-return-title]");
+          var copy = document.querySelector("[data-app-return-copy]");
+          var link = document.querySelector("[data-app-return-link]");
+          document.title = isChinese ? "返回 GO GO SHOP" : "Return to GO GO SHOP";
+          if (title) title.textContent = isChinese ? "正在返回 GO GO SHOP" : "Returning to GO GO SHOP";
+          if (copy) copy.textContent = isChinese ? "如果 APP 没有自动打开，请点击下面的按钮。" : "If the app does not open automatically, tap the button below.";
+          if (link) link.textContent = isChinese ? "打开 GO GO SHOP" : "Open GO GO SHOP";
+        });
+      } catch (error) {}
+    })();
+
+    function returnToGoGoShopApp(event) {
+      if (event) event.preventDefault();
+      if (!window.__gogoshopNativeOAuthReturnUrl) return false;
+      location.href = window.__gogoshopNativeOAuthReturnUrl;
+      return false;
+    }
+
     function isAdminRoute() {
       return location.hash === "#admin" || location.hash.indexOf("#admin?") === 0;
     }
@@ -76,6 +107,61 @@
       background: var(--page);
       color: var(--ink);
       letter-spacing: 0;
+    }
+
+    .app-oauth-return-screen {
+      display: none;
+    }
+
+    html.app-oauth-return body {
+      min-height: 100vh;
+      min-height: 100dvh;
+      overflow: hidden;
+    }
+
+    html.app-oauth-return body > *:not(.app-oauth-return-screen) {
+      display: none !important;
+    }
+
+    html.app-oauth-return .app-oauth-return-screen {
+      display: grid;
+      min-height: 100vh;
+      min-height: 100dvh;
+      place-items: center;
+      padding: 28px;
+      background: #fff;
+    }
+
+    .app-oauth-return-content {
+      display: grid;
+      width: min(100%, 420px);
+      justify-items: center;
+      gap: 14px;
+      text-align: center;
+    }
+
+    .app-oauth-return-content img {
+      width: 88px;
+      height: 88px;
+      border-radius: 8px;
+    }
+
+    .app-oauth-return-content h1 {
+      margin: 8px 0 0;
+      font-size: 25px;
+      line-height: 1.2;
+    }
+
+    .app-oauth-return-content p {
+      margin: 0 0 6px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .app-oauth-return-content .button {
+      min-width: 210px;
+      justify-content: center;
     }
 
     body.panel-open {
@@ -5251,6 +5337,14 @@
   </style>
 </head>
 <body>
+  <section class="app-oauth-return-screen" aria-live="polite">
+    <div class="app-oauth-return-content">
+      <img src="assets/app-icon-192.png" alt="GO GO SHOP">
+      <h1 data-app-return-title>Returning to GO GO SHOP</h1>
+      <p data-app-return-copy>If the app does not open automatically, tap the button below.</p>
+      <a class="button" href="#" data-app-return-link onclick="return returnToGoGoShopApp(event)">Open GO GO SHOP</a>
+    </div>
+  </section>
   <div class="main-view" id="storeView">
     <aside class="announcement" data-i18n="announcement">Welcome to our store</aside>
 
@@ -6100,7 +6194,7 @@
           <span><i data-lucide="shield-check"></i><span data-i18n="adminDashboard">Admin Dashboard</span></span>
           <i data-lucide="chevron-right"></i>
         </button>
-        <a class="menu-link menu-app-download" href="downloads/GO-GO-SHOP.apk?v=7" download data-close-panels>
+        <a class="menu-link menu-app-download" href="downloads/GO-GO-SHOP.apk?v=8" download data-close-panels>
           <span><i data-lucide="smartphone"></i><span data-i18n="androidApp">App For Android</span></span>
           <i data-lucide="download"></i>
         </a>
@@ -8434,12 +8528,15 @@
       try {
         const url = new URL(value);
         const validHost = /^(www\.)?gogoshop\.nz$/i.test(url.hostname);
+        const validAppScheme = url.protocol === "nz.gogoshop.app:"
+          && url.hostname === "auth"
+          && url.pathname === "/callback";
         const hash = new URLSearchParams(url.hash.replace(/^#/, ""));
         const hasAuthResult = url.searchParams.has("code")
           || url.searchParams.has("error")
           || hash.has("access_token")
           || hash.has("error");
-        return validHost && url.searchParams.get("oauth") === "return" && hasAuthResult ? url : null;
+        return (validHost || validAppScheme) && url.searchParams.get("oauth") === "return" && hasAuthResult ? url : null;
       } catch (error) {
         return null;
       }

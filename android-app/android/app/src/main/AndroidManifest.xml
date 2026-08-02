@@ -29,6 +29,13 @@
                 <data android:scheme="https" android:host="gogoshop.nz" />
             </intent-filter>
 
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="@string/custom_url_scheme" android:host="auth" android:pathPrefix="/callback" />
+            </intent-filter>
+
         </activity>
 
         <provider
