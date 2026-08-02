@@ -2601,6 +2601,141 @@
     .vip-tier-badge.diamond { border-color: #568c73; background: #eaf6ef; color: #225d42; }
     .vip-tier-badge.black { border-color: #111; background: #171717; color: #fff; }
 
+    .account-vip-button {
+      appearance: none;
+      gap: 5px;
+      margin: 0;
+      cursor: pointer;
+      font-family: inherit;
+      line-height: 1;
+      transition: box-shadow .16s ease, transform .16s ease;
+    }
+
+    .account-vip-button svg {
+      width: 13px;
+      height: 13px;
+      flex: 0 0 auto;
+    }
+
+    .account-vip-button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 3px 10px rgba(20, 24, 24, .12);
+    }
+
+    .account-vip-button:focus-visible {
+      outline: 2px solid var(--ink);
+      outline-offset: 2px;
+    }
+
+    .vip-rules-modal[hidden] { display: none; }
+    .vip-rules-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 360;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      background: rgba(20, 24, 24, .58);
+    }
+
+    .vip-rules-dialog {
+      display: flex;
+      width: min(100%, 500px);
+      max-height: min(90vh, 700px);
+      max-height: min(90dvh, 700px);
+      flex-direction: column;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      box-shadow: 0 24px 80px rgba(20, 24, 24, .3);
+    }
+
+    .vip-rules-content {
+      min-height: 0;
+      overflow: auto;
+      overscroll-behavior: contain;
+      padding: 20px 22px 22px;
+    }
+
+    .vip-rules-intro,
+    .vip-rules-note {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .vip-rules-list {
+      display: grid;
+      margin: 17px 0;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    .vip-rule-item {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 14px;
+      min-height: 58px;
+      padding: 11px 13px;
+      background: #fff;
+    }
+
+    .vip-rule-item + .vip-rule-item {
+      border-top: 1px solid var(--line);
+    }
+
+    .vip-rule-item.is-current {
+      background: var(--soft);
+    }
+
+    .vip-rule-level {
+      display: flex;
+      min-width: 0;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .vip-rule-threshold {
+      display: grid;
+      justify-items: end;
+      gap: 2px;
+      text-align: right;
+    }
+
+    .vip-rule-threshold span,
+    .vip-rules-current {
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 750;
+    }
+
+    .vip-rule-threshold strong {
+      font-size: 14px;
+      white-space: nowrap;
+    }
+
+    .vip-rules-current {
+      color: var(--ink);
+      text-transform: uppercase;
+    }
+
+    @media (max-width: 520px) {
+      .vip-rules-modal { padding: 10px; }
+      .vip-rules-dialog {
+        width: 100%;
+        max-height: calc(100vh - 20px);
+        max-height: calc(100dvh - 20px);
+      }
+      .vip-rules-content { padding: 16px; }
+      .vip-rules-list { margin: 14px 0; }
+      .vip-rule-item { min-height: 54px; padding: 9px 11px; }
+    }
+
     .customer-table-row {
       cursor: pointer;
     }
@@ -6041,7 +6176,7 @@
       </section>
       <section class="auth-view" data-auth-signed-in hidden>
         <div>
-          <div class="account-name-row"><h3 id="accountName" style="margin: 0;">Customer</h3><span class="vip-tier-badge silver" id="accountVipBadge">Silver</span></div>
+          <div class="account-name-row"><h3 id="accountName" style="margin: 0;">Customer</h3><button class="vip-tier-badge silver account-vip-button" id="accountVipBadge" type="button" data-open-vip-rules aria-haspopup="dialog"><span id="accountVipLabel">Silver VIP</span><i data-lucide="circle-help"></i></button></div>
           <p class="muted" id="accountEmail" style="margin: 4px 0 0;"></p>
           <div class="account-vip-progress" id="accountVipProgress">
             <div class="vip-progress-copy"><span id="accountVipMessage"></span><span id="accountVipAmount"></span></div>
@@ -6062,6 +6197,20 @@
       </section>
     </div>
   </aside>
+
+  <section class="vip-rules-modal" id="vipRulesModal" data-vip-rules-backdrop aria-hidden="true" hidden>
+    <div class="vip-rules-dialog" role="dialog" aria-modal="true" aria-labelledby="vipRulesTitle">
+      <div class="panel-head">
+        <h2 class="panel-title" id="vipRulesTitle" data-i18n="vipRulesTitle">VIP upgrade rules</h2>
+        <button class="icon-button" type="button" data-close-vip-rules aria-label="Close"><i data-lucide="x"></i></button>
+      </div>
+      <div class="vip-rules-content">
+        <p class="vip-rules-intro" data-i18n="vipRulesDescription">Your VIP level is based on cumulative spending from confirmed orders.</p>
+        <div class="vip-rules-list" id="vipRulesList"></div>
+        <p class="vip-rules-note" data-i18n="vipRulesNote">Levels update after an order is confirmed. Cancelled or refunded orders do not count.</p>
+      </div>
+    </div>
+  </section>
 
   <section class="payment-modal" id="paymentModal" data-payment-backdrop hidden>
     <div class="payment-dialog" role="dialog" aria-modal="true" aria-labelledby="paymentTitle">
@@ -6274,6 +6423,12 @@
         vipPlatinum: "Platinum",
         vipDiamond: "Diamond",
         vipBlack: "Black Card",
+        vipViewRules: "View VIP upgrade rules",
+        vipRulesTitle: "VIP upgrade rules",
+        vipRulesDescription: "Your VIP level is based on cumulative spending from confirmed orders.",
+        vipRulesSpend: "Cumulative spend",
+        vipRulesCurrent: "Current",
+        vipRulesNote: "Levels update after an order is confirmed. Cancelled or refunded orders do not count.",
         loginToCheckout: "Sign in before checkout",
         backendNotReady: "Order service is not initialized. Run supabase-schema.sql first.",
         pendingOrder: "Pending confirmation",
@@ -6397,6 +6552,12 @@
         vipPlatinum: "白金",
         vipDiamond: "钻石",
         vipBlack: "黑卡",
+        vipViewRules: "查看 VIP 升级规则",
+        vipRulesTitle: "VIP 升级规则",
+        vipRulesDescription: "VIP 等级根据已确认订单的累计消费金额自动计算。",
+        vipRulesSpend: "累计消费",
+        vipRulesCurrent: "当前等级",
+        vipRulesNote: "订单确认后更新等级，已取消或退款的订单不计入累计消费。",
         loginToCheckout: "请先登录后再结账",
         backendNotReady: "订单数据库尚未初始化，请先运行 supabase-schema.sql",
         pendingOrder: "等待商家确认",
@@ -6938,6 +7099,47 @@
     function vipBadge(status, id = "") {
       const idAttribute = id ? ` id="${escapeHtml(id)}"` : "";
       return `<span class="vip-tier-badge ${status.tier.key}"${idAttribute}>${escapeHtml(vipTierLabel(status.tier))}</span>`;
+    }
+
+    function renderVipRules() {
+      const target = $("#vipRulesList");
+      if (!target) return;
+      const current = vipStatus(state.profile?.total_spent || 0).tier;
+      target.innerHTML = VIP_TIERS.map((tier) => {
+        const isCurrent = tier.key === current.key;
+        const threshold = new Intl.NumberFormat("en-NZ", {
+          style: "currency",
+          currency: "NZD",
+          maximumFractionDigits: 0
+        }).format(tier.minSpend);
+        return `
+          <div class="vip-rule-item${isCurrent ? " is-current" : ""}"${isCurrent ? ' aria-current="true"' : ""}>
+            <div class="vip-rule-level">
+              ${vipBadge({ tier })}
+              ${isCurrent ? `<span class="vip-rules-current">${escapeHtml(t("vipRulesCurrent"))}</span>` : ""}
+            </div>
+            <div class="vip-rule-threshold"><span>${escapeHtml(t("vipRulesSpend"))}</span><strong>${escapeHtml(threshold)}+</strong></div>
+          </div>`;
+      }).join("");
+    }
+
+    function openVipRules() {
+      const modal = $("#vipRulesModal");
+      if (!modal) return;
+      renderVipRules();
+      openVipRules.lastFocus = document.activeElement;
+      modal.hidden = false;
+      modal.setAttribute("aria-hidden", "false");
+      window.requestAnimationFrame(() => modal.querySelector("[data-close-vip-rules]")?.focus());
+    }
+
+    function closeVipRules() {
+      const modal = $("#vipRulesModal");
+      if (!modal || modal.hidden) return;
+      modal.hidden = true;
+      modal.setAttribute("aria-hidden", "true");
+      if (openVipRules.lastFocus instanceof HTMLElement) openVipRules.lastFocus.focus();
+      openVipRules.lastFocus = null;
     }
 
     function calculateSourcePricing(value) {
@@ -7677,8 +7879,10 @@
       $("#accountSpent").textContent = formatPrice(state.profile?.total_spent || 0);
       const accountVip = vipStatus(state.profile?.total_spent || 0);
       const accountVipBadge = $("#accountVipBadge");
-      accountVipBadge.className = `vip-tier-badge ${accountVip.tier.key}`;
-      accountVipBadge.textContent = vipTierLabel(accountVip.tier);
+      accountVipBadge.className = `vip-tier-badge ${accountVip.tier.key} account-vip-button`;
+      $("#accountVipLabel").textContent = `${vipTierLabel(accountVip.tier)} VIP`;
+      accountVipBadge.title = t("vipViewRules");
+      accountVipBadge.setAttribute("aria-label", t("vipViewRules"));
       $("#accountVipMessage").textContent = vipProgressText(accountVip);
      $("#accountVipAmount").textContent = accountVip.nextTier
        ? `${formatPrice(accountVip.spent)} / ${formatPrice(accountVip.nextTier.minSpend)}`
@@ -10213,6 +10417,7 @@
       renderCart();
       renderSearch();
       renderAccount();
+      renderVipRules();
       renderCustomerVouchers();
       applyStoreDesign();
       renderAdmin();
@@ -10250,6 +10455,11 @@
 
       if (clickedElement.matches("[data-order-detail-backdrop]") || clickedElement.closest("[data-close-order-detail]")) {
         closeOrderDetail();
+        return;
+      }
+
+      if (clickedElement.matches("[data-vip-rules-backdrop]") || clickedElement.closest("[data-close-vip-rules]")) {
+        closeVipRules();
         return;
       }
 
@@ -10350,6 +10560,7 @@
       if (target.matches("[data-open-menu]")) openPanel("menu");
       if (target.matches("[data-open-account]")) openPanel("account");
       if (target.matches("[data-open-vouchers]")) openPanel("vouchers");
+      if (target.matches("[data-open-vip-rules]")) openVipRules();
       if (target.matches("[data-close-panels]")) closePanels();
       if (target.matches("[data-close-payment]")) closePaymentModal();
       if (target.matches("[data-start-payment]")) startStripeCheckout();
@@ -10726,6 +10937,10 @@
       }
       if (event.key === "Escape" && !$("#orderDetailModal").hidden) {
         closeOrderDetail();
+        return;
+      }
+      if (event.key === "Escape" && !$("#vipRulesModal").hidden) {
+        closeVipRules();
         return;
       }
       if (event.key === "Escape" && !$("#customerDetailModal").hidden) {
