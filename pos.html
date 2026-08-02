@@ -51,10 +51,10 @@
     .voucher-option span { color:var(--muted); font-size:12px; margin-top:2px; }
     .voucher-option b { color:var(--green); white-space:nowrap; }
     .discount-row { color:var(--green); }
-    .note-input { width:100%; height:34px; margin-top:7px; border:1px solid var(--line); border-radius:5px; padding:0 10px; font:inherit; font-size:13px; }
+    .note-input { width:100%; height:28px; margin-top:6px; border:1px solid var(--line); border-radius:4px; padding:0 8px; font:inherit; font-size:11px; }
     .order-note { display:grid; gap:6px; margin-top:16px; }
     .order-note label { color:var(--muted); font-size:13px; font-weight:700; }
-    .order-note input { width:100%; height:38px; border:1px solid var(--line); border-radius:6px; padding:0 10px; font:inherit; }
+    .order-note textarea { width:100%; min-height:76px; border:1px solid var(--line); border-radius:6px; padding:9px 10px; resize:vertical; font:inherit; line-height:1.4; }
   </style>
 </head>
 <body>
@@ -93,7 +93,7 @@
       </section>
       <aside class="summary">
         <h2 id="summaryTitle">Order summary</h2><div class="totals"><div class="total-row"><span id="lineLabel">Line items</span><strong id="lineCount">0</strong></div><div class="total-row"><span id="itemLabel">Quantity</span><strong id="itemCount">0</strong></div><div class="total-row"><span id="subtotalLabel">Subtotal</span><strong id="subtotal">NZ$0.00</strong></div><div class="total-row discount-row hidden" id="discountRow"><span id="discountLabel">Voucher discount</span><strong id="discount">-NZ$0.00</strong></div><div class="total-row grand"><span id="dueLabel">Due</span><strong id="total">NZ$0.00</strong></div></div>
-        <div class="order-note"><label for="orderNote" id="orderNoteLabel">Order note</label><input id="orderNote" type="text" maxlength="1000" placeholder="Add a note for this order"></div>
+        <div class="order-note"><label for="orderNote" id="orderNoteLabel">Order note</label><textarea id="orderNote" rows="3" maxlength="1000" placeholder="Add a note for this order"></textarea></div>
         <div class="last-order hidden" id="lastOrder"></div><div class="print-controls"><label class="auto-print"><input id="autoPrint" type="checkbox" checked><span id="autoPrintText">Print receipt automatically</span></label><button class="secondary hidden" id="reprintBtn" type="button"><i data-lucide="printer"></i><span id="reprintText">Reprint last receipt</span></button></div><p class="summary-note" id="summaryNote">Inventory is deducted only after the order is completed successfully. The order appears in the web admin immediately.</p>
         <button class="primary complete" id="completeBtn" type="button" disabled><i data-lucide="circle-check-big"></i><span id="completeText">Complete order</span></button>
       </aside>
