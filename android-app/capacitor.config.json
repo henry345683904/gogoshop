@@ -3,7 +3,11 @@
   "appName": "GO GO SHOP",
   "webDir": "www",
   "server": {
-    "url": "https://henry345683904.github.io/gogoshop/?app=1",
+    "url": "https://gogoshop.nz/?app=1",
+    "allowNavigation": [
+      "gogoshop.nz",
+      "www.gogoshop.nz"
+    ],
     "cleartext": false
   },
   "android": {
