@@ -9243,6 +9243,7 @@
         const actions = [
           canEdit ? `<button class="button" type="button" data-edit-order="${order.id}"><i data-lucide="pencil"></i> Edit</button>` : "",
           canConfirm ? `<button class="button" type="button" data-confirm-order="${order.id}"><i data-lucide="check"></i> Confirm</button>` : "",
+          `<button class="button ghost" type="button" data-print-order="${escapeHtml(order.id)}" title="${state.lang === "zh" ? "重新打印小票" : "Reprint Receipt"}"><i data-lucide="printer"></i> ${state.lang === "zh" ? "打印小票" : "Print Receipt"}</button>`,
           order.status !== "pending" ? `<span class="muted">${order.confirmed_at ? new Date(order.confirmed_at).toLocaleDateString("en-NZ") : "-"}</span>` : "",
           `<button class="button ghost" type="button" data-delete-order="${order.id}" title="Delete order"><i data-lucide="trash-2"></i></button>`
         ].filter(Boolean).join(" ");
@@ -9278,6 +9279,39 @@
         `;
       }).join("") : `<tr><td colspan="6"><div class="empty-state">Order recycle bin is empty</div></td></tr>`;
       refreshIcons();
+    }
+
+    function printAdminOrderReceipt(orderId) {
+      const order = state.adminOrders.find((item) => item.id === orderId);
+      if (!order) {
+        showToast(state.lang === "zh" ? "找不到该订单" : "Order not found");
+        return;
+      }
+      const isChinese = state.lang === "zh";
+      const locale = isChinese ? "zh-CN" : "en-NZ";
+      const items = order.order_items || [];
+      const total = Number(order.total || 0);
+      const discount = Number(order.discount_amount || 0);
+      const subtotal = Number(order.subtotal ?? total + discount);
+      const gstAmount = Math.round(total * 15 / 115 * 100) / 100;
+      const customer = order.profiles || {};
+      const customerName = customer.full_name || customer.email || (isChinese ? "到店顾客" : "Walk-in Customer");
+      const receiptWindow = window.open("", "_blank", "width=420,height=720");
+      if (!receiptWindow) {
+        showToast(isChinese ? "浏览器阻止了打印窗口，请允许弹出窗口" : "Allow pop-ups to print the receipt");
+        return;
+      }
+      const itemLines = items.map((item) => {
+        const quantity = Number(item.quantity || 0);
+        const unitPrice = Number(item.unit_price || 0);
+        return `<div class="line"><strong>${escapeHtml(item.product_title || "Item")}</strong><span>${quantity} x ${formatPrice(unitPrice)} = ${formatPrice(quantity * unitPrice)}</span>${item.item_note ? `<small>${isChinese ? "备注" : "Note"}: ${escapeHtml(item.item_note)}</small>` : ""}</div>`;
+      }).join("");
+      const discountBlock = discount > 0 ? `<div class="meta"><span>${isChinese ? "原价" : "Subtotal"}: ${formatPrice(subtotal)}</span><span>${isChinese ? "代金券" : "Voucher"} ${escapeHtml(order.voucher_code || "")}: -${formatPrice(discount)}</span></div>` : "";
+      const orderNoteBlock = order.order_note ? `<div class="meta"><span>${isChinese ? "订单备注" : "Order Note"}: ${escapeHtml(order.order_note)}</span></div>` : "";
+      receiptWindow.document.write(`<!doctype html><html lang="${isChinese ? "zh-CN" : "en"}"><head><meta charset="utf-8"><title>${escapeHtml(order.order_number)} - GO GO SHOP</title><style>@page{size:55mm auto;margin:2mm}*{box-sizing:border-box}html,body{width:55mm;margin:0;padding:0;color:#000;background:#fff;font-family:Arial,"Microsoft YaHei",sans-serif;font-size:10px;line-height:1.35}.receipt{width:51mm;padding:1mm;overflow-wrap:anywhere}.head{text-align:center;border-bottom:1px dashed #000;padding-bottom:6px}.head strong{display:block;font-size:15px}.meta{display:grid;gap:2px;padding:6px 0;border-bottom:1px dashed #000}.line{padding:5px 0;border-bottom:1px dotted #777}.line strong,.line span,.line small{display:block}.line span{text-align:right}.line small{margin-top:2px}.total{display:flex;justify-content:space-between;font-size:14px;font-weight:700;padding:8px 0;border-bottom:1px dashed #000}.tax{display:grid;gap:2px;padding:6px 0;border-bottom:1px dashed #000}.tax span{display:flex;justify-content:space-between}.policy{padding:7px 0;border-bottom:1px dashed #000}.policy strong{display:block;margin-bottom:3px}.footer{text-align:center;padding-top:8px}</style></head><body><main class="receipt"><div class="head"><strong>GO GO SHOP</strong><span>${isChinese ? "销售小票" : "SALES RECEIPT"}</span></div><div class="meta"><span>${isChinese ? "订单号" : "Order"}: ${escapeHtml(order.order_number)}</span><span>${isChinese ? "时间" : "Date"}: ${escapeHtml(new Date(order.confirmed_at || order.created_at).toLocaleString(locale))}</span><span>${isChinese ? "顾客" : "Customer"}: ${escapeHtml(customerName)}</span></div>${itemLines}${discountBlock}${orderNoteBlock}<div class="total"><span>${isChinese ? "合计" : "TOTAL"}</span><span>${formatPrice(total)}</span></div><div class="tax"><strong>${isChinese ? "价格包含 GST 15%" : "Prices Include GST 15%"}</strong><span><span>${isChinese ? "其中 GST 税额" : "GST Included"}</span><b>${formatPrice(gstAmount)}</b></span></div><div class="policy"><strong>${isChinese ? "退换货政策" : "Returns & Exchanges"}</strong><span>${isChinese ? "7 天内，非人为损坏可凭小票退换货。" : "Within 7 days, items not damaged by misuse may be returned or exchanged with this receipt."}</span></div><div class="footer">${isChinese ? "谢谢惠顾" : "Thank You"}</div></main></body></html>`);
+      receiptWindow.document.close();
+      receiptWindow.addEventListener("afterprint", () => receiptWindow.close(), { once: true });
+      setTimeout(() => { receiptWindow.focus(); receiptWindow.print(); }, 250);
     }
 
     function customerStats(customer) {
@@ -10837,6 +10871,7 @@
       if (target.matches("[data-dismiss-order-alert]")) dismissAdminOrderAlert();
       if (target.matches("[data-confirm-order]")) confirmSupabaseOrder(target.dataset.confirmOrder);
       if (target.matches("[data-edit-order]")) editSupabaseOrder(target.dataset.editOrder);
+      if (target.matches("[data-print-order]")) printAdminOrderReceipt(target.dataset.printOrder);
       if (target.matches("[data-delete-order]")) deleteSupabaseOrder(target.dataset.deleteOrder);
       if (target.matches("[data-restore-order]")) restoreSupabaseOrder(target.dataset.restoreOrder);
       if (target.matches("[data-toggle-order-trash]")) toggleOrderTrash();
