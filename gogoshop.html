@@ -9465,11 +9465,6 @@
       const hasCustomer = !String(order.order_number || "").startsWith("POS-") || (customer.is_admin !== true && order.user_id !== state.session?.user?.id);
       const customerName = customer.full_name || customer.email || (isChinese ? "客户" : "Customer");
       const customerBlock = hasCustomer ? `<span>${isChinese ? "客户" : "Customer"}: ${escapeHtml(customerName)}</span>${customer.email ? `<span>${isChinese ? "邮箱" : "Email"}: ${escapeHtml(customer.email)}</span>` : ""}${customer.customer_barcode ? `<span>${isChinese ? "客户号" : "Customer ID"}: ${escapeHtml(customer.customer_barcode)}</span>` : ""}<span>${isChinese ? "本次积分" : "Points Earned"}: +${Number(order.points_awarded || 0)}</span>` : "";
-      const receiptWindow = window.open("", "_blank", "width=420,height=720");
-      if (!receiptWindow) {
-        showToast(isChinese ? "浏览器阻止了打印窗口，请允许弹出窗口" : "Allow pop-ups to print the receipt");
-        return;
-      }
       const itemLines = items.map((item) => {
         const quantity = Number(item.quantity || 0);
         const unitPrice = Number(item.unit_price || 0);
@@ -9477,10 +9472,22 @@
       }).join("");
       const discountBlock = discount > 0 ? `<div class="meta"><span>${isChinese ? "原价" : "Subtotal"}: ${formatPrice(subtotal)}</span><span>${isChinese ? "代金券" : "Voucher"} ${escapeHtml(order.voucher_code || "")}: -${formatPrice(discount)}</span></div>` : "";
       const orderNoteBlock = order.order_note ? `<div class="meta"><span>${isChinese ? "订单备注" : "Order Note"}: ${escapeHtml(order.order_note)}</span></div>` : "";
-      receiptWindow.document.write(`<!doctype html><html lang="${isChinese ? "zh-CN" : "en"}"><head><meta charset="utf-8"><title>${escapeHtml(order.order_number)} - GO GO SHOP</title><style>@page{size:55mm auto;margin:2mm}*{box-sizing:border-box}html,body{width:55mm;margin:0;padding:0;color:#000;background:#fff;font-family:Arial,"Microsoft YaHei",sans-serif;font-size:10px;line-height:1.35}.receipt{width:51mm;padding:1mm;overflow-wrap:anywhere}.head{text-align:center;border-bottom:1px dashed #000;padding-bottom:6px}.head strong{display:block;font-size:15px}.meta{display:grid;gap:2px;padding:6px 0;border-bottom:1px dashed #000}.line{padding:5px 0;border-bottom:1px dotted #777}.line strong,.line span,.line small{display:block}.line span{text-align:right}.line small{margin-top:2px}.total{display:flex;justify-content:space-between;font-size:14px;font-weight:700;padding:8px 0;border-bottom:1px dashed #000}.tax{display:grid;gap:2px;padding:6px 0;border-bottom:1px dashed #000}.tax span{display:flex;justify-content:space-between}.policy{padding:7px 0;border-bottom:1px dashed #000}.policy strong{display:block;margin-bottom:3px}.footer{text-align:center;padding-top:8px}</style></head><body><main class="receipt"><div class="head"><strong>GO GO SHOP</strong><span>${isChinese ? "销售小票" : "SALES RECEIPT"}</span></div><div class="meta"><span>${isChinese ? "订单号" : "Order"}: ${escapeHtml(order.order_number)}</span><span>${isChinese ? "时间" : "Date"}: ${escapeHtml(new Date(order.confirmed_at || order.created_at).toLocaleString(locale))}</span>${customerBlock}</div>${itemLines}${discountBlock}${orderNoteBlock}<div class="total"><span>${isChinese ? "合计" : "TOTAL"}</span><span>${formatPrice(total)}</span></div><div class="tax"><strong>${isChinese ? "价格包含 GST 15%" : "Prices Include GST 15%"}</strong><span><span>${isChinese ? "其中 GST 税额" : "GST Included"}</span><b>${formatPrice(gstAmount)}</b></span></div><div class="policy"><strong>${isChinese ? "退换货政策" : "Returns & Exchanges"}</strong><span>${isChinese ? "7 天内，非人为损坏可凭小票退换货。" : "Within 7 days, items not damaged by misuse may be returned or exchanged with this receipt."}</span></div><div class="footer">${isChinese ? "谢谢惠顾" : "Thank You"}</div></main></body></html>`);
-      receiptWindow.document.close();
-      receiptWindow.addEventListener("afterprint", () => receiptWindow.close(), { once: true });
-      setTimeout(() => { receiptWindow.focus(); receiptWindow.print(); }, 250);
+      let receiptPrint = document.querySelector("#adminReceiptPrint");
+      if (!receiptPrint) {
+        receiptPrint = document.createElement("main");
+        receiptPrint.id = "adminReceiptPrint";
+        document.body.appendChild(receiptPrint);
+      }
+      if (!document.querySelector("#adminReceiptPrintStyle")) {
+        const printStyle = document.createElement("style");
+        printStyle.id = "adminReceiptPrintStyle";
+        printStyle.textContent = `#adminReceiptPrint{display:none}@page{size:55mm auto;margin:2mm}@media print{html,body{width:55mm!important;min-width:0!important;margin:0!important;padding:0!important;background:#fff!important}body.admin-receipt-printing>*:not(#adminReceiptPrint){display:none!important}body.admin-receipt-printing #adminReceiptPrint{display:block!important;width:51mm!important;padding:1mm!important;color:#000;background:#fff;font-family:Arial,"Microsoft YaHei",sans-serif;font-size:10px;line-height:1.35;overflow-wrap:anywhere}#adminReceiptPrint .head{text-align:center;border-bottom:1px dashed #000;padding-bottom:6px}#adminReceiptPrint .head strong{display:block;font-size:15px}#adminReceiptPrint .meta{display:grid;gap:2px;padding:6px 0;border-bottom:1px dashed #000}#adminReceiptPrint .line{padding:5px 0;border-bottom:1px dotted #777}#adminReceiptPrint .line strong,#adminReceiptPrint .line span,#adminReceiptPrint .line small{display:block}#adminReceiptPrint .line span{text-align:right}#adminReceiptPrint .line small{margin-top:2px}#adminReceiptPrint .total{display:flex;justify-content:space-between;font-size:14px;font-weight:700;padding:8px 0;border-bottom:1px dashed #000}#adminReceiptPrint .tax{display:grid;gap:2px;padding:6px 0;border-bottom:1px dashed #000}#adminReceiptPrint .tax span{display:flex;justify-content:space-between}#adminReceiptPrint .policy{padding:7px 0;border-bottom:1px dashed #000}#adminReceiptPrint .policy strong{display:block;margin-bottom:3px}#adminReceiptPrint .footer{text-align:center;padding-top:8px}}`;
+        document.head.appendChild(printStyle);
+      }
+      receiptPrint.innerHTML = `<div class="head"><strong>GO GO SHOP</strong><span>${isChinese ? "销售小票" : "SALES RECEIPT"}</span></div><div class="meta"><span>${isChinese ? "订单号" : "Order"}: ${escapeHtml(order.order_number)}</span><span>${isChinese ? "时间" : "Date"}: ${escapeHtml(new Date(order.confirmed_at || order.created_at).toLocaleString(locale))}</span>${customerBlock}</div>${itemLines}${discountBlock}${orderNoteBlock}<div class="total"><span>${isChinese ? "合计" : "TOTAL"}</span><span>${formatPrice(total)}</span></div><div class="tax"><strong>${isChinese ? "价格包含 GST 15%" : "Prices Include GST 15%"}</strong><span><span>${isChinese ? "其中 GST 税额" : "GST Included"}</span><b>${formatPrice(gstAmount)}</b></span></div><div class="policy"><strong>${isChinese ? "退换货政策" : "Returns & Exchanges"}</strong><span>${isChinese ? "7 天内，非人为损坏可凭小票退换货。" : "Within 7 days, items not damaged by misuse may be returned or exchanged with this receipt."}</span></div><div class="footer">${isChinese ? "谢谢惠顾" : "Thank You"}</div>`;
+      document.body.classList.add("admin-receipt-printing");
+      window.addEventListener("afterprint", () => document.body.classList.remove("admin-receipt-printing"), { once: true });
+      setTimeout(() => window.print(), 50);
     }
 
     function customerStats(customer) {
