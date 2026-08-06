@@ -280,6 +280,157 @@
       font-size: 15px;
     }
 
+    .desktop-nav-menu {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .desktop-nav-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      border: 0;
+      padding: 0;
+      background: transparent;
+      color: inherit;
+      font: inherit;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    .desktop-nav-item svg,
+    .desktop-nav-popover-item svg,
+    .desktop-nav-about-title svg {
+      width: 16px;
+      height: 16px;
+      flex: 0 0 auto;
+      stroke-width: 1.8;
+    }
+
+    .desktop-nav-item .desktop-nav-chevron {
+      width: 14px;
+      height: 14px;
+      transition: transform 160ms ease;
+    }
+
+    .desktop-nav-item[aria-expanded="true"] .desktop-nav-chevron {
+      transform: rotate(180deg);
+    }
+
+    .desktop-nav-popover {
+      position: absolute;
+      top: calc(100% - 8px);
+      left: -10px;
+      z-index: 65;
+      width: 310px;
+      max-height: min(65vh, 560px);
+      overflow: auto;
+      overscroll-behavior: contain;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 8px;
+      background: var(--store-bg, #fff);
+      color: var(--store-text, var(--ink));
+      box-shadow: 0 18px 45px rgba(0, 0, 0, 0.16);
+    }
+
+    .desktop-nav-popover[hidden] {
+      display: none;
+    }
+
+    .desktop-nav-popover-head {
+      padding: 8px 10px 9px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .desktop-nav-category-list {
+      display: grid;
+      gap: 2px;
+    }
+
+    .desktop-nav-category-list .menu-category-button {
+      min-height: 44px;
+      border-radius: 5px;
+      padding: 0 10px;
+    }
+
+    .desktop-nav-category-list .menu-category-button:hover,
+    .desktop-nav-category-list .menu-category-button.active {
+      background: var(--store-soft);
+    }
+
+    .desktop-nav-more-popover {
+      left: auto;
+      right: -10px;
+      width: 340px;
+    }
+
+    .desktop-nav-about {
+      display: grid;
+      gap: 7px;
+      margin-bottom: 5px;
+      border-bottom: 1px solid var(--line);
+      padding: 10px 10px 13px;
+    }
+
+    .desktop-nav-about-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 750;
+    }
+
+    .desktop-nav-about p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 400;
+      line-height: 1.55;
+    }
+
+    .desktop-nav-popover-item {
+      display: flex;
+      width: 100%;
+      min-height: 46px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      border: 0;
+      border-radius: 5px;
+      padding: 0 10px;
+      background: transparent;
+      color: inherit;
+      font: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .desktop-nav-popover-item > span {
+      display: flex;
+      min-width: 0;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .desktop-nav-popover-item > svg:last-child {
+      color: var(--muted);
+    }
+
+    .desktop-nav-popover-item:hover {
+      background: var(--store-soft);
+    }
+
+    .desktop-nav-admin[hidden] {
+      display: none;
+    }
+
     .header-actions {
       display: flex;
       gap: 16px;
@@ -4597,21 +4748,15 @@
       }
 
       .desktop-header .nav-links {
-        gap: 30px;
+        gap: 18px;
       }
 
-      .desktop-header .nav-links a {
+      .desktop-header .desktop-nav-item {
         position: relative;
-        display: inline-flex;
         min-height: 76px;
-        align-items: center;
       }
 
-      .desktop-header .nav-links a[hidden] {
-        display: none;
-      }
-
-      .desktop-header .nav-links a::after {
+      .desktop-header .desktop-nav-item::after {
         content: "";
         position: absolute;
         right: 0;
@@ -4624,8 +4769,9 @@
         transition: opacity 160ms ease, transform 160ms ease;
       }
 
-      .desktop-header .nav-links a:hover::after,
-      .desktop-header .nav-links a:focus-visible::after {
+      .desktop-header .desktop-nav-item:hover::after,
+      .desktop-header .desktop-nav-item:focus-visible::after,
+      .desktop-header .desktop-nav-item[aria-expanded="true"]::after {
         opacity: 1;
         transform: scaleX(1);
       }
@@ -4747,6 +4893,16 @@
     @media (min-width: 1400px) {
       .product-grid {
         grid-template-columns: repeat(5, minmax(0, 1fr));
+      }
+    }
+
+    @media (min-width: 981px) and (max-width: 1120px) {
+      .desktop-header .nav-links {
+        gap: 14px;
+      }
+
+      .desktop-header .desktop-nav-item > svg:first-child {
+        display: none;
       }
     }
 
@@ -5519,9 +5675,41 @@
       <div class="desktop-header" aria-label="Store navigation">
         <a class="brand" href="#home" data-design-store-brand>GO GO SHOP</a>
         <nav class="nav-links">
-          <a href="#home" data-i18n="navHome">Home</a>
-          <a href="#catalog" data-i18n="navCatalog">Catalog</a>
-          <a href="#contact" data-i18n="navContact" hidden>Contact</a>
+          <a class="desktop-nav-item" href="#home" data-close-panels>
+            <i data-lucide="home"></i><span data-i18n="navHome">Home</span>
+          </a>
+          <div class="desktop-nav-menu" data-desktop-nav-menu>
+            <button class="desktop-nav-item" type="button" data-desktop-nav-toggle="categories" aria-expanded="false" aria-controls="desktopCategoriesMenu">
+              <i data-lucide="layout-grid"></i><span data-i18n="menuCategories">Categories</span><i class="desktop-nav-chevron" data-lucide="chevron-down"></i>
+            </button>
+            <div class="desktop-nav-popover" id="desktopCategoriesMenu" data-desktop-nav-content="categories" hidden>
+              <div class="desktop-nav-popover-head" data-i18n="menuCategories">Categories</div>
+              <div class="desktop-nav-category-list" data-menu-categories></div>
+            </div>
+          </div>
+          <button class="desktop-nav-item" type="button" data-open-vouchers>
+            <i data-lucide="ticket-percent"></i><span data-i18n="vouchersTitle">Vouchers</span>
+          </button>
+          <div class="desktop-nav-menu" data-desktop-nav-menu>
+            <button class="desktop-nav-item" type="button" data-desktop-nav-toggle="more" aria-expanded="false" aria-controls="desktopMoreMenu">
+              <i data-lucide="ellipsis"></i><span data-i18n="navMore">More</span><i class="desktop-nav-chevron" data-lucide="chevron-down"></i>
+            </button>
+            <div class="desktop-nav-popover desktop-nav-more-popover" id="desktopMoreMenu" data-desktop-nav-content="more" hidden>
+              <section class="desktop-nav-about">
+                <div class="desktop-nav-about-title"><i data-lucide="info"></i><span data-i18n="menuAbout">About Us</span></div>
+                <p data-i18n="aboutCompanyText">GO GO SHOP is a New Zealand online store for practical phone accessories, small electronics and everyday gifts.</p>
+              </section>
+              <button class="desktop-nav-popover-item" type="button" data-open-contact>
+                <span><i data-lucide="mail"></i><span data-i18n="menuContact">Contact Us</span></span><i data-lucide="chevron-right"></i>
+              </button>
+              <a class="desktop-nav-popover-item" href="downloads/GO-GO-SHOP.apk?v=8" download data-close-panels>
+                <span><i data-lucide="smartphone"></i><span data-i18n="androidApp">App For Android</span></span><i data-lucide="download"></i>
+              </a>
+              <button class="desktop-nav-popover-item desktop-nav-admin" type="button" data-open-admin data-admin-menu-link hidden>
+                <span><i data-lucide="shield-check"></i><span data-i18n="adminDashboard">Admin Dashboard</span></span><i data-lucide="chevron-right"></i>
+              </button>
+            </div>
+          </div>
         </nav>
         <div class="header-actions">
           <div class="language-toggle" data-language-toggle aria-label="Language">
@@ -6621,6 +6809,7 @@
         navHome: "Home",
         navCatalog: "Catalog",
         navContact: "Contact",
+        navMore: "More",
         heroTitle: "Browse our latest products",
         shopAll: "Shop all",
         productsTitle: "Products",
@@ -6750,6 +6939,7 @@
         navHome: "首页",
         navCatalog: "商品",
         navContact: "联系",
+        navMore: "更多",
         heroTitle: "浏览我们的最新商品",
         shopAll: "查看全部",
         productsTitle: "商品",
@@ -7901,9 +8091,9 @@
     }
 
     function renderMenuCategories() {
-      const list = $("[data-menu-categories]");
-      if (!list) return;
-      list.innerHTML = categories().map((category) => {
+      const lists = $$("[data-menu-categories]");
+      if (!lists.length) return;
+      const markup = categories().map((category) => {
         const definition = storefrontCategories.find((item) => item.key === category);
         const icon = category === "All" ? "layout-grid" : (definition?.icon || "package");
         const count = state.products.filter((product) => (
@@ -7917,6 +8107,7 @@
           </button>
         `;
       }).join("");
+      lists.forEach((list) => { list.innerHTML = markup; });
     }
 
     function renderProducts() {
@@ -8184,9 +8375,10 @@
     }
 
     function updateAdminMenuVisibility() {
-      const adminMenuLink = $("[data-admin-menu-link]");
-      if (!adminMenuLink) return;
-      adminMenuLink.hidden = !(state.session?.user && state.profile?.is_admin === true);
+      const showAdminLink = Boolean(state.session?.user && state.profile?.is_admin === true);
+      $$('[data-admin-menu-link]').forEach((adminMenuLink) => {
+        adminMenuLink.hidden = !showAdminLink;
+      });
     }
 
     function closeOrderDetail() {
@@ -9147,6 +9339,27 @@
       showToast(t("paymentCancelled"));
     }
 
+    function closeDesktopNavMenus(exceptName = "") {
+      $$('[data-desktop-nav-toggle]').forEach((button) => {
+        const name = button.dataset.desktopNavToggle;
+        const keepOpen = Boolean(exceptName && name === exceptName);
+        button.setAttribute("aria-expanded", String(keepOpen));
+        const content = $(`[data-desktop-nav-content="${name}"]`);
+        if (content) content.hidden = !keepOpen;
+      });
+    }
+
+    function toggleDesktopNavMenu(name) {
+      const button = $(`[data-desktop-nav-toggle="${name}"]`);
+      if (!button) return;
+      const open = button.getAttribute("aria-expanded") !== "true";
+      closeDesktopNavMenus(open ? name : "");
+      if (open) {
+        renderMenuCategories();
+        refreshIcons();
+      }
+    }
+
     function toggleMenuSection(name) {
       const button = $(`[data-menu-toggle="${name}"]`);
       const content = $(`[data-menu-content="${name}"]`);
@@ -9198,6 +9411,7 @@
     }
 
     function closePanels(removeBackdrop = true) {
+      closeDesktopNavMenus();
       $("#cartDrawer").classList.remove("open");
       $("#menuDrawer").classList.remove("open");
       $("#accountDrawer").classList.remove("open");
@@ -10847,6 +11061,14 @@
       const clickedElement = event.target instanceof Element ? event.target : event.target.parentElement;
       if (!clickedElement) return;
 
+      const desktopNavToggle = clickedElement.closest("[data-desktop-nav-toggle]");
+      if (desktopNavToggle) {
+        event.preventDefault();
+        toggleDesktopNavMenu(desktopNavToggle.dataset.desktopNavToggle);
+        return;
+      }
+      if (!clickedElement.closest("[data-desktop-nav-menu]")) closeDesktopNavMenus();
+
       const swipedMedia = clickedElement.closest(".product-media");
       if (swipedMedia?.dataset.gallerySwiped === "true") {
         event.preventDefault();
@@ -11362,6 +11584,10 @@
       }
       if (event.key === "Escape" && !$("#customerDetailModal").hidden) {
         closeCustomerDetail();
+        return;
+      }
+      if (event.key === "Escape" && $("[data-desktop-nav-toggle][aria-expanded=\"true\"]")) {
+        closeDesktopNavMenus();
         return;
       }
       if (!$("#productDetail").hidden && !event.target.matches("input, textarea, select")) {
