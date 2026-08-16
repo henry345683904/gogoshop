@@ -3500,6 +3500,65 @@
       font-size: 12px;
     }
 
+    .product-barcode-scan-control {
+      display: grid;
+      min-width: 0;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .product-barcode-scan-control .button {
+      min-height: 42px;
+      padding: 0 13px;
+      white-space: nowrap;
+    }
+
+    .product-barcode-scan-control.is-scanning input {
+      border-color: #2c6ecb;
+      box-shadow: 0 0 0 1px #2c6ecb;
+    }
+
+    .product-barcode-scan-control.is-scanning .button {
+      border-color: #2c6ecb;
+      background: #eef4ff;
+      color: #174ea6;
+    }
+
+    .product-barcode-scan-control.is-success input {
+      border-color: #2f855a;
+    }
+
+    .product-barcode-scan-control.is-error input {
+      border-color: #c5280c;
+      box-shadow: 0 0 0 1px #c5280c;
+    }
+
+    .product-barcode-scan-status {
+      display: block;
+      min-height: 18px;
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 500;
+      line-height: 1.45;
+    }
+
+    .product-barcode-scan-status[data-state="scanning"] {
+      color: #174ea6;
+      font-weight: 700;
+    }
+
+    .product-barcode-scan-status[data-state="success"] {
+      color: #216e45;
+      font-weight: 700;
+    }
+
+    .product-barcode-scan-status[data-state="error"] {
+      color: #b42318;
+      font-weight: 700;
+    }
+
     .shopify-editor-card > .field + .field,
     .shopify-editor-card > .form-row + .field,
     .shopify-editor-card > .field + .form-row,
@@ -6410,10 +6469,14 @@
                   <span>SKU</span>
                   <input type="text" name="sku" autocomplete="off">
                 </label>
-                <label class="field">
-                  <span>条形码</span>
-                  <input type="text" name="barcode" autocomplete="off">
-                </label>
+                <div class="field">
+                  <label for="productBarcodeInput">条形码</label>
+                  <div class="product-barcode-scan-control" data-product-barcode-control>
+                    <input id="productBarcodeInput" type="text" name="barcode" autocomplete="off" autocapitalize="off" spellcheck="false" data-product-barcode-input>
+                    <button class="button ghost" type="button" data-scan-product-barcode aria-pressed="false"><i data-lucide="scan-line"></i> <span data-product-barcode-scan-label>扫码添加</span></button>
+                  </div>
+                  <small class="product-barcode-scan-status" data-product-barcode-status data-state="idle" aria-live="polite">未添加条码</small>
+                </div>
               </div>
               <label class="shopify-check-row">
                 <span>跟踪数量</span>
@@ -10545,11 +10608,95 @@
       const imageFile = $("[data-product-image-file]", form);
       if (imageFile) imageFile.value = "";
       $("#productFormTitle").textContent = "添加商品";
+      resetProductBarcodeScanner();
       updateProductEditorPreview();
     }
 
     let productMediaRenderSignature = null;
     let productMediaDragIndex = null;
+    let productBarcodeScanTimer = null;
+
+    function normalizeProductBarcode(value) {
+      return String(value || "").replace(/[\r\n\t]/g, "").trim();
+    }
+
+    function productBarcodeConflict(value, currentProductId = "") {
+      const normalized = normalizeProductBarcode(value).toLowerCase();
+      if (!normalized) return null;
+      return [...state.products, ...state.deletedProducts].find((product) => (
+        product.id !== currentProductId
+        && normalizeProductBarcode(product.barcode).toLowerCase() === normalized
+      )) || null;
+    }
+
+    function setProductBarcodeScanState(type, message) {
+      const form = $("[data-product-form]");
+      const control = $("[data-product-barcode-control]", form);
+      const status = $("[data-product-barcode-status]", form);
+      const button = $("[data-scan-product-barcode]", form);
+      const label = $("[data-product-barcode-scan-label]", form);
+      if (!control || !status || !button || !label) return;
+      control.classList.remove("is-scanning", "is-success", "is-error");
+      if (type === "scanning") control.classList.add("is-scanning");
+      if (type === "success") control.classList.add("is-success");
+      if (type === "error") control.classList.add("is-error");
+      control.dataset.scanActive = type === "scanning" ? "true" : "false";
+      button.setAttribute("aria-pressed", type === "scanning" ? "true" : "false");
+      status.dataset.state = type;
+      status.textContent = message;
+      const barcode = normalizeProductBarcode(form?.elements.namedItem("barcode")?.value);
+      label.textContent = type === "scanning" ? "等待扫码" : barcode ? "重新扫描" : "扫码添加";
+    }
+
+    function resetProductBarcodeScanner() {
+      window.clearTimeout(productBarcodeScanTimer);
+      productBarcodeScanTimer = null;
+      const input = $("[data-product-barcode-input]");
+      if (!input) return;
+      input.setCustomValidity("");
+      const barcode = normalizeProductBarcode(input.value);
+      setProductBarcodeScanState("idle", barcode ? `当前条码：${barcode}` : "未添加条码");
+    }
+
+    function completeProductBarcodeScan(input = $("[data-product-barcode-input]")) {
+      window.clearTimeout(productBarcodeScanTimer);
+      productBarcodeScanTimer = null;
+      if (!input) return false;
+      const barcode = normalizeProductBarcode(input.value);
+      const currentProductId = String(input.form?.elements.namedItem("id")?.value || "");
+      input.value = barcode;
+      if (!barcode) {
+        input.setCustomValidity("请扫描或输入条码");
+        setProductBarcodeScanState("error", "没有识别到条码，请重新扫描");
+        input.focus({ preventScroll: true });
+        return false;
+      }
+      const conflict = productBarcodeConflict(barcode, currentProductId);
+      if (conflict) {
+        const message = state.lang === "zh"
+          ? `此条码已绑定：${conflict.title}`
+          : `Barcode already assigned to ${conflict.title}`;
+        input.setCustomValidity(message);
+        setProductBarcodeScanState("error", message);
+        input.focus({ preventScroll: true });
+        input.select();
+        return false;
+      }
+      input.setCustomValidity("");
+      setProductBarcodeScanState("success", state.lang === "zh" ? "条码已识别，保存后生效" : "Barcode captured; save to apply");
+      return true;
+    }
+
+    function startProductBarcodeScan() {
+      const input = $("[data-product-barcode-input]");
+      if (!input || $("#productEditorModal")?.hidden) return;
+      window.clearTimeout(productBarcodeScanTimer);
+      productBarcodeScanTimer = null;
+      input.setCustomValidity("");
+      setProductBarcodeScanState("scanning", state.lang === "zh" ? "正在等待扫描..." : "Waiting for scan...");
+      input.focus({ preventScroll: true });
+      input.select();
+    }
 
     function getProductMediaUrls(form = $("[data-product-form]")) {
       if (!form) return [];
@@ -10653,6 +10800,7 @@
     }
 
     function closeProductEditor() {
+      resetProductBarcodeScanner();
       $("#productEditorModal").hidden = true;
       document.body.classList.remove("editor-open");
     }
@@ -10855,6 +11003,7 @@
       fields.namedItem("tags").value = product.tags || "";
       fields.namedItem("template").value = product.template || "default";
       $("#productFormTitle").textContent = product.title;
+      resetProductBarcodeScanner();
       setAdminTab("products");
       updateProductEditorPreview();
       openProductEditor();
@@ -10982,6 +11131,20 @@
         showToast(state.lang === "zh" ? "请输入有效的商品售价" : "Enter a valid product price");
         return;
       }
+      const barcode = normalizeProductBarcode(data.barcode);
+      const barcodeConflict = productBarcodeConflict(barcode, id);
+      if (barcodeConflict) {
+        const barcodeInput = form.elements.namedItem("barcode");
+        const message = state.lang === "zh"
+          ? `此条码已绑定：${barcodeConflict.title}`
+          : `Barcode already assigned to ${barcodeConflict.title}`;
+        barcodeInput.setCustomValidity(message);
+        setProductBarcodeScanState("error", message);
+        barcodeInput.focus({ preventScroll: true });
+        barcodeInput.select();
+        showToast(message);
+        return;
+      }
       const product = {
         id,
         title: data.title.trim(),
@@ -11005,7 +11168,7 @@
         taxable: form.taxable.checked,
         trackQuantity: form.trackQuantity.checked,
         sku: data.sku.trim(),
-        barcode: data.barcode.trim(),
+        barcode,
         productType: data.productType.trim(),
         vendor: data.vendor.trim(),
         tags: data.tags.trim(),
@@ -11138,6 +11301,10 @@
       }
       if (target.matches("[data-open-product-image-file]")) {
         $("[data-product-image-file]")?.click();
+        return;
+      }
+      if (target.matches("[data-scan-product-barcode]")) {
+        startProductBarcodeScan();
         return;
       }
       if (target.matches("[data-clear-product-image]")) {
@@ -11311,6 +11478,15 @@
         syncDesignBlockVisuals();
       }
       if (event.target instanceof Element && event.target.closest("[data-product-form]")) {
+        if (event.target.matches("[data-product-barcode-input]")) {
+          event.target.setCustomValidity("");
+          const control = event.target.closest("[data-product-barcode-control]");
+          if (control?.dataset.scanActive === "true") {
+            setProductBarcodeScanState("scanning", state.lang === "zh" ? "正在识别..." : "Reading barcode...");
+            window.clearTimeout(productBarcodeScanTimer);
+            productBarcodeScanTimer = window.setTimeout(() => completeProductBarcodeScan(event.target), 350);
+          }
+        }
         if (event.target.matches('[name="sourcePriceCny"]')) {
           applySourcePricingToForm(event.target.closest("[data-product-form]"));
         }
@@ -11550,6 +11726,14 @@
     });
 
     document.addEventListener("keydown", (event) => {
+      const barcodeInput = event.target instanceof Element && event.target.matches("[data-product-barcode-input]")
+        ? event.target
+        : null;
+      if (barcodeInput && (event.key === "Enter" || (event.key === "Tab" && barcodeInput.closest("[data-product-barcode-control]")?.dataset.scanActive === "true"))) {
+        event.preventDefault();
+        completeProductBarcodeScan(barcodeInput);
+        return;
+      }
       const orderCard = event.target instanceof Element ? event.target.closest("[data-order-detail]") : null;
       if (orderCard && (event.key === "Enter" || event.key === " ")) {
         event.preventDefault();
