@@ -6522,11 +6522,10 @@
               <label class="field">
                 <span>商品类别</span>
                 <select name="category">
-                  <option value="mobile-protection">手机壳与屏幕保护</option>
+                  <option value="blind-box-plush">盲盒与毛绒玩具</option>
+                  <option value="keychains-gifts">钥匙链与礼品饰品</option>
+                  <option value="phone-cases">手机壳</option>
                   <option value="phone-accessories">手机配件</option>
-                  <option value="collectibles">盲盒与毛绒</option>
-                  <option value="electronics">电子产品</option>
-                  <option value="gifts-lifestyle">礼品与生活</option>
                 </select>
               </label>
               <label class="field">
@@ -6778,7 +6777,7 @@
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="product-localizations.js?v=3"></script>
+  <script src="product-localizations.js?v=4"></script>
   <script>
     const STORAGE_KEY = "gogoshop_products_v1";
     const CART_KEY = "gogoshop_cart_v1";
@@ -7737,7 +7736,7 @@
 
     function productCategoryKey(product) {
       return storefrontCategoryByProductId.get(product.id)
-        || (storefrontCategoryKeys.has(product.category) ? product.category : "gifts-lifestyle");
+        || (storefrontCategoryKeys.has(product.category) ? product.category : "keychains-gifts");
     }
 
     function customerWelcomeText() {
@@ -9501,7 +9500,7 @@
           </a>
           <div>
             <a class="result-product-link" href="#product=${encodeURIComponent(product.id)}" data-product-view="${escapeHtml(product.id)}"><strong>${escapeHtml(productName(product))}</strong></a>
-            <div class="muted">${formatPrice(product.price)} · ${categoryName(product.category)}</div>
+            <div class="muted">${formatPrice(product.price)} · ${categoryName(productCategoryKey(product))}</div>
           </div>
           <button class="button ghost" type="button" data-add-cart="${escapeHtml(product.id)}" ${!available(product) ? "disabled" : ""}>
             <i data-lucide="plus"></i> ${t("add")}
@@ -10305,7 +10304,7 @@
           <img src="${escapeHtml(product.image)}" alt="${escapeHtml(product.title)}">
           <div class="admin-product-summary">
             <strong>${escapeHtml(product.title)}</strong>
-            <span>${product.featured ? "Pinned · " : ""}${escapeHtml([product.category, product.vendor, product.sourcePriceCny ? `¥${product.sourcePriceCny} CNY` : ""].filter(Boolean).join(" · "))}</span>
+            <span>${product.featured ? "Pinned · " : ""}${escapeHtml([categoryName(productCategoryKey(product)), product.vendor, product.sourcePriceCny ? `¥${product.sourcePriceCny} CNY` : ""].filter(Boolean).join(" · "))}</span>
             <span>实验货号 ${escapeHtml(productItemCode(product))}</span>
           </div>
           <div class="admin-product-meta">
