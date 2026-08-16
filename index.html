@@ -6791,6 +6791,7 @@
     const ORDER_NOTIFICATION_UNREAD_KEY = "gogoshop_admin_order_unread_v1";
     const ORDER_NOTIFICATION_SEEN_KEY = "gogoshop_admin_order_notified_v1";
     const OAUTH_PENDING_KEY = "gogoshop_oauth_pending_v1";
+    const PURGED_PRODUCT_TAG = "__gogoshop_purged__";
     const SUPABASE_URL = "https://ucnkcddhrptqpdlvcohy.supabase.co";
     const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_zv6WbyD1hZKUx-Zyak-fPw_e1mURTN8";
     const SOURCE_COST_MULTIPLIER = 4;
@@ -8545,14 +8546,15 @@
         }
       }
       if (error) return;
+      const remoteProducts = data.filter((product) => String(product.tags || "").trim() !== PURGED_PRODUCT_TAG);
       const localProducts = [...state.products, ...state.deletedProducts];
-      const remoteProductIds = new Set(data.filter((product) => !isAdmin || !product.deleted_at).map((product) => product.id));
+      const remoteProductIds = new Set(remoteProducts.filter((product) => !isAdmin || !product.deleted_at).map((product) => product.id));
       state.products = state.products.filter((product) => remoteProductIds.has(product.id));
       const cartSize = state.cart.length;
       state.cart = state.cart.filter((line) => remoteProductIds.has(line.id));
       if (state.cart.length !== cartSize) persistCart();
       state.deletedProducts = [];
-      data.forEach((remote) => {
+      remoteProducts.forEach((remote) => {
         const localProduct = localProducts.find((item) => item.id === remote.id);
         const remoteProduct = {
           id: remote.id,
@@ -11086,17 +11088,64 @@
       if (!product) return;
       const confirmed = window.confirm(`永久删除“${product.title}”？\n\n此操作无法撤销。`);
       if (!confirmed) return;
-      if (db && state.profile?.is_admin) {
-        const { error } = await db.from("products").delete().eq("id", id);
-        if (error) {
-          showToast(authErrorMessage(error));
-          return;
+      const deleteButton = $$('[data-delete-product-permanently]').find((button) => button.dataset.deleteProductPermanently === id);
+      if (deleteButton?.disabled) return;
+      if (deleteButton) deleteButton.disabled = true;
+      try {
+        if (db && state.profile?.is_admin) {
+          const { data, error } = await db.from("products").delete().eq("id", id).select("id");
+          if (error) {
+            const isOrderReferenceError = /foreign key|constraint|23503/i.test(`${error.code || ""} ${error.message || ""}`);
+            if (!isOrderReferenceError) {
+              showToast(authErrorMessage(error));
+              return;
+            }
+            const purgedAt = new Date().toISOString();
+            const { data: purgedRows, error: purgeError } = await db.from("products").update({
+              title: "Deleted product",
+              category: "",
+              description: "",
+              price: 0,
+              compare_at_price: 0,
+              cost_per_item: 0,
+              stock: 0,
+              sales: 0,
+              published: false,
+              image: "",
+              images: [],
+              vendor: "",
+              sku: "",
+              barcode: "",
+              tags: PURGED_PRODUCT_TAG,
+              source_url: "",
+              source_currency: "",
+              source_price: 0,
+              source_variants: [],
+              source_attributes: [],
+              deleted_at: product.deletedAt || purgedAt,
+              deleted_was_published: false,
+              updated_at: purgedAt
+            }).eq("id", id).select("id");
+            if (purgeError || !(purgedRows || []).some((row) => String(row.id) === String(id))) {
+              showToast(purgeError ? authErrorMessage(purgeError) : (state.lang === "zh" ? "商品未被删除，请重新登录后台后再试" : "Product was not deleted; sign in to admin and try again"));
+              return;
+            }
+          }
+          if (!error && !(data || []).some((row) => String(row.id) === String(id))) {
+            await loadStoreInventory();
+            showToast(state.lang === "zh" ? "商品未被删除，请重新登录后台后再试" : "Product was not deleted; sign in to admin and try again");
+            return;
+          }
         }
+        state.deletedProducts = state.deletedProducts.filter((item) => item.id !== id);
+        persistDeletedProducts();
+        renderAdminProducts();
+        refreshIcons();
+        if (db && state.profile?.is_admin) await loadStoreInventory();
+        showToast(state.lang === "zh" ? "商品已永久删除" : "Product permanently deleted");
+      } finally {
+        if (deleteButton?.isConnected) deleteButton.disabled = false;
       }
-      state.deletedProducts = state.deletedProducts.filter((item) => item.id !== id);
-      persistDeletedProducts();
-      renderAll();
-      showToast(state.lang === "zh" ? "商品已永久删除" : "Product permanently deleted");
     }
 
     function toggleProductTrash(forceOpen) {

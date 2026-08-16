@@ -103,7 +103,7 @@ alter table public.orders add column if not exists deleted_by uuid references pu
 create table if not exists public.order_items (
   id bigint generated always as identity primary key,
   order_id uuid not null references public.orders(id) on delete cascade,
-  product_id text not null references public.products(id) on delete restrict,
+  product_id text references public.products(id) on delete set null,
   product_title text not null,
   unit_price numeric(12,2) not null check (unit_price >= 0),
   quantity integer not null check (quantity > 0),
@@ -112,6 +112,13 @@ create table if not exists public.order_items (
 );
 
 alter table public.order_items add column if not exists item_note text not null default '';
+
+alter table public.order_items alter column product_id drop not null;
+alter table public.order_items drop constraint if exists order_items_product_id_fkey;
+alter table public.order_items add constraint order_items_product_id_fkey
+  foreign key (product_id) references public.products(id) on delete set null;
+
+delete from public.products where tags = '__gogoshop_purged__';
 
 create index if not exists orders_user_id_idx on public.orders(user_id, created_at desc);
 create index if not exists orders_status_idx on public.orders(status, created_at desc);
