@@ -7414,6 +7414,22 @@
       })[char]);
     }
 
+    function isSupplierSku(value) {
+      return /^1688(?:-|$)/i.test(String(value || "").trim());
+    }
+
+    function manualProductCode(sku, barcode) {
+      const normalizedSku = String(sku || "").trim();
+      const normalizedBarcode = String(barcode || "").trim();
+      if (normalizedSku && !isSupplierSku(normalizedSku)) return normalizedSku;
+      if (normalizedBarcode && !isSupplierSku(normalizedBarcode)) return normalizedBarcode;
+      return "";
+    }
+
+    function productManualCode(product) {
+      return manualProductCode(product?.sku, product?.barcode);
+    }
+
     function assignExperimentalItemCodes(products = []) {
       const sortedProducts = [...products]
         .filter((product) => product && product.id)
@@ -7428,11 +7444,11 @@
         }
       });
       const usedManualCodes = new Set(sortedProducts
-        .map((product) => String(product.sku || product.barcode || "").trim())
+        .map(productManualCode)
         .filter(Boolean));
       let nextCode = EXPERIMENTAL_ITEM_CODE_START;
       sortedProducts.forEach((product) => {
-        const manualCode = String(product.sku || product.barcode || "").trim();
+        const manualCode = productManualCode(product);
         if (manualCode) return;
         while (usedManualCodes.has(String(nextCode))) nextCode += 1;
         product.experimentalCode = String(nextCode);
@@ -7443,7 +7459,7 @@
     }
 
     function productItemCode(product) {
-      return String(product?.sku || product?.barcode || product?.experimentalCode || "").trim();
+      return String(productManualCode(product) || product?.experimentalCode || "").trim();
     }
 
     function code39BarcodeSvg(value, options = {}) {
@@ -8583,6 +8599,7 @@
         const localProduct = localProducts.find((item) => item.id === remote.id);
         const remoteProduct = {
           id: remote.id,
+          experimentalCode: localProduct?.experimentalCode || "",
           handle: remote.id,
           title: remote.title,
           category: remote.category || localProduct?.category || "1688 Imports",
@@ -10805,7 +10822,7 @@
         const barcode = String(fields.namedItem("barcode")?.value || "").trim();
         const productId = String(fields.namedItem("id")?.value || "");
         const fallback = String(state.products.find((product) => String(product.id) === productId)?.experimentalCode || "").trim();
-        const code = sku || barcode || fallback;
+        const code = manualProductCode(sku, barcode) || fallback;
         formalCodePreview.textContent = code
           ? `货号：${code}（保存后全网同步）`
           : "修改 SKU 后自动生成货号";
