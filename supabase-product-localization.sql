@@ -1,8 +1,21 @@
 -- Run once in Supabase Dashboard > SQL Editor.
--- Public shoppers receive only storefront fields. Full sourcing data remains
--- available to authenticated administrators through the products table.
+-- Adds separate English and Chinese product content for the admin editor.
 
 begin;
+
+alter table public.products add column if not exists title_en text not null default '';
+alter table public.products add column if not exists title_zh text not null default '';
+alter table public.products add column if not exists description_en text not null default '';
+alter table public.products add column if not exists description_zh text not null default '';
+
+update public.products
+set title_en = title
+where nullif(trim(title_en), '') is null or trim(title_en) = '';
+
+update public.products
+set description_en = description
+where (nullif(trim(description_en), '') is null or trim(description_en) = '')
+  and id not like '1688-%';
 
 drop function if exists public.get_storefront_products();
 
@@ -51,14 +64,5 @@ $$;
 
 revoke all on function public.get_storefront_products() from public;
 grant execute on function public.get_storefront_products() to anon, authenticated;
-
-drop policy if exists "products public read" on public.products;
-drop policy if exists "products admin read" on public.products;
-create policy "products admin read" on public.products
-  for select
-  using (public.is_admin());
-
-revoke select on public.products from anon;
-grant select on public.products to authenticated;
 
 commit;

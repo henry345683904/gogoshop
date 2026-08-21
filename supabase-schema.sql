@@ -20,8 +20,12 @@ create table if not exists public.profiles (
 create table if not exists public.products (
   id text primary key,
   title text not null,
+  title_en text not null default '',
+  title_zh text not null default '',
   category text not null default '',
   description text not null default '',
+  description_en text not null default '',
+  description_zh text not null default '',
   price numeric(12,2) not null check (price >= 0),
   compare_at_price numeric(12,2) not null default 0 check (compare_at_price >= 0),
   cost_per_item numeric(12,2) not null default 0 check (cost_per_item >= 0),
@@ -45,7 +49,11 @@ create table if not exists public.products (
 );
 
 alter table public.products add column if not exists category text not null default '';
+alter table public.products add column if not exists title_en text not null default '';
+alter table public.products add column if not exists title_zh text not null default '';
 alter table public.products add column if not exists description text not null default '';
+alter table public.products add column if not exists description_en text not null default '';
+alter table public.products add column if not exists description_zh text not null default '';
 alter table public.products add column if not exists compare_at_price numeric(12,2) not null default 0;
 alter table public.products add column if not exists cost_per_item numeric(12,2) not null default 0;
 alter table public.products add column if not exists image text not null default '';
@@ -189,8 +197,12 @@ create function public.get_storefront_products()
 returns table (
   id text,
   title text,
+  title_en text,
+  title_zh text,
   category text,
   description text,
+  description_en text,
+  description_zh text,
   price numeric,
   compare_at_price numeric,
   stock integer,
@@ -205,9 +217,13 @@ set search_path = public
 as $$
   select
     products.id,
-    products.title,
+    coalesce(nullif(products.title_en, ''), products.title),
+    products.title_en,
+    products.title_zh,
     products.category,
     case when products.id like '1688-%' then '' else products.description end,
+    products.description_en,
+    products.description_zh,
     products.price,
     products.compare_at_price,
     products.stock,

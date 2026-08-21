@@ -3485,6 +3485,47 @@
       line-height: 1.3;
     }
 
+    .product-editor-language-bar {
+      display: flex;
+      min-height: 34px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .product-editor-language-toggle {
+      display: inline-flex;
+      flex: 0 0 auto;
+      align-items: center;
+      gap: 2px;
+      border: 1px solid #d7dada;
+      border-radius: 7px;
+      padding: 2px;
+      background: #f7f8f8;
+    }
+
+    .product-editor-language-toggle button {
+      min-height: 28px;
+      border: 0;
+      border-radius: 5px;
+      padding: 0 10px;
+      background: transparent;
+      color: #6c7374;
+      font-size: 12px;
+      font-weight: 750;
+    }
+
+    .product-editor-language-toggle button.active {
+      background: #fff;
+      color: var(--ink);
+      box-shadow: 0 1px 3px rgba(18, 24, 24, 0.14);
+    }
+
+    .product-editor-language-panel[hidden] {
+      display: none;
+    }
+
     .shopify-card-head {
       display: flex;
       min-height: 34px;
@@ -6399,19 +6440,44 @@
         <div class="product-editor-body">
           <div class="product-editor-main">
             <section class="shopify-editor-card">
-              <label class="field">
-                <span>标题</span>
-                <input type="text" name="title" autocomplete="off" required>
-              </label>
-              <span class="shopify-rich-label">描述</span>
-              <div class="shopify-rich-editor">
-                <div class="shopify-rich-toolbar" aria-label="描述格式">
-                  <button type="button" data-description-format="bold" aria-label="粗体" title="粗体"><i data-lucide="bold"></i></button>
-                  <button type="button" data-description-format="italic" aria-label="斜体" title="斜体"><i data-lucide="italic"></i></button>
-                  <button type="button" data-description-format="link" aria-label="链接" title="链接"><i data-lucide="link"></i></button>
-                  <button type="button" data-description-format="list" aria-label="项目列表" title="项目列表"><i data-lucide="list"></i></button>
+              <div class="product-editor-language-bar">
+                <span class="shopify-rich-label">内容语言 / Content language</span>
+                <div class="product-editor-language-toggle" role="tablist" aria-label="商品编辑语言">
+                  <button type="button" data-product-editor-language="zh" role="tab" aria-selected="false">中文</button>
+                  <button type="button" data-product-editor-language="en" role="tab" aria-selected="true">English</button>
                 </div>
-                <textarea name="description" rows="6" aria-label="描述"></textarea>
+              </div>
+              <div class="product-editor-language-panel" data-product-editor-language-panel="zh" role="tabpanel">
+                <label class="field">
+                  <span>中文名称</span>
+                  <input type="text" name="titleZh" autocomplete="off">
+                </label>
+                <span class="shopify-rich-label">中文描述</span>
+                <div class="shopify-rich-editor">
+                  <div class="shopify-rich-toolbar" aria-label="中文描述格式">
+                    <button type="button" data-description-format="bold" aria-label="粗体" title="粗体"><i data-lucide="bold"></i></button>
+                    <button type="button" data-description-format="italic" aria-label="斜体" title="斜体"><i data-lucide="italic"></i></button>
+                    <button type="button" data-description-format="link" aria-label="链接" title="链接"><i data-lucide="link"></i></button>
+                    <button type="button" data-description-format="list" aria-label="项目列表" title="项目列表"><i data-lucide="list"></i></button>
+                  </div>
+                  <textarea name="descriptionZh" rows="6" aria-label="中文描述"></textarea>
+                </div>
+              </div>
+              <div class="product-editor-language-panel" data-product-editor-language-panel="en" role="tabpanel" hidden>
+                <label class="field">
+                  <span>English Name</span>
+                  <input type="text" name="title" autocomplete="off">
+                </label>
+                <span class="shopify-rich-label">English Description</span>
+                <div class="shopify-rich-editor">
+                  <div class="shopify-rich-toolbar" aria-label="English description format">
+                    <button type="button" data-description-format="bold" aria-label="Bold" title="Bold"><i data-lucide="bold"></i></button>
+                    <button type="button" data-description-format="italic" aria-label="Italic" title="Italic"><i data-lucide="italic"></i></button>
+                    <button type="button" data-description-format="link" aria-label="Link" title="Link"><i data-lucide="link"></i></button>
+                    <button type="button" data-description-format="list" aria-label="List" title="List"><i data-lucide="list"></i></button>
+                  </div>
+                  <textarea name="description" rows="6" aria-label="English description"></textarea>
+                </div>
               </div>
             </section>
 
@@ -7361,6 +7427,7 @@
       category: "All",
       sort: "featured",
       lang: storageGet(LANG_KEY) || "en",
+      productEditorLanguage: storageGet("gogoshop_product_editor_language") || storageGet(LANG_KEY) || "en",
       adminTab: "overview",
       trashOpen: false,
       session: null,
@@ -7754,8 +7821,8 @@
 
     function productName(product) {
       const localization = window.GOGOSHOP_PRODUCT_LOCALIZATIONS?.[product.id];
-      if (state.lang === "zh") return localization?.zh || productLabels[product.title]?.zh || product.title;
-      return localization?.en || product.title;
+      if (state.lang === "zh") return product.titleZh || localization?.zh || productLabels[product.title]?.zh || product.titleEn || product.title;
+      return product.titleEn || localization?.en || product.title;
     }
 
     function productDescription(product) {
@@ -7763,10 +7830,14 @@
       const importedFrom1688 = String(product.id || "").startsWith("1688-");
       if (state.lang === "zh") {
         if (importedFrom1688) return "";
-        return cleanStorefrontDescription(product.description, product) || t("productFallback");
+        return cleanStorefrontDescription(product.descriptionZh, product)
+          || cleanStorefrontDescription(product.description, product)
+          || t("productFallback");
       }
-      if (importedFrom1688) return cleanStorefrontDescription(localization?.description, product);
-      return cleanStorefrontDescription(localization?.description, product)
+      if (importedFrom1688) return cleanStorefrontDescription(product.descriptionEn, product)
+        || cleanStorefrontDescription(localization?.description, product);
+      return cleanStorefrontDescription(product.descriptionEn, product)
+        || cleanStorefrontDescription(localization?.description, product)
         || cleanStorefrontDescription(product.description, product)
         || t("productFallback");
     }
@@ -8589,7 +8660,7 @@
       let data;
       let error;
       if (isAdmin) {
-        ({ data, error } = await db.from("products").select("id,title,category,description,price,compare_at_price,cost_per_item,stock,sales,published,image,images,vendor,sku,barcode,tags,source_url,source_currency,source_price,source_variants,source_attributes,deleted_at,deleted_was_published"));
+        ({ data, error } = await db.from("products").select("id,title,title_en,title_zh,category,description,description_en,description_zh,price,compare_at_price,cost_per_item,stock,sales,published,image,images,vendor,sku,barcode,tags,source_url,source_currency,source_price,source_variants,source_attributes,deleted_at,deleted_was_published"));
         if (error) {
           supportsRecycleBin = false;
           ({ data, error } = await db.from("products").select("id,title,category,description,price,compare_at_price,cost_per_item,stock,sales,published,image,images,vendor,sku,barcode,tags,source_url,source_currency,source_price,source_variants,source_attributes"));
@@ -8618,9 +8689,13 @@
           experimentalCode: localProduct?.experimentalCode || "",
           handle: remote.id,
           title: remote.title,
+          titleEn: isAdmin ? (remote.title_en ?? localProduct?.titleEn ?? remote.title ?? "") : (remote.title_en ?? remote.title ?? ""),
+          titleZh: remote.title_zh ?? localProduct?.titleZh ?? "",
           category: remote.category || localProduct?.category || "1688 Imports",
           productType: remote.category || localProduct?.productType || localProduct?.category || "1688 Imports",
           description: remote.description ?? (isAdmin ? localProduct?.description : "") ?? "",
+          descriptionEn: remote.description_en ?? localProduct?.descriptionEn ?? "",
+          descriptionZh: remote.description_zh ?? localProduct?.descriptionZh ?? "",
           price: Number(remote.price),
           compareAtPrice: Number(remote.compare_at_price || 0),
           costPerItem: isAdmin ? Number(remote.cost_per_item || 0) : 0,
@@ -10269,6 +10344,10 @@
         title: product.title,
         category: product.category || "",
         description: product.description || "",
+        title_en: product.titleEn || product.title || "",
+        title_zh: product.titleZh || "",
+        description_en: product.descriptionEn || "",
+        description_zh: product.descriptionZh || "",
         price: Number(product.price),
         compare_at_price: Math.max(0, Number(product.compareAtPrice) || 0),
         cost_per_item: Math.max(0, Number(product.costPerItem) || 0),
@@ -10650,6 +10729,22 @@
       refreshIcons();
     }
 
+    function setProductEditorLanguage(language, form = $("[data-product-form]")) {
+      if (!form) return;
+      const nextLanguage = language === "zh" ? "zh" : "en";
+      state.productEditorLanguage = nextLanguage;
+      storageSet("gogoshop_product_editor_language", nextLanguage);
+      $$('[data-product-editor-language]', form).forEach((button) => {
+        const active = button.dataset.productEditorLanguage === nextLanguage;
+        button.classList.toggle("active", active);
+        button.setAttribute("aria-selected", String(active));
+      });
+      $$('[data-product-editor-language-panel]', form).forEach((panel) => {
+        panel.hidden = panel.dataset.productEditorLanguagePanel !== nextLanguage;
+      });
+      updateProductEditorPreview();
+    }
+
     function clearProductForm() {
       const form = $("[data-product-form]");
       if (!form) return;
@@ -10660,6 +10755,8 @@
       fields.namedItem("stock").value = "0";
       fields.namedItem("sourcePriceCny").value = "0";
       fields.namedItem("status").value = "active";
+      fields.namedItem("titleZh").value = "";
+      fields.namedItem("descriptionZh").value = "";
       fields.namedItem("vendor").value = "Go Go Shop";
       fields.namedItem("onlineStore").checked = true;
       fields.namedItem("featured").checked = false;
@@ -10669,6 +10766,7 @@
       if (imageFile) imageFile.value = "";
       $("#productFormTitle").textContent = "添加商品";
       resetProductBarcodeScanner();
+      setProductEditorLanguage(state.lang);
       updateProductEditorPreview();
     }
 
@@ -10846,7 +10944,10 @@
 
       renderProductMediaEditor(form);
 
-      $("[data-product-editor-title]").textContent = fields.namedItem("title").value.trim() || (fields.namedItem("id").value ? "编辑商品" : "添加商品");
+      const editorTitle = state.productEditorLanguage === "zh"
+        ? fields.namedItem("titleZh").value.trim()
+        : fields.namedItem("title").value.trim();
+      $("[data-product-editor-title]").textContent = editorTitle || (fields.namedItem("id").value ? "编辑商品" : "添加商品");
       const statusText = !active ? "草稿" : published ? "活跃" : "未发布";
       const statusClass = `status ${published ? "live" : "draft"}`;
       status.textContent = statusText;
@@ -10877,7 +10978,9 @@
     }
 
     function formatProductDescription(action) {
-      const field = $("[data-product-form] [name='description']");
+      const form = $("[data-product-form]");
+      const fieldName = state.productEditorLanguage === "zh" ? "descriptionZh" : "description";
+      const field = form?.elements.namedItem(fieldName);
       if (!field) return;
       const start = field.selectionStart ?? field.value.length;
       const end = field.selectionEnd ?? start;
@@ -11051,13 +11154,16 @@
       const form = $("[data-product-form]");
       const fields = form.elements;
       fields.namedItem("id").value = product.id;
-      fields.namedItem("title").value = product.title;
+      const localization = window.GOGOSHOP_PRODUCT_LOCALIZATIONS?.[product.id];
+      fields.namedItem("title").value = product.titleEn || localization?.en || product.title || "";
+      fields.namedItem("titleZh").value = product.titleZh || localization?.zh || productLabels[product.title]?.zh || "";
       fields.namedItem("category").value = productCategoryKey(product);
       fields.namedItem("price").value = product.price;
       fields.namedItem("stock").value = product.stock;
       fields.namedItem("image").value = product.image;
       fields.namedItem("images").value = (product.images || []).filter((image) => image && image !== product.image).join("\n");
-      fields.namedItem("description").value = product.description || "";
+      fields.namedItem("description").value = product.descriptionEn || localization?.description || cleanStorefrontDescription(product.description, product) || "";
+      fields.namedItem("descriptionZh").value = product.descriptionZh || "";
       fields.namedItem("status").value = product.published ? "active" : "draft";
       fields.namedItem("onlineStore").checked = product.onlineStore ?? product.published;
       fields.namedItem("featured").checked = Boolean(product.featured);
@@ -11073,9 +11179,10 @@
       fields.namedItem("sourcePriceCny").value = product.sourcePriceCny || "";
       fields.namedItem("tags").value = product.tags || "";
       fields.namedItem("template").value = product.template || "default";
-      $("#productFormTitle").textContent = product.title;
+      $("#productFormTitle").textContent = product.titleEn || product.titleZh || product.title;
       resetProductBarcodeScanner();
       setAdminTab("products");
+      setProductEditorLanguage(state.lang);
       updateProductEditorPreview();
       openProductEditor();
     }
@@ -11237,7 +11344,17 @@
       event.preventDefault();
       const form = event.target;
       const data = Object.fromEntries(new FormData(form).entries());
-      const id = data.id || `${data.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}-${Date.now().toString(36)}`;
+      const titleEn = String(data.title || "").trim();
+      const titleZh = String(data.titleZh || "").trim();
+      const descriptionEn = String(data.description || "").trim();
+      const descriptionZh = String(data.descriptionZh || "").trim();
+      if (!titleEn && !titleZh) {
+        showToast(state.lang === "zh" ? "请至少填写中文或英文商品名称" : "Enter a Chinese or English product name");
+        setProductEditorLanguage(state.productEditorLanguage);
+        form.elements.namedItem(state.productEditorLanguage === "zh" ? "titleZh" : "title").focus();
+        return;
+      }
+      const id = data.id || `${(titleEn || titleZh).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}-${Date.now().toString(36)}`;
       const existing = state.products.find((product) => product.id === id);
       const featured = form.featured.checked;
       const image = data.image.trim();
@@ -11265,10 +11382,14 @@
       }
       const product = {
         id,
-        title: data.title.trim(),
+        title: titleEn || titleZh,
+        titleEn,
+        titleZh,
         handle: id,
         category: data.category,
-        description: data.description.trim(),
+        description: existing?.description || descriptionEn || descriptionZh,
+        descriptionEn,
+        descriptionZh,
         price: Math.round((manualPrice + Number.EPSILON) * 100) / 100,
         compareAtPrice: Number(data.compareAtPrice || 0),
         costPerItem: sourcePricing?.cost ?? Number(data.costPerItem || 0),
@@ -11312,7 +11433,7 @@
     }
 
     function exportProducts() {
-      const headers = ["id", "title", "category", "description", "price", "compareAtPrice", "costPerItem", "sourcePriceCny", "stock", "published", "featured", "sku", "barcode", "vendor", "tags", "image", "images", "sourceUrl"];
+      const headers = ["id", "title", "titleEn", "titleZh", "category", "description", "descriptionEn", "descriptionZh", "price", "compareAtPrice", "costPerItem", "sourcePriceCny", "stock", "published", "featured", "sku", "barcode", "vendor", "tags", "image", "images", "sourceUrl"];
       const rows = state.products.map((product) => headers.map((key) => `"${String(product[key] ?? "").replace(/"/g, '""')}"`).join(","));
       const blob = new Blob([[headers.join(","), ...rows].join("\n")], { type: "text/csv" });
       const url = URL.createObjectURL(blob);
@@ -11491,6 +11612,9 @@
       if (target.matches("[data-customer-logout]")) customerSignOut();
       if (target.matches("[data-lang]")) {
         setLanguage(target.dataset.lang);
+      }
+      if (target.matches("[data-product-editor-language]")) {
+        setProductEditorLanguage(target.dataset.productEditorLanguage);
       }
       if (target.matches("[data-view-all]")) {
         state.category = "All";
