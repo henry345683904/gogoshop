@@ -6478,7 +6478,7 @@
                 <label class="field">
                   <span>SKU</span>
                   <input type="text" name="sku" autocomplete="off">
-                  <small class="product-formal-code-preview" data-product-formal-code-preview aria-live="polite">修改 SKU 后自动生成正式货号</small>
+                  <small class="product-formal-code-preview" data-product-formal-code-preview aria-live="polite">修改 SKU 后自动生成货号</small>
                 </label>
                 <div class="field">
                   <label for="productBarcodeInput">条形码</label>
@@ -7415,15 +7415,30 @@
     }
 
     function assignExperimentalItemCodes(products = []) {
-      [...products]
+      const sortedProducts = [...products]
         .filter((product) => product && product.id)
-        .sort((a, b) => String(a.id).localeCompare(String(b.id), undefined, { numeric: true, sensitivity: "base" }))
-        .forEach((product, index) => {
-          const code = String(EXPERIMENTAL_ITEM_CODE_START + index);
-          product.experimentalCode = code;
-          product.sku = product.sku || code;
-          product.barcode = product.barcode || code;
-        });
+        .sort((a, b) => String(a.id).localeCompare(String(b.id), undefined, { numeric: true, sensitivity: "base" }));
+      sortedProducts.forEach((product) => {
+        const generatedCode = String(product.experimentalCode || "").trim();
+        const sku = String(product.sku || "").trim();
+        const barcode = String(product.barcode || "").trim();
+        if (generatedCode && /^\d+$/.test(generatedCode)) {
+          if (sku === generatedCode) product.sku = "";
+          if (barcode === generatedCode) product.barcode = "";
+        }
+      });
+      const usedManualCodes = new Set(sortedProducts
+        .map((product) => String(product.sku || product.barcode || "").trim())
+        .filter(Boolean));
+      let nextCode = EXPERIMENTAL_ITEM_CODE_START;
+      sortedProducts.forEach((product) => {
+        const manualCode = String(product.sku || product.barcode || "").trim();
+        if (manualCode) return;
+        while (usedManualCodes.has(String(nextCode))) nextCode += 1;
+        product.experimentalCode = String(nextCode);
+        usedManualCodes.add(product.experimentalCode);
+        nextCode += 1;
+      });
       return products;
     }
 
@@ -7458,7 +7473,7 @@
     function renderProductBarcode(product, options = {}) {
       const code = productItemCode(product);
       if (!code) return "";
-      const label = state.lang === "zh" ? "正式货号" : "Item code";
+      const label = state.lang === "zh" ? "货号" : "Item code";
       return `
         <div class="product-barcode ${options.compact ? "compact" : ""}" aria-label="${escapeHtml(label)} ${escapeHtml(code)}">
           ${code39BarcodeSvg(code, options)}
@@ -10316,7 +10331,7 @@
           <div class="admin-product-summary">
             <strong>${escapeHtml(product.title)}</strong>
             <span>${product.featured ? "Pinned · " : ""}${escapeHtml([categoryName(productCategoryKey(product)), product.vendor, product.sourcePriceCny ? `¥${product.sourcePriceCny} CNY` : ""].filter(Boolean).join(" · "))}</span>
-            <span>正式货号 ${escapeHtml(productItemCode(product))}</span>
+            <span>货号 ${escapeHtml(productItemCode(product))}</span>
           </div>
           <div class="admin-product-meta">
             <span>${formatPrice(product.price)}</span>
@@ -10792,8 +10807,8 @@
         const fallback = String(state.products.find((product) => String(product.id) === productId)?.experimentalCode || "").trim();
         const code = sku || barcode || fallback;
         formalCodePreview.textContent = code
-          ? `正式货号：${code}（保存后全网同步）`
-          : "修改 SKU 后自动生成正式货号";
+          ? `货号：${code}（保存后全网同步）`
+          : "修改 SKU 后自动生成货号";
       }
 
       renderProductMediaEditor(form);
