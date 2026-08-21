@@ -7730,10 +7730,24 @@
       return translations[state.lang]?.[key] || translations.en[key] || key;
     }
 
-    function cleanStorefrontDescription(value) {
+    function cleanStorefrontDescription(value, product = null) {
+      const hiddenValues = [product?.vendor, product?.sourceUrl]
+        .map((entry) => String(entry || "").trim().toLowerCase())
+        .filter((entry) => entry.length >= 2);
+      const supplierLinePattern = /(supplier|vendor|source|factory|manufacturer|contact|address|wechat|whatsapp|postal|postcode|供应商|供货商|货源|厂家|厂址|联系人|地址|电话|手机|微信|旺旺|发货地|邮编|邮政编码|1688\.com)/i;
+      const phoneLabelPattern = /\b(?:tel|telephone|phone|mobile)\s*(?:number|no\.?|[:：])\s*\+?\d/i;
+      const contactPattern = /(https?:\/\/|www\.|[\w.+-]+@[\w.-]+\.[a-z]{2,}|\+?\d[\d\s().-]{7,}\d)/i;
       return String(value || "")
+        .replace(/<br\s*\/?>/gi, "\n")
+        .replace(/<\/p>\s*<p[^>]*>/gi, "\n")
+        .replace(/<[^>]+>/g, " ")
         .split(/\r?\n/)
-        .filter((line) => !/(supplier|vendor|source|供应商|供货商|货源|1688\.com)/i.test(line))
+        .map((line) => line.replace(/\s+/g, " ").trim())
+        .filter((line) => line
+          && !supplierLinePattern.test(line)
+          && !phoneLabelPattern.test(line)
+          && !contactPattern.test(line)
+          && !hiddenValues.some((valueToHide) => line.toLowerCase().includes(valueToHide)))
         .join("\n")
         .trim();
     }
@@ -7749,10 +7763,12 @@
       const importedFrom1688 = String(product.id || "").startsWith("1688-");
       if (state.lang === "zh") {
         if (importedFrom1688) return "";
-        return cleanStorefrontDescription(product.description) || t("productFallback");
+        return cleanStorefrontDescription(product.description, product) || t("productFallback");
       }
-      if (importedFrom1688) return localization?.description || "";
-      return localization?.description || cleanStorefrontDescription(product.description) || t("productFallback");
+      if (importedFrom1688) return cleanStorefrontDescription(localization?.description, product);
+      return cleanStorefrontDescription(localization?.description, product)
+        || cleanStorefrontDescription(product.description, product)
+        || t("productFallback");
     }
 
     function orderItemName(item) {
