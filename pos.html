@@ -120,7 +120,7 @@
     const $=(s)=>document.querySelector(s); const money=new Intl.NumberFormat("en-NZ",{style:"currency",currency:"NZD"});
     const escapeHtml=(v)=>String(v??"").replace(/[&<>'"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]));
     function assignExperimentalItemCodes(products=[]){[...products].filter(product=>product&&product.id).sort((a,b)=>String(a.id).localeCompare(String(b.id),undefined,{numeric:true,sensitivity:"base"})).forEach((product,index)=>{const code=String(EXPERIMENTAL_ITEM_CODE_START+index);product.experimentalCode=code;product.sku=product.sku||code;product.barcode=product.barcode||code});return products}
-    function productItemCode(product){return String(product?.experimentalCode||product?.barcode||product?.sku||"").trim()}
+    function productItemCode(product){return String(product?.sku||product?.barcode||product?.experimentalCode||"").trim()}
     function receiptLines(){return [...state.cart].map(([id,quantity])=>{const product=state.products.find(item=>item.id===id);return product?{title:product.title,code:productItemCode(product)||product.id,quantity,unitPrice:Number(product.price),subtotal:Number(product.price)*quantity,note:String(state.itemNotes.get(id)||"").trim()}:null}).filter(Boolean)}
     function renderReceipt(){
       const receipt=state.lastReceipt;
@@ -154,7 +154,7 @@
     $("#autoPrint").checked=localStorage.getItem("gogoshop-pos-auto-print")!=="false";
     $("#autoPrint").addEventListener("change",()=>localStorage.setItem("gogoshop-pos-auto-print",String($("#autoPrint").checked)));
     $("#reprintBtn").addEventListener("click",printLastReceipt);
-    function findProduct(code){const key=code.trim().toLowerCase();return state.products.find(p=>[p.experimentalCode,p.barcode,p.sku,p.id].some(v=>String(v||"").trim().toLowerCase()===key))}
+    function findProduct(code){const key=code.trim().toLowerCase();return state.products.find(p=>[p.sku,p.barcode,p.experimentalCode,p.id].some(v=>String(v||"").trim().toLowerCase()===key))}
     function customerDisplayName(customer){return String(customer?.full_name||customer?.email||"Customer").trim()}
     function normalizeCustomerBarcode(value){const raw=String(value||"").trim().toUpperCase();if(/^CUST-[0-9A-Z]{10}$/.test(raw))return raw;if(/^[0-9A-Z]{10}$/.test(raw))return `CUST-${raw}`;return ""}
     function isCustomerBarcode(value){return Boolean(normalizeCustomerBarcode(value))}
