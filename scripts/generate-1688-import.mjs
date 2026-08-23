@@ -4,7 +4,7 @@ import path from "node:path";
 const inputPath = path.resolve(process.argv[2] || "imports/1688-products.json");
 const outputPath = path.resolve(process.argv[3] || "imports/1688-products.sql");
 const payload = JSON.parse(fs.readFileSync(inputPath, "utf8"));
-const SOURCE_COST_MULTIPLIER = 4;
+const SOURCE_COST_DIVISOR = 4;
 const SOURCE_PRICE_MULTIPLIER = 1.5 * 1.15;
 const roundMoney = (value) => Math.round((Number(value) + Number.EPSILON) * 100) / 100;
 
@@ -30,7 +30,7 @@ const products = (payload.products || []).map((source) => {
     ].filter(Boolean).join("\n\n"),
     price: roundMoney(sourcePrice * SOURCE_PRICE_MULTIPLIER),
     compare_at_price: 0,
-    cost_per_item: roundMoney(sourcePrice * SOURCE_COST_MULTIPLIER),
+    cost_per_item: roundMoney(sourcePrice / SOURCE_COST_DIVISOR),
     stock: Math.max(0, Number(source.stock || 0)),
     sales: 0,
     published: false,

@@ -4649,6 +4649,16 @@
       resize: vertical;
     }
 
+    .field .product-price-input {
+      color: var(--ink);
+      transition: color 140ms ease;
+    }
+
+    .field .product-price-input[data-price-mode="auto"] {
+      color: var(--success);
+      font-weight: 750;
+    }
+
     .switch {
       display: flex;
       min-height: 42px;
@@ -6514,7 +6524,7 @@
               <div class="form-row">
                 <label class="field">
                   <span>售价 NZD（可手动修改；供应价变化时自动计算）</span>
-                  <input type="number" name="price" min="0" step="0.01" required>
+                  <input class="product-price-input" type="number" name="price" min="0" step="0.01" data-price-mode="manual" required>
                 </label>
                 <label class="field">
                   <span>原价 NZD</span>
@@ -6523,7 +6533,7 @@
               </div>
               <div class="form-row">
                 <label class="field">
-                  <span>单件成本 NZD（供应价 × 4）</span>
+                  <span>单件成本 NZD（供应价 ÷ 4）</span>
                   <input type="number" name="costPerItem" min="0" step="0.01">
                 </label>
                 <label class="field">
@@ -6869,7 +6879,7 @@
     const PURGED_PRODUCT_TAG = "__gogoshop_purged__";
     const SUPABASE_URL = "https://ucnkcddhrptqpdlvcohy.supabase.co";
     const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_zv6WbyD1hZKUx-Zyak-fPw_e1mURTN8";
-    const SOURCE_COST_MULTIPLIER = 4;
+    const SOURCE_COST_DIVISOR = 4;
     const SOURCE_PRICE_MULTIPLIER = 1.5 * 1.15;
     const EXPERIMENTAL_ITEM_CODE_START = 1001;
     const CODE39_PATTERNS = Object.freeze({
@@ -7778,18 +7788,32 @@
       if (!Number.isFinite(sourcePrice) || sourcePrice <= 0) return null;
       const roundMoney = (amount) => Math.round((amount + Number.EPSILON) * 100) / 100;
       return {
-        cost: roundMoney(sourcePrice * SOURCE_COST_MULTIPLIER),
+        cost: roundMoney(sourcePrice / SOURCE_COST_DIVISOR),
         price: roundMoney(sourcePrice * SOURCE_PRICE_MULTIPLIER)
       };
+    }
+
+    function setProductPriceMode(form, mode) {
+      const priceField = form?.elements.namedItem("price");
+      if (!priceField) return;
+      const nextMode = mode === "auto" ? "auto" : "manual";
+      priceField.dataset.priceMode = nextMode;
+      priceField.title = nextMode === "auto"
+        ? (state.lang === "zh" ? "根据供应价自动生成" : "Automatically generated from supplier price")
+        : (state.lang === "zh" ? "手动售价" : "Manually entered price");
     }
 
     function applySourcePricingToForm(form) {
       if (!form) return;
       const fields = form.elements;
       const pricing = calculateSourcePricing(fields.namedItem("sourcePriceCny")?.value);
-      if (!pricing) return;
+      if (!pricing) {
+        setProductPriceMode(form, "manual");
+        return;
+      }
       fields.namedItem("price").value = pricing.price.toFixed(2);
       fields.namedItem("costPerItem").value = pricing.cost.toFixed(2);
+      setProductPriceMode(form, "auto");
     }
 
     function t(key) {
@@ -10761,6 +10785,7 @@
       $$('[data-product-editor-language-panel]', form).forEach((panel) => {
         panel.hidden = panel.dataset.productEditorLanguagePanel !== nextLanguage;
       });
+      setProductPriceMode(form, form.elements.namedItem("price")?.dataset.priceMode);
       updateProductEditorPreview();
     }
 
@@ -10781,6 +10806,7 @@
       fields.namedItem("featured").checked = false;
       fields.namedItem("taxable").checked = true;
       fields.namedItem("trackQuantity").checked = true;
+      setProductPriceMode(form, "manual");
       const imageFile = $("[data-product-image-file]", form);
       if (imageFile) imageFile.value = "";
       $("#productFormTitle").textContent = "添加商品";
@@ -11198,6 +11224,10 @@
       fields.namedItem("sourcePriceCny").value = product.sourcePriceCny || "";
       fields.namedItem("tags").value = product.tags || "";
       fields.namedItem("template").value = product.template || "default";
+      const sourcePricing = calculateSourcePricing(product.sourcePriceCny);
+      const usesAutomaticPrice = sourcePricing
+        && Math.abs(Number(product.price) - sourcePricing.price) < 0.005;
+      setProductPriceMode(form, usesAutomaticPrice ? "auto" : "manual");
       $("#productFormTitle").textContent = product.titleEn || product.titleZh || product.title;
       resetProductBarcodeScanner();
       setAdminTab("products");
@@ -11761,6 +11791,9 @@
         }
         if (event.target.matches('[name="sourcePriceCny"]')) {
           applySourcePricingToForm(event.target.closest("[data-product-form]"));
+        }
+        if (event.target.matches('[name="price"]')) {
+          setProductPriceMode(event.target.closest("[data-product-form]"), "manual");
         }
         updateProductEditorPreview();
       }
