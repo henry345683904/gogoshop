@@ -37,7 +37,7 @@ from(values${hidden})x(id,title_hex,price,stock,vendor_hex)
 on conflict(id)do update set title=excluded.title,price=excluded.price,cost_per_item=excluded.cost_per_item,stock=excluded.stock,vendor=excluded.vendor,source_url=excluded.source_url,source_price=excluded.source_price,updated_at=now();
 with d as(select a[1]id,a[2]::int stock,a[3]::int n from regexp_split_to_table('${inventory}',';')s cross join lateral regexp_split_to_array(s,',')a)
 update public.products p set stock=d.stock,image='assets/1688/'||d.id||'/01.webp',images=(select jsonb_agg('assets/1688/'||d.id||'/'||lpad(i::text,2,'0')||'.webp' order by i)from generate_series(1,d.n)i),updated_at=now()from d where p.id='1688-'||d.id;
-update public.products set cost_per_item=round(source_price/4,2),updated_at=now() where source_currency='CNY' and source_price>0;
+update public.products set cost_per_item=round(source_price/4,2),updated_at=now() where source_price>0;
 commit;`;
 
 fs.writeFileSync(outputPath, `${sql}\n`, "utf8");
