@@ -6025,7 +6025,6 @@
                 <span class="muted" id="adminProductCount"></span>
               </div>
               <div class="form-actions">
-                <button class="button ghost" type="button" data-reset-products><i data-lucide="refresh-cw"></i> Reset</button>
                 <button class="button ghost" type="button" data-toggle-product-trash aria-expanded="false"><i data-lucide="recycle"></i> 回收站 <span id="adminTrashCount">0</span></button>
                 <button class="button" type="button" data-new-product><i data-lucide="plus"></i> Add product</button>
               </div>
@@ -6432,7 +6431,7 @@
             </div>
             <div class="product-editor-actions">
               <button class="button ghost" type="button" data-close-product-editor>取消</button>
-              <button class="button" type="submit"><i data-lucide="save"></i> 保存</button>
+              <button class="button" type="submit" data-save-product><i data-lucide="save"></i> 保存</button>
             </div>
           </div>
         </header>
@@ -10338,7 +10337,9 @@
     }
 
     async function syncProductToSupabase(product) {
-      if (!db || !state.profile?.is_admin || !product) return;
+      if (!db) throw new Error("Database connection is unavailable");
+      if (!state.profile?.is_admin) throw new Error("Administrator session has expired");
+      if (!product) throw new Error("Product data is unavailable");
       const { error } = await db.from("products").upsert({
         id: product.id,
         title: product.title,
@@ -10369,7 +10370,25 @@
         deleted_was_published: false,
         updated_at: new Date().toISOString()
       });
-      if (error) showToast(`Supabase: ${authErrorMessage(error)}`);
+      if (error) throw error;
+      return true;
+    }
+
+    function productSaveErrorMessage(error) {
+      const message = authErrorMessage(error);
+      if (/title_en|title_zh|description_en|description_zh|schema cache/i.test(message)) {
+        return state.lang === "zh"
+          ? "数据库尚未完成中英文字段升级，商品没有保存。当前输入内容已保留，请先执行数据库迁移。"
+          : "The bilingual product fields are not installed yet. Nothing was saved and your edits are still here.";
+      }
+      if (/administrator session|jwt|not authenticated|permission|row-level security/i.test(message)) {
+        return state.lang === "zh"
+          ? "管理员登录已失效或没有保存权限。当前输入内容已保留，请重新登录后再保存。"
+          : "Your admin session expired or lacks permission. Your edits are still here; sign in and try again.";
+      }
+      return state.lang === "zh"
+        ? `保存失败，当前输入内容已保留：${message}`
+        : `Save failed; your edits are still here: ${message}`;
     }
 
     function getMetrics() {
@@ -11343,6 +11362,7 @@
     async function saveProduct(event) {
       event.preventDefault();
       const form = event.target;
+      const saveButton = event.submitter || form.querySelector("[data-save-product]");
       const data = Object.fromEntries(new FormData(form).entries());
       const titleEn = String(data.title || "").trim();
       const titleZh = String(data.titleZh || "").trim();
@@ -11417,19 +11437,38 @@
         sales: existing?.sales || 0,
         views: existing?.views || 0
       };
-      if (existing) {
-        Object.assign(existing, product);
-      } else {
-        state.products.unshift(product);
+      if (saveButton) {
+        saveButton.disabled = true;
+        saveButton.setAttribute("aria-busy", "true");
+        saveButton.innerHTML = `<i data-lucide="loader-circle"></i> ${state.lang === "zh" ? "保存中" : "Saving"}`;
+        refreshIcons();
       }
-      state.deletedProducts = state.deletedProducts.filter((item) => item.id !== id);
-      persistProducts();
-      persistDeletedProducts();
-      await syncProductToSupabase(product);
-      clearProductForm();
-      closeProductEditor();
-      renderAll();
-      showToast("Product saved");
+      try {
+        await syncProductToSupabase(product);
+        if (existing) {
+          Object.assign(existing, product);
+        } else {
+          state.products.unshift(product);
+        }
+        state.deletedProducts = state.deletedProducts.filter((item) => item.id !== id);
+        persistProducts();
+        persistDeletedProducts();
+        clearProductForm();
+        closeProductEditor();
+        renderAll();
+        showToast(state.lang === "zh" ? "商品已保存" : "Product saved");
+      } catch (error) {
+        const message = productSaveErrorMessage(error);
+        showToast(message);
+        window.alert(message);
+      } finally {
+        if (saveButton) {
+          saveButton.disabled = false;
+          saveButton.removeAttribute("aria-busy");
+          saveButton.innerHTML = `<i data-lucide="save"></i> ${state.lang === "zh" ? "保存" : "Save"}`;
+          refreshIcons();
+        }
+      }
     }
 
     function exportProducts() {
@@ -11694,15 +11733,6 @@
       if (target.matches("[data-close-product-trash]")) toggleProductTrash(false);
       if (target.matches("[data-restore-product]")) restoreProduct(target.dataset.restoreProduct);
       if (target.matches("[data-delete-product-permanently]")) permanentlyDeleteProduct(target.dataset.deleteProductPermanently);
-      if (target.matches("[data-reset-products]")) {
-        state.products = clone(seedProducts);
-        state.deletedProducts = [];
-        persistProducts();
-        persistDeletedProducts();
-        Promise.all(state.products.map(syncProductToSupabase));
-        renderAll();
-        showToast("Products reset");
-      }
       if (target.matches("[data-export-products]")) exportProducts();
       if (target.matches("[data-reset-design]")) resetDesign();
       if (target.matches("[data-clear-design-block]")) clearDesignBlockForm();
