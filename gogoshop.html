@@ -3253,6 +3253,67 @@
       font-size: 12px;
     }
 
+    .admin-product-search {
+      border-top: 1px solid #e1e3e3;
+      border-bottom: 1px solid #d8dada;
+      padding: 12px 18px;
+      background: #fafbfb;
+    }
+
+    .admin-product-search-field {
+      position: relative;
+      display: flex;
+      width: min(100%, 620px);
+      align-items: center;
+    }
+
+    .admin-product-search-field > svg {
+      position: absolute;
+      z-index: 1;
+      left: 12px;
+      width: 17px;
+      height: 17px;
+      color: #6d7175;
+      pointer-events: none;
+    }
+
+    .admin-product-search-field input {
+      width: 100%;
+      min-width: 0;
+      min-height: 42px;
+      border: 1px solid #aeb4b4;
+      border-radius: 7px;
+      padding: 0 42px 0 38px;
+      background: #fff;
+      color: var(--ink);
+      font: inherit;
+      font-size: 13px;
+      outline: 0;
+      transition: border-color 140ms ease, box-shadow 140ms ease;
+    }
+
+    .admin-product-search-field input:focus {
+      border-color: #2c6ecb;
+      box-shadow: 0 0 0 1px #2c6ecb;
+    }
+
+    .admin-product-search-field input::-webkit-search-cancel-button {
+      display: none;
+    }
+
+    .admin-product-search-clear {
+      position: absolute;
+      right: 5px;
+      width: 32px;
+      height: 32px;
+      border: 0;
+      background: transparent;
+    }
+
+    .admin-product-search-clear:hover {
+      background: #eceeee;
+    }
+
     .admin-product-list {
       display: grid;
     }
@@ -5646,6 +5707,14 @@
         grid-template-columns: repeat(3, minmax(0, 1fr));
       }
 
+      .admin-product-search {
+        padding: 10px 12px;
+      }
+
+      .admin-product-search-field {
+        width: 100%;
+      }
+
       .product-trash-head {
         align-items: flex-start;
         padding: 10px 12px;
@@ -6038,6 +6107,15 @@
                 <button class="button ghost" type="button" data-toggle-product-trash aria-expanded="false"><i data-lucide="recycle"></i> 回收站 <span id="adminTrashCount">0</span></button>
                 <button class="button" type="button" data-new-product><i data-lucide="plus"></i> Add product</button>
               </div>
+            </div>
+            <div class="admin-product-search">
+              <div class="admin-product-search-field">
+                <i data-lucide="search"></i>
+                <label class="sr-only" for="adminProductSearch">Search products</label>
+                <input type="search" id="adminProductSearch" data-admin-product-search placeholder="Search name, barcode, item code or SKU" autocomplete="off" autocapitalize="off" spellcheck="false" aria-describedby="adminProductSearchStatus">
+                <button class="action-button admin-product-search-clear" type="button" data-clear-admin-product-search aria-label="Clear product search" title="Clear search" hidden><i data-lucide="x"></i></button>
+              </div>
+              <span class="sr-only" id="adminProductSearchStatus" role="status" aria-live="polite"></span>
             </div>
             <section class="product-trash-panel" data-product-trash-panel hidden>
               <div class="product-trash-head">
@@ -7438,6 +7516,7 @@
       lang: storageGet(LANG_KEY) || "en",
       productEditorLanguage: storageGet("gogoshop_product_editor_language") || storageGet(LANG_KEY) || "en",
       adminTab: "overview",
+      adminProductSearch: "",
       trashOpen: false,
       session: null,
       profile: null,
@@ -10473,14 +10552,78 @@
       `;
     }
 
+    function normalizeAdminProductSearch(value) {
+      const text = String(value || "").trim().toLocaleLowerCase();
+      return typeof text.normalize === "function" ? text.normalize("NFKC") : text;
+    }
+
+    function adminProductSearchFields(product) {
+      const localization = window.GOGOSHOP_PRODUCT_LOCALIZATIONS?.[product.id] || {};
+      return [
+        product.title,
+        product.titleEn,
+        product.titleZh,
+        localization.en,
+        localization.zh,
+        product.barcode,
+        product.sku,
+        product.experimentalCode,
+        productItemCode(product),
+        product.id,
+        product.category,
+        product.productType,
+        categoryName(productCategoryKey(product)),
+        product.tags,
+        product.vendor
+      ].map(normalizeAdminProductSearch).filter(Boolean);
+    }
+
+    function adminProductSearchResults() {
+      const query = normalizeAdminProductSearch(state.adminProductSearch);
+      if (!query) return state.products;
+      const terms = query.split(/\s+/).filter(Boolean);
+      const compactQuery = query.replace(/[\s_-]+/g, "");
+      return state.products.map((product, index) => {
+        const fields = adminProductSearchFields(product);
+        const haystack = fields.join("\n");
+        const compactHaystack = haystack.replace(/[\s_-]+/g, "");
+        const matches = terms.every((term) => haystack.includes(term)) || (compactQuery && compactHaystack.includes(compactQuery));
+        const exact = fields.some((field) => field === query || field.replace(/[\s_-]+/g, "") === compactQuery);
+        const startsWith = fields.some((field) => field.startsWith(query));
+        return { product, index, matches, rank: exact ? 0 : startsWith ? 1 : 2 };
+      }).filter((entry) => entry.matches)
+        .sort((a, b) => a.rank - b.rank || a.index - b.index)
+        .map((entry) => entry.product);
+    }
+
+    function clearAdminProductSearch(focus = true) {
+      state.adminProductSearch = "";
+      const input = $("#adminProductSearch");
+      if (input) input.value = "";
+      renderAdminProducts();
+      if (focus) input?.focus();
+    }
+
     function renderAdminProducts() {
-      $("#adminProductCount").textContent = `${state.products.length} products`;
+      const searchInput = $("#adminProductSearch");
+      if (searchInput && searchInput.value !== state.adminProductSearch) searchInput.value = state.adminProductSearch;
+      const query = normalizeAdminProductSearch(state.adminProductSearch);
+      const products = adminProductSearchResults();
+      $("#adminProductCount").textContent = query
+        ? `${products.length} of ${state.products.length} products`
+        : `${state.products.length} products`;
+      const searchStatus = $("#adminProductSearchStatus");
+      if (searchStatus) searchStatus.textContent = query
+        ? `${products.length} matching products`
+        : `${state.products.length} products`;
+      const clearSearch = $("[data-clear-admin-product-search]");
+      if (clearSearch) clearSearch.hidden = !query;
       $("#adminTrashCount").textContent = String(state.deletedProducts.length);
       const trashToggle = $("[data-toggle-product-trash]");
       const trashPanel = $("[data-product-trash-panel]");
       trashToggle.setAttribute("aria-expanded", String(state.trashOpen));
       trashPanel.hidden = !state.trashOpen;
-      $("#adminProductRows").innerHTML = state.products.map((product) => `
+      $("#adminProductRows").innerHTML = products.map((product) => `
         <article class="admin-product-item" data-edit-product-row="${escapeHtml(product.id)}" role="button" tabindex="0" aria-label="Edit ${escapeHtml(product.title)}">
           <img src="${escapeHtml(product.image)}" alt="${escapeHtml(product.title)}">
           <div class="admin-product-summary">
@@ -10498,7 +10641,7 @@
             <button class="action-button" type="button" data-delete-product="${escapeHtml(product.id)}" aria-label="Delete ${escapeHtml(product.title)}"><i data-lucide="trash-2"></i></button>
           </div>
         </article>
-      `).join("") || `<div class="empty-state">No active products</div>`;
+      `).join("") || `<div class="empty-state">${query ? `No products match “${escapeHtml(state.adminProductSearch.trim())}”` : "No active products"}</div>`;
       $("#adminTrashRows").innerHTML = state.deletedProducts.map((product) => `
         <article class="admin-product-item trashed">
           <img src="${escapeHtml(product.image)}" alt="${escapeHtml(product.title)}">
@@ -10517,6 +10660,7 @@
           </div>
         </article>
       `).join("") || `<div class="empty-state">回收站为空</div>`;
+      refreshIcons();
     }
 
     function renderTopProducts() {
@@ -11717,6 +11861,10 @@
         $("#searchInput").value = "";
         renderSearch();
       }
+      if (target.matches("[data-clear-admin-product-search]")) {
+        clearAdminProductSearch();
+        return;
+      }
       if (target.matches("[data-login-button]")) {
         event.preventDefault();
         attemptLogin(target.closest("form"));
@@ -11773,6 +11921,11 @@
     });
 
     document.addEventListener("input", (event) => {
+      if (event.target instanceof Element && event.target.matches("[data-admin-product-search]")) {
+        state.adminProductSearch = event.target.value;
+        renderAdminProducts();
+        return;
+      }
       if (event.target instanceof Element && event.target.closest("[data-design-form]")) {
         updateDesignFromForm();
       }
@@ -12031,6 +12184,22 @@
     });
 
     document.addEventListener("keydown", (event) => {
+      const adminProductSearchInput = event.target instanceof Element && event.target.matches("[data-admin-product-search]")
+        ? event.target
+        : null;
+      if (adminProductSearchInput && event.key === "Enter") {
+        const matches = adminProductSearchResults();
+        if (matches.length === 1) {
+          event.preventDefault();
+          editProduct(matches[0].id);
+        }
+        return;
+      }
+      if (adminProductSearchInput && event.key === "Escape" && state.adminProductSearch) {
+        event.preventDefault();
+        clearAdminProductSearch();
+        return;
+      }
       const barcodeInput = event.target instanceof Element && event.target.matches("[data-product-barcode-input]")
         ? event.target
         : null;
