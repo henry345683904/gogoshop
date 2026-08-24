@@ -58,7 +58,10 @@ as $$
 declare
   v_admin uuid := auth.uid();
   v_customer uuid;
-  v_customer_barcode text := nullif(upper(trim(coalesce(p_customer_barcode, ''))), '');
+  v_customer_barcode text := nullif(
+    regexp_replace(upper(trim(coalesce(p_customer_barcode, ''))), '[^0-9A-Z]', '', 'g'),
+    ''
+  );
   v_order public.orders%rowtype;
   v_order_number text;
   v_total numeric(12,2) := 0;
@@ -76,10 +79,18 @@ begin
     raise exception 'Cart is empty';
   end if;
 
+  if v_customer_barcode is not null and left(v_customer_barcode, 4) = 'CUST' then
+    v_customer_barcode := substr(v_customer_barcode, 5);
+  end if;
+  if v_customer_barcode is not null and length(v_customer_barcode) = 10 then
+    v_customer_barcode := 'CUST-' || v_customer_barcode;
+  end if;
+
   if v_customer_barcode is not null then
     select id into v_customer
     from public.profiles
-    where customer_barcode = v_customer_barcode
+    where regexp_replace(upper(coalesce(customer_barcode, '')), '[^0-9A-Z]', '', 'g')
+        = regexp_replace(upper(v_customer_barcode), '[^0-9A-Z]', '', 'g')
       and is_admin = false;
     if not found then raise exception 'Customer barcode not found'; end if;
   end if;
