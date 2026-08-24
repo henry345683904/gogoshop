@@ -3254,8 +3254,46 @@
       font-size: 12px;
     }
 
+    .product-inventory-summary {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      border-bottom: 1px solid #d8dada;
+      background: #f7f9f8;
+    }
+
+    .product-inventory-summary-item {
+      min-width: 0;
+      padding: 14px 18px;
+      border-right: 1px solid #dfe2e1;
+    }
+
+    .product-inventory-summary-item:last-child {
+      border-right: 0;
+    }
+
+    .product-inventory-summary-item span,
+    .product-inventory-summary-item strong {
+      display: block;
+      overflow-wrap: anywhere;
+    }
+
+    .product-inventory-summary-item span {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 650;
+      line-height: 1.3;
+    }
+
+    .product-inventory-summary-item strong {
+      margin-top: 5px;
+      color: var(--ink);
+      font-size: 20px;
+      font-variant-numeric: tabular-nums;
+      line-height: 1.15;
+    }
+
     .admin-product-search {
-      border-top: 1px solid #e1e3e3;
+      border-top: 0;
       border-bottom: 1px solid #d8dada;
       padding: 12px 18px;
       background: #fafbfb;
@@ -5712,6 +5750,19 @@
         padding: 10px 12px;
       }
 
+      .product-inventory-summary-item {
+        padding: 10px 8px;
+      }
+
+      .product-inventory-summary-item span {
+        font-size: 10px;
+      }
+
+      .product-inventory-summary-item strong {
+        margin-top: 4px;
+        font-size: 15px;
+      }
+
       .admin-product-search-field {
         width: 100%;
       }
@@ -6109,6 +6160,7 @@
                 <button class="button" type="button" data-new-product><i data-lucide="plus"></i> Add product</button>
               </div>
             </div>
+            <div class="product-inventory-summary" id="adminProductInventorySummary" aria-label="Inventory valuation"></div>
             <div class="admin-product-search">
               <div class="admin-product-search-field">
                 <i data-lucide="search"></i>
@@ -10612,6 +10664,37 @@
       if (focus) input?.focus();
     }
 
+    function productInventoryValuation(products = state.products) {
+      return products.reduce((totals, product) => {
+        const stock = Math.max(0, Number(product.stock) || 0);
+        totals.units += stock;
+        totals.cost += stock * Math.max(0, Number(product.costPerItem) || 0);
+        totals.retail += stock * Math.max(0, Number(product.price) || 0);
+        return totals;
+      }, { units: 0, cost: 0, retail: 0 });
+    }
+
+    function renderProductInventorySummary() {
+      const summary = $("#adminProductInventorySummary");
+      if (!summary) return;
+      const totals = productInventoryValuation();
+      const labels = state.lang === "zh"
+        ? ["剩余库存", "库存成本价值", "预计零售价值"]
+        : ["Units in stock", "Inventory cost value", "Retail value"];
+      const values = [
+        `${totals.units.toLocaleString(state.lang === "zh" ? "zh-CN" : "en-NZ")} ${state.lang === "zh" ? "件" : "units"}`,
+        formatPrice(totals.cost),
+        formatPrice(totals.retail)
+      ];
+      summary.setAttribute("aria-label", state.lang === "zh" ? "库存价值" : "Inventory valuation");
+      summary.innerHTML = labels.map((label, index) => `
+        <div class="product-inventory-summary-item">
+          <span>${label}</span>
+          <strong>${values[index]}</strong>
+        </div>
+      `).join("");
+    }
+
     function renderAdminProducts() {
       const searchInput = $("#adminProductSearch");
       if (searchInput && searchInput.value !== state.adminProductSearch) searchInput.value = state.adminProductSearch;
@@ -10626,6 +10709,7 @@
         : `${state.products.length} products`;
       const clearSearch = $("[data-clear-admin-product-search]");
       if (clearSearch) clearSearch.hidden = !query;
+      renderProductInventorySummary();
       $("#adminTrashCount").textContent = String(state.deletedProducts.length);
       const trashToggle = $("[data-toggle-product-trash]");
       const trashPanel = $("[data-product-trash-panel]");
