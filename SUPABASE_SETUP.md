@@ -13,6 +13,8 @@
 
 已有数据库只需额外运行一次 `supabase-storefront-security.sql`。该脚本会让普通访客仅能读取公开店面字段，供应商、进货价和 1688 货源信息只对管理员开放。
 
+后台商品媒体库需要额外运行一次 `supabase-product-media.sql`。该脚本会创建 `product_media` 图片索引表、公开读取的 `product-media` Storage 存储桶和管理员写入权限，并把现有商品中的 URL 图片登记到媒体库。
+
 ## 2. 创建管理员
 
 1. 先通过网站的“我的账户”创建一个邮箱账户。

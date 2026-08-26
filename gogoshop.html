@@ -3641,6 +3641,13 @@
       font-size: 12px;
     }
 
+    .shopify-card-head-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 7px;
+    }
+
     .product-barcode-scan-control {
       display: grid;
       min-width: 0;
@@ -3934,6 +3941,229 @@
       min-height: 34px;
       padding: 0 12px;
       font-size: 12px;
+    }
+
+    .product-media-library-modal[hidden] {
+      display: none;
+    }
+
+    .product-media-library-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 390;
+      display: grid;
+      place-items: center;
+      padding: 20px;
+      background: rgba(20, 24, 24, .62);
+    }
+
+    .product-media-library-dialog {
+      display: flex;
+      width: min(100%, 1080px);
+      max-height: min(90vh, 820px);
+      max-height: min(90dvh, 820px);
+      flex-direction: column;
+      overflow: hidden;
+      border: 1px solid #d7dada;
+      border-radius: 8px;
+      background: #fff;
+      box-shadow: 0 24px 80px rgba(20, 24, 24, .32);
+    }
+
+    .product-media-library-head {
+      flex: 0 0 auto;
+      border-bottom: 1px solid #e0e2e2;
+      background: #fff;
+    }
+
+    .product-media-library-title {
+      display: grid;
+      min-width: 0;
+      gap: 2px;
+    }
+
+    .product-media-library-title h2 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .product-media-library-title span,
+    .product-media-library-status {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .product-media-library-toolbar {
+      display: grid;
+      flex: 0 0 auto;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      border-bottom: 1px solid #e7e9e9;
+      padding: 12px 16px;
+      background: #fafbfb;
+    }
+
+    .product-media-library-search {
+      position: relative;
+      min-width: 0;
+    }
+
+    .product-media-library-search > svg {
+      position: absolute;
+      z-index: 1;
+      top: 50%;
+      left: 12px;
+      width: 16px;
+      height: 16px;
+      color: var(--muted);
+      pointer-events: none;
+      transform: translateY(-50%);
+    }
+
+    .product-media-library-search input {
+      width: 100%;
+      min-height: 40px;
+      padding: 8px 12px 8px 38px;
+    }
+
+    .product-media-library-body {
+      min-height: 240px;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      padding: 16px;
+      background: #f7f8f8;
+    }
+
+    .product-media-library-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(142px, 1fr));
+      gap: 12px;
+    }
+
+    .product-media-library-item {
+      display: grid;
+      min-width: 0;
+      overflow: hidden;
+      border: 1px solid #d8dada;
+      border-radius: 8px;
+      padding: 0;
+      background: #fff;
+      color: var(--ink);
+      cursor: pointer;
+      text-align: left;
+      transition: border-color 140ms ease, box-shadow 140ms ease;
+    }
+
+    .product-media-library-item:hover,
+    .product-media-library-item:focus-visible {
+      border-color: #878d8d;
+    }
+
+    .product-media-library-item.is-selected {
+      border-color: #111;
+      box-shadow: 0 0 0 2px #111;
+    }
+
+    .product-media-library-thumb {
+      position: relative;
+      overflow: hidden;
+      aspect-ratio: 1;
+      background: #eceeee;
+    }
+
+    .product-media-library-thumb img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .product-media-library-check {
+      position: absolute;
+      z-index: 1;
+      top: 8px;
+      right: 8px;
+      display: grid;
+      width: 24px;
+      height: 24px;
+      place-items: center;
+      border: 1px solid rgba(0, 0, 0, .3);
+      border-radius: 50%;
+      background: rgba(255, 255, 255, .94);
+      color: transparent;
+    }
+
+    .product-media-library-item.is-selected .product-media-library-check {
+      border-color: #111;
+      background: #111;
+      color: #fff;
+    }
+
+    .product-media-library-check svg {
+      width: 15px;
+      height: 15px;
+    }
+
+    .product-media-library-copy {
+      display: grid;
+      min-width: 0;
+      gap: 3px;
+      padding: 9px 10px 10px;
+    }
+
+    .product-media-library-copy strong,
+    .product-media-library-copy span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .product-media-library-copy strong {
+      font-size: 12px;
+    }
+
+    .product-media-library-copy span {
+      color: var(--muted);
+      font-size: 10px;
+    }
+
+    .product-media-library-empty {
+      display: grid;
+      min-height: 280px;
+      place-items: center;
+      align-content: center;
+      gap: 8px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .product-media-library-empty svg {
+      width: 30px;
+      height: 30px;
+    }
+
+    .product-media-library-empty strong {
+      color: var(--ink);
+      font-size: 14px;
+    }
+
+    .product-media-library-footer {
+      display: flex;
+      flex: 0 0 auto;
+      min-height: 66px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      border-top: 1px solid #dfe1e1;
+      padding: 12px 16px;
+      background: #fff;
+    }
+
+    .product-media-library-footer-actions {
+      display: flex;
+      flex: 0 0 auto;
+      gap: 8px;
     }
 
     .shopify-field-help {
@@ -6119,6 +6349,56 @@
       .shopify-media-actions .button {
         width: 100%;
       }
+
+      .shopify-card-head {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .shopify-card-head-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .product-media-library-modal {
+        place-items: stretch;
+        padding: 0;
+      }
+
+      .product-media-library-dialog {
+        width: 100%;
+        max-height: 100vh;
+        max-height: 100dvh;
+        border: 0;
+        border-radius: 0;
+      }
+
+      .product-media-library-toolbar {
+        grid-template-columns: 1fr;
+      }
+
+      .product-media-library-toolbar .button {
+        width: 100%;
+      }
+
+      .product-media-library-body {
+        padding: 10px;
+      }
+
+      .product-media-library-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 9px;
+      }
+
+      .product-media-library-footer {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .product-media-library-footer-actions .button {
+        flex: 1 1 0;
+      }
     }
 
     @media (max-width: 360px) {
@@ -6935,7 +7215,10 @@
             <section class="shopify-editor-card">
               <div class="shopify-card-head">
                 <h3>媒体</h3>
-                <button class="button ghost" type="button" data-open-product-image-file><i data-lucide="upload"></i> 添加媒体</button>
+                <div class="shopify-card-head-actions">
+                  <button class="button ghost" type="button" data-open-product-media-library><i data-lucide="images"></i> 从媒体库选择</button>
+                  <button class="button ghost" type="button" data-open-product-image-file><i data-lucide="upload"></i> 上传到媒体库</button>
+                </div>
               </div>
               <div class="shopify-media-layout">
                 <div class="product-editor-media-list" data-product-media-list aria-label="商品图片"></div>
@@ -6954,7 +7237,8 @@
                   </label>
                   <input type="file" accept="image/jpeg,image/png,image/webp" data-product-image-file multiple hidden>
                   <div class="shopify-media-actions">
-                    <button class="button ghost" type="button" data-open-product-image-file><i data-lucide="upload"></i> 上传文件</button>
+                    <button class="button ghost" type="button" data-open-product-media-library><i data-lucide="images"></i> 浏览媒体库</button>
+                    <button class="button ghost" type="button" data-open-product-image-file><i data-lucide="upload"></i> 上传新图片</button>
                     <button class="button ghost" type="button" data-clear-product-image><i data-lucide="trash-2"></i> 清空图片</button>
                   </div>
                 </div>
@@ -7086,6 +7370,36 @@
           </aside>
         </div>
       </form>
+    </div>
+  </section>
+
+  <section class="product-media-library-modal" id="productMediaLibraryModal" data-product-media-library-backdrop hidden aria-hidden="true">
+    <div class="product-media-library-dialog" role="dialog" aria-modal="true" aria-labelledby="productMediaLibraryTitle">
+      <div class="panel-head product-media-library-head">
+        <div class="product-media-library-title">
+          <h2 id="productMediaLibraryTitle">商品媒体库</h2>
+          <span id="productMediaLibraryMeta">Supabase 图片数据库</span>
+        </div>
+        <button class="icon-button" type="button" data-close-product-media-library aria-label="关闭媒体库" title="关闭"><i data-lucide="x"></i></button>
+      </div>
+      <div class="product-media-library-toolbar">
+        <label class="product-media-library-search">
+          <i data-lucide="search"></i>
+          <input type="search" data-product-media-search placeholder="搜索文件名或图片地址" autocomplete="off" aria-label="搜索媒体库">
+        </label>
+        <button class="button ghost" type="button" data-open-product-media-library-file><i data-lucide="upload"></i> 上传图片</button>
+        <input type="file" accept="image/jpeg,image/png,image/webp" data-product-media-library-file multiple hidden>
+      </div>
+      <div class="product-media-library-body">
+        <div class="product-media-library-grid" id="productMediaLibraryGrid"></div>
+      </div>
+      <div class="product-media-library-footer">
+        <span class="product-media-library-status" id="productMediaLibraryStatus" aria-live="polite">请选择图片</span>
+        <div class="product-media-library-footer-actions">
+          <button class="button ghost" type="button" data-close-product-media-library>取消</button>
+          <button class="button" type="button" data-use-product-media disabled><i data-lucide="check"></i> 添加所选图片</button>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -7319,6 +7633,7 @@
     const ORDER_NOTIFICATION_SEEN_KEY = "gogoshop_admin_order_notified_v1";
     const OAUTH_PENDING_KEY = "gogoshop_oauth_pending_v1";
     const PURGED_PRODUCT_TAG = "__gogoshop_purged__";
+    const PRODUCT_MEDIA_BUCKET = "product-media";
     const SUPABASE_URL = "https://ucnkcddhrptqpdlvcohy.supabase.co";
     const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_zv6WbyD1hZKUx-Zyak-fPw_e1mURTN8";
     const SOURCE_COST_DIVISOR = 4;
@@ -7907,6 +8222,12 @@
       designEditorSection: "hero",
       designEditorBlockId: null,
       designPreviewDevice: "desktop",
+      productMedia: [],
+      productMediaLoaded: false,
+      productMediaLoading: false,
+      productMediaError: "",
+      productMediaSearch: "",
+      selectedProductMediaIds: [],
       productReturnHash: "#catalog",
       productReturnScroll: 0
     };
@@ -11647,6 +11968,297 @@
       input.select();
     }
 
+    function normalizeProductMediaRecord(record) {
+      return {
+        id: String(record?.id || ""),
+        url: String(record?.url || "").trim(),
+        storagePath: String(record?.storage_path || "").trim(),
+        fileName: String(record?.file_name || "").trim() || productMediaFileName(record?.url),
+        altText: String(record?.alt_text || "").trim(),
+        mimeType: String(record?.mime_type || "").trim(),
+        sizeBytes: Math.max(0, Number(record?.size_bytes) || 0),
+        width: Math.max(0, Number(record?.width) || 0),
+        height: Math.max(0, Number(record?.height) || 0),
+        source: String(record?.source || "product"),
+        createdAt: record?.created_at || null,
+        updatedAt: record?.updated_at || null
+      };
+    }
+
+    function productMediaFileName(url) {
+      const cleanUrl = String(url || "").split(/[?#]/)[0];
+      const lastSegment = cleanUrl.split("/").filter(Boolean).pop() || "Product image";
+      try {
+        return decodeURIComponent(lastSegment);
+      } catch {
+        return lastSegment;
+      }
+    }
+
+    function productMediaFileSize(bytes) {
+      const size = Math.max(0, Number(bytes) || 0);
+      if (!size) return "";
+      if (size < 1024) return `${size} B`;
+      if (size < 1024 * 1024) return `${Math.round(size / 1024)} KB`;
+      return `${(size / (1024 * 1024)).toFixed(1)} MB`;
+    }
+
+    function productMediaSearchResults() {
+      const query = normalizeAdminProductSearch(state.productMediaSearch);
+      if (!query) return state.productMedia;
+      const terms = query.split(/\s+/).filter(Boolean);
+      return state.productMedia.filter((media) => {
+        const text = normalizeAdminProductSearch([media.fileName, media.altText, media.url, media.mimeType].join(" "));
+        return terms.every((term) => text.includes(term));
+      });
+    }
+
+    function renderProductMediaLibrary() {
+      const modal = $("#productMediaLibraryModal");
+      const grid = $("#productMediaLibraryGrid");
+      if (!modal || !grid) return;
+      const isChinese = state.lang === "zh";
+      const searchInput = $("[data-product-media-search]", modal);
+      if (searchInput && searchInput.value !== state.productMediaSearch) searchInput.value = state.productMediaSearch;
+      const selectedIds = new Set(state.selectedProductMediaIds);
+      const useButton = $("[data-use-product-media]", modal);
+      const status = $("#productMediaLibraryStatus");
+      const meta = $("#productMediaLibraryMeta");
+      if (useButton) {
+        useButton.disabled = selectedIds.size === 0 || state.productMediaLoading;
+        useButton.innerHTML = `<i data-lucide="check"></i> ${isChinese ? "添加所选图片" : "Add selected"}`;
+      }
+      $("#productMediaLibraryTitle").textContent = isChinese ? "商品媒体库" : "Product media library";
+      if (meta) meta.textContent = state.productMediaLoaded
+        ? `${state.productMedia.length.toLocaleString(isChinese ? "zh-CN" : "en-NZ")} ${isChinese ? "张图片 · Supabase 数据库" : "images · Supabase database"}`
+        : (isChinese ? "Supabase 图片数据库" : "Supabase image database");
+      if (status) status.textContent = state.productMediaLoading
+        ? (isChinese ? "正在处理图片..." : "Processing images...")
+        : selectedIds.size
+          ? (isChinese ? `已选择 ${selectedIds.size} 张图片` : `${selectedIds.size} selected`)
+          : (isChinese ? "请选择一张或多张图片" : "Select one or more images");
+
+      if (state.productMediaLoading && !state.productMediaLoaded) {
+        grid.innerHTML = `<div class="product-media-library-empty"><i data-lucide="loader-circle"></i><strong>${isChinese ? "正在加载媒体库" : "Loading media library"}</strong></div>`;
+        refreshIcons();
+        return;
+      }
+      if (state.productMediaError) {
+        grid.innerHTML = `<div class="product-media-library-empty"><i data-lucide="database-zap"></i><strong>${isChinese ? "媒体库尚未连接" : "Media library is not connected"}</strong><span>${escapeHtml(state.productMediaError)}</span></div>`;
+        refreshIcons();
+        return;
+      }
+      const mediaItems = productMediaSearchResults();
+      if (!mediaItems.length) {
+        grid.innerHTML = `<div class="product-media-library-empty"><i data-lucide="images"></i><strong>${state.productMediaSearch ? (isChinese ? "没有匹配的图片" : "No matching images") : (isChinese ? "媒体库还是空的" : "The media library is empty")}</strong><span>${isChinese ? "上传图片后即可在所有商品中重复使用" : "Upload images to reuse them across products"}</span></div>`;
+        refreshIcons();
+        return;
+      }
+      grid.innerHTML = mediaItems.map((media) => {
+        const selected = selectedIds.has(media.id);
+        const details = [
+          media.width && media.height ? `${media.width} × ${media.height}` : "",
+          productMediaFileSize(media.sizeBytes),
+          media.source === "upload" ? (isChinese ? "已上传" : "Uploaded") : (isChinese ? "商品图片" : "Product image")
+        ].filter(Boolean).join(" · ");
+        return `
+          <button class="product-media-library-item ${selected ? "is-selected" : ""}" type="button" data-product-media-id="${escapeHtml(media.id)}" aria-pressed="${selected}" title="${escapeHtml(media.fileName)}">
+            <span class="product-media-library-thumb">
+              <img src="${escapeHtml(media.url)}" alt="${escapeHtml(media.altText || media.fileName)}" loading="lazy">
+              <span class="product-media-library-check"><i data-lucide="check"></i></span>
+            </span>
+            <span class="product-media-library-copy"><strong>${escapeHtml(media.fileName)}</strong><span>${escapeHtml(details || media.url)}</span></span>
+          </button>
+        `;
+      }).join("");
+      refreshIcons();
+    }
+
+    async function loadProductMediaLibrary(force = false) {
+      if (!db || !state.profile?.is_admin || state.productMediaLoading || (state.productMediaLoaded && !force)) {
+        renderProductMediaLibrary();
+        return;
+      }
+      state.productMediaLoading = true;
+      state.productMediaError = "";
+      renderProductMediaLibrary();
+      const { data, error } = await db.from("product_media")
+        .select("id,url,storage_path,file_name,alt_text,mime_type,size_bytes,width,height,source,created_at,updated_at")
+        .order("created_at", { ascending: false })
+        .limit(1000);
+      state.productMediaLoading = false;
+      if (error) {
+        state.productMediaLoaded = false;
+        state.productMediaError = state.lang === "zh"
+          ? "请先在 Supabase SQL Editor 运行 supabase-product-media.sql"
+          : "Run supabase-product-media.sql in Supabase SQL Editor first";
+        renderProductMediaLibrary();
+        return;
+      }
+      state.productMedia = (data || []).map(normalizeProductMediaRecord).filter((media) => media.id && media.url);
+      state.productMediaLoaded = true;
+      state.productMediaError = "";
+      renderProductMediaLibrary();
+    }
+
+    function openProductMediaLibrary() {
+      const modal = $("#productMediaLibraryModal");
+      if (!modal || $("#productEditorModal")?.hidden) return;
+      openProductMediaLibrary.lastFocus = document.activeElement;
+      state.productMediaSearch = "";
+      state.selectedProductMediaIds = [];
+      state.productMediaError = "";
+      modal.hidden = false;
+      modal.setAttribute("aria-hidden", "false");
+      renderProductMediaLibrary();
+      loadProductMediaLibrary();
+      window.requestAnimationFrame(() => $("[data-product-media-search]", modal)?.focus({ preventScroll: true }));
+    }
+
+    function closeProductMediaLibrary() {
+      const modal = $("#productMediaLibraryModal");
+      if (!modal || modal.hidden) return;
+      modal.hidden = true;
+      modal.setAttribute("aria-hidden", "true");
+      state.selectedProductMediaIds = [];
+      if (openProductMediaLibrary.lastFocus instanceof HTMLElement && openProductMediaLibrary.lastFocus.isConnected) {
+        openProductMediaLibrary.lastFocus.focus({ preventScroll: true });
+      }
+      openProductMediaLibrary.lastFocus = null;
+    }
+
+    function toggleProductMediaSelection(mediaId) {
+      const id = String(mediaId || "");
+      if (!state.productMedia.some((media) => media.id === id)) return;
+      const selectedIds = new Set(state.selectedProductMediaIds);
+      if (selectedIds.has(id)) selectedIds.delete(id);
+      else selectedIds.add(id);
+      state.selectedProductMediaIds = [...selectedIds];
+      renderProductMediaLibrary();
+    }
+
+    function useSelectedProductMedia() {
+      const urls = state.selectedProductMediaIds
+        .map((id) => state.productMedia.find((media) => media.id === id)?.url)
+        .filter(Boolean);
+      if (!urls.length) return;
+      setProductMediaUrls([...getProductMediaUrls(), ...urls]);
+      closeProductMediaLibrary();
+      showToast(state.lang === "zh" ? `已添加 ${urls.length} 张媒体库图片` : `${urls.length} media library image${urls.length === 1 ? "" : "s"} added`);
+    }
+
+    function productMediaStoragePath(file, mimeType) {
+      const extension = mimeType === "image/png" ? "png" : mimeType === "image/webp" ? "webp" : "jpg";
+      const baseName = String(file?.name || "image")
+        .replace(/\.[^.]+$/, "")
+        .normalize("NFKD")
+        .replace(/[^a-zA-Z0-9]+/g, "-")
+        .replace(/(^-|-$)/g, "")
+        .slice(0, 48) || "image";
+      const id = crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      const date = new Date();
+      return `products/${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, "0")}/${id}-${baseName}.${extension}`;
+    }
+
+    function resizeProductImageBlob(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onerror = () => reject(reader.error || new Error("Unable to read image"));
+        reader.onload = () => {
+          const source = new Image();
+          source.onerror = () => reject(new Error("Unable to load image"));
+          source.onload = () => {
+            const maxSide = 1600;
+            const scale = Math.min(1, maxSide / Math.max(source.width, source.height));
+            const width = Math.max(1, Math.round(source.width * scale));
+            const height = Math.max(1, Math.round(source.height * scale));
+            const canvas = document.createElement("canvas");
+            canvas.width = width;
+            canvas.height = height;
+            const context = canvas.getContext("2d");
+            if (!context) {
+              reject(new Error("Unable to resize image"));
+              return;
+            }
+            context.drawImage(source, 0, 0, width, height);
+            const mimeType = file.type === "image/png" ? "image/png" : "image/jpeg";
+            canvas.toBlob((blob) => {
+              if (!blob) reject(new Error("Unable to encode image"));
+              else resolve({ blob, width, height, mimeType });
+            }, mimeType, mimeType === "image/png" ? undefined : 0.86);
+          };
+          source.src = reader.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function uploadProductMediaFiles(files, options = {}) {
+      const selectedFiles = [...(files || [])].filter((file) => /^image\/(jpeg|png|webp)$/i.test(file.type));
+      if (!selectedFiles.length) return [];
+      if (!db || !state.profile?.is_admin) throw new Error(state.lang === "zh" ? "管理员登录已失效" : "Administrator session expired");
+      state.productMediaLoading = true;
+      state.productMediaError = "";
+      renderProductMediaLibrary();
+      const uploaded = [];
+      try {
+        for (const file of selectedFiles) {
+          const optimized = await resizeProductImageBlob(file);
+          const storagePath = productMediaStoragePath(file, optimized.mimeType);
+          const { error: uploadError } = await db.storage.from(PRODUCT_MEDIA_BUCKET).upload(storagePath, optimized.blob, {
+            cacheControl: "31536000",
+            contentType: optimized.mimeType,
+            upsert: false
+          });
+          if (uploadError) throw uploadError;
+          const { data: publicUrlData } = db.storage.from(PRODUCT_MEDIA_BUCKET).getPublicUrl(storagePath);
+          const publicUrl = publicUrlData?.publicUrl || "";
+          const { data: mediaRecord, error: mediaError } = await db.from("product_media").insert({
+            url: publicUrl,
+            storage_path: storagePath,
+            file_name: file.name || productMediaFileName(publicUrl),
+            alt_text: String(file.name || "").replace(/\.[^.]+$/, ""),
+            mime_type: optimized.mimeType,
+            size_bytes: optimized.blob.size,
+            width: optimized.width,
+            height: optimized.height,
+            source: "upload"
+          }).select("id,url,storage_path,file_name,alt_text,mime_type,size_bytes,width,height,source,created_at,updated_at").single();
+          if (mediaError) {
+            await db.storage.from(PRODUCT_MEDIA_BUCKET).remove([storagePath]);
+            throw mediaError;
+          }
+          uploaded.push(normalizeProductMediaRecord(mediaRecord));
+        }
+        state.productMedia = [...uploaded, ...state.productMedia.filter((media) => !uploaded.some((item) => item.id === media.id))];
+        state.productMediaLoaded = true;
+        if (options.selectUploaded) {
+          state.selectedProductMediaIds = [...new Set([...state.selectedProductMediaIds, ...uploaded.map((media) => media.id)])];
+        }
+        if (options.addToProduct) {
+          setProductMediaUrls([...getProductMediaUrls(), ...uploaded.map((media) => media.url)]);
+        }
+        showToast(state.lang === "zh" ? `${uploaded.length} 张图片已保存到媒体库` : `${uploaded.length} image${uploaded.length === 1 ? "" : "s"} saved to the media library`);
+        return uploaded;
+      } finally {
+        state.productMediaLoading = false;
+        renderProductMediaLibrary();
+      }
+    }
+
+    async function registerProductMediaUrls(urls) {
+      if (!db || !state.profile?.is_admin) return;
+      const records = [...new Set((urls || []).map((url) => String(url || "").trim()).filter((url) => url && !url.startsWith("data:")))].map((url) => ({
+        url,
+        file_name: productMediaFileName(url),
+        source: "product",
+        updated_at: new Date().toISOString()
+      }));
+      if (!records.length) return;
+      const { error } = await db.from("product_media").upsert(records, { onConflict: "url", ignoreDuplicates: true });
+      if (!error) state.productMediaLoaded = false;
+    }
+
     function getProductMediaUrls(form = $("[data-product-form]")) {
       if (!form) return [];
       const fields = form.elements;
@@ -11763,6 +12375,7 @@
     }
 
     function closeProductEditor() {
+      closeProductMediaLibrary();
       resetProductBarcodeScanner();
       $("#productEditorModal").hidden = true;
       document.body.classList.remove("editor-open");
@@ -11817,11 +12430,30 @@
       const files = [...(input?.files || [])];
       if (!files.length) return;
       try {
-        const imageUrls = await Promise.all(files.map(resizeProductImageFile));
-        setProductMediaUrls([...getProductMediaUrls(), ...imageUrls]);
-        showToast(files.length > 1 ? `${files.length} 张商品图片已添加` : "商品图片已添加");
+        await uploadProductMediaFiles(files, { addToProduct: true });
       } catch (error) {
-        showToast("图片处理失败，请重试");
+        const message = /product_media|product-media|bucket|storage/i.test(authErrorMessage(error))
+          ? (state.lang === "zh" ? "媒体库尚未完成数据库设置，请先运行 supabase-product-media.sql" : "The media library is not configured. Run supabase-product-media.sql first.")
+          : (state.lang === "zh" ? `图片上传失败：${authErrorMessage(error)}` : `Image upload failed: ${authErrorMessage(error)}`);
+        state.productMediaError = message;
+        showToast(message);
+      } finally {
+        input.value = "";
+      }
+    }
+
+    async function handleProductMediaLibraryFile(input) {
+      const files = [...(input?.files || [])];
+      if (!files.length) return;
+      try {
+        await uploadProductMediaFiles(files, { selectUploaded: true });
+      } catch (error) {
+        const message = /product_media|product-media|bucket|storage/i.test(authErrorMessage(error))
+          ? (state.lang === "zh" ? "媒体库尚未完成数据库设置，请先运行 supabase-product-media.sql" : "The media library is not configured. Run supabase-product-media.sql first.")
+          : (state.lang === "zh" ? `图片上传失败：${authErrorMessage(error)}` : `Image upload failed: ${authErrorMessage(error)}`);
+        state.productMediaError = message;
+        showToast(message);
+        renderProductMediaLibrary();
       } finally {
         input.value = "";
       }
@@ -12229,6 +12861,7 @@
       }
       try {
         await syncProductToSupabase(product);
+        await registerProductMediaUrls(images);
         if (existing) {
           Object.assign(existing, product);
         } else {
@@ -12316,6 +12949,11 @@
         return;
       }
 
+      if (clickedElement.matches("[data-product-media-library-backdrop]")) {
+        closeProductMediaLibrary();
+        return;
+      }
+
       if (clickedElement.matches("[data-order-detail-backdrop]") || clickedElement.closest("[data-close-order-detail]")) {
         closeOrderDetail();
         return;
@@ -12354,6 +12992,11 @@
         showOrderDetail(orderCard.dataset.orderDetail);
         return;
       }
+      const mediaLibraryItem = clickedElement.closest("[data-product-media-id]");
+      if (mediaLibraryItem) {
+        toggleProductMediaSelection(mediaLibraryItem.dataset.productMediaId);
+        return;
+      }
       const target = clickedElement.closest("button, a");
       if (!target) return;
 
@@ -12363,6 +13006,22 @@
       }
       if (target.matches("[data-open-product-image-file]")) {
         $("[data-product-image-file]")?.click();
+        return;
+      }
+      if (target.matches("[data-open-product-media-library]")) {
+        openProductMediaLibrary();
+        return;
+      }
+      if (target.matches("[data-close-product-media-library]")) {
+        closeProductMediaLibrary();
+        return;
+      }
+      if (target.matches("[data-open-product-media-library-file]")) {
+        $("[data-product-media-library-file]")?.click();
+        return;
+      }
+      if (target.matches("[data-use-product-media]")) {
+        useSelectedProductMedia();
         return;
       }
       if (target.matches("[data-scan-product-barcode]")) {
@@ -12531,6 +13190,11 @@
     });
 
     document.addEventListener("input", (event) => {
+      if (event.target instanceof Element && event.target.matches("[data-product-media-search]")) {
+        state.productMediaSearch = event.target.value;
+        renderProductMediaLibrary();
+        return;
+      }
       if (event.target instanceof Element && event.target.matches("[data-admin-product-search]")) {
         state.adminProductSearch = event.target.value;
         renderAdminProducts();
@@ -12577,6 +13241,9 @@
       }
       if (event.target instanceof Element && event.target.matches("[data-product-image-file]")) {
         handleProductImageFile(event.target);
+      }
+      if (event.target instanceof Element && event.target.matches("[data-product-media-library-file]")) {
+        handleProductMediaLibraryFile(event.target);
       }
       if (event.target instanceof Element && event.target.matches("[data-design-hero-image-file]")) {
         handleDesignImageFile(event.target, "heroImage");
@@ -12806,6 +13473,11 @@
     });
 
     document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && !$("#productMediaLibraryModal").hidden) {
+        event.preventDefault();
+        closeProductMediaLibrary();
+        return;
+      }
       const adminProductSearchInput = event.target instanceof Element && event.target.matches("[data-admin-product-search]")
         ? event.target
         : null;
