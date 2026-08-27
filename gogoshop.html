@@ -4166,6 +4166,246 @@
       gap: 8px;
     }
 
+    .product-label-modal[hidden] {
+      display: none;
+    }
+
+    .product-label-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 420;
+      display: grid;
+      place-items: center;
+      padding: 20px;
+      background: rgba(20, 24, 24, .62);
+    }
+
+    .product-label-dialog {
+      display: flex;
+      width: min(100%, 860px);
+      max-height: min(90vh, 720px);
+      max-height: min(90dvh, 720px);
+      flex-direction: column;
+      overflow: hidden;
+      border: 1px solid #d7dada;
+      border-radius: 8px;
+      background: #fff;
+      box-shadow: 0 24px 80px rgba(20, 24, 24, .32);
+    }
+
+    .product-label-head {
+      flex: 0 0 auto;
+      border-bottom: 1px solid #e0e2e2;
+      background: #fff;
+    }
+
+    .product-label-head-copy {
+      display: grid;
+      min-width: 0;
+      gap: 2px;
+    }
+
+    .product-label-head-copy h2 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .product-label-head-copy span {
+      overflow: hidden;
+      color: var(--muted);
+      font-size: 12px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .product-label-body {
+      display: grid;
+      min-height: 0;
+      overflow: auto;
+      grid-template-columns: 300px minmax(0, 1fr);
+      background: #f4f5f5;
+    }
+
+    .product-label-controls {
+      display: grid;
+      align-content: start;
+      gap: 15px;
+      border-right: 1px solid #dfe1e1;
+      padding: 18px;
+      background: #fff;
+    }
+
+    .product-label-controls .field {
+      gap: 6px;
+    }
+
+    .product-label-custom-size {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .product-label-custom-size[hidden] {
+      display: none;
+    }
+
+    .product-label-option-list {
+      display: grid;
+      gap: 8px;
+      border-top: 1px solid #e3e5e5;
+      padding-top: 14px;
+    }
+
+    .product-label-check {
+      display: flex;
+      min-height: 36px;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      font-weight: 650;
+    }
+
+    .product-label-check input {
+      width: 18px;
+      height: 18px;
+      flex: 0 0 auto;
+      accent-color: #111;
+    }
+
+    .product-label-preview-stage {
+      display: grid;
+      min-height: 390px;
+      place-items: center;
+      overflow: auto;
+      padding: 28px;
+      background: #eceeee;
+    }
+
+    .product-label-paper {
+      display: flex;
+      width: var(--label-preview-width, 360px);
+      max-width: 100%;
+      aspect-ratio: var(--label-aspect, 4 / 3);
+      box-sizing: border-box;
+      container-type: inline-size;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      border: 1px solid #bfc3c3;
+      padding: 4.5% 5.5%;
+      background: #fff;
+      color: #000;
+      box-shadow: 0 10px 28px rgba(20, 24, 24, .16);
+      font-family: Arial, Helvetica, sans-serif;
+      text-align: center;
+    }
+
+    .product-label-paper-header {
+      display: grid;
+      width: 100%;
+      min-height: 0;
+      gap: 2px;
+      margin-bottom: 2.5%;
+      line-height: 1.05;
+    }
+
+    .product-label-paper-name,
+    .product-label-paper-code {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .product-label-paper-name {
+      font-size: clamp(10px, 3.4cqw, 15px);
+      font-weight: 750;
+    }
+
+    .product-label-paper-code {
+      font-size: clamp(8px, 2.7cqw, 12px);
+      font-weight: 650;
+    }
+
+    .product-label-paper-price {
+      flex: 0 0 auto;
+      font-size: clamp(24px, 9cqw, 40px);
+      font-weight: 900;
+      line-height: .95;
+    }
+
+    .product-label-paper-barcode {
+      display: flex;
+      width: 100%;
+      min-height: 0;
+      flex: 1 1 auto;
+      align-items: stretch;
+      justify-content: center;
+      margin-top: 3%;
+    }
+
+    .product-label-paper-barcode svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+      min-height: 32px;
+      color: #000;
+    }
+
+    .product-label-paper-digits {
+      width: 100%;
+      margin-top: 1.5%;
+      overflow: hidden;
+      font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+      font-size: clamp(9px, 3cqw, 13px);
+      font-weight: 800;
+      letter-spacing: .08em;
+      line-height: 1;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .product-label-paper.is-shallow {
+      padding-top: 3.5%;
+      padding-bottom: 3.5%;
+    }
+
+    .product-label-paper.is-shallow .product-label-paper-header {
+      gap: 1px;
+      margin-bottom: 1.5%;
+    }
+
+    .product-label-paper.is-shallow .product-label-paper-price {
+      font-size: clamp(21px, 7.5cqw, 34px);
+    }
+
+    .product-label-footer {
+      display: flex;
+      min-height: 66px;
+      flex: 0 0 auto;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      border-top: 1px solid #dfe1e1;
+      padding: 12px 16px;
+      background: #fff;
+    }
+
+    .product-label-footer-meta {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 650;
+    }
+
+    .product-label-footer-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    #productLabelPrint {
+      display: none;
+    }
+
     .shopify-field-help {
       margin: 6px 0 0;
       color: var(--muted);
@@ -6309,6 +6549,16 @@
         display: none;
       }
 
+      .product-editor-actions .product-label-editor-button {
+        display: inline-flex;
+        width: 36px;
+        padding: 0;
+      }
+
+      .product-label-editor-button span {
+        display: none;
+      }
+
       .product-editor-actions .button {
         min-height: 34px;
         padding: 0 12px;
@@ -6397,6 +6647,50 @@
       }
 
       .product-media-library-footer-actions .button {
+        flex: 1 1 0;
+      }
+
+      .product-label-modal {
+        place-items: stretch;
+        padding: 0;
+      }
+
+      .product-label-dialog {
+        width: 100%;
+        max-height: 100vh;
+        max-height: 100dvh;
+        border: 0;
+        border-radius: 0;
+      }
+
+      .product-label-body {
+        grid-template-columns: 1fr;
+      }
+
+      .product-label-controls {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        border-right: 0;
+        border-bottom: 1px solid #dfe1e1;
+        padding: 12px;
+      }
+
+      .product-label-option-list {
+        grid-column: 1 / -1;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .product-label-preview-stage {
+        min-height: 280px;
+        padding: 18px;
+      }
+
+      .product-label-footer {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .product-label-footer-actions .button {
         flex: 1 1 0;
       }
     }
@@ -7162,6 +7456,7 @@
               <span class="status live" data-product-editor-status>在售</span>
             </div>
             <div class="product-editor-actions">
+              <button class="button ghost product-label-editor-button" type="button" data-print-product-label-editor hidden title="打印商品 Label" aria-label="打印商品 Label"><i data-lucide="printer"></i><span>打印 Label</span></button>
               <button class="button ghost" type="button" data-close-product-editor>取消</button>
               <button class="button" type="submit" data-save-product><i data-lucide="save"></i> 保存</button>
             </div>
@@ -7370,6 +7665,61 @@
           </aside>
         </div>
       </form>
+    </div>
+  </section>
+
+  <section class="product-label-modal" id="productLabelModal" data-product-label-backdrop hidden aria-hidden="true">
+    <div class="product-label-dialog" role="dialog" aria-modal="true" aria-labelledby="productLabelTitle" tabindex="-1">
+      <div class="panel-head product-label-head">
+        <div class="product-label-head-copy">
+          <h2 id="productLabelTitle">打印商品 Label</h2>
+          <span id="productLabelProductName"></span>
+        </div>
+        <button class="icon-button" type="button" data-close-product-label aria-label="关闭 Label 设置" title="关闭"><i data-lucide="x"></i></button>
+      </div>
+      <div class="product-label-body">
+        <div class="product-label-controls" data-product-label-controls>
+          <label class="field">
+            <span>Label 尺寸</span>
+            <select data-product-label-size>
+              <option value="40x30">40 × 30 mm</option>
+              <option value="50x30">50 × 30 mm</option>
+              <option value="50x40">50 × 40 mm</option>
+              <option value="60x40">60 × 40 mm</option>
+              <option value="70x50">70 × 50 mm</option>
+              <option value="custom">自定义尺寸</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>打印数量</span>
+            <input type="number" data-product-label-copies min="1" max="100" step="1" inputmode="numeric" value="1">
+          </label>
+          <div class="product-label-custom-size" data-product-label-custom-size hidden>
+            <label class="field">
+              <span>宽度 mm</span>
+              <input type="number" data-product-label-width min="25" max="100" step="1" inputmode="decimal" value="40">
+            </label>
+            <label class="field">
+              <span>高度 mm</span>
+              <input type="number" data-product-label-height min="20" max="100" step="1" inputmode="decimal" value="30">
+            </label>
+          </div>
+          <div class="product-label-option-list">
+            <label class="product-label-check"><input type="checkbox" data-product-label-show-name checked><span>显示英文名称</span></label>
+            <label class="product-label-check"><input type="checkbox" data-product-label-show-code checked><span>显示商品货号</span></label>
+          </div>
+        </div>
+        <div class="product-label-preview-stage">
+          <div class="product-label-paper" id="productLabelPreview" aria-label="Label 预览"></div>
+        </div>
+      </div>
+      <div class="product-label-footer">
+        <span class="product-label-footer-meta" id="productLabelMeta"></span>
+        <div class="product-label-footer-actions">
+          <button class="button ghost" type="button" data-close-product-label>取消</button>
+          <button class="button" type="button" data-print-product-label><i data-lucide="printer"></i> 打印 Label</button>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -7632,6 +7982,7 @@
     const ORDER_NOTIFICATION_UNREAD_KEY = "gogoshop_admin_order_unread_v1";
     const ORDER_NOTIFICATION_SEEN_KEY = "gogoshop_admin_order_notified_v1";
     const OAUTH_PENDING_KEY = "gogoshop_oauth_pending_v1";
+    const PRODUCT_LABEL_SETTINGS_KEY = "gogoshop_product_label_settings_v1";
     const PURGED_PRODUCT_TAG = "__gogoshop_purged__";
     const PRODUCT_MEDIA_BUCKET = "product-media";
     const SUPABASE_URL = "https://ucnkcddhrptqpdlvcohy.supabase.co";
@@ -7684,6 +8035,27 @@
       "+": "nwnnnwnwn",
       "%": "nnnwnwnwn",
       "*": "nwnnwnwnn"
+    });
+    const PRODUCT_LABEL_SIZES = Object.freeze({
+      "40x30": { width: 40, height: 30 },
+      "50x30": { width: 50, height: 30 },
+      "50x40": { width: 50, height: 40 },
+      "60x40": { width: 60, height: 40 },
+      "70x50": { width: 70, height: 50 }
+    });
+    const PRODUCT_LABEL_DEFAULTS = Object.freeze({
+      size: "40x30",
+      width: 40,
+      height: 30,
+      copies: 1,
+      showName: true,
+      showCode: true
+    });
+    const EAN13_PATTERNS = Object.freeze({
+      L: ["0001101", "0011001", "0010011", "0111101", "0100011", "0110001", "0101111", "0111011", "0110111", "0001011"],
+      G: ["0100111", "0110011", "0011011", "0100001", "0011101", "0111001", "0000101", "0010001", "0001001", "0010111"],
+      R: ["1110010", "1100110", "1101100", "1000010", "1011100", "1001110", "1010000", "1000100", "1001000", "1110100"],
+      parity: ["LLLLLL", "LLGLGG", "LLGGLG", "LLGGGL", "LGLLGG", "LGGLLG", "LGGGLL", "LGLGLG", "LGLGGL", "LGGLGL"]
     });
     const VIP_TIERS = Object.freeze([
       { key: "silver", minSpend: 0, labelKey: "vipSilver" },
@@ -8228,6 +8600,8 @@
       productMediaError: "",
       productMediaSearch: "",
       selectedProductMediaIds: [],
+      labelProductId: null,
+      labelSettings: { ...PRODUCT_LABEL_DEFAULTS, ...load(PRODUCT_LABEL_SETTINGS_KEY, PRODUCT_LABEL_DEFAULTS) },
       productReturnHash: "#catalog",
       productReturnScroll: 0
     };
@@ -8339,6 +8713,199 @@
           ${options.compact ? "" : `<div class="product-barcode-label">${escapeHtml(label)}</div>`}
         </div>
       `;
+    }
+
+    function normalizeProductLabelSettings(settings = {}) {
+      const requestedSize = String(settings.size || PRODUCT_LABEL_DEFAULTS.size);
+      const size = requestedSize === "custom" || PRODUCT_LABEL_SIZES[requestedSize]
+        ? requestedSize
+        : PRODUCT_LABEL_DEFAULTS.size;
+      const preset = PRODUCT_LABEL_SIZES[size];
+      const customWidth = Math.min(100, Math.max(25, Number(settings.width) || PRODUCT_LABEL_DEFAULTS.width));
+      const customHeight = Math.min(100, Math.max(20, Number(settings.height) || PRODUCT_LABEL_DEFAULTS.height));
+      return {
+        size,
+        width: preset?.width || customWidth,
+        height: preset?.height || customHeight,
+        copies: Math.min(100, Math.max(1, Math.round(Number(settings.copies) || 1))),
+        showName: settings.showName !== false,
+        showCode: settings.showCode !== false
+      };
+    }
+
+    function productLabelEnglishName(product) {
+      const localization = window.GOGOSHOP_PRODUCT_LOCALIZATIONS?.[product?.id];
+      return String(product?.titleEn || localization?.en || product?.title || "Product").trim();
+    }
+
+    function productLabelBarcodeValue(product) {
+      const itemCode = productItemCode(product);
+      const preferred = normalizeProductBarcode(product?.barcode || itemCode).toUpperCase();
+      if (preferred && /^[0-9A-Z .$/+%-]+$/.test(preferred)) return preferred;
+      return String(itemCode || "").toUpperCase().replace(/[^0-9A-Z .$/+%-]/g, "");
+    }
+
+    function ean13BarcodeSvg(value) {
+      const digits = String(value || "");
+      if (!/^\d{13}$/.test(digits)) return "";
+      const checksumTotal = [...digits.slice(0, 12)].reduce((sum, digit, index) => sum + Number(digit) * (index % 2 === 0 ? 1 : 3), 0);
+      const expectedChecksum = (10 - (checksumTotal % 10)) % 10;
+      if (expectedChecksum !== Number(digits[12])) return "";
+      const parity = EAN13_PATTERNS.parity[Number(digits[0])];
+      let modules = "101";
+      for (let index = 1; index <= 6; index += 1) {
+        modules += EAN13_PATTERNS[parity[index - 1]][Number(digits[index])];
+      }
+      modules += "01010";
+      for (let index = 7; index <= 12; index += 1) {
+        modules += EAN13_PATTERNS.R[Number(digits[index])];
+      }
+      modules += "101";
+      const quietZone = 10;
+      const height = 60;
+      const bars = [...modules].map((module, index) => module === "1"
+        ? `<rect x="${quietZone + index}" y="0" width="1" height="${height}" fill="currentColor"></rect>`
+        : "").join("");
+      return `<svg viewBox="0 0 ${modules.length + quietZone * 2} ${height}" preserveAspectRatio="none" shape-rendering="crispEdges" aria-hidden="true" focusable="false">${bars}</svg>`;
+    }
+
+    function productLabelBarcodeSvg(value) {
+      return ean13BarcodeSvg(value) || code39BarcodeSvg(value, { compact: true, preserveAspectRatio: "none" });
+    }
+
+    function productLabelContentMarkup(product, settings) {
+      const englishName = productLabelEnglishName(product);
+      const itemCode = productItemCode(product);
+      const barcode = productLabelBarcodeValue(product);
+      const header = settings.showName || settings.showCode
+        ? `<div class="product-label-paper-header">${settings.showName ? `<div class="product-label-paper-name">${escapeHtml(englishName)}</div>` : ""}${settings.showCode ? `<div class="product-label-paper-code">No. ${escapeHtml(itemCode || barcode)}</div>` : ""}</div>`
+        : "";
+      return `${header}<div class="product-label-paper-price">$${Math.max(0, Number(product?.price) || 0).toFixed(2)}</div><div class="product-label-paper-barcode">${productLabelBarcodeSvg(barcode)}</div><div class="product-label-paper-digits">${escapeHtml(barcode)}</div>`;
+    }
+
+    function writeProductLabelControls(settings) {
+      const normalized = normalizeProductLabelSettings(settings);
+      const sizeInput = $("[data-product-label-size]");
+      if (!sizeInput) return;
+      sizeInput.value = normalized.size;
+      $("[data-product-label-width]").value = normalized.width;
+      $("[data-product-label-height]").value = normalized.height;
+      $("[data-product-label-copies]").value = normalized.copies;
+      $("[data-product-label-show-name]").checked = normalized.showName;
+      $("[data-product-label-show-code]").checked = normalized.showCode;
+    }
+
+    function readProductLabelSettings() {
+      const size = $("[data-product-label-size]")?.value || PRODUCT_LABEL_DEFAULTS.size;
+      return normalizeProductLabelSettings({
+        size,
+        width: $("[data-product-label-width]")?.value,
+        height: $("[data-product-label-height]")?.value,
+        copies: $("[data-product-label-copies]")?.value,
+        showName: Boolean($("[data-product-label-show-name]")?.checked),
+        showCode: Boolean($("[data-product-label-show-code]")?.checked)
+      });
+    }
+
+    function renderProductLabelPreview() {
+      const product = state.products.find((item) => String(item.id) === String(state.labelProductId));
+      const preview = $("#productLabelPreview");
+      if (!product || !preview) return;
+      const settings = readProductLabelSettings();
+      state.labelSettings = settings;
+      save(PRODUCT_LABEL_SETTINGS_KEY, settings);
+      const customFields = $("[data-product-label-custom-size]");
+      if (customFields) customFields.hidden = settings.size !== "custom";
+      if (settings.size !== "custom") {
+        $("[data-product-label-width]").value = settings.width;
+        $("[data-product-label-height]").value = settings.height;
+      }
+      const previewWidth = Math.min(460, Math.max(260, settings.width * 7));
+      preview.className = `product-label-paper${settings.height <= 30 ? " is-shallow" : ""}`;
+      preview.style.setProperty("--label-preview-width", `${previewWidth}px`);
+      preview.style.setProperty("--label-aspect", `${settings.width} / ${settings.height}`);
+      preview.innerHTML = productLabelContentMarkup(product, settings);
+      const meta = $("#productLabelMeta");
+      if (meta) meta.textContent = `${settings.width} × ${settings.height} mm · ${settings.copies} ${settings.copies === 1 ? "Label" : "Labels"} · ${productLabelBarcodeValue(product)}`;
+    }
+
+    function openProductLabel(productId) {
+      const product = state.products.find((item) => String(item.id) === String(productId));
+      const modal = $("#productLabelModal");
+      if (!product || !modal) {
+        showToast(state.lang === "zh" ? "找不到该商品" : "Product not found");
+        return;
+      }
+      openProductLabel.lastFocus = document.activeElement;
+      state.labelProductId = product.id;
+      state.labelSettings = normalizeProductLabelSettings(state.labelSettings);
+      writeProductLabelControls(state.labelSettings);
+      $("#productLabelProductName").textContent = `${productLabelEnglishName(product)} · ${formatPrice(product.price)}`;
+      modal.hidden = false;
+      modal.setAttribute("aria-hidden", "false");
+      renderProductLabelPreview();
+      refreshIcons();
+      window.requestAnimationFrame(() => modal.querySelector(".product-label-dialog")?.focus({ preventScroll: true }));
+    }
+
+    function closeProductLabel() {
+      const modal = $("#productLabelModal");
+      if (!modal || modal.hidden) return;
+      modal.hidden = true;
+      modal.setAttribute("aria-hidden", "true");
+      state.labelProductId = null;
+      if (openProductLabel.lastFocus instanceof HTMLElement && openProductLabel.lastFocus.isConnected) {
+        openProductLabel.lastFocus.focus({ preventScroll: true });
+      }
+      openProductLabel.lastFocus = null;
+    }
+
+    function printProductLabel() {
+      const product = state.products.find((item) => String(item.id) === String(state.labelProductId));
+      if (!product) {
+        showToast(state.lang === "zh" ? "找不到该商品" : "Product not found");
+        return;
+      }
+      const settings = readProductLabelSettings();
+      const barcode = productLabelBarcodeValue(product);
+      if (!barcode) {
+        showToast(state.lang === "zh" ? "请先为商品添加条码或货号" : "Add a barcode or item code first");
+        return;
+      }
+      state.labelSettings = settings;
+      save(PRODUCT_LABEL_SETTINGS_KEY, settings);
+      let printRoot = document.querySelector("#productLabelPrint");
+      if (!printRoot) {
+        printRoot = document.createElement("main");
+        printRoot.id = "productLabelPrint";
+        printRoot.setAttribute("aria-hidden", "true");
+        document.body.appendChild(printRoot);
+      }
+      let printStyle = document.querySelector("#productLabelPrintStyle");
+      if (!printStyle) {
+        printStyle = document.createElement("style");
+        printStyle.id = "productLabelPrintStyle";
+        document.head.appendChild(printStyle);
+      }
+      const compact = settings.height <= 30;
+      printStyle.textContent = `#productLabelPrint{display:none}@page{size:${settings.width}mm ${settings.height}mm;margin:0}@media print{html,body{width:${settings.width}mm!important;min-width:0!important;margin:0!important;padding:0!important;background:#fff!important}body.product-label-printing>*:not(#productLabelPrint){display:none!important}body.product-label-printing #productLabelPrint{display:block!important;width:${settings.width}mm!important;margin:0!important;padding:0!important;color:#000!important;background:#fff!important}#productLabelPrint .product-label-print-sheet{display:flex!important;width:${settings.width}mm!important;height:${settings.height}mm!important;box-sizing:border-box!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;overflow:hidden!important;margin:0!important;padding:${compact ? "1.2mm 2mm" : "1.8mm 2.5mm"}!important;background:#fff!important;color:#000!important;font-family:Arial,Helvetica,sans-serif!important;text-align:center!important;break-after:page!important;page-break-after:always!important}#productLabelPrint .product-label-print-sheet:last-child{break-after:auto!important;page-break-after:auto!important}#productLabelPrint .product-label-paper-header{display:grid!important;width:100%!important;max-height:${compact ? "6mm" : "9mm"}!important;gap:.35mm!important;margin:0 0 ${compact ? ".45mm" : ".8mm"}!important;line-height:1!important}#productLabelPrint .product-label-paper-name,#productLabelPrint .product-label-paper-code{display:block!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}#productLabelPrint .product-label-paper-name{font-size:${compact ? "6.8pt" : "8.5pt"}!important;font-weight:700!important}#productLabelPrint .product-label-paper-code{font-size:${compact ? "6.2pt" : "7.5pt"}!important;font-weight:600!important}#productLabelPrint .product-label-paper-price{flex:0 0 auto!important;font-size:${compact ? "17pt" : "23pt"}!important;font-weight:900!important;line-height:.92!important}#productLabelPrint .product-label-paper-barcode{display:flex!important;width:100%!important;min-height:${compact ? "7mm" : "10mm"}!important;max-height:${compact ? "10mm" : "16mm"}!important;flex:1 1 auto!important;align-items:stretch!important;justify-content:center!important;margin-top:${compact ? ".55mm" : "1mm"}!important}#productLabelPrint .product-label-paper-barcode svg{display:block!important;width:100%!important;height:100%!important;min-height:0!important;color:#000!important}#productLabelPrint .product-label-paper-digits{width:100%!important;margin-top:.35mm!important;overflow:hidden!important;font-family:Consolas,"Liberation Mono",monospace!important;font-size:${compact ? "6.8pt" : "8pt"}!important;font-weight:700!important;letter-spacing:.08em!important;line-height:1!important;text-overflow:ellipsis!important;white-space:nowrap!important}}`;
+      const content = productLabelContentMarkup(product, settings);
+      printRoot.innerHTML = Array.from({ length: settings.copies }, () => `<section class="product-label-print-sheet${compact ? " is-shallow" : ""}">${content}</section>`).join("");
+      document.body.classList.remove("admin-receipt-printing");
+      document.body.classList.add("product-label-printing");
+      const cleanup = () => {
+        document.body.classList.remove("product-label-printing");
+        printStyle.remove();
+      };
+      window.addEventListener("afterprint", cleanup, { once: true });
+      window.setTimeout(() => {
+        try {
+          window.print();
+        } catch (error) {
+          cleanup();
+          showToast(state.lang === "zh" ? "无法打开打印窗口" : "Unable to open print dialog");
+        }
+      }, 50);
     }
 
     function customerBarcodeForUser(user = state.session?.user, profile = state.profile) {
@@ -11540,6 +12107,7 @@
             <span class="status ${product.published ? "live" : "draft"}">${product.published ? "Live" : "Draft"}</span>
           </div>
           <div class="row-actions">
+            <button class="action-button" type="button" data-open-product-label="${escapeHtml(product.id)}" aria-label="打印 ${escapeHtml(product.title)} Label" title="打印 Label"><i data-lucide="printer"></i></button>
             <button class="action-button ${product.featured ? "pinned" : ""}" type="button" data-toggle-featured="${escapeHtml(product.id)}" aria-label="${product.featured ? "Unpin" : "Pin"} ${escapeHtml(product.title)}" aria-pressed="${Boolean(product.featured)}" title="${product.featured ? "取消首页置顶" : "置顶到首页"}"><i data-lucide="${product.featured ? "pin-off" : "pin"}"></i></button>
             <button class="action-button" type="button" data-delete-product="${escapeHtml(product.id)}" aria-label="Delete ${escapeHtml(product.title)}"><i data-lucide="trash-2"></i></button>
           </div>
@@ -12333,6 +12901,8 @@
       const published = active && fields.namedItem("onlineStore").checked;
       const status = $("[data-product-editor-status]");
       const sideStatus = $("[data-product-editor-side-status]");
+      const labelButton = $("[data-print-product-label-editor]", form);
+      if (labelButton) labelButton.hidden = !String(fields.namedItem("id")?.value || "").trim();
       const formalCodePreview = $("[data-product-formal-code-preview]", form);
       if (formalCodePreview) {
         const sku = String(fields.namedItem("sku")?.value || "").trim();
@@ -12375,6 +12945,7 @@
     }
 
     function closeProductEditor() {
+      closeProductLabel();
       closeProductMediaLibrary();
       resetProductBarcodeScanner();
       $("#productEditorModal").hidden = true;
@@ -12944,6 +13515,11 @@
         return;
       }
 
+      if (clickedElement.matches("[data-product-label-backdrop]")) {
+        closeProductLabel();
+        return;
+      }
+
       if (clickedElement.matches("[data-product-editor-backdrop]")) {
         closeProductEditor();
         return;
@@ -13000,6 +13576,23 @@
       const target = clickedElement.closest("button, a");
       if (!target) return;
 
+      if (target.matches("[data-close-product-label]")) {
+        closeProductLabel();
+        return;
+      }
+      if (target.matches("[data-print-product-label]")) {
+        printProductLabel();
+        return;
+      }
+      if (target.matches("[data-print-product-label-editor]")) {
+        const productId = $("[data-product-form]")?.elements.namedItem("id")?.value;
+        if (productId) openProductLabel(productId);
+        return;
+      }
+      if (target.matches("[data-open-product-label]")) {
+        openProductLabel(target.dataset.openProductLabel);
+        return;
+      }
       if (target.matches("[data-description-format]")) {
         formatProductDescription(target.dataset.descriptionFormat);
         return;
@@ -13190,6 +13783,10 @@
     });
 
     document.addEventListener("input", (event) => {
+      if (event.target instanceof Element && event.target.closest("[data-product-label-controls]")) {
+        renderProductLabelPreview();
+        return;
+      }
       if (event.target instanceof Element && event.target.matches("[data-product-media-search]")) {
         state.productMediaSearch = event.target.value;
         renderProductMediaLibrary();
@@ -13234,6 +13831,10 @@
     });
 
     document.addEventListener("change", (event) => {
+      if (event.target instanceof Element && event.target.closest("[data-product-label-controls]")) {
+        renderProductLabelPreview();
+        return;
+      }
       if (event.target instanceof Element && event.target.matches("[data-analytics-range]")) {
         state.analyticsRange = event.target.value;
         renderSalesAnalytics();
@@ -13473,6 +14074,11 @@
     });
 
     document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && !$("#productLabelModal").hidden) {
+        event.preventDefault();
+        closeProductLabel();
+        return;
+      }
       if (event.key === "Escape" && !$("#productMediaLibraryModal").hidden) {
         event.preventDefault();
         closeProductMediaLibrary();
