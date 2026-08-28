@@ -8269,6 +8269,7 @@
         applyVoucher: "Apply voucher",
         noVoucher: "Do not use a voucher",
         voucherDiscount: "Voucher discount",
+        orderDiscount: "Order discount",
         voucherAvailable: "Available",
         voucherUsed: "Used",
         voucherReserved: "Reserved",
@@ -8403,6 +8404,7 @@
         applyVoucher: "使用代金券",
         noVoucher: "不使用代金券",
         voucherDiscount: "代金券优惠",
+        orderDiscount: "本单折扣",
         voucherAvailable: "可使用",
         voucherUsed: "已使用",
         voucherReserved: "结账处理中",
@@ -10244,6 +10246,7 @@
       ), 0);
       const subtotal = Number(order.subtotal ?? calculatedSubtotal ?? order.total);
       const discount = Number(order.discount_amount || 0);
+      const discountLabel = String(order.order_number || "").startsWith("POS-") ? t("orderDiscount") : t("voucherDiscount");
       const itemCount = items.reduce((sum, item) => sum + Number(item.quantity || 0), 0)
         || Number(order.item_count || 0);
       const paymentMethod = order.payment_provider === "stripe" ? "Stripe" : t("manualPaymentMethod");
@@ -10282,7 +10285,7 @@
         </section>
         <div class="order-detail-totals">
           <div class="order-detail-total-row"><span>${t("subtotal")}</span><strong>${formatPrice(subtotal || order.total)}</strong></div>
-          ${discount > 0 ? `<div class="order-detail-total-row"><span>${t("voucherDiscount")} · ${escapeHtml(order.voucher_code || "")}</span><strong>-${formatPrice(discount)}</strong></div>` : ""}
+          ${discount > 0 ? `<div class="order-detail-total-row"><span>${escapeHtml(discountLabel)}${order.voucher_code ? ` · ${escapeHtml(order.voucher_code)}` : ""}</span><strong>-${formatPrice(discount)}</strong></div>` : ""}
           <div class="order-detail-total-row"><span>${t("itemCount")}</span><strong>${itemCount}</strong></div>
           ${order.status === "confirmed" ? `<div class="order-detail-total-row"><span>${t("pointsEarned")}</span><strong>+${Number(order.points_awarded || 0)}</strong></div>` : ""}
           <div class="order-detail-total-row final"><span>${t("total")}</span><strong>${formatPrice(order.total)}</strong></div>
@@ -11478,7 +11481,7 @@
           <tr data-admin-order-row="${escapeHtml(order.id)}">
             <td><strong>${escapeHtml(order.order_number)}</strong><div class="muted">${new Date(order.created_at).toLocaleString("en-NZ")}</div></td>
             <td>${order.order_number?.startsWith("POS-") && order.user_id === state.session?.user?.id ? '<strong>到店顾客</strong><div class="muted">线下扫码</div>' : `${escapeHtml(customer.full_name || customer.email || "Customer")}<div class="muted">${escapeHtml(customer.email || "")}</div>`}</td>
-            <td>${formatPrice(order.total)}<div class="muted">${Number(order.item_count)} items${Number(order.discount_amount || 0) > 0 ? ` · ${escapeHtml(order.voucher_code || "Voucher")} -${formatPrice(order.discount_amount)}` : ""}</div></td>
+            <td>${formatPrice(order.total)}<div class="muted">${Number(order.item_count)} items${Number(order.discount_amount || 0) > 0 ? ` · ${escapeHtml(order.voucher_code || (String(order.order_number || "").startsWith("POS-") ? "POS Discount" : "Discount"))} -${formatPrice(order.discount_amount)}` : ""}</div></td>
             <td>
               <div class="order-statuses" style="justify-content: flex-start;">
                 <span class="status ${paymentStatusClass(order)}">${escapeHtml(paymentStatusLabel(order))}</span>
@@ -11520,6 +11523,7 @@
       const total = Number(order.total || 0);
       const discount = Number(order.discount_amount || 0);
       const subtotal = Number(order.subtotal ?? total + discount);
+      const discountLabel = String(order.order_number || "").startsWith("POS-") ? (isChinese ? "本单折扣" : "Order Discount") : (isChinese ? "代金券" : "Voucher");
       const gstAmount = Math.round(total * 15 / 115 * 100) / 100;
       const customer = order.profiles || {};
       const hasCustomer = !String(order.order_number || "").startsWith("POS-") || (customer.is_admin !== true && order.user_id !== state.session?.user?.id);
@@ -11530,7 +11534,7 @@
         const unitPrice = Number(item.unit_price || 0);
         return `<div class="line"><strong>${escapeHtml(item.product_title || "Item")}</strong><span>${quantity} x ${formatPrice(unitPrice)} = ${formatPrice(quantity * unitPrice)}</span>${item.item_note ? `<small>${isChinese ? "备注" : "Note"}: ${escapeHtml(item.item_note)}</small>` : ""}</div>`;
       }).join("");
-      const discountBlock = discount > 0 ? `<div class="meta"><span>${isChinese ? "原价" : "Subtotal"}: ${formatPrice(subtotal)}</span><span>${isChinese ? "代金券" : "Voucher"} ${escapeHtml(order.voucher_code || "")}: -${formatPrice(discount)}</span></div>` : "";
+      const discountBlock = discount > 0 ? `<div class="meta"><span>${isChinese ? "原价" : "Subtotal"}: ${formatPrice(subtotal)}</span><span>${escapeHtml(discountLabel)}${order.voucher_code ? ` ${escapeHtml(order.voucher_code)}` : ""}: -${formatPrice(discount)}</span></div>` : "";
       const orderNoteBlock = order.order_note ? `<div class="meta"><span>${isChinese ? "订单备注" : "Order Note"}: ${escapeHtml(order.order_note)}</span></div>` : "";
       let receiptPrint = document.querySelector("#adminReceiptPrint");
       if (!receiptPrint) {

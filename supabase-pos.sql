@@ -42,14 +42,20 @@ alter table public.orders drop constraint if exists orders_order_source_check;
 alter table public.orders add constraint orders_order_source_check
   check (order_source in ('online', 'pos'));
 
+begin;
+
 drop function if exists public.create_pos_order(jsonb);
 drop function if exists public.create_pos_order(jsonb, text);
 drop function if exists public.create_pos_order(jsonb, text, uuid);
+drop function if exists public.create_pos_order(jsonb, text, uuid, text);
+drop function if exists public.create_pos_order(jsonb, text, uuid, text, text, numeric);
 create or replace function public.create_pos_order(
   p_items jsonb,
   p_customer_barcode text default null,
   p_customer_voucher_id uuid default null,
-  p_order_note text default null
+  p_order_note text default null,
+  p_manual_discount_type text default null,
+  p_manual_discount_value numeric default 0
 )
 returns public.orders
 language plpgsql
@@ -68,11 +74,15 @@ declare
   v_item_count integer := 0;
   v_points integer := 0;
   v_discount numeric(12,2) := 0;
+  v_voucher_discount numeric(12,2) := 0;
+  v_manual_discount numeric(12,2) := 0;
+  v_manual_discount_type text := nullif(lower(trim(coalesce(p_manual_discount_type, ''))), '');
   v_customer_voucher public.customer_vouchers%rowtype;
   v_voucher public.vouchers%rowtype;
   v_item jsonb;
   v_product public.products%rowtype;
   v_quantity integer;
+  v_unit_price numeric(12,2);
 begin
   if not public.is_admin() then raise exception 'Administrator access required'; end if;
   if p_items is null or jsonb_typeof(p_items) <> 'array' or jsonb_array_length(p_items) = 0 then
@@ -105,7 +115,8 @@ begin
     select jsonb_build_object(
       'product_id', item ->> 'product_id',
       'quantity', sum(greatest(1, coalesce((item ->> 'quantity')::integer, 1))),
-      'note', max(left(coalesce(item ->> 'note', ''), 500))
+      'note', max(left(coalesce(item ->> 'note', ''), 500)),
+      'unit_price', max(nullif(item ->> 'unit_price', '')::numeric)
     )
     from jsonb_array_elements(p_items) as entries(item)
     group by item ->> 'product_id'
@@ -116,7 +127,9 @@ begin
       for update;
     if not found then raise exception 'Product unavailable: %', v_item ->> 'product_id'; end if;
     if v_product.stock < v_quantity then raise exception 'Insufficient stock for %', v_product.title; end if;
-    v_total := v_total + (v_product.price * v_quantity);
+    v_unit_price := round(coalesce((v_item ->> 'unit_price')::numeric, v_product.price), 2);
+    if v_unit_price < 0 or v_unit_price > 999999.99 then raise exception 'Invalid unit price for %', v_product.title; end if;
+    v_total := v_total + (v_unit_price * v_quantity);
     v_item_count := v_item_count + v_quantity;
   end loop;
 
@@ -136,15 +149,29 @@ begin
     if v_total < v_voucher.minimum_spend then raise exception 'Minimum spend not reached'; end if;
 
     if v_voucher.discount_type = 'fixed' then
-      v_discount := least(v_total, v_voucher.discount_value);
+      v_voucher_discount := least(v_total, v_voucher.discount_value);
     else
-      v_discount := round(v_total * v_voucher.discount_value / 100, 2);
+      v_voucher_discount := round(v_total * v_voucher.discount_value / 100, 2);
       if v_voucher.maximum_discount is not null then
-        v_discount := least(v_discount, v_voucher.maximum_discount);
+        v_voucher_discount := least(v_voucher_discount, v_voucher.maximum_discount);
       end if;
-      v_discount := least(v_total, v_discount);
+      v_voucher_discount := least(v_total, v_voucher_discount);
     end if;
   end if;
+
+  if coalesce(p_manual_discount_value, 0) < 0 then
+    raise exception 'Manual discount cannot be negative';
+  end if;
+  if v_manual_discount_type is not null and v_manual_discount_type not in ('percent', 'fixed') then
+    raise exception 'Manual discount type must be percent or fixed';
+  end if;
+  if v_manual_discount_type = 'percent' then
+    if coalesce(p_manual_discount_value, 0) > 100 then raise exception 'Percentage discount cannot exceed 100'; end if;
+    v_manual_discount := round(greatest(0, v_total - v_voucher_discount) * coalesce(p_manual_discount_value, 0) / 100, 2);
+  elsif v_manual_discount_type = 'fixed' then
+    v_manual_discount := least(greatest(0, v_total - v_voucher_discount), round(coalesce(p_manual_discount_value, 0), 2));
+  end if;
+  v_discount := least(v_total, round(v_voucher_discount + v_manual_discount, 2));
 
   v_order_number := 'POS-' || to_char(clock_timestamp(), 'YYMMDDHH24MISS') || '-' || upper(substr(gen_random_uuid()::text, 1, 4));
   v_points := case when v_customer is null then 0 else round(v_total - v_discount)::integer end;
@@ -164,15 +191,17 @@ begin
     select jsonb_build_object(
       'product_id', item ->> 'product_id',
       'quantity', sum(greatest(1, coalesce((item ->> 'quantity')::integer, 1))),
-      'note', max(left(coalesce(item ->> 'note', ''), 500))
+      'note', max(left(coalesce(item ->> 'note', ''), 500)),
+      'unit_price', max(nullif(item ->> 'unit_price', '')::numeric)
     )
     from jsonb_array_elements(p_items) as entries(item)
     group by item ->> 'product_id'
   loop
     v_quantity := (v_item ->> 'quantity')::integer;
     select * into v_product from public.products where id = v_item ->> 'product_id';
+    v_unit_price := round(coalesce((v_item ->> 'unit_price')::numeric, v_product.price), 2);
     insert into public.order_items (order_id, product_id, product_title, unit_price, quantity, item_note)
-    values (v_order.id, v_product.id, v_product.title, v_product.price, v_quantity, trim(coalesce(v_item ->> 'note', '')));
+    values (v_order.id, v_product.id, v_product.title, v_unit_price, v_quantity, trim(coalesce(v_item ->> 'note', '')));
     update public.products
       set stock = stock - v_quantity,
           sales = sales + v_quantity,
@@ -200,5 +229,7 @@ begin
 end;
 $$;
 
-revoke all on function public.create_pos_order(jsonb, text, uuid, text) from public, anon;
-grant execute on function public.create_pos_order(jsonb, text, uuid, text) to authenticated;
+revoke all on function public.create_pos_order(jsonb, text, uuid, text, text, numeric) from public, anon;
+grant execute on function public.create_pos_order(jsonb, text, uuid, text, text, numeric) to authenticated;
+
+commit;
