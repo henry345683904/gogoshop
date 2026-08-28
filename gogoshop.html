@@ -7698,6 +7698,7 @@
                   <option value="keychains-gifts">钥匙链与礼品饰品</option>
                   <option value="phone-cases">手机壳</option>
                   <option value="phone-accessories">手机配件</option>
+                  <option value="office-supplies">办公用品</option>
                 </select>
               </label>
               <label class="field">
@@ -8034,7 +8035,7 @@
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="product-localizations.js?v=4"></script>
+  <script src="product-localizations.js?v=5"></script>
   <script>
     const STORAGE_KEY = "gogoshop_products_v1";
     const CART_KEY = "gogoshop_cart_v1";
@@ -9487,9 +9488,25 @@
       ));
     }
 
+    function isOfficeSupplyProduct(product) {
+      if (!product) return false;
+      const localization = window.GOGOSHOP_PRODUCT_LOCALIZATIONS?.[product.id] || {};
+      const text = [
+        product.productType,
+        product.title,
+        product.titleEn,
+        product.titleZh,
+        localization.en,
+        localization.zh,
+        product.tags
+      ].map((value) => String(value || "").toLocaleLowerCase()).join(" ");
+      return /\b(?:staplers?|scissors?|mechanical pencils?|calculators?|ballpoint pens?|pencils?|erasers?|rulers?|markers?|highlighters?|notebooks?|notepads?|sticky notes?|memo pads?|paper clips?|binder clips?|hole punches?|tape dispensers?|glue sticks?|wireless (?:computer )?(?:mouse|mice)|computer (?:mouse|mice)|stationery)\b|订书机|剪刀|自动铅笔|计算器|圆珠笔|铅笔|橡皮|直尺|尺子|记号笔|荧光笔|笔记本|便签|便利贴|回形针|长尾夹|打孔器|胶带座|胶棒|无线鼠标|办公用品|文具/.test(text);
+    }
+
     function productCategoryKey(product) {
       return storefrontCategoryByProductId.get(product.id)
-        || (storefrontCategoryKeys.has(product.category) ? product.category : "keychains-gifts");
+        || (storefrontCategoryKeys.has(product.category) ? product.category : "")
+        || (isOfficeSupplyProduct(product) ? "office-supplies" : "keychains-gifts");
     }
 
     function customerWelcomeText() {

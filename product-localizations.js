@@ -154,6 +154,16 @@
         "smart-glasses", "1688-1018946132656", "1688-1033862052730",
         "1688-1038217531653", "1688-1039846904285", "1688-1055132607351"
       ]
+    },
+    {
+      key: "office-supplies",
+      en: "Office Supplies",
+      zh: "办公用品",
+      icon: "briefcase-business",
+      ids: [
+        "cil-20608", "cil-22409", "cil-22862", "cil-60283", "cil-bf-zh-841",
+        "cil-bo13376", "cil-bo13383", "cil-bo27687", "cil-bo27694"
+      ]
     }
   ]);
 })();
