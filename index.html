@@ -7081,6 +7081,7 @@
               <div class="form-actions">
                 <button class="button ghost" type="button" data-toggle-product-trash aria-expanded="false"><i data-lucide="recycle"></i> 回收站 <span id="adminTrashCount">0</span></button>
                 <button class="button ghost" type="button" data-print-phone-case-atlas title="打印手机壳图谱"><i data-lucide="book-open"></i> <span data-i18n="phoneCaseAtlas">手机壳图谱</span></button>
+                <button class="button ghost" type="button" data-print-keychain-atlas title="打印钥匙链图谱"><i data-lucide="key-round"></i> <span data-i18n="keychainAtlas">钥匙链图谱</span></button>
                 <button class="button" type="button" data-new-product><i data-lucide="plus"></i> Add product</button>
               </div>
             </div>
@@ -8256,6 +8257,8 @@
         adminDashboard: "Admin Dashboard",
         phoneCaseAtlas: "Phone Case Atlas",
         phoneCaseAtlasEmpty: "No phone case products to print",
+        keychainAtlas: "Keychain Atlas",
+        keychainAtlasEmpty: "No keychain products to print",
         vouchersTitle: "Vouchers",
         signInForVouchers: "Sign in to use vouchers",
         voucherCodePlaceholder: "Enter voucher code",
@@ -8388,6 +8391,8 @@
         adminDashboard: "管理员后台",
         phoneCaseAtlas: "手机壳图谱",
         phoneCaseAtlasEmpty: "没有可打印的手机壳商品",
+        keychainAtlas: "钥匙链图谱",
+        keychainAtlasEmpty: "没有可打印的钥匙链商品",
         vouchersTitle: "代金券",
         signInForVouchers: "登录后使用代金券",
         voucherCodePlaceholder: "输入兑换码",
@@ -9017,9 +9022,34 @@
     }
 
     function phoneCaseAtlasProducts() {
+      return productAtlasProducts(isPhoneCaseProduct);
+    }
+
+    function isKeychainProduct(product) {
+      if (!product) return false;
+      const localization = window.GOGOSHOP_PRODUCT_LOCALIZATIONS?.[product.id] || {};
+      const category = String(product.category || "").trim().toLocaleLowerCase();
+      if (/^key\s*[- ]?(?:chains?|rings?)$/.test(category) || /^钥匙(?:链|扣|圈|挂件)$/.test(category)) return true;
+      const text = [
+        product.productType,
+        product.title,
+        product.titleEn,
+        product.titleZh,
+        localization.en,
+        localization.zh,
+        product.tags
+      ].map((value) => String(value || "").toLocaleLowerCase()).join(" ");
+      return /key\s*[- ]?(?:chain|ring)s?|钥匙链|钥匙扣|钥匙圈|钥匙挂件/.test(text);
+    }
+
+    function keychainAtlasProducts() {
+      return productAtlasProducts(isKeychainProduct);
+    }
+
+    function productAtlasProducts(predicate) {
       const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: "base" });
       return [...state.products]
-        .filter(isPhoneCaseProduct)
+        .filter(predicate)
         .sort((a, b) => collator.compare(
           productItemCode(a) || productName(a),
           productItemCode(b) || productName(b)
@@ -9047,13 +9077,13 @@
       `;
     }
 
-    function phoneCaseAtlasPageMarkup(products, pageIndex, pageCount, compact, totalCount = products.length) {
+    function productAtlasPageMarkup(products, pageIndex, pageCount, compact, totalCount, config) {
       const pageText = pageCount > 1 ? ` · ${pageIndex + 1}/${pageCount}` : "";
-      const countText = state.lang === "zh" ? `${totalCount} 款手机壳` : `${totalCount} phone cases`;
+      const countText = state.lang === "zh" ? `${totalCount} 款${config.itemZh}` : `${totalCount} ${config.itemEn}`;
       return `
         <section class="phone-case-atlas-page">
           <header class="phone-case-atlas-page-head">
-            <h1>${escapeHtml(t("phoneCaseAtlas"))}</h1>
+            <h1>${escapeHtml(t(config.titleKey))}</h1>
             <span>GO GO SHOP · ${escapeHtml(countText)}${pageText}</span>
           </header>
           <div class="phone-case-atlas-grid ${compact ? "compact" : "regular"}">
@@ -9064,10 +9094,9 @@
       `;
     }
 
-    async function printPhoneCaseAtlas() {
-      const products = phoneCaseAtlasProducts();
+    async function printProductAtlas(products, config) {
       if (!products.length) {
-        showToast(t("phoneCaseAtlasEmpty"));
+        showToast(t(config.emptyKey));
         return;
       }
       const compact = products.length > 12;
@@ -9090,7 +9119,7 @@
         document.head.appendChild(printStyle);
       }
       printStyle.textContent = `#phoneCaseAtlasPrint{display:none}@page{size:A4 portrait;margin:0}@media print{html,body{width:210mm!important;min-width:0!important;margin:0!important;padding:0!important;background:#fff!important}body.phone-case-atlas-printing>*:not(#phoneCaseAtlasPrint){display:none!important}body.phone-case-atlas-printing #phoneCaseAtlasPrint{display:block!important;width:210mm!important;margin:0!important;background:#fff!important;color:#111!important;font-family:Arial,"Microsoft YaHei",sans-serif!important}.phone-case-atlas-page{display:flex!important;width:210mm!important;height:297mm!important;box-sizing:border-box!important;flex-direction:column!important;overflow:hidden!important;break-after:page!important;page-break-after:always!important;margin:0!important;padding:6mm!important;background:#fff!important}.phone-case-atlas-page:last-child{break-after:auto!important;page-break-after:auto!important}.phone-case-atlas-page-head{display:flex!important;min-height:10mm!important;flex:0 0 10mm!important;align-items:baseline!important;justify-content:space-between!important;gap:5mm!important;border-bottom:.3mm solid #222!important}.phone-case-atlas-page-head h1{max-width:70%!important;overflow:hidden!important;margin:0!important;font-size:13pt!important;line-height:1!important;text-overflow:ellipsis!important;white-space:nowrap!important}.phone-case-atlas-page-head span{font-size:7.5pt!important;line-height:1!important;white-space:nowrap!important}.phone-case-atlas-grid{display:grid!important;min-height:0!important;flex:1 1 auto!important;margin:2mm 0 1mm!important}.phone-case-atlas-grid.regular{grid-template-columns:repeat(3,minmax(0,1fr))!important;grid-template-rows:repeat(4,minmax(0,1fr))!important;gap:3mm!important}.phone-case-atlas-grid.compact{grid-template-columns:repeat(4,minmax(0,1fr))!important;grid-template-rows:repeat(5,minmax(0,1fr))!important;gap:2.2mm!important}.phone-case-atlas-card{display:grid!important;min-width:0!important;min-height:0!important;grid-template-rows:minmax(0,1fr) 8mm 5mm 12mm 3.4mm!important;gap:1mm!important;overflow:hidden!important;border:.25mm solid #cfd2d1!important;border-radius:1.4mm!important;padding:1.8mm!important;background:#fff!important;text-align:center!important}.phone-case-atlas-grid.compact .phone-case-atlas-card{grid-template-rows:minmax(0,1fr) 6.5mm 4mm 10mm 3.2mm!important;padding:1.4mm!important}.phone-case-atlas-image{display:flex!important;min-height:0!important;align-items:center!important;justify-content:center!important;overflow:hidden!important;background:#f7f8f8!important}.phone-case-atlas-image img{display:block!important;width:100%!important;height:100%!important;object-fit:contain!important}.phone-case-atlas-image span{color:#777!important;font-size:7pt!important}.phone-case-atlas-name{display:-webkit-box!important;overflow:hidden!important;font-size:7.3pt!important;font-weight:700!important;line-height:1.1!important;-webkit-box-orient:vertical!important;-webkit-line-clamp:2!important}.phone-case-atlas-grid.compact .phone-case-atlas-name{font-size:6.5pt!important}.phone-case-atlas-code{display:flex!important;min-width:0!important;align-items:center!important;justify-content:space-between!important;gap:1mm!important;font-size:7pt!important;line-height:1!important;white-space:nowrap!important}.phone-case-atlas-code span{min-width:0!important;overflow:hidden!important;text-align:left!important;text-overflow:ellipsis!important}.phone-case-atlas-code strong{flex:0 0 auto!important;font-size:9.2pt!important;font-variant-numeric:tabular-nums!important}.phone-case-atlas-grid.compact .phone-case-atlas-code{font-size:6.2pt!important}.phone-case-atlas-grid.compact .phone-case-atlas-code strong{font-size:7.6pt!important}.phone-case-atlas-barcode{display:flex!important;min-width:0!important;min-height:0!important;align-items:stretch!important;justify-content:center!important;overflow:hidden!important;color:#000!important}.phone-case-atlas-barcode svg{display:block!important;width:100%!important;height:100%!important;min-height:0!important;color:#000!important}.phone-case-atlas-barcode span{align-self:center!important;color:#777!important;font-size:6.5pt!important}.phone-case-atlas-digits{overflow:hidden!important;font-family:Consolas,"Liberation Mono",monospace!important;font-size:6.4pt!important;font-weight:700!important;letter-spacing:.06em!important;line-height:1!important;text-overflow:ellipsis!important;white-space:nowrap!important}.phone-case-atlas-grid.compact .phone-case-atlas-digits{font-size:5.8pt!important}.phone-case-atlas-page-foot{flex:0 0 3mm!important;font-size:6.5pt!important;line-height:3mm!important;text-align:right!important}}`;
-      printRoot.innerHTML = pages.map((page, index) => phoneCaseAtlasPageMarkup(page, index, pages.length, compact, products.length)).join("");
+      printRoot.innerHTML = pages.map((page, index) => productAtlasPageMarkup(page, index, pages.length, compact, products.length, config)).join("");
       document.body.classList.remove("product-label-printing", "admin-receipt-printing");
       document.body.classList.add("phone-case-atlas-printing");
       const imagePromises = Array.from(printRoot.querySelectorAll("img")).map((image) => {
@@ -9121,6 +9150,24 @@
           showToast(state.lang === "zh" ? "无法打开打印窗口" : "Unable to open print dialog");
         }
       }, 80);
+    }
+
+    function printPhoneCaseAtlas() {
+      return printProductAtlas(phoneCaseAtlasProducts(), {
+        titleKey: "phoneCaseAtlas",
+        emptyKey: "phoneCaseAtlasEmpty",
+        itemZh: "手机壳",
+        itemEn: "phone cases"
+      });
+    }
+
+    function printKeychainAtlas() {
+      return printProductAtlas(keychainAtlasProducts(), {
+        titleKey: "keychainAtlas",
+        emptyKey: "keychainAtlasEmpty",
+        itemZh: "钥匙链",
+        itemEn: "keychains"
+      });
     }
 
     function customerBarcodeForUser(user = state.session?.user, profile = state.profile) {
@@ -13839,6 +13886,10 @@
       }
       if (target.matches("[data-print-phone-case-atlas]")) {
         printPhoneCaseAtlas();
+        return;
+      }
+      if (target.matches("[data-print-keychain-atlas]")) {
+        printKeychainAtlas();
         return;
       }
       if (target.matches("[data-print-product-label-editor]")) {
