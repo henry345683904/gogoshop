@@ -237,8 +237,8 @@
       receipt.classList.remove("receipt-measuring");
       if(!rect.width||!rect.height)return null;
       const heightMm=Math.ceil((RECEIPT_PAPER_WIDTH_MM*rect.height/rect.width)*2)/2;
-      // Keep the height automatic so Windows receipt drivers can use their own roll and cutter settings.
-      $("#receiptPageStyle").textContent=`@page { size:${RECEIPT_PAPER_WIDTH_MM}mm auto; margin:0; }`;
+      // The PUQU driver accepts custom continuous length; use the measured height to avoid clipped long receipts.
+      $("#receiptPageStyle").textContent=`@page { size:${RECEIPT_PAPER_WIDTH_MM}mm ${heightMm}mm; margin:0; }`;
       receipt.dataset.pageHeightMm=String(heightMm);
       return heightMm;
     }
