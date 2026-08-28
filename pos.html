@@ -76,12 +76,69 @@
     .order-note { display:grid; gap:6px; margin-top:16px; }
     .order-note label { color:var(--muted); font-size:13px; font-weight:700; }
     .order-note textarea { width:100%; min-height:76px; border:1px solid var(--line); border-radius:6px; padding:9px 10px; resize:vertical; font:inherit; line-height:1.4; }
-    @page { size:55mm auto; margin:2mm; }
+    .receipt-print.receipt-measuring {
+      display: block !important;
+      position: fixed !important;
+      top: 0;
+      left: -10000px;
+      visibility: hidden;
+      width: 55mm !important;
+      min-height: 0 !important;
+      margin: 0 !important;
+      padding: 1mm 2mm .5mm !important;
+      overflow: visible;
+      color: #000;
+      background: #fff;
+      font-family: Arial, "Microsoft YaHei", sans-serif;
+      font-size: 10px;
+      line-height: 1.35;
+      overflow-wrap: anywhere;
+    }
+    .receipt-print.receipt-measuring .receipt-head { text-align:center; border-bottom:1px dashed #000; padding-bottom:6px; }
+    .receipt-print.receipt-measuring .receipt-head strong { display:block; font-size:15px; }
+    .receipt-print.receipt-measuring .receipt-meta { display:grid; gap:2px; padding:6px 0; border-bottom:1px dashed #000; }
+    .receipt-print.receipt-measuring .receipt-line { padding:5px 0; border-bottom:1px dotted #777; }
+    .receipt-print.receipt-measuring .receipt-line strong,
+    .receipt-print.receipt-measuring .receipt-line span { display:block; }
+    .receipt-print.receipt-measuring .receipt-line span { text-align:right; }
+    .receipt-print.receipt-measuring .receipt-total { display:flex; justify-content:space-between; font-size:14px; font-weight:800; padding:8px 0; border-bottom:1px dashed #000; }
+    .receipt-print.receipt-measuring .receipt-tax { display:grid; gap:2px; padding:6px 0; border-bottom:1px dashed #000; }
+    .receipt-print.receipt-measuring .receipt-tax span { display:flex; justify-content:space-between; }
+    .receipt-print.receipt-measuring .receipt-policy { padding:7px 0; border-bottom:1px dashed #000; text-align:left; }
+    .receipt-print.receipt-measuring .receipt-policy strong { display:block; margin-bottom:3px; }
+    .receipt-print.receipt-measuring .receipt-footer { text-align:center; padding-top:8px; }
+    @page { size:55mm auto; margin:0; }
     @media print {
-      html,body { width:55mm!important; }
-      .receipt-print { width:51mm!important; overflow-wrap:anywhere; }
+      html,body {
+        width:55mm!important;
+        min-width:0!important;
+        min-height:0!important;
+        height:auto!important;
+        margin:0!important;
+        padding:0!important;
+        overflow:visible!important;
+        background:#fff!important;
+      }
+      .receipt-print {
+        display:block!important;
+        position:static!important;
+        width:55mm!important;
+        min-height:0!important;
+        margin:0!important;
+        padding:1mm 2mm .5mm!important;
+        overflow:visible!important;
+        overflow-wrap:anywhere;
+        break-before:avoid-page;
+        break-after:avoid-page;
+        page-break-before:avoid;
+        page-break-after:avoid;
+        -webkit-print-color-adjust:exact;
+        print-color-adjust:exact;
+      }
+      .receipt-print > * { break-inside:avoid; page-break-inside:avoid; }
     }
   </style>
+  <style id="receiptPageStyle">@page { size:55mm auto; margin:0; }</style>
 </head>
 <body>
   <section class="login" id="loginView">
@@ -169,7 +226,20 @@
       const policyBlock=`<div class="receipt-policy"><strong>${isChinese?"退换货政策":"Returns & Exchanges"}</strong><span>${isChinese?"7 天内，非人为损坏可凭小票退换货。":"Within 7 days, items not damaged by misuse may be returned or exchanged with this receipt."}</span></div>`;
       $("#receiptPrint").innerHTML=`<div class="receipt-head"><strong>GO GO SHOP</strong><span>${isChinese?"销售小票":"SALES RECEIPT"}</span></div><div class="receipt-meta"><span>${isChinese?"订单号":"Order"}: ${escapeHtml(receipt.orderNumber)}</span><span>${isChinese?"时间":"Date"}: ${escapeHtml(date)}</span></div>${customerBlock}${receipt.lines.map(line=>`<div class="receipt-line"><strong>${escapeHtml(line.title)}</strong><span>${escapeHtml(line.code)} · ${line.quantity} × ${money.format(line.unitPrice)} = ${money.format(line.subtotal)}</span>${line.note?`<span>${isChinese?"备注":"Note"}: ${escapeHtml(line.note)}</span>`:""}</div>`).join("")}${discountBlock}${orderNoteBlock}<div class="receipt-total"><span>${isChinese?"合计":"TOTAL"}</span><span>${money.format(receipt.total)}</span></div>${gstBlock}${policyBlock}<div class="receipt-footer">${isChinese?"谢谢惠顾":"Thank You"}</div>`;
     }
-    function printLastReceipt(){if(!state.lastReceipt)return;renderReceipt();window.print()}
+    const RECEIPT_PAPER_WIDTH_MM=55;
+    function prepareReceiptPage(){
+      const receipt=$("#receiptPrint");
+      receipt.classList.add("receipt-measuring");
+      const rect=receipt.getBoundingClientRect();
+      receipt.classList.remove("receipt-measuring");
+      if(!rect.width||!rect.height)return null;
+      const heightMm=Math.ceil((RECEIPT_PAPER_WIDTH_MM*rect.height/rect.width)*2)/2;
+      $("#receiptPageStyle").textContent=`@page { size:${RECEIPT_PAPER_WIDTH_MM}mm ${heightMm}mm; margin:0; }`;
+      receipt.dataset.pageHeightMm=String(heightMm);
+      return heightMm;
+    }
+    function printLastReceipt(){if(!state.lastReceipt)return;renderReceipt();prepareReceiptPage();window.print()}
+    window.addEventListener("beforeprint",()=>{if(state.lastReceipt){renderReceipt();prepareReceiptPage()}});
     function icons(){window.lucide?.createIcons()}
     function applyLanguage(){const ids=Object.keys(I18N.en);ids.forEach(id=>{const node=$("#"+id);if(node)node.textContent=t(id)});$("#scanInput").placeholder=t("scanPlaceholder");$("#orderNote").placeholder=t("orderNotePlaceholder");$("#manualDiscountValue").placeholder=t("discountPlaceholder");$("#manualDiscountValue").setAttribute("aria-label",t("manualDiscountLabel"));$("#manualDiscountType").setAttribute("aria-label",t("discountTypeLabel"));$("#clearManualDiscount").title=t("clearDiscount");$("#languageBtn").textContent=state.lang==="en"?"中文":"English";document.documentElement.lang=state.lang==="en"?"en":"zh-CN";document.title=state.lang==="en"?"GO GO SHOP POS":"GO GO SHOP 扫码收银";render();renderVoucherOptions();icons()}
     function setStatus(text,type=""){$("#scanStatus").textContent=text;$("#scanStatus").className=`status ${type}`}
