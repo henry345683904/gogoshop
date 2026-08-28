@@ -82,7 +82,7 @@
       top: 0;
       left: -10000px;
       visibility: hidden;
-      width: 55mm !important;
+      width: 50mm !important;
       min-height: 0 !important;
       margin: 0 !important;
       padding: 1mm 2mm .5mm !important;
@@ -107,10 +107,10 @@
     .receipt-print.receipt-measuring .receipt-policy { padding:7px 0; border-bottom:1px dashed #000; text-align:left; }
     .receipt-print.receipt-measuring .receipt-policy strong { display:block; margin-bottom:3px; }
     .receipt-print.receipt-measuring .receipt-footer { text-align:center; padding-top:8px; }
-    @page { size:55mm auto; margin:0; }
+    @page { size:50mm auto; margin:0; }
     @media print {
       html,body {
-        width:55mm!important;
+        width:50mm!important;
         min-width:0!important;
         min-height:0!important;
         height:auto!important;
@@ -122,7 +122,10 @@
       .receipt-print {
         display:block!important;
         position:static!important;
-        width:55mm!important;
+        top:0!important;
+        left:0!important;
+        right:auto!important;
+        width:50mm!important;
         min-height:0!important;
         margin:0!important;
         padding:1mm 2mm .5mm!important;
@@ -138,7 +141,7 @@
       .receipt-print > * { break-inside:avoid; page-break-inside:avoid; }
     }
   </style>
-  <style id="receiptPageStyle">@page { size:55mm auto; margin:0; }</style>
+  <style id="receiptPageStyle">@page { size:50mm auto; margin:0; }</style>
 </head>
 <body>
   <section class="login" id="loginView">
@@ -226,7 +229,7 @@
       const policyBlock=`<div class="receipt-policy"><strong>${isChinese?"退换货政策":"Returns & Exchanges"}</strong><span>${isChinese?"7 天内，非人为损坏可凭小票退换货。":"Within 7 days, items not damaged by misuse may be returned or exchanged with this receipt."}</span></div>`;
       $("#receiptPrint").innerHTML=`<div class="receipt-head"><strong>GO GO SHOP</strong><span>${isChinese?"销售小票":"SALES RECEIPT"}</span></div><div class="receipt-meta"><span>${isChinese?"订单号":"Order"}: ${escapeHtml(receipt.orderNumber)}</span><span>${isChinese?"时间":"Date"}: ${escapeHtml(date)}</span></div>${customerBlock}${receipt.lines.map(line=>`<div class="receipt-line"><strong>${escapeHtml(line.title)}</strong><span>${escapeHtml(line.code)} · ${line.quantity} × ${money.format(line.unitPrice)} = ${money.format(line.subtotal)}</span>${line.note?`<span>${isChinese?"备注":"Note"}: ${escapeHtml(line.note)}</span>`:""}</div>`).join("")}${discountBlock}${orderNoteBlock}<div class="receipt-total"><span>${isChinese?"合计":"TOTAL"}</span><span>${money.format(receipt.total)}</span></div>${gstBlock}${policyBlock}<div class="receipt-footer">${isChinese?"谢谢惠顾":"Thank You"}</div>`;
     }
-    const RECEIPT_PAPER_WIDTH_MM=55;
+    const RECEIPT_PAPER_WIDTH_MM=50;
     function prepareReceiptPage(){
       const receipt=$("#receiptPrint");
       receipt.classList.add("receipt-measuring");
@@ -234,7 +237,8 @@
       receipt.classList.remove("receipt-measuring");
       if(!rect.width||!rect.height)return null;
       const heightMm=Math.ceil((RECEIPT_PAPER_WIDTH_MM*rect.height/rect.width)*2)/2;
-      $("#receiptPageStyle").textContent=`@page { size:${RECEIPT_PAPER_WIDTH_MM}mm ${heightMm}mm; margin:0; }`;
+      // Keep the height automatic so Windows receipt drivers can use their own roll and cutter settings.
+      $("#receiptPageStyle").textContent=`@page { size:${RECEIPT_PAPER_WIDTH_MM}mm auto; margin:0; }`;
       receipt.dataset.pageHeightMm=String(heightMm);
       return heightMm;
     }
