@@ -3299,10 +3299,19 @@
       background: #fafbfb;
     }
 
+    .admin-product-search-controls {
+      display: flex;
+      width: min(100%, 900px);
+      align-items: center;
+      gap: 10px;
+    }
+
     .admin-product-search-field {
       position: relative;
       display: flex;
-      width: min(100%, 620px);
+      flex: 1 1 520px;
+      width: auto;
+      min-width: 0;
       align-items: center;
     }
 
@@ -3351,6 +3360,42 @@
 
     .admin-product-search-clear:hover {
       background: #eceeee;
+    }
+
+    .admin-product-category-filter {
+      position: relative;
+      display: flex;
+      flex: 0 1 260px;
+      min-width: 190px;
+      align-items: center;
+    }
+
+    .admin-product-category-filter > svg {
+      position: absolute;
+      z-index: 1;
+      left: 12px;
+      width: 16px;
+      height: 16px;
+      color: #6d7175;
+      pointer-events: none;
+    }
+
+    .admin-product-category-filter select {
+      width: 100%;
+      min-height: 42px;
+      border: 1px solid #aeb4b4;
+      border-radius: 7px;
+      padding: 0 32px 0 36px;
+      background: #fff;
+      color: var(--ink);
+      font: inherit;
+      font-size: 13px;
+      outline: 0;
+    }
+
+    .admin-product-category-filter select:focus {
+      border-color: #2c6ecb;
+      box-shadow: 0 0 0 1px #2c6ecb;
     }
 
     .admin-product-list {
@@ -6513,6 +6558,13 @@
         padding: 10px 12px;
       }
 
+      .admin-product-search-controls {
+        display: grid;
+        width: 100%;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 8px;
+      }
+
       .product-inventory-summary-item {
         padding: 10px 8px;
       }
@@ -6527,6 +6579,10 @@
       }
 
       .admin-product-search-field {
+        width: 100%;
+      }
+
+      .admin-product-category-filter {
         width: 100%;
       }
 
@@ -7029,11 +7085,18 @@
             </div>
             <div class="product-inventory-summary" id="adminProductInventorySummary" aria-label="Inventory valuation"></div>
             <div class="admin-product-search">
-              <div class="admin-product-search-field">
-                <i data-lucide="search"></i>
-                <label class="sr-only" for="adminProductSearch">Search products</label>
-                <input type="search" id="adminProductSearch" data-admin-product-search placeholder="Search name, barcode, item code or SKU" autocomplete="off" autocapitalize="off" spellcheck="false" aria-describedby="adminProductSearchStatus">
-                <button class="action-button admin-product-search-clear" type="button" data-clear-admin-product-search aria-label="Clear product search" title="Clear search" hidden><i data-lucide="x"></i></button>
+              <div class="admin-product-search-controls">
+                <div class="admin-product-search-field">
+                  <i data-lucide="search"></i>
+                  <label class="sr-only" for="adminProductSearch">Search products</label>
+                  <input type="search" id="adminProductSearch" data-admin-product-search placeholder="Search name, barcode, item code or SKU" autocomplete="off" autocapitalize="off" spellcheck="false" aria-describedby="adminProductSearchStatus">
+                  <button class="action-button admin-product-search-clear" type="button" data-clear-admin-product-search aria-label="Clear product search" title="Clear search" hidden><i data-lucide="x"></i></button>
+                </div>
+                <label class="admin-product-category-filter">
+                  <i data-lucide="list-filter"></i>
+                  <span class="sr-only">Filter products by category</span>
+                  <select id="adminProductCategoryFilter" data-admin-product-category aria-label="Filter products by category"></select>
+                </label>
               </div>
               <span class="sr-only" id="adminProductSearchStatus" role="status" aria-live="polite"></span>
             </div>
@@ -8569,6 +8632,7 @@
       adminTab: "overview",
       analyticsRange: "30",
       adminProductSearch: "",
+      adminProductCategory: "All",
       trashOpen: false,
       session: null,
       profile: null,
@@ -12016,12 +12080,35 @@
       ].map(normalizeAdminProductSearch).filter(Boolean);
     }
 
+    function adminProductCategoryOptions() {
+      return ["All", ...storefrontCategories.map((category) => category.key)];
+    }
+
+    function renderAdminProductCategoryFilter() {
+      const select = $("#adminProductCategoryFilter");
+      if (!select) return "All";
+      const options = adminProductCategoryOptions();
+      const selected = options.includes(state.adminProductCategory) ? state.adminProductCategory : "All";
+      state.adminProductCategory = selected;
+      select.innerHTML = options.map((category) => `
+        <option value="${escapeHtml(category)}">${escapeHtml(categoryName(category))}</option>
+      `).join("");
+      select.value = selected;
+      return selected;
+    }
+
     function adminProductSearchResults() {
       const query = normalizeAdminProductSearch(state.adminProductSearch);
-      if (!query) return state.products;
+      const category = adminProductCategoryOptions().includes(state.adminProductCategory)
+        ? state.adminProductCategory
+        : "All";
+      const categoryProducts = state.products.filter((product) => (
+        category === "All" || productCategoryKey(product) === category
+      ));
+      if (!query) return categoryProducts;
       const terms = query.split(/\s+/).filter(Boolean);
       const compactQuery = query.replace(/[\s_-]+/g, "");
-      return state.products.map((product, index) => {
+      return categoryProducts.map((product, index) => {
         const fields = adminProductSearchFields(product);
         const haystack = fields.join("\n");
         const compactHaystack = haystack.replace(/[\s_-]+/g, "");
@@ -12077,13 +12164,17 @@
       const searchInput = $("#adminProductSearch");
       if (searchInput && searchInput.value !== state.adminProductSearch) searchInput.value = state.adminProductSearch;
       const query = normalizeAdminProductSearch(state.adminProductSearch);
+      const category = renderAdminProductCategoryFilter();
+      const categoryActive = category !== "All";
       const products = adminProductSearchResults();
-      $("#adminProductCount").textContent = query
+      $("#adminProductCount").textContent = query || categoryActive
         ? `${products.length} of ${state.products.length} products`
         : `${state.products.length} products`;
       const searchStatus = $("#adminProductSearchStatus");
       if (searchStatus) searchStatus.textContent = query
         ? `${products.length} matching products`
+        : categoryActive
+          ? `${products.length} products in ${categoryName(category)}`
         : `${state.products.length} products`;
       const clearSearch = $("[data-clear-admin-product-search]");
       if (clearSearch) clearSearch.hidden = !query;
@@ -12093,6 +12184,11 @@
       const trashPanel = $("[data-product-trash-panel]");
       trashToggle.setAttribute("aria-expanded", String(state.trashOpen));
       trashPanel.hidden = !state.trashOpen;
+      const emptyMessage = query
+        ? `No products match “${escapeHtml(state.adminProductSearch.trim())}”`
+        : categoryActive
+          ? `No products in ${escapeHtml(categoryName(category))}`
+          : "No active products";
       $("#adminProductRows").innerHTML = products.map((product) => `
         <article class="admin-product-item" data-edit-product-row="${escapeHtml(product.id)}" role="button" tabindex="0" aria-label="Edit ${escapeHtml(product.title)}">
           <img src="${escapeHtml(product.image)}" alt="${escapeHtml(product.title)}">
@@ -12112,7 +12208,7 @@
             <button class="action-button" type="button" data-delete-product="${escapeHtml(product.id)}" aria-label="Delete ${escapeHtml(product.title)}"><i data-lucide="trash-2"></i></button>
           </div>
         </article>
-      `).join("") || `<div class="empty-state">${query ? `No products match “${escapeHtml(state.adminProductSearch.trim())}”` : "No active products"}</div>`;
+      `).join("") || `<div class="empty-state">${emptyMessage}</div>`;
       $("#adminTrashRows").innerHTML = state.deletedProducts.map((product) => `
         <article class="admin-product-item trashed">
           <img src="${escapeHtml(product.image)}" alt="${escapeHtml(product.title)}">
@@ -13833,6 +13929,11 @@
     document.addEventListener("change", (event) => {
       if (event.target instanceof Element && event.target.closest("[data-product-label-controls]")) {
         renderProductLabelPreview();
+        return;
+      }
+      if (event.target instanceof Element && event.target.matches("[data-admin-product-category]")) {
+        state.adminProductCategory = event.target.value || "All";
+        renderAdminProducts();
         return;
       }
       if (event.target instanceof Element && event.target.matches("[data-analytics-range]")) {
