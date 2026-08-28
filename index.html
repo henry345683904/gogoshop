@@ -7621,7 +7621,7 @@
                   <input type="number" name="costPerItem" min="0" step="0.01">
                 </label>
                 <label class="field">
-                  <span>1688 供应价 CNY</span>
+                  <span>供应价</span>
                   <input type="number" name="sourcePriceCny" min="0" step="0.01">
                 </label>
               </div>
@@ -7707,7 +7707,7 @@
                 <input type="text" name="vendor" autocomplete="off">
               </label>
               <label class="field">
-                <span>1688 商品链接</span>
+                <span>商品来源链接</span>
                 <input type="url" name="sourceUrl" autocomplete="off">
               </label>
               <label class="field">
@@ -8695,6 +8695,31 @@
 
     function isSupplierSku(value) {
       return /^1688(?:-|$)/i.test(String(value || "").trim());
+    }
+
+    function isCilProduct(product) {
+      const values = [
+        product?.id,
+        product?.sku,
+        product?.vendor,
+        product?.sourceUrl,
+        product?.source_url,
+        product?.image,
+        product?.sourceCurrency,
+        product?.source_currency,
+        product?.tags
+      ];
+      return values.some((value) => /cil(?:imports)?|cinevan|assets[\\/]+cil(?:[\\/]|$)/i.test(String(value || "")));
+    }
+
+    function productSourcePriceText(product) {
+      const value = Number(product?.sourcePriceCny ?? product?.source_price);
+      if (!Number.isFinite(value) || value <= 0) return "";
+      const currency = String(product?.sourceCurrency || product?.source_currency || "").trim().toUpperCase()
+        || (isCilProduct(product) ? "NZD" : "CNY");
+      if (currency === "NZD") return formatPrice(value);
+      if (currency === "CNY") return `¥${value.toFixed(2)} CNY`;
+      return `${value.toFixed(2)} ${currency}`;
     }
 
     function manualProductCode(sku, barcode) {
@@ -10110,6 +10135,9 @@
       state.deletedProducts = [];
       remoteProducts.forEach((remote) => {
         const localProduct = localProducts.find((item) => item.id === remote.id);
+        const isCil = isCilProduct(remote) || isCilProduct(localProduct);
+        const importedCategory = remote.category || localProduct?.category || "";
+        const visibleCategory = isCil && /^1688 Imports$/i.test(importedCategory) ? "" : importedCategory;
         const remoteProduct = {
           id: remote.id,
           experimentalCode: localProduct?.experimentalCode || "",
@@ -10117,8 +10145,10 @@
           title: remote.title,
           titleEn: isAdmin ? (remote.title_en ?? localProduct?.titleEn ?? remote.title ?? "") : (remote.title_en ?? remote.title ?? ""),
           titleZh: remote.title_zh ?? localProduct?.titleZh ?? "",
-          category: remote.category || localProduct?.category || "1688 Imports",
-          productType: remote.category || localProduct?.productType || localProduct?.category || "1688 Imports",
+          category: visibleCategory,
+          productType: isCil && /^1688 Imports$/i.test(remote.category || localProduct?.productType || localProduct?.category || "")
+            ? ""
+            : remote.category || localProduct?.productType || localProduct?.category || "",
           description: remote.description ?? (isAdmin ? localProduct?.description : "") ?? "",
           descriptionEn: remote.description_en ?? localProduct?.descriptionEn ?? "",
           descriptionZh: remote.description_zh ?? localProduct?.descriptionZh ?? "",
@@ -12194,7 +12224,7 @@
           <img src="${escapeHtml(product.image)}" alt="${escapeHtml(product.title)}">
           <div class="admin-product-summary">
             <strong>${escapeHtml(product.title)}</strong>
-            <span>${product.featured ? "Pinned · " : ""}${escapeHtml([categoryName(productCategoryKey(product)), product.vendor, product.sourcePriceCny ? `¥${product.sourcePriceCny} CNY` : ""].filter(Boolean).join(" · "))}</span>
+            <span>${product.featured ? "Pinned · " : ""}${escapeHtml([categoryName(productCategoryKey(product)), product.vendor, productSourcePriceText(product)].filter(Boolean).join(" · "))}</span>
             <span>货号 ${escapeHtml(productItemCode(product))}</span>
           </div>
           <div class="admin-product-meta">
@@ -13269,7 +13299,8 @@
       syncProductSkuFromBarcode(form);
       fields.namedItem("taxable").checked = product.taxable ?? true;
       fields.namedItem("trackQuantity").checked = product.trackQuantity ?? true;
-      fields.namedItem("productType").value = product.productType || product.category || "";
+      const productType = product.productType || product.category || "";
+      fields.namedItem("productType").value = isCilProduct(product) && /^1688 Imports$/i.test(productType) ? "" : productType;
       fields.namedItem("vendor").value = product.vendor || "Go Go Shop";
       fields.namedItem("sourceUrl").value = product.sourceUrl || "";
       fields.namedItem("sourcePriceCny").value = product.sourcePriceCny || "";
