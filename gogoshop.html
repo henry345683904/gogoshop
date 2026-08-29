@@ -1591,10 +1591,13 @@
       top: 44px;
       width: min(calc(100% - 32px), 760px);
       max-height: calc(100vh - 88px);
+      max-height: min(calc(100vh - 88px), calc(100dvh - 88px));
       display: none;
       transform: translateX(-50%);
       overflow: auto;
       border-radius: 8px;
+      overscroll-behavior: contain;
+      -webkit-overflow-scrolling: touch;
     }
 
     .search-panel.open {
@@ -2290,6 +2293,20 @@
       width: 64px;
       height: 64px;
       object-fit: cover;
+    }
+
+    .result-item > div {
+      min-width: 0;
+    }
+
+    .result-item strong,
+    .result-item .muted {
+      overflow-wrap: anywhere;
+    }
+
+    .result-item strong {
+      display: block;
+      line-height: 1.35;
     }
 
     .result-product-link {
@@ -11274,8 +11291,7 @@
       const query = $("#searchInput").value.trim().toLowerCase();
       const results = state.products
         .filter((product) => product.published)
-        .filter((product) => !query || [productName(product), categoryName(productCategoryKey(product)), productDescription(product), productItemCode(product), product.sku, product.barcode].join(" ").toLowerCase().includes(query))
-        .slice(0, 6);
+        .filter((product) => !query || [productName(product), categoryName(productCategoryKey(product)), productDescription(product), productItemCode(product), product.sku, product.barcode].join(" ").toLowerCase().includes(query));
       $("#searchResults").innerHTML = results.map((product) => `
         <div class="result-item">
           <a class="result-product-link" href="#product=${encodeURIComponent(product.id)}" data-product-view="${escapeHtml(product.id)}">
