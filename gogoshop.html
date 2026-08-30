@@ -9592,15 +9592,19 @@
         product.title,
         product.titleEn,
         product.titleZh,
+        product.title_en,
+        product.title_zh,
         localization.en,
         localization.zh,
         product.description,
         product.descriptionEn,
         product.descriptionZh,
+        product.description_en,
+        product.description_zh,
         product.tags
       ].map((value) => String(value || "").toLocaleLowerCase()).join(" ");
       const isProtector = /screen\s*(?:protector|film)|tempered\s*glass|hydrogel|privacy\s*(?:glass|screen)|phone\s*film|phone\s*protector|glass\s*protector|钢化膜|保护膜|水凝膜|防窥膜|手机膜|贴膜|全屏膜|陶瓷膜/.test(text);
-      const isToolOrMaterial = /squeegee|scraper|repair\s*mat|adhesive|\bglue\b|curing\s*lamp|cleaning\s*cloth|刮卡|刮板|硅胶垫|胶水|固化灯|清洁布|清洁膜|工具|垫子/.test(text);
+      const isToolOrMaterial = /squeegee|scraper|repair\s*mat|adhesive|\bglue\b|curing\s*lamp|cleaning\s*cloth|刮卡|刮板|硅胶垫|胶水|固化灯|清洁布|清洁膜|无尘布|擦拭布|除尘膜|除尘胶带|吸尘胶带|粘尘|胶带|工具|垫子/.test(text);
       return isProtector && !isToolOrMaterial;
     }
 
@@ -9608,6 +9612,44 @@
       if (isPhoneCaseProduct(product)) return "phone-cases";
       if (isPhoneFilmProduct(product)) return "phone-films";
       return "";
+    }
+
+    function phoneFilmAggregateProduct(products) {
+      return (Array.isArray(products) ? products : []).find((product) => {
+        if (!product) return false;
+        if (String(product.id || "") === "1688-905020913177") return true;
+        if ([product.sku, product.barcode].some((value) => String(value || "").trim() === "6666")) return true;
+        const attributes = [product.sourceAttributes, product.source_attributes]
+          .flatMap((value) => Array.isArray(value) ? value : []);
+        return attributes.some((attribute) => (
+          String(attribute?.name || "").trim() === "货号"
+          && String(attribute?.value || "").trim() === "6666"
+        ));
+      }) || null;
+    }
+
+    function phoneFilmStockTotal(products) {
+      const aggregateProduct = phoneFilmAggregateProduct(products);
+      return (Array.isArray(products) ? products : []).reduce((total, product) => {
+        if (!product || product.deleted_at || product.deletedAt || product === aggregateProduct || !isPhoneFilmProduct(product)) return total;
+        return total + Math.max(0, Number(product.stock) || 0);
+      }, 0);
+    }
+
+    async function syncPhoneFilmAggregateStock(products) {
+      if (!state.profile?.is_admin || !db || !Array.isArray(products)) return;
+      const aggregateProduct = phoneFilmAggregateProduct(products);
+      if (!aggregateProduct || aggregateProduct.deleted_at) return;
+      const total = phoneFilmStockTotal(products);
+      if (Math.max(0, Number(aggregateProduct.stock) || 0) === total) return;
+      const { error } = await db.from("products")
+        .update({ stock: total, updated_at: new Date().toISOString() })
+        .eq("id", aggregateProduct.id);
+      if (error) {
+        console.warn("Unable to sync phone film aggregate stock", error);
+        return;
+      }
+      aggregateProduct.stock = total;
     }
 
     function isKeychainProduct(product) {
@@ -10914,6 +10956,7 @@
       }
       if (error) return;
       const remoteProducts = data.filter((product) => String(product.tags || "").trim() !== PURGED_PRODUCT_TAG);
+      if (isAdmin) await syncPhoneFilmAggregateStock(remoteProducts);
       const localProducts = [...state.products, ...state.deletedProducts];
       const remoteProductIds = new Set(remoteProducts.filter((product) => !isAdmin || !product.deleted_at).map((product) => product.id));
       state.products = state.products.filter((product) => remoteProductIds.has(product.id));
@@ -11249,7 +11292,7 @@
       save(ORDER_NOTIFICATION_UNREAD_KEY, state.unreadOrderIds);
       renderAdminOrderNotificationUi();
       showToast(`New order ${order.order_number || "received"}`);
-      await Promise.all([showAdminSystemNotification(order), loadAdminData()]);
+      await Promise.all([showAdminSystemNotification(order), loadAdminData(), loadStoreInventory()]);
     }
 
     async function stopAdminOrderRealtime() {
