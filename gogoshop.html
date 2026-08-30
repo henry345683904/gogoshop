@@ -5550,6 +5550,327 @@
       line-height: 1.35;
     }
 
+    .procurement-control-panel {
+      margin-bottom: 16px;
+    }
+
+    .procurement-panel-head {
+      min-height: 0;
+      align-items: flex-start;
+      padding-top: 14px;
+      padding-bottom: 14px;
+    }
+
+    .procurement-panel-head > div:first-child {
+      display: grid;
+      gap: 3px;
+      min-width: 0;
+    }
+
+    .procurement-panel-head .muted {
+      max-width: 640px;
+      line-height: 1.4;
+    }
+
+    .procurement-controls {
+      display: flex;
+      flex: 0 0 auto;
+      align-items: flex-end;
+      gap: 10px;
+    }
+
+    .procurement-control {
+      display: grid;
+      gap: 5px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 750;
+    }
+
+    .procurement-control .sort-select {
+      width: 140px;
+      min-height: 36px;
+      color: var(--ink);
+      font-size: 12px;
+    }
+
+    .procurement-summary-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .procurement-category-list {
+      display: grid;
+      gap: 22px;
+    }
+
+    .procurement-category {
+      padding-bottom: 22px;
+      border-bottom: 1px solid #dfe2e1;
+    }
+
+    .procurement-category:last-child {
+      padding-bottom: 0;
+      border-bottom: 0;
+    }
+
+    .procurement-category-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 0 0 12px;
+    }
+
+    .procurement-category-heading {
+      display: grid;
+      gap: 3px;
+      min-width: 0;
+    }
+
+    .procurement-category-heading h3 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .procurement-category-heading span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .procurement-status {
+      display: inline-flex;
+      min-height: 27px;
+      flex: 0 0 auto;
+      align-items: center;
+      border: 1px solid #d5dada;
+      border-radius: 999px;
+      padding: 0 10px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .procurement-status.needs-purchase,
+    .procurement-product-recommendation.needs-purchase {
+      border-color: #e3b3ae;
+      color: #a12a20;
+    }
+
+    .procurement-status.urgent {
+      border-color: #b3261e;
+      background: #fff2f0;
+      color: #a12a20;
+    }
+
+    .procurement-status.covered,
+    .procurement-product-recommendation.covered {
+      border-color: #b8d8c6;
+      color: #177245;
+    }
+
+    .procurement-category-metrics {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 1px;
+      overflow: hidden;
+      border: 1px solid #dfe2e1;
+      background: #dfe2e1;
+    }
+
+    .procurement-category-metric {
+      display: grid;
+      gap: 6px;
+      min-width: 0;
+      padding: 12px;
+      background: #fafbfb;
+    }
+
+    .procurement-category-metric span,
+    .procurement-category-metric strong {
+      overflow-wrap: anywhere;
+    }
+
+    .procurement-category-metric span {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .procurement-category-metric strong {
+      font-size: 18px;
+      line-height: 1.1;
+    }
+
+    .procurement-coverage {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 8px 14px;
+      align-items: center;
+      padding: 14px 0;
+    }
+
+    .procurement-coverage-label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .procurement-coverage-value {
+      font-size: 13px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .procurement-coverage-track {
+      grid-column: 1 / -1;
+      height: 8px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: #edf0f0;
+    }
+
+    .procurement-coverage-track span {
+      display: block;
+      height: 100%;
+      min-width: 0;
+      border-radius: inherit;
+      background: var(--teal);
+    }
+
+    .procurement-products {
+      border-top: 1px solid #e3e4e4;
+    }
+
+    .procurement-products-head {
+      display: flex;
+      min-height: 43px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 750;
+    }
+
+    .procurement-product-list {
+      max-height: min(62vh, 620px);
+      max-height: min(62dvh, 620px);
+      overflow-y: auto;
+      scrollbar-gutter: stable;
+      overscroll-behavior: contain;
+    }
+
+    .procurement-product-row {
+      display: grid;
+      grid-template-columns: 52px minmax(0, 1fr) auto;
+      gap: 12px;
+      align-items: center;
+      border-bottom: 1px solid #edf0f0;
+      padding: 10px 0;
+    }
+
+    .procurement-product-row:last-child {
+      border-bottom: 0;
+    }
+
+    .procurement-product-image {
+      display: grid;
+      width: 52px;
+      height: 52px;
+      place-items: center;
+      overflow: hidden;
+      border: 1px solid #dfe2e1;
+      border-radius: 6px;
+      background: var(--soft);
+      color: var(--muted);
+    }
+
+    .procurement-product-image img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .procurement-product-image svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .procurement-product-copy {
+      display: grid;
+      gap: 3px;
+      min-width: 0;
+    }
+
+    .procurement-product-copy strong,
+    .procurement-product-copy > span {
+      overflow-wrap: anywhere;
+    }
+
+    .procurement-product-copy strong {
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    .procurement-product-copy > span {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .procurement-product-facts {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 3px 12px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .procurement-product-recommendation {
+      display: grid;
+      min-width: 86px;
+      justify-items: end;
+      gap: 3px;
+      color: var(--muted);
+      text-align: right;
+    }
+
+    .procurement-product-recommendation span {
+      font-size: 10px;
+      font-weight: 750;
+    }
+
+    .procurement-product-recommendation strong {
+      color: var(--ink);
+      font-size: 17px;
+      line-height: 1;
+    }
+
+    .procurement-product-recommendation.needs-purchase strong {
+      color: #a12a20;
+    }
+
+    .procurement-product-recommendation.covered strong {
+      color: #177245;
+    }
+
+    .procurement-empty,
+    .procurement-footnote {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .procurement-empty {
+      padding: 16px 0;
+      border-bottom: 1px solid #edf0f0;
+    }
+
+    .procurement-footnote {
+      margin: 18px 0 0;
+      line-height: 1.5;
+    }
+
     .analytics-daily-panel {
       margin-bottom: 16px;
     }
@@ -6256,6 +6577,59 @@
         padding: 12px;
       }
 
+      .procurement-panel-head {
+        flex-direction: column;
+        gap: 10px;
+        padding-top: 10px;
+        padding-bottom: 10px;
+      }
+
+      .procurement-panel-head > div:first-child {
+        width: 100%;
+      }
+
+      .procurement-controls {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        width: 100%;
+      }
+
+      .procurement-control .sort-select {
+        width: 100%;
+        min-width: 0;
+      }
+
+      .procurement-summary-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .procurement-category-head {
+        gap: 10px;
+      }
+
+      .procurement-category-metrics {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .procurement-product-row {
+        grid-template-columns: 44px minmax(0, 1fr) auto;
+        gap: 8px;
+      }
+
+      .procurement-product-image {
+        width: 44px;
+        height: 44px;
+      }
+
+      .procurement-product-recommendation {
+        min-width: 62px;
+      }
+
+      .procurement-product-facts {
+        gap: 3px 8px;
+        font-size: 10px;
+      }
+
       .analytics-daily-panel {
         margin-bottom: 8px;
       }
@@ -6483,6 +6857,14 @@
 
       .sort-select {
         width: 150px;
+      }
+
+      .procurement-controls {
+        grid-template-columns: 1fr;
+      }
+
+      .procurement-category-head {
+        flex-direction: column;
       }
 
       .section-heading h2 {
@@ -7147,6 +7529,7 @@
           <button class="tab-button" type="button" data-admin-tab="customers" aria-label="Customers" title="Customers"><i data-lucide="users"></i><span>Customers</span></button>
           <button class="tab-button" type="button" data-admin-tab="vouchers" aria-label="Vouchers" title="Vouchers"><i data-lucide="ticket-percent"></i><span>Vouchers</span></button>
           <button class="tab-button" type="button" data-admin-tab="analytics" aria-label="Analytics" title="Analytics"><i data-lucide="chart-column"></i><span>Analytics</span></button>
+          <button class="tab-button" type="button" data-admin-tab="procurement" aria-label="Procurement" title="Procurement"><i data-lucide="clipboard-list"></i><span>Procurement</span></button>
           <button class="tab-button" type="button" data-admin-tab="design" aria-label="Design" title="Design"><i data-lucide="paintbrush"></i><span>Design</span></button>
           <button class="tab-button" type="button" data-back-store aria-label="Storefront" title="Storefront"><i data-lucide="store"></i><span>Store</span></button>
         </nav>
@@ -7619,6 +8002,40 @@
               </div>
             </div>
           </div>
+        </section>
+
+        <section class="admin-section" data-admin-section="procurement">
+          <div class="admin-panel procurement-control-panel">
+            <div class="admin-panel-head procurement-panel-head">
+              <div>
+                <h2 id="procurementTitle">Phone inventory</h2>
+                <span class="muted" id="procurementSubtitle">Stock, sales and replenishment suggestions for phone cases and screen protectors.</span>
+              </div>
+              <div class="procurement-controls">
+                <label class="procurement-control">
+                  <span id="procurementRangeLabel">Sales window</span>
+                  <select class="sort-select" id="procurementRange" data-procurement-range aria-label="Sales window">
+                    <option value="7">Last 7 days</option>
+                    <option value="30">Last 30 days</option>
+                    <option value="90">Last 90 days</option>
+                  </select>
+                </label>
+                <label class="procurement-control">
+                  <span id="procurementCoverLabel">Target cover</span>
+                  <select class="sort-select" id="procurementCoverWeeks" data-procurement-cover aria-label="Target stock cover">
+                    <option value="1">1 week</option>
+                    <option value="2">2 weeks</option>
+                    <option value="3">3 weeks</option>
+                    <option value="4">4 weeks</option>
+                    <option value="6">6 weeks</option>
+                  </select>
+                </label>
+              </div>
+            </div>
+          </div>
+          <div class="sales-summary-grid procurement-summary-grid" id="procurementSummaryGrid"></div>
+          <div class="procurement-category-list" id="procurementCategoryRows"></div>
+          <p class="procurement-footnote" id="procurementFootnote"></p>
         </section>
       </main>
     </div>
@@ -8177,6 +8594,9 @@
     const ORDER_NOTIFICATION_SEEN_KEY = "gogoshop_admin_order_notified_v1";
     const OAUTH_PENDING_KEY = "gogoshop_oauth_pending_v1";
     const PRODUCT_LABEL_SETTINGS_KEY = "gogoshop_product_label_settings_v1";
+    const PROCUREMENT_SETTINGS_KEY = "gogoshop_procurement_settings_v1";
+    const PROCUREMENT_RANGE_OPTIONS = Object.freeze([7, 30, 90]);
+    const PROCUREMENT_COVER_OPTIONS = Object.freeze([1, 2, 3, 4, 6]);
     const PURGED_PRODUCT_TAG = "__gogoshop_purged__";
     const PRODUCT_MEDIA_BUCKET = "product-media";
     const SUPABASE_URL = "https://ucnkcddhrptqpdlvcohy.supabase.co";
@@ -8758,6 +9178,7 @@
       blocks: []
     };
 
+    const savedProcurementSettings = load(PROCUREMENT_SETTINGS_KEY, {});
     const memoryStore = new Map();
 
     const state = {
@@ -8772,6 +9193,8 @@
       productEditorLanguage: storageGet("gogoshop_product_editor_language") || storageGet(LANG_KEY) || "en",
       adminTab: "overview",
       analyticsRange: "30",
+      procurementRange: PROCUREMENT_RANGE_OPTIONS.includes(Number(savedProcurementSettings.range)) ? String(savedProcurementSettings.range) : "30",
+      procurementCoverWeeks: PROCUREMENT_COVER_OPTIONS.includes(Number(savedProcurementSettings.coverWeeks)) ? Number(savedProcurementSettings.coverWeeks) : 3,
       adminProductSearch: "",
       adminProductCategory: "All",
       trashOpen: false,
@@ -9141,12 +9564,15 @@
     function isPhoneCaseProduct(product) {
       if (!product) return false;
       if (productCategoryKey(product) === "phone-cases") return true;
+      const localization = window.GOGOSHOP_PRODUCT_LOCALIZATIONS?.[product.id] || {};
       const text = [
         product.category,
         product.productType,
         product.title,
         product.titleEn,
         product.titleZh,
+        localization.en,
+        localization.zh,
         product.tags
       ].map((value) => String(value || "").toLocaleLowerCase()).join(" ");
       return /phone\s*case|case\s*(?:for\s*)?(?:phone|iphone|samsung)|手机壳|手机套|保护壳/.test(text);
@@ -9154,6 +9580,34 @@
 
     function phoneCaseAtlasProducts() {
       return productAtlasProducts(isPhoneCaseProduct);
+    }
+
+    function isPhoneFilmProduct(product) {
+      if (!product) return false;
+      if (productCategoryKey(product) === "phone-films") return true;
+      const localization = window.GOGOSHOP_PRODUCT_LOCALIZATIONS?.[product.id] || {};
+      const text = [
+        product.category,
+        product.productType,
+        product.title,
+        product.titleEn,
+        product.titleZh,
+        localization.en,
+        localization.zh,
+        product.description,
+        product.descriptionEn,
+        product.descriptionZh,
+        product.tags
+      ].map((value) => String(value || "").toLocaleLowerCase()).join(" ");
+      const isProtector = /screen\s*(?:protector|film)|tempered\s*glass|hydrogel|privacy\s*(?:glass|screen)|phone\s*film|phone\s*protector|glass\s*protector|钢化膜|保护膜|水凝膜|防窥膜|手机膜|贴膜|全屏膜|陶瓷膜/.test(text);
+      const isToolOrMaterial = /squeegee|scraper|repair\s*mat|adhesive|\bglue\b|curing\s*lamp|cleaning\s*cloth|刮卡|刮板|硅胶垫|胶水|固化灯|清洁布|清洁膜|工具|垫子/.test(text);
+      return isProtector && !isToolOrMaterial;
+    }
+
+    function phoneProcurementCategory(product) {
+      if (isPhoneCaseProduct(product)) return "phone-cases";
+      if (isPhoneFilmProduct(product)) return "phone-films";
+      return "";
     }
 
     function isKeychainProduct(product) {
@@ -11551,6 +12005,9 @@
         analytics: state.lang === "zh"
           ? ["销售数据", "查看总销售额、周期销售额和每日订单明细。"]
           : ["Sales analytics", "Total, period and daily confirmed sales details."],
+        procurement: state.lang === "zh"
+          ? ["采购建议", "查看手机壳和手机膜库存、销量和补货建议。"]
+          : ["Procurement", "Phone case and screen protector stock, sales and replenishment suggestions."],
         design: ["Store design", "Build the home page with live section editing and responsive previews."]
       };
       $("#adminPageTitle").textContent = titleMap[tab][0];
@@ -12436,6 +12893,262 @@
       refreshIcons();
     }
 
+    function procurementPeriodDays(range = state.procurementRange) {
+      const days = Number(range);
+      return PROCUREMENT_RANGE_OPTIONS.includes(days) ? days : 30;
+    }
+
+    function saveProcurementSettings() {
+      save(PROCUREMENT_SETTINGS_KEY, {
+        range: state.procurementRange,
+        coverWeeks: state.procurementCoverWeeks
+      });
+    }
+
+    function procurementSalesOrders(range = state.procurementRange) {
+      const days = procurementPeriodDays(range);
+      const end = new Date();
+      const start = analyticsStartOfDay(end);
+      start.setDate(start.getDate() - days + 1);
+      return analyticsSalesOrders().filter((order) => {
+        const date = analyticsOrderDate(order);
+        return date && date >= start && date <= end;
+      });
+    }
+
+    function procurementProductRecentSales(productId, orders) {
+      return orders.reduce((total, order) => total + (order.order_items || []).reduce((quantity, item) => (
+        String(item.product_id) === String(productId)
+          ? quantity + Math.max(0, Number(item.quantity) || 0)
+          : quantity
+      ), 0), 0);
+    }
+
+    function procurementNumber(value, locale = (state.lang === "zh" ? "zh-CN" : "en-NZ")) {
+      return Math.max(0, Number(value) || 0).toLocaleString(locale, { maximumFractionDigits: 1 });
+    }
+
+    function procurementUnits(value, locale = (state.lang === "zh" ? "zh-CN" : "en-NZ")) {
+      return `${procurementNumber(value, locale)} ${state.lang === "zh" ? "件" : "units"}`;
+    }
+
+    function procurementWeeklyRate(value, locale = (state.lang === "zh" ? "zh-CN" : "en-NZ")) {
+      return `${procurementNumber(value, locale)} ${state.lang === "zh" ? "件/周" : "units/week"}`;
+    }
+
+    function procurementProductStats(product, orders, days, coverWeeks) {
+      const stock = Math.max(0, Number(product.stock) || 0);
+      const recentSales = procurementProductRecentSales(product.id, orders);
+      const lifetimeSales = Math.max(Math.max(0, Number(product.sales) || 0), recentSales);
+      const weeklySales = recentSales * 7 / days;
+      const targetStock = recentSales > 0 ? Math.max(1, Math.ceil(weeklySales * coverWeeks)) : 0;
+      return {
+        product,
+        stock,
+        recentSales,
+        lifetimeSales,
+        weeklySales,
+        targetStock,
+        suggested: Math.max(0, targetStock - stock),
+        coverageWeeks: weeklySales > 0 ? stock / weeklySales : null
+      };
+    }
+
+    function phoneProcurementDefinitions() {
+      return [
+        { key: "phone-cases", en: "Phone Cases", zh: "手机壳" },
+        { key: "phone-films", en: "Screen Protectors", zh: "手机膜" }
+      ];
+    }
+
+    function procurementCategoryStats(definition, orders, days, coverWeeks) {
+      const products = state.products
+        .filter((product) => phoneProcurementCategory(product) === definition.key)
+        .map((product) => procurementProductStats(product, orders, days, coverWeeks));
+      return products.reduce((totals, item) => {
+        totals.stock += item.stock;
+        totals.recentSales += item.recentSales;
+        totals.lifetimeSales += item.lifetimeSales;
+        totals.weeklySales += item.weeklySales;
+        totals.targetStock += item.targetStock;
+        totals.suggested += item.suggested;
+        totals.products.push(item);
+        return totals;
+      }, {
+        ...definition,
+        stock: 0,
+        recentSales: 0,
+        lifetimeSales: 0,
+        weeklySales: 0,
+        targetStock: 0,
+        suggested: 0,
+        products: []
+      });
+    }
+
+    function renderAdminProcurement() {
+      const summary = $("#procurementSummaryGrid");
+      const list = $("#procurementCategoryRows");
+      if (!summary || !list) return;
+
+      const isChinese = state.lang === "zh";
+      const locale = isChinese ? "zh-CN" : "en-NZ";
+      const days = procurementPeriodDays(state.procurementRange);
+      const coverWeeks = PROCUREMENT_COVER_OPTIONS.includes(Number(state.procurementCoverWeeks))
+        ? Number(state.procurementCoverWeeks)
+        : 3;
+      state.procurementCoverWeeks = coverWeeks;
+      state.procurementRange = String(days);
+
+      const rangeSelect = $("#procurementRange");
+      const coverSelect = $("#procurementCoverWeeks");
+      if (rangeSelect) {
+        rangeSelect.innerHTML = PROCUREMENT_RANGE_OPTIONS.map((option) => `
+          <option value="${option}">${isChinese ? `最近 ${option} 天` : `Last ${option} days`}</option>
+        `).join("");
+        rangeSelect.value = String(days);
+        rangeSelect.setAttribute("aria-label", isChinese ? "销售周期" : "Sales window");
+      }
+      if (coverSelect) {
+        coverSelect.innerHTML = PROCUREMENT_COVER_OPTIONS.map((option) => `
+          <option value="${option}">${isChinese ? `${option} 周` : `${option} ${option === 1 ? "week" : "weeks"}`}</option>
+        `).join("");
+        coverSelect.value = String(coverWeeks);
+        coverSelect.setAttribute("aria-label", isChinese ? "目标备货周期" : "Target stock cover");
+      }
+
+      $("#procurementTitle").textContent = isChinese ? "手机壳和手机膜库存" : "Phone inventory";
+      $("#procurementSubtitle").textContent = isChinese
+        ? "按已确认销售计算库存、销量和采购建议。"
+        : "Stock, sales and replenishment suggestions from confirmed sales.";
+      $("#procurementRangeLabel").textContent = isChinese ? "销售周期" : "Sales window";
+      $("#procurementCoverLabel").textContent = isChinese ? "目标备货" : "Target cover";
+
+      const orders = procurementSalesOrders(days);
+      const categories = phoneProcurementDefinitions().map((definition) => (
+        procurementCategoryStats(definition, orders, days, coverWeeks)
+      ));
+      const totals = categories.reduce((result, category) => {
+        result.products += category.products.length;
+        result.stock += category.stock;
+        result.recentSales += category.recentSales;
+        result.lifetimeSales += category.lifetimeSales;
+        result.weeklySales += category.weeklySales;
+        result.suggested += category.suggested;
+        return result;
+      }, { products: 0, stock: 0, recentSales: 0, lifetimeSales: 0, weeklySales: 0, suggested: 0 });
+
+      const summaryMetrics = [
+        {
+          label: isChinese ? "当前库存" : "Current stock",
+          value: procurementUnits(totals.stock, locale),
+          detail: `${procurementNumber(totals.products, locale)} ${isChinese ? "个商品" : "tracked products"}`
+        },
+        {
+          label: isChinese ? "累计售出" : "Total sold",
+          value: procurementUnits(totals.lifetimeSales, locale),
+          detail: isChinese ? "手机壳和手机膜" : "Phone cases and screen protectors"
+        },
+        {
+          label: isChinese ? `${days}天售出` : `Sold in ${days} days`,
+          value: procurementUnits(totals.recentSales, locale),
+          detail: procurementWeeklyRate(totals.weeklySales, locale)
+        },
+        {
+          label: isChinese ? "建议采购" : "Suggested purchase",
+          value: procurementUnits(totals.suggested, locale),
+          detail: isChinese ? `目标库存 ${coverWeeks} 周` : `${coverWeeks}-week target cover`
+        }
+      ];
+      summary.innerHTML = summaryMetrics.map((metric) => `
+        <div class="metric">
+          <span>${metric.label}</span>
+          <strong>${metric.value}</strong>
+          <small>${metric.detail}</small>
+        </div>
+      `).join("");
+
+      list.innerHTML = categories.map((category) => {
+        const status = category.suggested > 0
+          ? category.stock <= 0
+            ? { key: "urgent", label: isChinese ? "库存告急" : "Urgent" }
+            : { key: "needs-purchase", label: isChinese ? "需要采购" : "Replenish" }
+          : category.recentSales > 0
+            ? { key: "covered", label: isChinese ? "库存充足" : "Covered" }
+            : { key: "no-sales", label: isChinese ? "暂无近期销量" : "No recent sales" };
+        const coverageWeeks = category.weeklySales > 0 ? category.stock / category.weeklySales : 0;
+        const coverageText = category.weeklySales > 0
+          ? `${coverageWeeks.toLocaleString(locale, { maximumFractionDigits: 1 })} ${isChinese ? "周" : "weeks"}`
+          : (isChinese ? "暂无销售速度" : "No sales rate");
+        const coveragePercent = category.weeklySales > 0
+          ? Math.min(100, (category.stock / Math.max(category.targetStock, 1)) * 100)
+          : category.stock > 0 ? 100 : 0;
+        const productRows = [...category.products]
+          .sort((a, b) => b.suggested - a.suggested || b.recentSales - a.recentSales || a.product.id.localeCompare(b.product.id, undefined, { numeric: true }))
+          .map((item) => {
+            const product = item.product;
+            const image = product.image || (Array.isArray(product.images) ? product.images.find(Boolean) : "");
+            const code = productItemCode(product) || product.sku || product.barcode || "-";
+            const recommendationClass = item.suggested > 0 ? "needs-purchase" : item.recentSales > 0 ? "covered" : "";
+            const recommendationLabel = item.suggested > 0
+              ? (isChinese ? "建议采购" : "Order")
+              : item.recentSales > 0
+                ? (isChinese ? "库存充足" : "Covered")
+                : (isChinese ? "暂无建议" : "No action");
+            return `
+              <div class="procurement-product-row">
+                <div class="procurement-product-image">
+                  ${image ? `<img src="${escapeHtml(image)}" alt="${escapeHtml(productName(product))}" loading="lazy">` : '<i data-lucide="package"></i>'}
+                </div>
+                <div class="procurement-product-copy">
+                  <strong>${escapeHtml(productName(product))}</strong>
+                  <span>${isChinese ? "货号" : "Code"} ${escapeHtml(code)}</span>
+                  <div class="procurement-product-facts">
+                    <span>${isChinese ? "库存" : "Stock"} ${procurementNumber(item.stock, locale)}</span>
+                    <span>${days}${isChinese ? "天售出" : "d sold"} ${procurementNumber(item.recentSales, locale)}</span>
+                    <span>${isChinese ? "累计售出" : "Total sold"} ${procurementNumber(item.lifetimeSales, locale)}</span>
+                  </div>
+                </div>
+                <div class="procurement-product-recommendation ${recommendationClass}">
+                  <span>${recommendationLabel}</span>
+                  <strong>${procurementNumber(item.suggested, locale)}</strong>
+                </div>
+              </div>
+            `;
+          }).join("") || `<div class="procurement-empty">${isChinese ? "还没有识别到手机壳或手机膜商品" : "No phone case or screen protector products found"}</div>`;
+        return `
+          <section class="procurement-category">
+            <div class="procurement-category-head">
+              <div class="procurement-category-heading">
+                <h3>${isChinese ? category.zh : category.en}</h3>
+                <span>${procurementNumber(category.products.length, locale)} ${isChinese ? "个商品" : "products"}</span>
+              </div>
+              <span class="procurement-status ${status.key}">${status.label}</span>
+            </div>
+            <div class="procurement-category-metrics">
+              <div class="procurement-category-metric"><span>${isChinese ? "当前库存" : "Current stock"}</span><strong>${procurementUnits(category.stock, locale)}</strong></div>
+              <div class="procurement-category-metric"><span>${isChinese ? "累计售出" : "Total sold"}</span><strong>${procurementUnits(category.lifetimeSales, locale)}</strong></div>
+              <div class="procurement-category-metric"><span>${isChinese ? `${days}天售出` : `Sold in ${days} days`}</span><strong>${procurementUnits(category.recentSales, locale)}</strong></div>
+              <div class="procurement-category-metric"><span>${isChinese ? "建议采购" : "Suggested purchase"}</span><strong>${procurementUnits(category.suggested, locale)}</strong></div>
+            </div>
+            <div class="procurement-coverage">
+              <span class="procurement-coverage-label">${isChinese ? `库存覆盖（目标 ${coverWeeks} 周）` : `Stock cover (target ${coverWeeks} weeks)`}</span>
+              <strong class="procurement-coverage-value">${coverageText}</strong>
+              <div class="procurement-coverage-track" aria-hidden="true"><span style="width:${coveragePercent}%"></span></div>
+            </div>
+            <div class="procurement-products">
+              <div class="procurement-products-head"><span>${isChinese ? "商品明细" : "Product breakdown"}</span><span>${isChinese ? `每周约 ${procurementNumber(category.weeklySales, locale)} 件` : `About ${procurementNumber(category.weeklySales, locale)} units/week`}</span></div>
+              <div class="procurement-product-list">${productRows}</div>
+            </div>
+          </section>
+        `;
+      }).join("");
+      $("#procurementFootnote").textContent = isChinese
+        ? `采购建议按最近 ${days} 天已确认且未退款订单计算，目标库存为每周销售速度 × ${coverWeeks} 周，建议采购量不会低于 0。`
+        : `Suggestions use confirmed, non-refunded orders from the last ${days} days. Target stock equals weekly sales rate × ${coverWeeks} weeks; suggested purchase never goes below 0.`;
+      refreshIcons();
+    }
+
     function renderInventoryStatus() {
       const stock = state.products.reduce((sum, product) => sum + Number(product.stock || 0), 0);
       const soldOut = state.products.filter((product) => Number(product.stock) <= 0).length;
@@ -12865,6 +13578,7 @@
       renderAdminOrderNotificationUi();
       renderMetrics("#metricGrid");
       renderSalesAnalytics();
+      renderAdminProcurement();
       renderRevenueChart();
       renderInventoryStatus();
       renderAdminProducts();
@@ -14343,6 +15057,18 @@
       if (event.target instanceof Element && event.target.matches("[data-analytics-range]")) {
         state.analyticsRange = event.target.value;
         renderSalesAnalytics();
+        return;
+      }
+      if (event.target instanceof Element && event.target.matches("[data-procurement-range]")) {
+        state.procurementRange = event.target.value;
+        saveProcurementSettings();
+        renderAdminProcurement();
+        return;
+      }
+      if (event.target instanceof Element && event.target.matches("[data-procurement-cover]")) {
+        state.procurementCoverWeeks = Number(event.target.value);
+        saveProcurementSettings();
+        renderAdminProcurement();
         return;
       }
       if (event.target instanceof Element && event.target.matches("[data-product-image-file]")) {
