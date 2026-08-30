@@ -8228,14 +8228,21 @@
               </div>
               <div class="form-row">
                 <label class="field">
-                  <span>单件成本 NZD（供应价 ÷ 4）</span>
+                  <span>单件成本 NZD（1688：供应价 ÷ 4；CIL：采购价 × 1.15）</span>
                   <input type="number" name="costPerItem" min="0" step="0.01">
                 </label>
                 <label class="field">
-                  <span>供应价</span>
+                  <span>采购单价</span>
                   <input type="number" name="sourcePriceCny" min="0" step="0.01">
                 </label>
               </div>
+              <label class="field">
+                <span>采购币种</span>
+                <select name="sourceCurrency">
+                  <option value="CNY">1688 / 人民币（CNY）</option>
+                  <option value="NZD">CIL / 纽币（NZD）</option>
+                </select>
+              </label>
               <label class="shopify-check-row">
                 <span>对该商品收取税费</span>
                 <input type="checkbox" name="taxable" checked>
@@ -8666,7 +8673,8 @@
     const SUPABASE_URL = "https://ucnkcddhrptqpdlvcohy.supabase.co";
     const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_zv6WbyD1hZKUx-Zyak-fPw_e1mURTN8";
     const SOURCE_COST_DIVISOR = 4;
-    const SOURCE_PRICE_MULTIPLIER = 1.5 * 1.15;
+    const SOURCE_TAX_MULTIPLIER = 1.15;
+    const SOURCE_PRICE_MULTIPLIER = 1.5 * SOURCE_TAX_MULTIPLIER;
     const EXPERIMENTAL_ITEM_CODE_START = 1001;
     const CODE39_PATTERNS = Object.freeze({
       "0": "nnnwwnwnn",
@@ -9340,11 +9348,23 @@
       return values.some((value) => /cil(?:imports)?|cinevan|assets[\\/]+cil(?:[\\/]|$)/i.test(String(value || "")));
     }
 
+    function normalizeSourceCurrency(value, product = null) {
+      const normalized = String(value || "").trim().toUpperCase();
+      if (normalized === "NZD" || normalized === "CNY") return normalized;
+      return isCilProduct(product) ? "NZD" : "CNY";
+    }
+
+    function productSourceCurrency(product) {
+      return normalizeSourceCurrency(
+        product?.sourceCurrency ?? product?.source_currency,
+        product
+      );
+    }
+
     function productSourcePriceText(product) {
       const value = Number(product?.sourcePriceCny ?? product?.source_price);
       if (!Number.isFinite(value) || value <= 0) return "";
-      const currency = String(product?.sourceCurrency || product?.source_currency || "").trim().toUpperCase()
-        || (isCilProduct(product) ? "NZD" : "CNY");
+      const currency = productSourceCurrency(product);
       if (currency === "NZD") return formatPrice(value);
       if (currency === "CNY") return `¥${value.toFixed(2)} CNY`;
       return `${value.toFixed(2)} ${currency}`;
@@ -10073,13 +10093,18 @@
       openVipRules.lastFocus = null;
     }
 
-    function calculateSourcePricing(value) {
+    function calculateSourcePricing(value, currency = "CNY") {
       const sourcePrice = Number(value);
       if (!Number.isFinite(sourcePrice) || sourcePrice <= 0) return null;
+      const normalizedCurrency = normalizeSourceCurrency(currency);
       const roundMoney = (amount) => Math.round((amount + Number.EPSILON) * 100) / 100;
       return {
-        cost: roundMoney(sourcePrice / SOURCE_COST_DIVISOR),
-        price: roundMoney(sourcePrice * SOURCE_PRICE_MULTIPLIER)
+        cost: normalizedCurrency === "NZD"
+          ? roundMoney(sourcePrice * SOURCE_TAX_MULTIPLIER)
+          : roundMoney(sourcePrice / SOURCE_COST_DIVISOR),
+        price: normalizedCurrency === "CNY"
+          ? roundMoney(sourcePrice * SOURCE_PRICE_MULTIPLIER)
+          : null
       };
     }
 
@@ -10096,15 +10121,18 @@
     function applySourcePricingToForm(form) {
       if (!form) return;
       const fields = form.elements;
-      const pricing = calculateSourcePricing(fields.namedItem("sourcePriceCny")?.value);
+      const currency = fields.namedItem("sourceCurrency")?.value || "CNY";
+      const pricing = calculateSourcePricing(fields.namedItem("sourcePriceCny")?.value, currency);
       if (!pricing) {
         if (form.dataset.priceManual !== "true") setProductPriceMode(form, "manual");
         return;
       }
       fields.namedItem("costPerItem").value = pricing.cost.toFixed(2);
-      if (form.dataset.priceManual !== "true") {
+      if (pricing.price != null && form.dataset.priceManual !== "true") {
         fields.namedItem("price").value = pricing.price.toFixed(2);
         setProductPriceMode(form, "auto");
+      } else if (pricing.price == null) {
+        setProductPriceMode(form, "manual");
       }
     }
 
@@ -11031,6 +11059,16 @@
       remoteProducts.forEach((remote) => {
         const localProduct = localProducts.find((item) => item.id === remote.id);
         const isCil = isCilProduct(remote) || isCilProduct(localProduct);
+        const sourcePrice = Number(remote.source_price ?? localProduct?.sourcePriceCny ?? 0);
+        const sourceCurrency = normalizeSourceCurrency(
+          remote.source_currency || localProduct?.sourceCurrency,
+          {
+            ...remote,
+            sourceUrl: remote.source_url || localProduct?.sourceUrl || "",
+            sourceCurrency: remote.source_currency || localProduct?.sourceCurrency || ""
+          }
+        );
+        const sourcePricing = calculateSourcePricing(sourcePrice, sourceCurrency);
         const importedCategory = remote.category || localProduct?.category || "";
         const visibleCategory = isCil && /^1688 Imports$/i.test(importedCategory) ? "" : importedCategory;
         const remoteProduct = {
@@ -11049,7 +11087,9 @@
           descriptionZh: remote.description_zh ?? localProduct?.descriptionZh ?? "",
           price: Number(remote.price),
           compareAtPrice: Number(remote.compare_at_price || 0),
-          costPerItem: isAdmin ? Number(remote.cost_per_item || 0) : 0,
+          costPerItem: isAdmin
+            ? (sourcePricing?.cost ?? Number(remote.cost_per_item || 0))
+            : 0,
           stock: Number(remote.stock),
           sales: Number(remote.sales ?? localProduct?.sales ?? 0),
           published: Boolean(remote.published),
@@ -11062,8 +11102,8 @@
           barcode: isAdmin ? (remote.barcode ?? localProduct?.barcode ?? "") : "",
           tags: isAdmin ? (remote.tags ?? localProduct?.tags ?? "") : "",
           sourceUrl: isAdmin ? (remote.source_url ?? localProduct?.sourceUrl ?? "") : "",
-          sourceCurrency: isAdmin ? (remote.source_currency ?? localProduct?.sourceCurrency ?? "") : "",
-          sourcePriceCny: isAdmin ? Number(remote.source_price ?? localProduct?.sourcePriceCny ?? 0) : 0,
+          sourceCurrency: isAdmin ? sourceCurrency : "",
+          sourcePriceCny: isAdmin ? sourcePrice : 0,
           sourceVariants: isAdmin && Array.isArray(remote.source_variants) ? remote.source_variants : (isAdmin ? (localProduct?.sourceVariants || []) : []),
           sourceAttributes: isAdmin && Array.isArray(remote.source_attributes) ? remote.source_attributes : (isAdmin ? (localProduct?.sourceAttributes || []) : []),
           deletedAt: isAdmin && supportsRecycleBin ? (remote.deleted_at || null) : null,
@@ -13390,11 +13430,17 @@
       if (focus) input?.focus();
     }
 
+    function productCostPerItem(product) {
+      const sourcePrice = Number(product?.sourcePriceCny ?? product?.source_price);
+      const pricing = calculateSourcePricing(sourcePrice, productSourceCurrency(product));
+      return pricing?.cost ?? Math.max(0, Number(product?.costPerItem) || 0);
+    }
+
     function productInventoryValuation(products = state.products) {
       return products.reduce((totals, product) => {
         const stock = Math.max(0, Number(product.stock) || 0);
         totals.units += stock;
-        totals.cost += stock * Math.max(0, Number(product.costPerItem) || 0);
+        totals.cost += stock * productCostPerItem(product);
         totals.retail += stock * Math.max(0, Number(product.price) || 0);
         return totals;
       }, { units: 0, cost: 0, retail: 0 });
@@ -13771,6 +13817,7 @@
       fields.namedItem("price").value = "0";
       fields.namedItem("stock").value = "0";
       fields.namedItem("sourcePriceCny").value = "0";
+      fields.namedItem("sourceCurrency").value = "CNY";
       fields.namedItem("status").value = "active";
       fields.namedItem("titleZh").value = "";
       fields.namedItem("descriptionZh").value = "";
@@ -14520,7 +14567,6 @@
       fields.namedItem("onlineStore").checked = product.onlineStore ?? product.published;
       fields.namedItem("featured").checked = Boolean(product.featured);
       fields.namedItem("compareAtPrice").value = product.compareAtPrice || "";
-      fields.namedItem("costPerItem").value = product.costPerItem || "";
       fields.namedItem("sku").value = product.sku || "";
       fields.namedItem("barcode").value = product.barcode || "";
       fields.namedItem("sku").dataset.autoGenerated = !String(product.sku || "").trim()
@@ -14536,10 +14582,13 @@
       fields.namedItem("vendor").value = product.vendor || "Go Go Shop";
       fields.namedItem("sourceUrl").value = product.sourceUrl || "";
       fields.namedItem("sourcePriceCny").value = product.sourcePriceCny || "";
+      const sourceCurrency = productSourceCurrency(product);
+      fields.namedItem("sourceCurrency").value = sourceCurrency;
       fields.namedItem("tags").value = product.tags || "";
       fields.namedItem("template").value = product.template || "default";
-      const sourcePricing = calculateSourcePricing(product.sourcePriceCny);
-      const usesAutomaticPrice = sourcePricing
+      const sourcePricing = calculateSourcePricing(product.sourcePriceCny, sourceCurrency);
+      fields.namedItem("costPerItem").value = sourcePricing?.cost ?? product.costPerItem ?? "";
+      const usesAutomaticPrice = sourcePricing?.price != null
         && Math.abs(Number(product.price) - sourcePricing.price) < 0.005;
       form.dataset.priceManual = usesAutomaticPrice ? "false" : "true";
       setProductPriceMode(form, usesAutomaticPrice ? "auto" : "manual");
@@ -14725,7 +14774,12 @@
       const image = data.image.trim();
       const images = [...new Set([image, ...String(data.images || "").split(/\r?\n/).map((value) => value.trim()).filter(Boolean)])];
       const sourcePriceCny = Number(data.sourcePriceCny || 0);
-      const sourcePricing = calculateSourcePricing(sourcePriceCny);
+      const sourceCurrency = normalizeSourceCurrency(data.sourceCurrency, {
+        ...existing,
+        sourceUrl: data.sourceUrl,
+        sourceCurrency: data.sourceCurrency
+      });
+      const sourcePricing = calculateSourcePricing(sourcePriceCny, sourceCurrency);
       const manualPrice = Number(data.price);
       if (!Number.isFinite(manualPrice) || manualPrice < 0) {
         showToast(state.lang === "zh" ? "请输入有效的商品售价" : "Enter a valid product price");
@@ -14760,7 +14814,7 @@
         compareAtPrice: Number(data.compareAtPrice || 0),
         costPerItem: sourcePricing?.cost ?? Number(data.costPerItem || 0),
         sourcePriceCny,
-        sourceCurrency: existing?.sourceCurrency || (data.sourceUrl ? "CNY" : ""),
+        sourceCurrency,
         sourceUrl: data.sourceUrl.trim(),
         sourceVariants: existing?.sourceVariants || [],
         sourceAttributes: existing?.sourceAttributes || [],
@@ -14819,7 +14873,7 @@
     }
 
     function exportProducts() {
-      const headers = ["id", "title", "titleEn", "titleZh", "category", "description", "descriptionEn", "descriptionZh", "price", "compareAtPrice", "costPerItem", "sourcePriceCny", "stock", "published", "featured", "sku", "barcode", "vendor", "tags", "image", "images", "sourceUrl"];
+      const headers = ["id", "title", "titleEn", "titleZh", "category", "description", "descriptionEn", "descriptionZh", "price", "compareAtPrice", "costPerItem", "sourcePriceCny", "sourceCurrency", "stock", "published", "featured", "sku", "barcode", "vendor", "tags", "image", "images", "sourceUrl"];
       const rows = state.products.map((product) => headers.map((key) => `"${String(product[key] ?? "").replace(/"/g, '""')}"`).join(","));
       const blob = new Blob([[headers.join(","), ...rows].join("\n")], { type: "text/csv" });
       const url = URL.createObjectURL(blob);
@@ -15183,7 +15237,7 @@
             productBarcodeScanTimer = window.setTimeout(() => completeProductBarcodeScan(event.target), 350);
           }
         }
-        if (event.target.matches('[name="sourcePriceCny"]')) {
+        if (event.target.matches('[name="sourcePriceCny"], [name="sourceCurrency"]')) {
           applySourcePricingToForm(event.target.closest("[data-product-form]"));
         }
         if (event.target.matches('[name="price"]')) {
@@ -15241,6 +15295,9 @@
         updateDesignFromForm();
       }
       if (event.target instanceof Element && event.target.closest("[data-product-form]")) {
+        if (event.target.matches('[name="sourcePriceCny"], [name="sourceCurrency"]')) {
+          applySourcePricingToForm(event.target.closest("[data-product-form]"));
+        }
         updateProductEditorPreview();
       }
       if (event.target instanceof Element && event.target.matches("[data-cart-voucher-select]")) {
