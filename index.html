@@ -2309,6 +2309,14 @@
       line-height: 1.35;
     }
 
+    .result-product-code {
+      margin-top: 3px;
+      color: var(--ink);
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1.3;
+    }
+
     .result-product-link {
       min-width: 0;
       color: inherit;
@@ -11392,6 +11400,7 @@
           </a>
           <div>
             <a class="result-product-link" href="#product=${encodeURIComponent(product.id)}" data-product-view="${escapeHtml(product.id)}"><strong>${escapeHtml(productName(product))}</strong></a>
+            <div class="result-product-code">${state.lang === "zh" ? "货号" : "Item code"} ${escapeHtml(productItemCode(product) || "-")}</div>
             <div class="muted">${formatPrice(product.price)} · ${categoryName(productCategoryKey(product))}</div>
           </div>
           <button class="button ghost" type="button" data-add-cart="${escapeHtml(product.id)}" ${!available(product) ? "disabled" : ""}>
