@@ -2317,6 +2317,23 @@
       line-height: 1.3;
     }
 
+    .result-product-stock {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 650;
+      line-height: 1.3;
+    }
+
+    .result-product-stock .stock-dot {
+      width: 7px;
+      height: 7px;
+      flex: 0 0 auto;
+    }
+
     .result-product-link {
       min-width: 0;
       color: inherit;
@@ -9810,6 +9827,12 @@
       return state.lang === "zh" ? `现货 · 剩余 ${stock} 件` : `In stock · ${stock} available`;
     }
 
+    function searchStockText(product) {
+      const stock = Math.max(0, Number(product.stock) || 0);
+      if (!available(product)) return state.lang === "zh" ? `售罄 · 剩余 ${stock} 件` : `Sold out · ${stock} available`;
+      return state.lang === "zh" ? `剩余 ${stock} 件` : `${stock} available`;
+    }
+
     function renderProductDetail() {
       const detail = $("#productDetail");
       const content = $("#productDetailContent");
@@ -11402,6 +11425,7 @@
             <a class="result-product-link" href="#product=${encodeURIComponent(product.id)}" data-product-view="${escapeHtml(product.id)}"><strong>${escapeHtml(productName(product))}</strong></a>
             <div class="result-product-code">${state.lang === "zh" ? "货号" : "Item code"} ${escapeHtml(productItemCode(product) || "-")}</div>
             <div class="muted">${formatPrice(product.price)} · ${categoryName(productCategoryKey(product))}</div>
+            <div class="result-product-stock"><span class="stock-dot ${available(product) ? "" : "sold-out"}"></span><span>${searchStockText(product)}</span></div>
           </div>
           <button class="button ghost" type="button" data-add-cart="${escapeHtml(product.id)}" ${!available(product) ? "disabled" : ""}>
             <i data-lucide="plus"></i> ${t("add")}
