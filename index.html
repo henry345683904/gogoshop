@@ -5456,6 +5456,62 @@
       margin-top: 2px;
     }
 
+    .admin-order-note-editor {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: end;
+      gap: 8px;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--line);
+    }
+
+    .admin-order-note-field {
+      display: grid;
+      min-width: 0;
+      gap: 4px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .admin-order-note-input {
+      width: 100%;
+      min-height: 54px;
+      resize: vertical;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 8px 10px;
+      background: #fff;
+      color: var(--ink);
+      font: inherit;
+      font-size: 13px;
+      font-weight: 500;
+      line-height: 1.4;
+    }
+
+    .admin-order-note-input:focus {
+      outline: 2px solid #cce8dc;
+      border-color: var(--success);
+    }
+
+    .admin-order-note-save {
+      min-height: 38px;
+      white-space: nowrap;
+    }
+
+    .admin-order-note-status {
+      grid-column: 1 / -1;
+      min-height: 16px;
+      color: var(--success);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .admin-order-note-status.error {
+      color: #a33131;
+    }
+
     .admin-order-items-row > td {
       padding-top: 8px;
       padding-bottom: 11px;
@@ -6882,6 +6938,14 @@
       }
 
       .drawer {
+        width: 100%;
+      }
+
+      .admin-order-note-editor {
+        grid-template-columns: 1fr;
+      }
+
+      .admin-order-note-save {
         width: 100%;
       }
 
@@ -12099,6 +12163,7 @@
     function adminOrderItemsSummary(order, options = {}) {
       const items = Array.isArray(order?.order_items) ? order.order_items : [];
       const includeNotes = options.includeNotes !== false;
+      const includeAdminEditor = options.includeAdminEditor === true;
       const visibleItems = items.slice(0, 5);
       const extraCount = Math.max(0, items.length - visibleItems.length);
       const itemLabel = state.lang === "zh" ? "商品图片" : "Product images";
@@ -12116,12 +12181,22 @@
       const itemText = items.length
         ? items.map((item) => `${escapeHtml(orderItemName(item))} × ${Math.max(0, Number(item.quantity) || 0)}${includeNotes && item.item_note ? ` · ${state.lang === "zh" ? "备注" : "Note"}: ${escapeHtml(item.item_note)}` : ""}`).join("<br>")
         : (state.lang === "zh" ? "暂无商品明细" : "No product details");
-      const orderNote = includeNotes && order?.order_note
+      const orderNote = includeNotes && order?.order_note && !includeAdminEditor
         ? `<div><strong>${state.lang === "zh" ? "订单备注" : "Order note"}:</strong> ${escapeHtml(order.order_note)}</div>`
+        : "";
+      const adminOrderNoteEditor = includeAdminEditor && state.profile?.is_admin
+        ? `<div class="admin-order-note-editor" data-admin-order-note-editor="${escapeHtml(order.id)}">
+            <label class="admin-order-note-field" for="adminOrderNote-${escapeHtml(order.id)}">
+              <span>${state.lang === "zh" ? "订单备注" : "Order note"}</span>
+              <textarea id="adminOrderNote-${escapeHtml(order.id)}" class="admin-order-note-input" data-admin-order-note="${escapeHtml(order.id)}" maxlength="1000" placeholder="${state.lang === "zh" ? "添加订单备注" : "Add an order note"}">${escapeHtml(order.order_note || "")}</textarea>
+            </label>
+            <button class="button admin-order-note-save" type="button" data-save-order-note="${escapeHtml(order.id)}"><i data-lucide="save"></i><span>${state.lang === "zh" ? "保存备注" : "Save note"}</span></button>
+            <span class="admin-order-note-status" data-order-note-status="${escapeHtml(order.id)}" role="status" aria-live="polite"></span>
+          </div>`
         : "";
       return `<div class="admin-order-item-summary">
         <div class="admin-order-item-thumbnails" aria-label="${itemLabel}">${thumbnails}${more}</div>
-        <div class="admin-order-item-copy"><div>${itemText}</div>${orderNote}</div>
+        <div class="admin-order-item-copy"><div>${itemText}</div>${orderNote}${adminOrderNoteEditor}</div>
       </div>`;
     }
 
@@ -12162,7 +12237,7 @@
             <td>${Number(order.points_awarded ?? Math.round(Number(order.total) || 0))}</td>
             <td>${actions}</td>
           </tr>
-          <tr class="admin-order-items-row"><td colspan="6">${adminOrderItemsSummary(order)}</td></tr>
+          <tr class="admin-order-items-row"><td colspan="6">${adminOrderItemsSummary(order, { includeAdminEditor: true })}</td></tr>
         `;
       }).join("") : `<tr><td colspan="6"><div class="empty-state">No customer orders yet</div></td></tr>`;
       trashRows.innerHTML = state.deletedOrders.length ? state.deletedOrders.map((order) => {
@@ -12223,6 +12298,41 @@
       document.body.classList.add("admin-receipt-printing");
       window.addEventListener("afterprint", () => document.body.classList.remove("admin-receipt-printing"), { once: true });
       setTimeout(() => window.print(), 50);
+    }
+
+    async function saveAdminOrderNote(orderId) {
+      if (!db || !state.profile?.is_admin) return;
+      const order = state.adminOrders.find((item) => item.id === orderId);
+      const editor = $$(`[data-admin-order-note-editor]`).find((item) => item.dataset.adminOrderNoteEditor === orderId);
+      const input = editor?.querySelector("[data-admin-order-note]");
+      const button = editor?.querySelector("[data-save-order-note]");
+      const status = editor?.querySelector("[data-order-note-status]");
+      if (!order || !input || !button) return;
+      const note = String(input.value || "").trim().slice(0, 1000);
+      input.value = note;
+      button.disabled = true;
+      if (status) {
+        status.className = "admin-order-note-status";
+        status.textContent = state.lang === "zh" ? "正在保存..." : "Saving...";
+      }
+      const { data, error } = await db.rpc("update_admin_order_note", {
+        p_order_id: orderId,
+        p_order_note: note
+      });
+      if (error) {
+        button.disabled = false;
+        if (status) {
+          status.classList.add("error");
+          status.textContent = authErrorMessage(error);
+        }
+        showToast(authErrorMessage(error));
+        return;
+      }
+      order.order_note = data?.order_note ?? note;
+      input.value = order.order_note;
+      button.disabled = false;
+      if (status) status.textContent = state.lang === "zh" ? "已保存" : "Saved";
+      showToast(state.lang === "zh" ? "订单备注已保存" : "Order note saved");
     }
 
     function customerStats(customer) {
@@ -15014,6 +15124,7 @@
       if (target.matches("[data-dismiss-order-alert]")) dismissAdminOrderAlert();
       if (target.matches("[data-confirm-order]")) confirmSupabaseOrder(target.dataset.confirmOrder);
       if (target.matches("[data-edit-order]")) editSupabaseOrder(target.dataset.editOrder);
+      if (target.matches("[data-save-order-note]")) saveAdminOrderNote(target.dataset.saveOrderNote);
       if (target.matches("[data-print-order]")) printAdminOrderReceipt(target.dataset.printOrder);
       if (target.matches("[data-delete-order]")) deleteSupabaseOrder(target.dataset.deleteOrder);
       if (target.matches("[data-restore-order]")) restoreSupabaseOrder(target.dataset.restoreOrder);
