@@ -5351,6 +5351,92 @@
       background: var(--soft);
     }
 
+    .admin-order-item-summary {
+      display: flex;
+      min-width: 260px;
+      align-items: center;
+      gap: 12px;
+      color: var(--muted);
+      line-height: 1.45;
+      white-space: normal;
+    }
+
+    .admin-order-item-thumbnails {
+      display: flex;
+      flex: 0 0 auto;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .admin-order-item-thumb {
+      position: relative;
+      display: grid;
+      width: 40px;
+      height: 40px;
+      flex: 0 0 40px;
+      place-items: center;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--soft);
+      color: var(--muted);
+    }
+
+    .admin-order-item-thumb img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .admin-order-item-thumb svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .admin-order-item-thumb-count {
+      position: absolute;
+      right: 2px;
+      bottom: 2px;
+      min-width: 16px;
+      border-radius: 8px;
+      padding: 1px 4px;
+      background: rgba(20, 24, 24, .78);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 800;
+      line-height: 1.2;
+      text-align: center;
+    }
+
+    .admin-order-item-thumb-more {
+      display: grid;
+      width: 40px;
+      height: 40px;
+      flex: 0 0 40px;
+      place-items: center;
+      border: 1px dashed #b9bdbd;
+      border-radius: 6px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .admin-order-item-copy {
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .admin-order-item-copy > div + div {
+      margin-top: 2px;
+    }
+
+    .admin-order-items-row > td {
+      padding-top: 8px;
+      padding-bottom: 11px;
+      background: #fafbfb;
+    }
+
     .status {
       display: inline-flex;
       min-height: 26px;
@@ -9486,8 +9572,15 @@
         || t("productFallback");
     }
 
+    function productForOrderItem(item) {
+      const productId = String(item?.product_id || "");
+      return state.products.find((entry) => String(entry.id) === productId)
+        || state.deletedProducts.find((entry) => String(entry.id) === productId)
+        || null;
+    }
+
     function orderItemName(item) {
-      const product = state.products.find((entry) => entry.id === item.product_id);
+      const product = productForOrderItem(item);
       return product ? productName(product) : item.product_title;
     }
 
@@ -11470,6 +11563,35 @@
       renderAdmin();
     }
 
+    function adminOrderItemsSummary(order, options = {}) {
+      const items = Array.isArray(order?.order_items) ? order.order_items : [];
+      const includeNotes = options.includeNotes !== false;
+      const visibleItems = items.slice(0, 5);
+      const extraCount = Math.max(0, items.length - visibleItems.length);
+      const itemLabel = state.lang === "zh" ? "商品图片" : "Product images";
+      const thumbnails = visibleItems.map((item) => {
+        const product = productForOrderItem(item);
+        const image = product?.image || (Array.isArray(product?.images) ? product.images.find(Boolean) : "");
+        const name = product ? productName(product) : String(item.product_title || "Product");
+        const quantity = Math.max(0, Number(item.quantity) || 0);
+        return `<span class="admin-order-item-thumb" title="${escapeHtml(name)}">
+          ${image ? `<img src="${escapeHtml(image)}" alt="${escapeHtml(name)}" loading="lazy">` : '<i data-lucide="package"></i>'}
+          <span class="admin-order-item-thumb-count">×${quantity}</span>
+        </span>`;
+      }).join("");
+      const more = extraCount ? `<span class="admin-order-item-thumb-more">+${extraCount}</span>` : "";
+      const itemText = items.length
+        ? items.map((item) => `${escapeHtml(orderItemName(item))} × ${Math.max(0, Number(item.quantity) || 0)}${includeNotes && item.item_note ? ` · ${state.lang === "zh" ? "备注" : "Note"}: ${escapeHtml(item.item_note)}` : ""}`).join("<br>")
+        : (state.lang === "zh" ? "暂无商品明细" : "No product details");
+      const orderNote = includeNotes && order?.order_note
+        ? `<div><strong>${state.lang === "zh" ? "订单备注" : "Order note"}:</strong> ${escapeHtml(order.order_note)}</div>`
+        : "";
+      return `<div class="admin-order-item-summary">
+        <div class="admin-order-item-thumbnails" aria-label="${itemLabel}">${thumbnails}${more}</div>
+        <div class="admin-order-item-copy"><div>${itemText}</div>${orderNote}</div>
+      </div>`;
+    }
+
     function renderAdminOrders() {
       const target = $("#adminOrderRows");
       if (!target) return;
@@ -11507,7 +11629,7 @@
             <td>${Number(order.points_awarded ?? Math.round(Number(order.total) || 0))}</td>
             <td>${actions}</td>
           </tr>
-          <tr><td colspan="6" class="muted">${(order.order_items || []).map((item) => `${escapeHtml(item.product_title)} × ${Number(item.quantity)}${item.item_note ? ` · ${state.lang === "zh" ? "备注" : "Note"}: ${escapeHtml(item.item_note)}` : ""}`).join("<br>")}${order.order_note ? `<div><strong>${state.lang === "zh" ? "订单备注" : "Order note"}:</strong> ${escapeHtml(order.order_note)}</div>` : ""}</td></tr>
+          <tr class="admin-order-items-row"><td colspan="6">${adminOrderItemsSummary(order)}</td></tr>
         `;
       }).join("") : `<tr><td colspan="6"><div class="empty-state">No customer orders yet</div></td></tr>`;
       trashRows.innerHTML = state.deletedOrders.length ? state.deletedOrders.map((order) => {
@@ -11521,7 +11643,7 @@
             <td>${new Date(order.deleted_at).toLocaleString("en-NZ")}</td>
             <td><button class="button" type="button" data-restore-order="${escapeHtml(order.id)}"><i data-lucide="rotate-ccw"></i> Restore</button></td>
           </tr>
-          <tr><td colspan="6" class="muted">${(order.order_items || []).map((item) => `${escapeHtml(item.product_title)} x ${Number(item.quantity)}`).join(" | ")}</td></tr>
+          <tr class="admin-order-items-row"><td colspan="6">${adminOrderItemsSummary(order, { includeNotes: false })}</td></tr>
         `;
       }).join("") : `<tr><td colspan="6"><div class="empty-state">Order recycle bin is empty</div></td></tr>`;
       refreshIcons();
