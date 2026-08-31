@@ -261,6 +261,7 @@
       });
     }
     function receiptLines(){return [...state.cart].map(([id,quantity])=>{const product=state.products.find(item=>item.id===id);const unitPrice=product?cartUnitPrice(product):0;return product?{title:product.title,code:productItemCode(product)||product.id,quantity,unitPrice,subtotal:roundMoney(unitPrice*quantity),note:itemNoteText(id)}:null}).filter(Boolean)}
+    function discountOfferText(type,value){const numeric=Number(value);if(!Number.isFinite(numeric)||numeric<=0)return "";return type==="percent"?`${numeric.toLocaleString("en-NZ",{maximumFractionDigits:2})}% OFF`:`${money.format(numeric)} OFF`}
     function receiptDiscountedUnitPrice(line,receipt){const subtotal=roundMoney(receipt?.subtotal);const discount=Math.min(subtotal,Math.max(0,roundMoney(receipt?.discount)));const unitPrice=roundMoney(line?.unitPrice);if(!subtotal||discount<=0)return unitPrice;return roundMoney(unitPrice*(subtotal-discount)/subtotal)}
     function receiptLineMarkup(line,receipt,isChinese){const hasDiscount=Number(receipt.discount||0)>0;const discountedUnitPrice=receiptDiscountedUnitPrice(line,receipt);const discountedSubtotal=roundMoney(discountedUnitPrice*Number(line.quantity||0));const originalLine=`<span>${escapeHtml(line.code)} · ${line.quantity} × ${money.format(line.unitPrice)} = ${money.format(line.subtotal)}</span>`;const discountedLine=hasDiscount?`<span class="receipt-line-discounted">${isChinese?"折后":"After discount"}: ${line.quantity} × ${money.format(discountedUnitPrice)} = ${money.format(discountedSubtotal)}</span>`:"";return `<div class="receipt-line"><strong>${escapeHtml(line.title)}</strong>${originalLine}${discountedLine}${line.note?`<span>${isChinese?"备注":"Note"}: ${escapeHtml(line.note)}</span>`:""}</div>`}
     function renderReceipt(){
@@ -272,8 +273,10 @@
       if(!receipt.customer&&state.customer){receipt.customer={name:customerDisplayName(state.customer),email:state.customer.email||"",barcode:state.customer.customer_barcode||"",pointsAwarded:Math.round(Number(receipt.total)||0)}}
       const gstAmount=Math.round((Number(receipt.total)||0)*15/115*100)/100;
       const customerBlock=receipt.customer?`<div class="receipt-meta"><strong>${isChinese?"客户信息":"Customer Details"}</strong><span>${isChinese?"客户":"Customer"}: ${escapeHtml(receipt.customer.name)}</span>${receipt.customer.email?`<span>${isChinese?"邮箱":"Email"}: ${escapeHtml(receipt.customer.email)}</span>`:""}${receipt.customer.barcode?`<span>${isChinese?"客户号":"Customer ID"}: ${escapeHtml(receipt.customer.barcode)}</span>`:""}<span>${isChinese?"本次积分":"Points Earned"}: +${Number(receipt.customer.pointsAwarded||0)}</span></div>`:"";
-      const voucherDiscountLine=Number(receipt.voucherDiscount||0)>0?`<span>${isChinese?"代金券":"Voucher"} ${escapeHtml(receipt.voucherCode||"")}: -${money.format(receipt.voucherDiscount)}</span>`:"";
-      const manualDiscountLine=Number(receipt.manualDiscount||0)>0?`<span>${isChinese?"本单折扣":"Order Discount"}: -${money.format(receipt.manualDiscount)}</span>`:"";
+      const voucherOffer=discountOfferText(receipt.voucherDiscountType,receipt.voucherDiscountValue);
+      const manualOffer=discountOfferText(receipt.manualDiscountType,receipt.manualDiscountValue);
+      const voucherDiscountLine=Number(receipt.voucherDiscount||0)>0?`<span>${isChinese?"代金券":"Voucher"}${receipt.voucherCode?` ${escapeHtml(receipt.voucherCode)}`:""}: ${voucherOffer?`${voucherOffer} `:""}(-${money.format(receipt.voucherDiscount)})</span>`:"";
+      const manualDiscountLine=Number(receipt.manualDiscount||0)>0?`<span>${isChinese?"本单折扣":"Order Discount"}: ${manualOffer?`${manualOffer} `:""}(-${money.format(receipt.manualDiscount)})</span>`:"";
       const fallbackDiscountLine=receipt.discount>0&&!voucherDiscountLine&&!manualDiscountLine?`<span>${isChinese?"优惠":"Discount"}: -${money.format(receipt.discount)}</span>`:"";
       const totalSavingsLine=receipt.discount>0?`<span><strong>${isChinese?"总优惠":"Total Savings"}</strong>: -${money.format(receipt.discount)}</span>`:"";
       const discountBlock=receipt.discount>0?`<div class="receipt-meta"><span>${isChinese?"原价":"Subtotal"}: ${money.format(receipt.subtotal)}</span>${voucherDiscountLine}${manualDiscountLine}${fallbackDiscountLine}${totalSavingsLine}</div>`:"";
@@ -397,7 +400,7 @@
         const serverDiscount=Number(data.discount_amount||0);
         const receiptVoucherDiscount=Math.min(serverDiscount,clientVoucherDiscount);
         const receiptManualDiscount=Math.max(0,roundMoney(serverDiscount-receiptVoucherDiscount));
-        state.lastReceipt={orderNumber:data.order_number,createdAt:data.confirmed_at||new Date().toISOString(),subtotal:Number(data.subtotal??data.total),discount:serverDiscount,voucherDiscount:receiptVoucherDiscount,manualDiscount:receiptManualDiscount,voucherCode:data.voucher_code||chosenVoucher?.vouchers?.code||"",total:Number(data.total),lines,orderNote,lang:state.lang};
+        state.lastReceipt={orderNumber:data.order_number,createdAt:data.confirmed_at||new Date().toISOString(),subtotal:Number(data.subtotal??data.total),discount:serverDiscount,voucherDiscount:receiptVoucherDiscount,voucherDiscountType:chosenVoucher?.vouchers?.discount_type||"",voucherDiscountValue:Number(chosenVoucher?.vouchers?.discount_value||0),manualDiscount:receiptManualDiscount,manualDiscountType:clientManualDiscount>0?state.manualDiscount.type:"",manualDiscountValue:clientManualDiscount>0?Number(state.manualDiscount.value)||0:0,voucherCode:data.voucher_code||chosenVoucher?.vouchers?.code||"",total:Number(data.total),lines,orderNote,lang:state.lang};
         renderReceipt();
         const awardedPoints=Number(data.points_awarded||0);
         const pointsNote=awardedPoints?" · +"+awardedPoints+" "+t("pointsAwarded"):"";
