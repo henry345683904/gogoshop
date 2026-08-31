@@ -9743,16 +9743,27 @@
       if (!product) return false;
       const localization = window.GOGOSHOP_PRODUCT_LOCALIZATIONS?.[product.id] || {};
       const category = String(product.category || "").trim().toLocaleLowerCase();
-      if (/^key\s*[- ]?(?:chains?|rings?)$/.test(category) || /^钥匙(?:链|扣|圈|挂件)$/.test(category)) return true;
       const text = [
+        product.category,
         product.productType,
         product.title,
         product.titleEn,
         product.titleZh,
+        product.title_en,
+        product.title_zh,
+        product.description,
+        product.descriptionEn,
+        product.descriptionZh,
+        product.description_en,
+        product.description_zh,
         localization.en,
         localization.zh,
         product.tags
       ].map((value) => String(value || "").toLocaleLowerCase()).join(" ");
+      const isGiftBag = /gift\s*(?:bags?|packaging)|(?:paper|shopping|carry|carrier|reusable|non[- ]woven|fabric|plastic|kraft)\s+bags?|bags?\s+(?:for\s+)?gifts?|礼品袋|手提袋|购物袋|纸袋|包装袋/.test(text);
+      const isOfficeSupply = /^office[- ]supplies?$|办公用品|文具/.test(category) || isOfficeSupplyProduct(product);
+      if (isGiftBag || isOfficeSupply) return false;
+      if (/^key\s*[- ]?(?:chains?|rings?)$/.test(category) || /^钥匙(?:链|扣|圈|挂件)$/.test(category)) return true;
       return /key\s*[- ]?(?:chain|ring)s?|钥匙链|钥匙扣|钥匙圈|钥匙挂件/.test(text);
     }
 
@@ -10218,6 +10229,8 @@
 
     function isOfficeSupplyProduct(product) {
       if (!product) return false;
+      const category = String(product.category || "").trim().toLocaleLowerCase();
+      if (/^office[- ]supplies?$|办公用品|文具/.test(category)) return true;
       const localization = window.GOGOSHOP_PRODUCT_LOCALIZATIONS?.[product.id] || {};
       const text = [
         product.productType,
