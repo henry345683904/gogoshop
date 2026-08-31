@@ -91,7 +91,7 @@
       width: 50mm !important;
       min-height: 0 !important;
       margin: 0 !important;
-      padding: 1mm 2mm .5mm !important;
+      padding: 0 2mm .5mm !important;
       overflow: visible;
       color: #000;
       background: #fff;
@@ -102,17 +102,16 @@
     }
     .receipt-print.receipt-measuring .receipt-head { text-align:center; border-bottom:1px dashed #000; padding-bottom:6px; }
     .receipt-print.receipt-measuring .receipt-head strong { display:block; font-size:15px; }
-    .receipt-print.receipt-measuring .receipt-meta { display:grid; gap:2px; padding:6px 0; border-bottom:1px dashed #000; }
-    .receipt-print.receipt-measuring .receipt-line { padding:5px 0; border-bottom:1px dotted #777; }
+    .receipt-print.receipt-measuring .receipt-meta { display:grid; gap:2px; padding:4px 0; border-bottom:1px dashed #000; }
+    .receipt-print.receipt-measuring .receipt-line { padding:4px 0; border-bottom:1px dotted #777; }
     .receipt-print.receipt-measuring .receipt-line strong,
     .receipt-print.receipt-measuring .receipt-line span { display:block; }
     .receipt-print.receipt-measuring .receipt-line span { text-align:right; }
-    .receipt-print.receipt-measuring .receipt-total { display:flex; justify-content:space-between; font-size:14px; font-weight:800; padding:8px 0; border-bottom:1px dashed #000; }
-    .receipt-print.receipt-measuring .receipt-tax { display:grid; gap:2px; padding:6px 0; border-bottom:1px dashed #000; }
+    .receipt-print.receipt-measuring .receipt-line-discounted { font-size:9px; }
+    .receipt-print.receipt-measuring .receipt-total { display:flex; justify-content:space-between; font-size:14px; font-weight:800; padding:7px 0; border-bottom:1px dashed #000; }
+    .receipt-print.receipt-measuring .receipt-tax { display:grid; gap:2px; padding:5px 0; border-bottom:1px dashed #000; }
     .receipt-print.receipt-measuring .receipt-tax span { display:flex; justify-content:space-between; }
-    .receipt-print.receipt-measuring .receipt-policy { padding:7px 0; border-bottom:1px dashed #000; text-align:left; }
-    .receipt-print.receipt-measuring .receipt-policy strong { display:block; margin-bottom:3px; }
-    .receipt-print.receipt-measuring .receipt-footer { text-align:center; padding-top:8px; }
+    .receipt-print.receipt-measuring .receipt-footer { text-align:center; padding-top:6px; }
     @page { size:50mm auto; margin:0; }
     @media print {
       html,body {
@@ -134,7 +133,7 @@
         width:50mm!important;
         min-height:0!important;
         margin:0!important;
-        padding:1mm 2mm .5mm!important;
+        padding:0 2mm .5mm!important;
         overflow:visible!important;
         overflow-wrap:anywhere;
         break-before:avoid-page;
@@ -144,6 +143,14 @@
         -webkit-print-color-adjust:exact;
         print-color-adjust:exact;
       }
+      .receipt-print .receipt-head { padding-bottom:4px; }
+      .receipt-print .receipt-meta { padding:4px 0; }
+      .receipt-print .receipt-line { padding:4px 0; }
+      .receipt-print .receipt-line-discounted { font-size:9px; }
+      .receipt-print .receipt-total { padding:7px 0; }
+      .receipt-print .receipt-tax { padding:5px 0; }
+      .receipt-print .receipt-policy { display:none!important; }
+      .receipt-print .receipt-footer { padding-top:6px; }
       .receipt-print > * { break-inside:avoid; page-break-inside:avoid; }
     }
   </style>
@@ -253,7 +260,9 @@
         noteInput.before(field);
       });
     }
-    function receiptLines(){return [...state.cart].map(([id,quantity])=>{const product=state.products.find(item=>item.id===id);const unitPrice=product?cartUnitPrice(product):0;return product?{title:product.title,code:productItemCode(product)||product.id,quantity,unitPrice,subtotal:unitPrice*quantity,note:itemNoteText(id)}:null}).filter(Boolean)}
+    function receiptLines(){return [...state.cart].map(([id,quantity])=>{const product=state.products.find(item=>item.id===id);const unitPrice=product?cartUnitPrice(product):0;return product?{title:product.title,code:productItemCode(product)||product.id,quantity,unitPrice,subtotal:roundMoney(unitPrice*quantity),note:itemNoteText(id)}:null}).filter(Boolean)}
+    function receiptDiscountedUnitPrice(line,receipt){const subtotal=roundMoney(receipt?.subtotal);const discount=Math.min(subtotal,Math.max(0,roundMoney(receipt?.discount)));const unitPrice=roundMoney(line?.unitPrice);if(!subtotal||discount<=0)return unitPrice;return roundMoney(unitPrice*(subtotal-discount)/subtotal)}
+    function receiptLineMarkup(line,receipt,isChinese){const hasDiscount=Number(receipt.discount||0)>0;const discountedUnitPrice=receiptDiscountedUnitPrice(line,receipt);const discountedSubtotal=roundMoney(discountedUnitPrice*Number(line.quantity||0));const originalLine=`<span>${escapeHtml(line.code)} · ${line.quantity} × ${money.format(line.unitPrice)} = ${money.format(line.subtotal)}</span>`;const discountedLine=hasDiscount?`<span class="receipt-line-discounted">${isChinese?"折后":"After discount"}: ${line.quantity} × ${money.format(discountedUnitPrice)} = ${money.format(discountedSubtotal)}</span>`:"";return `<div class="receipt-line"><strong>${escapeHtml(line.title)}</strong>${originalLine}${discountedLine}${line.note?`<span>${isChinese?"备注":"Note"}: ${escapeHtml(line.note)}</span>`:""}</div>`}
     function renderReceipt(){
       const receipt=state.lastReceipt;
       if(!receipt)return;
@@ -266,11 +275,11 @@
       const voucherDiscountLine=Number(receipt.voucherDiscount||0)>0?`<span>${isChinese?"代金券":"Voucher"} ${escapeHtml(receipt.voucherCode||"")}: -${money.format(receipt.voucherDiscount)}</span>`:"";
       const manualDiscountLine=Number(receipt.manualDiscount||0)>0?`<span>${isChinese?"本单折扣":"Order Discount"}: -${money.format(receipt.manualDiscount)}</span>`:"";
       const fallbackDiscountLine=receipt.discount>0&&!voucherDiscountLine&&!manualDiscountLine?`<span>${isChinese?"优惠":"Discount"}: -${money.format(receipt.discount)}</span>`:"";
-      const discountBlock=receipt.discount>0?`<div class="receipt-meta"><span>${isChinese?"原价":"Subtotal"}: ${money.format(receipt.subtotal)}</span>${voucherDiscountLine}${manualDiscountLine}${fallbackDiscountLine}</div>`:"";
+      const totalSavingsLine=receipt.discount>0?`<span><strong>${isChinese?"总优惠":"Total Savings"}</strong>: -${money.format(receipt.discount)}</span>`:"";
+      const discountBlock=receipt.discount>0?`<div class="receipt-meta"><span>${isChinese?"原价":"Subtotal"}: ${money.format(receipt.subtotal)}</span>${voucherDiscountLine}${manualDiscountLine}${fallbackDiscountLine}${totalSavingsLine}</div>`:"";
       const orderNoteBlock=receipt.orderNote?`<div class="receipt-meta"><span>${isChinese?"订单备注":"Order Note"}: ${escapeHtml(receipt.orderNote)}</span></div>`:"";
       const gstBlock=`<div class="receipt-tax"><strong>${isChinese?"价格包含 GST 15%":"Prices Include GST 15%"}</strong><span><span>${isChinese?"其中 GST 税额":"GST Included"}</span><b>${money.format(gstAmount)}</b></span></div>`;
-      const policyBlock=`<div class="receipt-policy"><strong>${isChinese?"退换货政策":"Returns & Exchanges"}</strong><span>${isChinese?"7 天内，非人为损坏可凭小票退换货。":"Within 7 days, items not damaged by misuse may be returned or exchanged with this receipt."}</span></div>`;
-      $("#receiptPrint").innerHTML=`<div class="receipt-head"><strong>GO GO SHOP</strong><span>${isChinese?"销售小票":"SALES RECEIPT"}</span></div><div class="receipt-meta"><span>${isChinese?"订单号":"Order"}: ${escapeHtml(receipt.orderNumber)}</span><span>${isChinese?"时间":"Date"}: ${escapeHtml(date)}</span></div>${customerBlock}${receipt.lines.map(line=>`<div class="receipt-line"><strong>${escapeHtml(line.title)}</strong><span>${escapeHtml(line.code)} · ${line.quantity} × ${money.format(line.unitPrice)} = ${money.format(line.subtotal)}</span>${line.note?`<span>${isChinese?"备注":"Note"}: ${escapeHtml(line.note)}</span>`:""}</div>`).join("")}${discountBlock}${orderNoteBlock}<div class="receipt-total"><span>${isChinese?"合计":"TOTAL"}</span><span>${money.format(receipt.total)}</span></div>${gstBlock}${policyBlock}<div class="receipt-footer">${isChinese?"谢谢惠顾":"Thank You"}</div>`;
+      $("#receiptPrint").innerHTML=`<div class="receipt-head"><strong>GO GO SHOP</strong><span>${isChinese?"销售小票":"SALES RECEIPT"}</span></div><div class="receipt-meta"><span>${isChinese?"订单号":"Order"}: ${escapeHtml(receipt.orderNumber)}</span><span>${isChinese?"时间":"Date"}: ${escapeHtml(date)}</span></div>${customerBlock}${receipt.lines.map(line=>receiptLineMarkup(line,receipt,isChinese)).join("")}${discountBlock}${orderNoteBlock}<div class="receipt-total"><span>${isChinese?"合计":"TOTAL"}</span><span>${money.format(receipt.total)}</span></div>${gstBlock}<div class="receipt-footer">${isChinese?"谢谢惠顾":"Thank You"}</div>`;
     }
     const RECEIPT_PAPER_WIDTH_MM=50;
     function prepareReceiptPage(){
