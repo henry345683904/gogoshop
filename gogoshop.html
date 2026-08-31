@@ -7630,8 +7630,8 @@
           <div class="chart-grid">
             <div class="admin-panel">
               <div class="admin-panel-head">
-                <h2>Weekly revenue</h2>
-                <span class="muted">NZD</span>
+                <h2 id="overviewRevenueTitle">Last 7 days revenue</h2>
+                <span class="muted" id="overviewRevenueMeta">Confirmed sales · NZD</span>
               </div>
               <div class="admin-panel-body">
                 <div class="bar-chart" id="revenueChart"></div>
@@ -7639,7 +7639,7 @@
             </div>
             <div class="admin-panel">
               <div class="admin-panel-head">
-                <h2>Inventory status</h2>
+                <h2 id="overviewInventoryTitle">Inventory status</h2>
               </div>
               <div class="admin-panel-body" id="inventoryStatus"></div>
             </div>
@@ -9277,6 +9277,9 @@
       selectedCustomerVoucherId: null,
       voucherQuote: null,
       adminOrders: [],
+      adminOrdersLoaded: false,
+      adminOrdersLoading: false,
+      adminOrdersError: "",
       deletedOrders: [],
       orderTrashOpen: false,
       orderRecycleSupported: true,
@@ -12165,6 +12168,8 @@
 
     async function loadAdminData() {
       if (!db || !state.profile?.is_admin) return;
+      state.adminOrdersLoading = true;
+      state.adminOrdersError = "";
       const customerPromise = db.from("profiles").select("id,email,full_name,points,total_spent,created_at,updated_at,is_admin").order("created_at", { ascending: false });
       const voucherPromise = db.from("vouchers").select("*").order("created_at", { ascending: false });
       const voucherAssignmentPromise = db.from("customer_vouchers").select("id,voucher_id,user_id,source,redeemed_at,reserved_at,used_at,order_id,vouchers(code,name,active,starts_at,expires_at),profiles!customer_vouchers_user_id_fkey(email,full_name)").order("redeemed_at", { ascending: false });
@@ -12193,7 +12198,11 @@
         const orders = ordersResult.data || [];
         state.adminOrders = orders.filter((order) => !order.deleted_at);
         state.deletedOrders = state.orderRecycleSupported ? orders.filter((order) => Boolean(order.deleted_at)) : [];
+        state.adminOrdersLoaded = true;
+      } else {
+        state.adminOrdersError = authErrorMessage(ordersResult.error);
       }
+      state.adminOrdersLoading = false;
       if (!customersResult.error) state.customers = customersResult.data || [];
       state.vouchers = vouchersResult.error ? [] : (vouchersResult.data || []);
       state.voucherAssignments = voucherAssignmentsResult.error ? [] : (voucherAssignmentsResult.data || []);
@@ -12885,26 +12894,34 @@
 
     function getMetrics() {
       const confirmedOrders = analyticsSalesOrders();
-      const hasAdminOrderData = Boolean(state.profile?.is_admin || state.adminOrders.length);
-      const revenue = hasAdminOrderData
-        ? confirmedOrders.reduce((sum, order) => sum + Math.max(0, Number(order.total) || 0), 0)
-        : state.orders.reduce((sum, order) => sum + Number(order.total || 0), 0);
-      const units = state.products.reduce((sum, product) => sum + Number(product.sales || 0), 0);
+      const revenue = confirmedOrders.reduce((sum, order) => sum + Math.max(0, Number(order.total) || 0), 0);
+      const units = confirmedOrders.reduce((sum, order) => sum + analyticsOrderItemCount(order), 0);
       const views = state.products.reduce((sum, product) => sum + Number(product.views || 0), 0);
       const live = state.products.filter((product) => product.published).length;
-      return { revenue, units, views, live, orderCount: hasAdminOrderData ? confirmedOrders.length : state.orders.length };
+      return { revenue, units, views, live, orderCount: confirmedOrders.length };
     }
 
     function renderMetrics(target, extended = false) {
+      const isChinese = state.lang === "zh";
+      const labels = extended
+        ? [isChinese ? "销售额" : "Revenue", isChinese ? "订单" : "Orders", isChinese ? "已售件数" : "Units sold", isChinese ? "转化率" : "Conversion", isChinese ? "库存件数" : "Inventory"]
+        : [isChinese ? "销售额" : "Revenue", isChinese ? "有效订单" : "Confirmed orders", isChinese ? "已售件数" : "Units sold", isChinese ? "已上架商品" : "Live products"];
+      if (!state.adminOrdersLoaded) {
+        const status = state.adminOrdersError ? (isChinese ? "加载失败" : "Unavailable") : (isChinese ? "加载中" : "Loading");
+        $(target).innerHTML = labels.slice(0, extended ? 5 : 4).map((label) => `
+          <div class="metric"><span>${label}</span><strong>${status}</strong></div>
+        `).join("");
+        return;
+      }
       const metrics = getMetrics();
       const conversion = metrics.views ? `${((metrics.units / metrics.views) * 100).toFixed(1)}%` : "0%";
       const inventory = state.products.reduce((sum, product) => sum + Number(product.stock || 0), 0);
       $(target).innerHTML = [
-        ["Revenue", formatPrice(metrics.revenue)],
-        ["Orders", metrics.orderCount],
-        ["Units sold", metrics.units],
-        [extended ? "Conversion" : "Products", extended ? conversion : metrics.live],
-        ...(extended ? [["Inventory", inventory]] : [])
+        [labels[0], formatPrice(metrics.revenue)],
+        [labels[1], metrics.orderCount],
+        [labels[2], metrics.units],
+        [labels[3], extended ? conversion : metrics.live],
+        ...(extended ? [[labels[4], inventory]] : [])
       ].map(([label, value]) => `
         <div class="metric">
           <span>${label}</span>
@@ -12914,17 +12931,24 @@
     }
 
     function renderRevenueChart() {
-      const remote = state.adminOrders.filter((order) => order.status === "confirmed").slice(0, 7).reverse().map((order) => ({
-        date: new Date(order.created_at).toLocaleDateString("en-NZ", { weekday: "short" }),
-        total: Number(order.total)
+      const isChinese = state.lang === "zh";
+      const locale = isChinese ? "zh-CN" : "en-NZ";
+      $("#overviewRevenueTitle").textContent = isChinese ? "最近 7 天销售额" : "Last 7 days revenue";
+      $("#overviewRevenueMeta").textContent = isChinese ? "已确认且未退款 · NZD" : "Confirmed, non-refunded · NZD";
+      if (!state.adminOrdersLoaded) {
+        $("#revenueChart").innerHTML = `<div class="empty-state">${state.adminOrdersError ? (isChinese ? "销售数据加载失败" : "Sales data unavailable") : (isChinese ? "正在加载销售数据" : "Loading sales data")}</div>`;
+        return;
+      }
+      const recent = analyticsDailyRows(analyticsSalesOrders(), "7").slice().reverse().map((row) => ({
+        date: row.date.toLocaleDateString(locale, { weekday: "short", day: "numeric" }),
+        total: row.orders.reduce((sum, order) => sum + Math.max(0, Number(order.total) || 0), 0)
       }));
-      const recent = remote.length ? remote : state.orders.slice(-7);
-      const max = Math.max(...recent.map((order) => order.total), 1);
+      const max = Math.max(...recent.map((day) => day.total), 1);
       $("#revenueChart").innerHTML = recent.map((order) => `
         <div class="bar-row">
           <span>${order.date}</span>
-          <div class="bar-track"><div class="bar-fill" style="width: ${(order.total / max) * 100}%"></div></div>
-          <strong>${Math.round(order.total)}</strong>
+          <div class="bar-track"><div class="bar-fill" style="width: ${(order.total / max) * 100}%;min-width:${order.total > 0 ? "3px" : "0"}"></div></div>
+          <strong>${order.total.toFixed(2)}</strong>
         </div>
       `).join("");
     }
@@ -12957,9 +12981,13 @@
     }
 
     function analyticsOrderItemCount(order) {
+      const items = Array.isArray(order.order_items) ? order.order_items : [];
+      if (items.length) {
+        return items.reduce((sum, item) => sum + Math.max(0, Number(item.quantity) || 0), 0);
+      }
       const storedCount = Number(order.item_count);
       if (Number.isFinite(storedCount) && storedCount >= 0) return storedCount;
-      return (order.order_items || []).reduce((sum, item) => sum + Math.max(0, Number(item.quantity) || 0), 0);
+      return 0;
     }
 
     function analyticsPeriodStats(orders, startDate = null, endDate = new Date()) {
@@ -13361,14 +13389,18 @@
     }
 
     function renderInventoryStatus() {
-      const stock = state.products.reduce((sum, product) => sum + Number(product.stock || 0), 0);
+      const isChinese = state.lang === "zh";
+      const total = state.products.length;
+      const inStock = state.products.filter((product) => Number(product.stock) > 0).length;
       const soldOut = state.products.filter((product) => Number(product.stock) <= 0).length;
       const live = state.products.filter((product) => product.published).length;
+      const width = (value) => total > 0 ? (value / total) * 100 : 0;
+      $("#overviewInventoryTitle").textContent = isChinese ? "库存状态" : "Inventory status";
       $("#inventoryStatus").innerHTML = `
         <div class="bar-chart">
-          <div class="bar-row"><span>Live</span><div class="bar-track"><div class="bar-fill" style="width: ${Math.max(8, (live / state.products.length) * 100)}%"></div></div><strong>${live}</strong></div>
-          <div class="bar-row"><span>In stock</span><div class="bar-track"><div class="bar-fill" style="width: ${Math.min(100, stock)}%"></div></div><strong>${stock}</strong></div>
-          <div class="bar-row"><span>Sold out</span><div class="bar-track"><div class="bar-fill" style="width: ${Math.max(8, (soldOut / state.products.length) * 100)}%"></div></div><strong>${soldOut}</strong></div>
+          <div class="bar-row"><span>${isChinese ? "已上架" : "Published"}</span><div class="bar-track"><div class="bar-fill" style="width:${width(live)}%;min-width:${live > 0 ? "3px" : "0"}"></div></div><strong>${live}</strong></div>
+          <div class="bar-row"><span>${isChinese ? "有库存商品" : "In stock"}</span><div class="bar-track"><div class="bar-fill" style="width:${width(inStock)}%;min-width:${inStock > 0 ? "3px" : "0"}"></div></div><strong>${inStock}</strong></div>
+          <div class="bar-row"><span>${isChinese ? "售罄商品" : "Sold out"}</span><div class="bar-track"><div class="bar-fill" style="width:${width(soldOut)}%;min-width:${soldOut > 0 ? "3px" : "0"}"></div></div><strong>${soldOut}</strong></div>
         </div>
       `;
     }
