@@ -361,6 +361,8 @@
       $("#discount").textContent=`-${money.format(voucherDiscount)}`;
       $("#discountRow").classList.toggle("hidden",voucherDiscount<=0);
       $("#manualDiscount").textContent=`-${money.format(manualDiscount)}`;
+      const manualDiscountOffer=discountOfferText(state.manualDiscount.type,state.manualDiscount.value);
+      $("#manualDiscountAppliedLabel").textContent=manualDiscount>0&&manualDiscountOffer?`${t("manualDiscountAppliedLabel")} · ${manualDiscountOffer}`:t("manualDiscountAppliedLabel");
       $("#manualDiscountRow").classList.toggle("hidden",manualDiscount<=0);
       $("#total").textContent=money.format(total);
       $("#completeBtn").disabled=!lines.length||state.busy;
