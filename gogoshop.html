@@ -979,7 +979,8 @@
       flex: 0 0 100%;
       width: 100%;
       height: 100%;
-      object-fit: cover;
+      object-fit: contain;
+      background: var(--store-soft, var(--soft));
       transition: transform 220ms ease;
       user-select: none;
     }
@@ -1201,7 +1202,8 @@
       display: block;
       width: 100%;
       height: 100%;
-      object-fit: cover;
+      object-fit: contain;
+      background: var(--store-soft, var(--soft));
       pointer-events: none;
       user-select: none;
     }
@@ -8694,7 +8696,8 @@
     const PROCUREMENT_COVER_OPTIONS = Object.freeze([1, 2, 3, 4, 6]);
     const PURGED_PRODUCT_TAG = "__gogoshop_purged__";
     const PRODUCT_MEDIA_BUCKET = "product-media";
-    const PRODUCT_IMAGE_FALLBACK = "./assets/product-image-placeholder.svg";
+    const PRODUCT_IMAGE_FALLBACK = "./assets/product-image-placeholder.svg?imgv=images-v2";
+    const PRODUCT_IMAGE_ASSET_VERSION = "images-v2";
     const SUPABASE_URL = "https://ucnkcddhrptqpdlvcohy.supabase.co";
     const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_zv6WbyD1hZKUx-Zyak-fPw_e1mURTN8";
     const SOURCE_COST_DIVISOR = 4;
@@ -9662,7 +9665,7 @@
       return `
         <article class="phone-case-atlas-card">
           <div class="phone-case-atlas-image">
-            ${image ? `<img src="${escapeHtml(image)}" alt="${escapeHtml(name)}" loading="eager">` : `<span>${missingImage}</span>`}
+            ${image ? `<img src="${escapeHtml(imageSource(image))}" alt="${escapeHtml(name)}" loading="eager" decoding="async">` : `<span>${missingImage}</span>`}
           </div>
           <div class="phone-case-atlas-name">${escapeHtml(name)}</div>
           <div class="phone-case-atlas-code"><span>${codeLabel} ${escapeHtml(code || barcode || "-")}</span><strong>${formatPrice(product.price)}</strong></div>
@@ -10207,7 +10210,7 @@
       const style = `--block-bg: ${safeColor(block.backgroundColor, "#ffffff")}; --block-text: ${safeColor(block.textColor, state.design.textColor || "#111111")}; --block-font-size: ${clampNumber(block.fontSize, 12, 32, 16)}px;`;
       const title = block.title ? `<h3>${escapeHtml(block.title)}</h3>` : "";
       const text = block.text ? `<p>${escapeHtml(block.text)}</p>` : "";
-      const image = block.imageUrl ? `<img src="${escapeHtml(block.imageUrl)}" alt="${escapeHtml(block.title || "Store image")}" loading="lazy">` : "";
+      const image = block.imageUrl ? `<img src="${escapeHtml(imageSource(block.imageUrl))}" alt="${escapeHtml(block.title || "Store image")}" loading="lazy" decoding="async">` : "";
       const button = block.buttonText ? `<a class="button" href="${escapeHtml(block.buttonLink || "#catalog")}">${escapeHtml(block.buttonText)}</a>` : "";
       return `
         <article class="store-block ${escapeHtml(block.type)}" style="${style}">
@@ -10233,7 +10236,19 @@
     function imageSource(value) {
       const source = String(value || "").trim();
       if (!source) return "";
-      return /^assets\//i.test(source) ? `./${source}` : source;
+      const isLocalAsset = /^(?:\.\/|\/)?assets\//i.test(source)
+        || /(^|:\/\/)(?:www\.)?gogoshop\.nz\/assets\//i.test(source);
+      if (!isLocalAsset || /(?:^|[?&])imgv=/i.test(source)) return source;
+      return `${source}${source.includes("?") ? "&" : "?"}imgv=${PRODUCT_IMAGE_ASSET_VERSION}`;
+    }
+
+    function setImageSource(image, source) {
+      if (!image) return;
+      image.hidden = false;
+      image.classList.remove("is-image-fallback");
+      delete image.dataset.imageFallbackApplied;
+      image.removeAttribute("srcset");
+      image.src = imageSource(source) || PRODUCT_IMAGE_FALLBACK;
     }
 
     function usableProductImage(value) {
@@ -10262,7 +10277,7 @@
         <a class="media-slider" href="#product=${encodeURIComponent(product.id)}" data-product-view="${escapeHtml(product.id)}" data-gallery="${escapeHtml(product.id)}" data-gallery-index="0" data-gallery-count="${images.length}" style="--active-slide: 0" aria-label="${escapeHtml(productName(product))}">
           <div class="media-track">
             ${images.length ? images.map((image, index) => `
-              <img class="media-slide" src="${escapeHtml(image)}" alt="${escapeHtml(productName(product))} ${index + 1}" loading="lazy" draggable="false">
+              <img class="media-slide" src="${escapeHtml(image)}" alt="${escapeHtml(productName(product))} ${index + 1}" loading="${index === 0 ? "eager" : "lazy"}" decoding="async" fetchpriority="${index === 0 ? "high" : "auto"}" draggable="false">
             `).join("") : `<span class="image-placeholder" role="img" aria-label="${escapeHtml(state.lang === "zh" ? "暂无图片" : "No image")}"><i data-lucide="image-off"></i><span>${state.lang === "zh" ? "暂无图片" : "No image"}</span></span>`}
           </div>
         </a>
@@ -10336,6 +10351,7 @@
       const soldOut = !available(product);
       const description = productDescription(product);
       const itemCode = productItemCode(product);
+      const eagerThumbnailLimit = images.length <= 25 ? images.length : 8;
 
       content.innerHTML = `
         <button class="product-detail-back" type="button" data-close-product>
@@ -10345,13 +10361,13 @@
         <div class="product-detail-layout">
           <div class="product-detail-gallery">
             <div class="product-detail-main" data-detail-gallery data-detail-gallery-count="${images.length}" role="group" aria-label="Product images" tabindex="0">
-              ${currentImage ? `<img src="${escapeHtml(currentImage)}" alt="${escapeHtml(productName(product))}" data-detail-main-image draggable="false">` : `<div class="image-placeholder" role="img" aria-label="${escapeHtml(state.lang === "zh" ? "暂无图片" : "No image")}"><i data-lucide="image-off"></i><span>${state.lang === "zh" ? "暂无图片" : "No image"}</span></div>`}
+              ${currentImage ? `<img src="${escapeHtml(currentImage)}" alt="${escapeHtml(productName(product))}" data-detail-main-image loading="eager" decoding="async" fetchpriority="high" draggable="false">` : `<div class="image-placeholder" role="img" aria-label="${escapeHtml(state.lang === "zh" ? "暂无图片" : "No image")}"><i data-lucide="image-off"></i><span>${state.lang === "zh" ? "暂无图片" : "No image"}</span></div>`}
             </div>
             ${images.length > 1 ? `
               <div class="product-detail-thumbnails" aria-label="Product images">
                 ${images.map((image, index) => `
                   <button class="product-detail-thumb ${index === state.detailImageIndex ? "active" : ""}" type="button" data-detail-image="${index}" aria-label="Image ${index + 1}">
-                    <img src="${escapeHtml(image)}" alt="" loading="lazy">
+                    <img src="${escapeHtml(image)}" alt="" data-detail-image-source="${escapeHtml(image)}" loading="${index < eagerThumbnailLimit ? "eager" : "lazy"}" decoding="async">
                   </button>
                 `).join("")}
               </div>
@@ -10395,7 +10411,25 @@
       `;
       detail.hidden = false;
       $("#storeView").classList.add("product-open");
+      const thumbnails = $(".product-detail-thumbnails");
+      if (thumbnails) {
+        const reveal = () => revealDetailThumbnailImages(thumbnails);
+        thumbnails.addEventListener("scroll", reveal, { passive: true });
+        window.requestAnimationFrame(reveal);
+      }
       refreshIcons();
+    }
+
+    function revealDetailThumbnailImages(container) {
+      if (!container) return;
+      const bounds = container.getBoundingClientRect();
+      $$('img[loading="lazy"]', container).forEach((image) => {
+        const box = image.getBoundingClientRect();
+        if (box.right < bounds.left - 120 || box.left > bounds.right + 120) return;
+        const source = image.dataset.detailImageSource || image.currentSrc || image.src;
+        image.loading = "eager";
+        setImageSource(image, source);
+      });
     }
 
     async function loadStorefrontProductDetail(productId) {
@@ -10492,7 +10526,7 @@
         ? ((requestedIndex % images.length) + images.length) % images.length
         : Math.min(Math.max(0, requestedIndex), Math.max(0, images.length - 1));
       const mainImage = $("[data-detail-main-image]");
-      if (mainImage) mainImage.src = images[state.detailImageIndex] || PRODUCT_IMAGE_FALLBACK;
+      if (mainImage) setImageSource(mainImage, images[state.detailImageIndex]);
       $$("[data-detail-image]").forEach((button) => {
         button.classList.toggle("active", Number(button.dataset.detailImage) === state.detailImageIndex);
       });
@@ -10940,7 +10974,7 @@
               return `
                 <div class="order-detail-item">
                   <div class="order-detail-item-media">
-                    ${image ? `<img src="${escapeHtml(image)}" alt="">` : '<i data-lucide="package"></i>'}
+                    ${image ? `<img src="${escapeHtml(imageSource(image) || PRODUCT_IMAGE_FALLBACK)}" alt="" loading="lazy" decoding="async">` : '<i data-lucide="package"></i>'}
                   </div>
                   <div class="order-detail-item-copy">
                     <strong>${escapeHtml(orderItemName(item))}</strong>
@@ -11694,7 +11728,7 @@
         if (!product) return "";
         return `
           <div class="cart-line">
-            <img src="${product.image}" alt="${productName(product)}">
+            <img src="${escapeHtml(imageSource(product.image) || PRODUCT_IMAGE_FALLBACK)}" alt="${escapeHtml(productName(product))}" loading="eager" decoding="async">
             <div>
               <h3>${productName(product)}</h3>
               <div class="muted">${formatPrice(product.price)}</div>
@@ -11962,7 +11996,7 @@
       $("#searchResults").innerHTML = results.map((product) => `
         <div class="result-item">
           <a class="result-product-link" href="#product=${encodeURIComponent(product.id)}" data-product-view="${escapeHtml(product.id)}">
-            <img src="${escapeHtml(product.image)}" alt="${escapeHtml(productName(product))}">
+            <img src="${escapeHtml(imageSource(product.image) || PRODUCT_IMAGE_FALLBACK)}" alt="${escapeHtml(productName(product))}" loading="eager" decoding="async">
           </a>
           <div>
             <a class="result-product-link" href="#product=${encodeURIComponent(product.id)}" data-product-view="${escapeHtml(product.id)}"><strong>${escapeHtml(productName(product))}</strong></a>
@@ -12161,7 +12195,7 @@
         const name = product ? productName(product) : String(item.product_title || "Product");
         const quantity = Math.max(0, Number(item.quantity) || 0);
         return `<span class="admin-order-item-thumb" title="${escapeHtml(name)}">
-          ${image ? `<img src="${escapeHtml(image)}" alt="${escapeHtml(name)}" loading="lazy">` : '<i data-lucide="package"></i>'}
+          ${image ? `<img src="${escapeHtml(imageSource(image) || PRODUCT_IMAGE_FALLBACK)}" alt="${escapeHtml(name)}" loading="lazy" decoding="async">` : '<i data-lucide="package"></i>'}
           <span class="admin-order-item-thumb-count">×${quantity}</span>
         </span>`;
       }).join("");
@@ -13276,7 +13310,7 @@
             return `
               <div class="procurement-product-row">
                 <div class="procurement-product-image">
-                  ${image ? `<img src="${escapeHtml(image)}" alt="${escapeHtml(productName(product))}" loading="lazy">` : '<i data-lucide="package"></i>'}
+                  ${image ? `<img src="${escapeHtml(imageSource(image) || PRODUCT_IMAGE_FALLBACK)}" alt="${escapeHtml(productName(product))}" loading="lazy" decoding="async">` : '<i data-lucide="package"></i>'}
                 </div>
                 <div class="procurement-product-copy">
                   <strong>${escapeHtml(productName(product))}</strong>
@@ -13487,7 +13521,7 @@
           : "No active products";
       $("#adminProductRows").innerHTML = products.map((product) => `
         <article class="admin-product-item" data-edit-product-row="${escapeHtml(product.id)}" role="button" tabindex="0" aria-label="Edit ${escapeHtml(product.title)}">
-          <img src="${escapeHtml(product.image)}" alt="${escapeHtml(product.title)}">
+          <img src="${escapeHtml(imageSource(product.image) || PRODUCT_IMAGE_FALLBACK)}" alt="${escapeHtml(product.title)}" loading="eager" decoding="async">
           <div class="admin-product-summary">
             <strong>${escapeHtml(product.title)}</strong>
             <span>${product.featured ? "Pinned · " : ""}${escapeHtml([categoryName(productCategoryKey(product)), product.vendor, productSourcePriceText(product)].filter(Boolean).join(" · "))}</span>
@@ -13507,7 +13541,7 @@
       `).join("") || `<div class="empty-state">${emptyMessage}</div>`;
       $("#adminTrashRows").innerHTML = state.deletedProducts.map((product) => `
         <article class="admin-product-item trashed">
-          <img src="${escapeHtml(product.image)}" alt="${escapeHtml(product.title)}">
+          <img src="${escapeHtml(imageSource(product.image) || PRODUCT_IMAGE_FALLBACK)}" alt="${escapeHtml(product.title)}" loading="eager" decoding="async">
           <div class="admin-product-summary">
             <strong>${escapeHtml(product.title)}</strong>
             <span>${escapeHtml(product.deletedAt ? `删除于 ${new Date(product.deletedAt).toLocaleString("zh-CN")}` : "已删除")}</span>
@@ -13643,7 +13677,7 @@
             </button>
             ${design.blocks.length ? `<div class="preview-blocks">${design.blocks.map((block) => `
               <button class="preview-block preview-section${selectedClass("block", block.id)}" type="button" data-select-design-section="block" data-design-block-id="${escapeHtml(block.id)}" style="--block-bg: ${safeColor(block.backgroundColor, "#ffffff")}; --block-text: ${safeColor(block.textColor, design.textColor)}; --block-size: ${clampNumber(block.fontSize, 12, 32, 16)}px;">
-                ${block.imageUrl ? `<img src="${escapeHtml(block.imageUrl)}" alt="">` : ""}
+                ${block.imageUrl ? `<img src="${escapeHtml(imageSource(block.imageUrl))}" alt="" loading="lazy" decoding="async">` : ""}
                 <strong>${escapeHtml(block.title || block.type)}</strong>
                 <span>${escapeHtml(block.text || block.buttonText || block.imageUrl || "Plugin block")}</span>
               </button>
@@ -13653,7 +13687,7 @@
               <span class="preview-product-grid">
                 ${previewProducts.length ? previewProducts.map((product) => `
                   <span class="preview-product-card">
-                    ${product.image ? `<img src="${escapeHtml(product.image)}" alt="">` : '<span class="preview-product-placeholder"></span>'}
+                    ${product.image ? `<img src="${escapeHtml(imageSource(product.image))}" alt="" loading="lazy" decoding="async">` : '<span class="preview-product-placeholder"></span>'}
                     <strong>${escapeHtml(productName(product))}</strong>
                     <span>${formatPrice(product.price)}</span>
                   </span>
