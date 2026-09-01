@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>GO GO SHOP POS</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>if(!window.supabase){document.write('<script src="https://unpkg.com/@supabase/supabase-js@2"><\/script>')}</script>
   <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
   <style>
     :root{font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;color:#171918;background:#f3f5f4;--green:#176b4d;--red:#b33a32;--line:#d9dedb;--muted:#68716c;--panel:#fff}*{box-sizing:border-box}body{margin:0;min-width:320px}button,input{font:inherit}button{cursor:pointer}.hidden{display:none!important}.topbar{height:64px;background:#171918;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 24px}.brand{display:flex;align-items:center;gap:12px;font-weight:800;font-size:19px}.top-actions{display:flex;gap:8px;align-items:center}.icon-btn,.secondary,.primary{border:1px solid var(--line);background:#fff;border-radius:6px;min-height:42px;padding:0 14px;display:inline-flex;align-items:center;justify-content:center;gap:8px}.topbar .icon-btn{color:#fff;border-color:#454947;background:transparent}.primary{background:var(--green);border-color:var(--green);color:#fff;font-weight:800}.primary:disabled{opacity:.45;cursor:not-allowed}.login{min-height:100vh;display:grid;place-items:center;padding:24px}.login-panel{width:min(420px,100%);background:#fff;border:1px solid var(--line);border-radius:8px;padding:28px}.login-panel h1{margin:0 0 8px}.field{display:grid;gap:7px;margin-top:18px;font-weight:700}.field input,.scan-input{width:100%;height:52px;border:2px solid #aeb7b2;border-radius:6px;padding:0 15px;background:#fff}.field input:focus,.scan-input:focus{outline:3px solid #bfe4d5;border-color:var(--green)}.login-panel .primary{width:100%;margin-top:14px}.message{min-height:22px;color:var(--red);margin:12px 0 0}.app{min-height:100vh}.workspace{display:grid;grid-template-columns:minmax(0,1fr) 380px;min-height:calc(100vh - 64px)}.catalog{padding:24px;overflow:auto}.scan-wrap{background:#fff;border:1px solid var(--line);padding:18px;border-radius:8px}.scan-label{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px}.scan-label strong{font-size:18px}.hint{font-size:13px;color:var(--muted)}.scan-row{display:grid;grid-template-columns:1fr auto;gap:10px}.status{min-height:24px;margin:9px 0 0;font-size:14px;color:var(--muted)}.status.error{color:var(--red)}.status.success{color:var(--green)}.cart-head{display:flex;align-items:end;justify-content:space-between;margin:24px 0 10px}.cart-head h2{margin:0;font-size:20px}.cart-table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line)}.cart-table th,.cart-table td{text-align:left;padding:12px;border-bottom:1px solid var(--line);vertical-align:middle}.cart-table th{font-size:12px;color:var(--muted);text-transform:uppercase;background:#fafbfa}.product-cell{display:flex;align-items:center;gap:12px;min-width:230px}.thumb{width:54px;height:54px;object-fit:cover;background:#eef1ef;border-radius:4px}.product-meta strong,.product-meta span{display:block}.product-meta span{font-size:12px;color:var(--muted);margin-top:4px}.qty{display:grid;grid-template-columns:36px 54px 36px;height:38px}.qty button,.qty input{border:1px solid var(--line);background:#fff;text-align:center}.qty button:first-child{border-radius:5px 0 0 5px}.qty button:last-child{border-radius:0 5px 5px 0}.qty input{border-left:0;border-right:0;width:54px}.remove{border:0;background:transparent;color:var(--red);padding:8px}.empty{background:#fff;border:1px dashed #bfc7c2;padding:54px 20px;text-align:center;color:var(--muted)}.summary{background:#fff;border-left:1px solid var(--line);padding:24px;display:flex;flex-direction:column;position:sticky;top:0;height:calc(100vh - 64px)}.summary h2{margin:0 0 20px}.totals{display:grid;gap:14px}.total-row{display:flex;justify-content:space-between;color:var(--muted)}.grand{border-top:1px solid var(--line);padding-top:18px;color:#171918;font-size:26px;font-weight:900}.complete{width:100%;min-height:58px;font-size:18px;margin-top:auto}.summary-note{font-size:13px;color:var(--muted);line-height:1.5;margin:14px 0}.print-controls{display:grid;gap:10px;margin-top:14px}.auto-print{display:flex;align-items:center;gap:9px;font-size:14px;font-weight:700}.auto-print input{width:18px;height:18px;accent-color:var(--green)}.last-order{border:1px solid #a8d2c0;background:#edf8f3;border-radius:6px;padding:14px;margin-top:18px;color:#12563e}.last-order strong,.last-order span{display:block}.last-order span{font-size:13px;margin-top:5px}.receipt-print{display:none}.loading{position:fixed;inset:0;background:rgba(255,255,255,.82);display:grid;place-items:center;z-index:5;font-weight:800}.loading i{animation:spin 1s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}@media(max-width:850px){.workspace{grid-template-columns:1fr}.summary{position:static;height:auto;border-left:0;border-top:1px solid var(--line)}.complete{margin-top:22px}.cart-table thead{display:none}.cart-table,.cart-table tbody,.cart-table tr,.cart-table td{display:block}.cart-table tr{padding:12px;border-bottom:1px solid var(--line)}.cart-table td{border:0;padding:6px}.topbar{padding:0 14px}.catalog{padding:14px}.brand span{display:none}.top-actions{gap:4px}.topbar .icon-btn{padding:0 9px}.scan-input{font-size:16px}.summary{padding:18px 14px}}@page{size:58mm auto;margin:2mm}@media print{html,body{width:58mm!important;min-width:0!important;margin:0!important;padding:0!important;background:#fff!important}.login,.app,.loading{display:none!important}.receipt-print{display:block!important;width:54mm;padding:1mm;color:#000;font-family:Arial,"Microsoft YaHei",sans-serif;font-size:10px;line-height:1.35}.receipt-head{text-align:center;border-bottom:1px dashed #000;padding-bottom:6px}.receipt-head strong{display:block;font-size:15px}.receipt-meta{display:grid;gap:2px;padding:6px 0;border-bottom:1px dashed #000}.receipt-line{padding:5px 0;border-bottom:1px dotted #777}.receipt-line strong,.receipt-line span{display:block}.receipt-line span{text-align:right}.receipt-total{display:flex;justify-content:space-between;font-size:14px;font-weight:800;padding:8px 0;border-bottom:1px dashed #000}.receipt-tax{display:grid;gap:2px;padding:6px 0;border-bottom:1px dashed #000}.receipt-tax span{display:flex;justify-content:space-between}.receipt-policy{padding:7px 0;border-bottom:1px dashed #000;text-align:left}.receipt-policy strong{display:block;margin-bottom:3px}.receipt-footer{text-align:center;padding-top:8px}}
@@ -157,15 +158,19 @@
     .auth-loading-panel svg { width:26px; height:26px; color:var(--green); animation:spin 1s linear infinite; }
     .auth-loading-panel h1 { margin:0; font-size:21px; }
     .auth-loading-panel p { margin:0; color:var(--muted); }
+    .auth-loading-panel.is-error svg { color:var(--red); animation:none; }
+    .auth-loading-actions { display:flex; gap:8px; margin-top:4px; }
+    .auth-loading-actions button { min-height:40px; }
   </style>
   <style id="receiptPageStyle">@page { size:50mm auto; margin:0; }</style>
 </head>
 <body>
   <section class="login auth-loading" id="authLoading" aria-live="polite">
-    <div class="login-panel auth-loading-panel">
+      <div class="login-panel auth-loading-panel" id="authLoadingPanel">
       <i data-lucide="loader-circle"></i>
       <h1 id="authLoadingTitle">Connecting to admin</h1>
       <p id="authLoadingHint">Checking your existing GO GO SHOP admin session...</p>
+      <div class="auth-loading-actions hidden" id="authLoadingActions"><button class="primary" id="authRetryBtn" type="button">Try Again</button></div>
     </div>
   </section>
   <section class="login hidden" id="loginView">
@@ -220,11 +225,44 @@
     const SUPABASE_URL="https://ucnkcddhrptqpdlvcohy.supabase.co";
     const SUPABASE_KEY="sb_publishable_zv6WbyD1hZKUx-Zyak-fPw_e1mURTN8";
     const SUPABASE_AUTH_STORAGE_KEY="sb-ucnkcddhrptqpdlvcohy-auth-token";
-    const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{flowType:"pkce",detectSessionInUrl:true,persistSession:true,storageKey:SUPABASE_AUTH_STORAGE_KEY}});
+    function createSafeStorage(){
+      const memory=new Map();
+      let browserStorage=null;
+      try{
+        const candidate=window.localStorage;
+        const probe="gogoshop-pos-storage-test";
+        candidate.setItem(probe,"1");
+        candidate.removeItem(probe);
+        browserStorage=candidate;
+      }catch{}
+      return {
+        getItem(key){try{const value=browserStorage?.getItem(key);if(value!==null&&value!==undefined)return value}catch{}return memory.has(key)?memory.get(key):null},
+        setItem(key,value){const normalized=String(value);memory.set(key,normalized);try{browserStorage?.setItem(key,normalized)}catch{}},
+        removeItem(key){memory.delete(key);try{browserStorage?.removeItem(key)}catch{}}
+      };
+    }
+    const authStorage=createSafeStorage();
+    const supabaseReady=Boolean(window.supabase?.createClient);
+    const runtimeUnavailableError=new Error("The POS connection library did not load. Check your network and reload the page.");
+    const db=supabaseReady
+      ? window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{flowType:"pkce",detectSessionInUrl:true,persistSession:true,storageKey:SUPABASE_AUTH_STORAGE_KEY,storage:authStorage}})
+      : {
+          auth:{
+            getSession:async()=>({data:{session:null},error:runtimeUnavailableError}),
+            onAuthStateChange:()=>({unsubscribe(){}}),
+            signInWithPassword:async()=>({data:null,error:runtimeUnavailableError}),
+            resetPasswordForEmail:async()=>({error:runtimeUnavailableError}),
+            updateUser:async()=>({data:null,error:runtimeUnavailableError}),
+            signOut:async()=>({error:null})
+          },
+          rpc:async()=>({data:null,error:runtimeUnavailableError})
+        };
     const openedFromAdmin=new URLSearchParams(location.search).get("from")==="admin";
     const EXPERIMENTAL_ITEM_CODE_START=1001;
-    const state={products:[],productLookup:new Map(),cart:new Map(),itemNotes:new Map(),itemModels:new Map(),priceOverrides:new Map(),manualDiscount:{type:"percent",value:0},profile:null,customer:null,customerVouchers:[],selectedVoucherId:null,customerLookupBusy:false,busy:false,lastReceipt:null,lang:localStorage.getItem("gogoshop-pos-lang")||"en"};
+    const state={products:[],productLookup:new Map(),cart:new Map(),itemNotes:new Map(),itemModels:new Map(),priceOverrides:new Map(),manualDiscount:{type:"percent",value:0},profile:null,customer:null,customerVouchers:[],selectedVoucherId:null,customerLookupBusy:false,busy:false,lastReceipt:null,lang:authStorage.getItem("gogoshop-pos-lang")||"en"};
     const I18N={en:{authLoadingTitle:"Connecting to admin",authLoadingHint:"Checking your existing GO GO SHOP admin session...",sessionExpired:"The admin session has expired. Please sign in again.",loginTitle:"POS login",loginHint:"Use your GO GO SHOP admin account",emailLabel:"Admin email",passwordLabel:"Password",loginButtonText:"Sign in to POS",resetButtonText:"Forgot password",recoveryTitle:"Set new password",recoveryHint:"Choose a new admin password (8+ characters)",newPasswordLabel:"New password",confirmPasswordLabel:"Confirm password",recoveryButtonText:"Save and open POS",posTitle:"POS",adminLinkText:"Admin",logoutText:"Sign out",scanTitle:"Scan or enter item code",scanHint:"Scanner input submits with Enter",scanPlaceholder:"Barcode, SKU or item code",addText:"Add",scanStatus:"Product data syncs with the online store",orderTitle:"Current order",clearText:"Clear",summaryTitle:"Order summary",lineLabel:"Line items",itemLabel:"Quantity",dueLabel:"Due",summaryNote:"Inventory is deducted only after the order is completed successfully. The order appears in the web admin immediately.",completeText:"Complete order",loadingText:"Completing order...",autoPrintText:"Print receipt automatically",reprintText:"Reprint last receipt",emptyCart:"Scan a product barcode to start an order",stock:"Stock",remove:"Remove",unknown:"Item not found",insufficient:"Insufficient stock",added:"added",cleared:"Order cleared",saved:"Order saved in web admin",resetSent:"Reset email sent. Use the newest email link; older links have expired.",passwordShort:"Password must be at least 8 characters.",passwordMismatch:"Passwords do not match.",adminOnly:"This account is not an administrator."},zh:{authLoadingTitle:"正在连接后台",authLoadingHint:"正在检查现有的 GO GO SHOP 管理员会话...",sessionExpired:"后台会话已失效，请重新登录管理员账户",loginTitle:"扫码收银",loginHint:"使用 GO GO SHOP 管理员账号",emailLabel:"管理员邮箱",passwordLabel:"管理员密码",loginButtonText:"登录收银台",resetButtonText:"忘记密码，发送重置邮件",recoveryTitle:"设置新密码",recoveryHint:"请输入至少 8 位的新管理员密码",newPasswordLabel:"新密码",confirmPasswordLabel:"再次输入新密码",recoveryButtonText:"保存并进入收银台",posTitle:"扫码收银",adminLinkText:"后台",logoutText:"退出",scanTitle:"扫描或输入货号",scanHint:"扫码枪输入后按 Enter",scanPlaceholder:"条码、SKU 或商品货号",addText:"加入",scanStatus:"商品资料与网络后台实时同步",orderTitle:"本次订单",clearText:"清空",summaryTitle:"订单合计",lineLabel:"商品种类",itemLabel:"商品数量",dueLabel:"应收",summaryNote:"只有订单成功完成后才会扣减库存，订单会立即出现在网页后台。",completeText:"完成订单",loadingText:"正在完成订单...",autoPrintText:"订单完成后自动打印小票",reprintText:"重新打印上一张小票",emptyCart:"扫描商品条码，商品会自动加入订单",stock:"库存",remove:"移除",unknown:"找不到商品",insufficient:"库存不足",added:"已加入",cleared:"订单已清空",saved:"订单已保存到网页后台",resetSent:"重置邮件已发送，请使用最新邮件中的链接。",passwordShort:"新密码至少需要 8 位。",passwordMismatch:"两次输入的密码不一致。",adminOnly:"此账号没有管理员权限。"}};
+    Object.assign(I18N.en,{runtimeErrorTitle:"POS could not start",runtimeErrorHint:"The page is still available, but its connection is unavailable. Check the network and try again.",authTimeoutTitle:"Connection is taking too long",authTimeoutHint:"The login screen is ready. Try again after checking the network.",retryButtonText:"Try Again"});
+    Object.assign(I18N.zh,{runtimeErrorTitle:"扫码收银无法启动",runtimeErrorHint:"页面本身没有消失，但后台连接没有成功，请检查网络后重试。",authTimeoutTitle:"连接时间过长",authTimeoutHint:"登录界面已经准备好，请检查网络后重试。",retryButtonText:"重新尝试"});
     Object.assign(I18N.en,{scanTitle:"Scan product or customer",scanHint:"One scanner for every code",scanPlaceholder:"Product code, customer barcode or email",addText:"Scan",customerCodeFound:"Customer selected",customerCodeNotFound:"Customer not found",customerCodeMigration:"Run the customer barcode migration in Supabase first.",customerCodeCleared:"Customer cleared",customerClearButton:"Clear",customerPoints:"points will be awarded",pointsAwarded:"points awarded",voucherTitle:"Available vouchers",voucherNone:"Do not use a voucher",voucherCount:"available",voucherMinimum:"Minimum spend",voucherNotEligible:"Not eligible",subtotalLabel:"Subtotal",discountLabel:"Voucher discount",manualDiscountLabel:"Order discount",manualDiscountAppliedLabel:"Order discount",discountTypeLabel:"Discount type",discountPlaceholder:"Discount value",clearDiscount:"Clear discount",linePriceLabel:"Unit price",originalPrice:"Original",discountedPrice:"After discount",invalidPrice:"Enter a valid unit price",orderNoteLabel:"Order note",orderNotePlaceholder:"Add a note for this order",itemNotePlaceholder:"Add a note for this item",phoneModelLabel:"Phone model",phoneModelPlaceholder:"Select or enter model",note:"Note"});
     Object.assign(I18N.en,{loginTitle:"POS Login",emailLabel:"Admin Email",loginButtonText:"Sign In to POS",resetButtonText:"Forgot Password",recoveryTitle:"Set New Password",newPasswordLabel:"New Password",confirmPasswordLabel:"Confirm Password",recoveryButtonText:"Save and Open POS",logoutText:"Sign Out",scanTitle:"Scan Product or Customer",orderTitle:"Current Order",summaryTitle:"Order Summary",lineLabel:"Line Items",completeText:"Complete Order",autoPrintText:"Print Receipt Automatically",reprintText:"Reprint Last Receipt",voucherTitle:"Available Vouchers",voucherMinimum:"Minimum Spend",discountLabel:"Voucher Discount",orderNoteLabel:"Order Note"});
     Object.assign(I18N.zh,{scanTitle:"扫描商品或客户",scanHint:"商品码与客户码使用同一个扫码框",scanPlaceholder:"商品货号、客户条码或邮箱",addText:"识别",customerCodeFound:"已选择客户",customerCodeNotFound:"找不到客户",customerCodeMigration:"请先在 Supabase 执行客户条形码迁移。",customerCodeCleared:"已清除客户",customerClearButton:"清除",customerPoints:"积分将发放",pointsAwarded:"积分已发放",voucherTitle:"可用代金券",voucherNone:"不使用代金券",voucherCount:"张可用",voucherMinimum:"最低消费",voucherNotEligible:"暂不可用",subtotalLabel:"原价",discountLabel:"代金券抵扣",manualDiscountLabel:"本单折扣",manualDiscountAppliedLabel:"本单折扣",discountTypeLabel:"折扣类型",discountPlaceholder:"折扣数值",clearDiscount:"清除折扣",linePriceLabel:"本单单价",originalPrice:"原价",discountedPrice:"折后单价",invalidPrice:"请输入有效的商品单价",orderNoteLabel:"订单备注",orderNotePlaceholder:"添加整笔订单的备注",itemNotePlaceholder:"添加此商品的备注",phoneModelLabel:"手机型号",phoneModelPlaceholder:"选择或输入型号",note:"备注"});
@@ -319,18 +357,33 @@
     async function loadProducts(){const {data,error}=await db.from("products").select("id,title,title_en,title_zh,category,price,stock,image,sku,barcode,tags,deleted_at").is("deleted_at",null).order("title");if(error)throw error;state.products=assignExperimentalItemCodes(data||[]);rebuildProductLookup()}
     async function loadProductModelOptions(product){if(!product||product.modelOptionsLoaded||!isPhoneModelProduct(product))return;product.modelOptionsLoaded=true;const {data,error}=await db.from("products").select("source_variants,source_attributes").eq("id",product.id).maybeSingle();if(error||!data)return;product.source_variants=data.source_variants;product.source_attributes=data.source_attributes;if(state.cart.has(product.id))render()}
     async function checkAdmin(user){const {data,error}=await db.from("profiles").select("id,is_admin").eq("id",user.id).single();if(error||!data?.is_admin)throw new Error("此账号没有管理员权限");state.profile=data}
+    let authBootSettled=false;
+    let authWatchdog=0;
     function setAuthView(view){["authLoading","loginView","recoveryView","appView"].forEach(id=>$("#"+id).classList.toggle("hidden",id!==view))}
-    function showLogin(message=""){state.profile=null;setAuthView("loginView");$("#loginMessage").textContent=message?loginError(message):"";loadAdminEmail()}
-    async function enterApp(user){await checkAdmin(user);await loadProducts();setAuthView("appView");render();setTimeout(()=>$("#scanInput").focus(),50)}
-    function showRecovery(){setAuthView("recoveryView");setTimeout(()=>$("#newPassword").focus(),50)}
-    async function loadAdminEmail(){const {data}=await db.rpc("get_admin_login_email");if(data&&!$("#email").value)$("#email").value=data}
+    function settleAuthBoot(){authBootSettled=true;if(authWatchdog)window.clearTimeout(authWatchdog)}
+    function showRuntimeError(error,timeout=false){
+      const panel=$("#authLoadingPanel");
+      panel.classList.add("is-error");
+      $("#authLoadingTitle").textContent=t(timeout?"authTimeoutTitle":"runtimeErrorTitle");
+      $("#authLoadingHint").textContent=t(timeout?"authTimeoutHint":"runtimeErrorHint");
+      $("#authLoadingActions").classList.remove("hidden");
+      $("#authRetryBtn").textContent=t("retryButtonText");
+      setAuthView("authLoading");
+      settleAuthBoot();
+      console.error("GO GO SHOP POS startup error",error);
+      icons();
+    }
+    function showLogin(message=""){state.profile=null;setAuthView("loginView");$("#loginMessage").textContent=message?loginError(message):"";settleAuthBoot();void loadAdminEmail()}
+    async function enterApp(user){await checkAdmin(user);await loadProducts();setAuthView("appView");render();settleAuthBoot();setTimeout(()=>$("#scanInput").focus(),50)}
+    function showRecovery(){setAuthView("recoveryView");settleAuthBoot();setTimeout(()=>$("#newPassword").focus(),50)}
+    async function loadAdminEmail(){try{const {data}=await db.rpc("get_admin_login_email");if(data&&!$("#email").value)$("#email").value=data}catch(error){console.warn("GO GO SHOP POS admin email lookup failed",error)}}
     function loginError(error){const message=String(error?.message||error||"");if(/invalid login credentials/i.test(message))return state.lang==="zh"?"邮箱或密码不正确，请重置密码后重试。":"Email or password is incorrect. Use Forgot password to reset it.";if(/email not confirmed/i.test(message))return state.lang==="zh"?"请先完成邮箱验证。":"Confirm your email address first.";if(/failed to fetch|network/i.test(message))return state.lang==="zh"?"无法连接网络后台，请检查网络后重试。":"Cannot connect to the online store. Check your network and try again.";return message|| (state.lang==="zh"?"登录失败，请重试。":"Sign-in failed. Please try again.")}
     $("#loginForm").addEventListener("submit",async e=>{e.preventDefault();$("#loginMessage").textContent="正在登录...";try{const email=$("#email").value.trim();const {data,error}=await db.auth.signInWithPassword({email,password:$("#password").value});if(error)throw error;await enterApp(data.user)}catch(error){$("#loginMessage").textContent=loginError(error)}});
     $("#resetPasswordBtn").addEventListener("click",async()=>{const email=$("#email").value.trim();if(!email){$("#loginMessage").textContent=state.lang==="zh"?"请先填写管理员邮箱。":"Enter the admin email first.";$("#email").focus();return}const button=$("#resetPasswordBtn");button.disabled=true;$("#loginMessage").textContent=state.lang==="zh"?"正在发送重置邮件...":"Sending reset email...";const redirectTo=`${location.origin}${location.pathname}?reset=password`;const {error}=await db.auth.resetPasswordForEmail(email,{redirectTo});button.disabled=false;$("#loginMessage").textContent=error?loginError(error):t("resetSent")});
     $("#recoveryForm").addEventListener("submit",async e=>{e.preventDefault();const password=$("#newPassword").value;const confirmation=$("#confirmPassword").value;if(password.length<8){$("#recoveryMessage").textContent=t("passwordShort");return}if(password!==confirmation){$("#recoveryMessage").textContent=t("passwordMismatch");return}$("#recoveryMessage").textContent=state.lang==="zh"?"正在保存新密码...":"Saving new password...";const {data,error}=await db.auth.updateUser({password});if(error){$("#recoveryMessage").textContent=loginError(error);return}history.replaceState({},"",location.pathname);$("#recoveryView").classList.add("hidden");try{await enterApp(data.user)}catch(error){$("#recoveryMessage").textContent=loginError(error);$("#recoveryView").classList.remove("hidden")}});
-    $("#languageBtn").addEventListener("click",()=>{state.lang=state.lang==="en"?"zh":"en";localStorage.setItem("gogoshop-pos-lang",state.lang);applyLanguage()});
-    $("#autoPrint").checked=localStorage.getItem("gogoshop-pos-auto-print")!=="false";
-    $("#autoPrint").addEventListener("change",()=>localStorage.setItem("gogoshop-pos-auto-print",String($("#autoPrint").checked)));
+    $("#languageBtn").addEventListener("click",()=>{state.lang=state.lang==="en"?"zh":"en";authStorage.setItem("gogoshop-pos-lang",state.lang);applyLanguage()});
+    $("#autoPrint").checked=authStorage.getItem("gogoshop-pos-auto-print")!=="false";
+    $("#autoPrint").addEventListener("change",()=>authStorage.setItem("gogoshop-pos-auto-print",String($("#autoPrint").checked)));
     $("#reprintBtn").addEventListener("click",printLastReceipt);
     function normalizeScanValue(value){return String(value||"").normalize("NFKC").replace(/[\u0000-\u001f\u007f]/g,"").trim().toUpperCase().replace(/^\*+|\*+$/g,"").replace(/\s+/g,"")}
     function findProduct(code){return state.productLookup.get(normalizeScanValue(code).toLowerCase())||null}
@@ -454,8 +507,23 @@
       }
     });
     $("#logoutBtn").addEventListener("click",async()=>{await db.auth.signOut();location.reload()});
-    db.auth.onAuthStateChange((event,session)=>{if(event==="PASSWORD_RECOVERY"){showRecovery();return}if(event==="SIGNED_OUT"&&!state.busy)showLogin()});
-    db.auth.getSession().then(async({data,error})=>{const recoveryMode=new URLSearchParams(location.search).get("reset")==="password"||location.hash.includes("type=recovery");if(error){showLogin(error);return}if(recoveryMode&&data.session?.user){showRecovery();return}if(data.session?.user){try{await enterApp(data.session.user);return}catch(error){showLogin(openedFromAdmin?t("sessionExpired"):error);return}}showLogin()}).catch(error=>showLogin(error));applyLanguage();
+    $("#authRetryBtn").addEventListener("click",()=>location.reload());
+    window.addEventListener("error",event=>{
+      const activeView=["authLoading","loginView","recoveryView","appView"].find(id=>!$("#"+id).classList.contains("hidden"));
+      if(activeView==="authLoading"||activeView==="appView")showRuntimeError(event.error||new Error(event.message||"Unknown startup error"));
+    });
+    window.addEventListener("unhandledrejection",event=>{
+      const activeView=["authLoading","loginView","recoveryView","appView"].find(id=>!$("#"+id).classList.contains("hidden"));
+      if(activeView==="authLoading"||activeView==="appView")showRuntimeError(event.reason||new Error("Unknown startup error"));
+    });
+    applyLanguage();
+    if(!supabaseReady){
+      showRuntimeError(runtimeUnavailableError);
+    }else{
+      db.auth.onAuthStateChange((event,session)=>{if(event==="PASSWORD_RECOVERY"){showRecovery();return}if(event==="SIGNED_OUT"&&!state.busy)showLogin()});
+      db.auth.getSession().then(async({data,error})=>{const recoveryMode=new URLSearchParams(location.search).get("reset")==="password"||location.hash.includes("type=recovery");if(error){showLogin(error);return}if(recoveryMode&&data.session?.user){showRecovery();return}if(data.session?.user){try{await enterApp(data.session.user);return}catch(error){showLogin(openedFromAdmin?t("sessionExpired"):error);return}}showLogin()}).catch(error=>showLogin(error));
+    }
+    authWatchdog=window.setTimeout(()=>{if(!authBootSettled)showRuntimeError(new Error("POS authentication did not respond in time"),true)},12000);
   </script>
 </body>
 </html>
