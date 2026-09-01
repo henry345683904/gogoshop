@@ -19,3 +19,4 @@ update public.products set image = 'assets/supabase/key-chain-mt28xcyq/01.jpg', 
 update public.products set image = 'assets/supabase/key-chain-mt29jv3r/01.jpg', images = '["assets/supabase/key-chain-mt29jv3r/01.jpg"]'::jsonb, updated_at = now() where id = 'key-chain-mt29jv3r';
 update public.products set image = 'assets/supabase/key-chain-avocado-mt2bkd87/01.jpg', images = '["assets/supabase/key-chain-avocado-mt2bkd87/01.jpg"]'::jsonb, updated_at = now() where id = 'key-chain-avocado-mt2bkd87';
 commit;
+update public.products set image = 'assets/supabase/test-product-ms1tcog4/01.png', images = '["assets/supabase/test-product-ms1tcog4/01.png","assets/supabase/test-product-ms1tcog4/02.jpg"]'::jsonb, updated_at = now() where id = 'test-product-ms1tcog4';
