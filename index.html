@@ -9296,6 +9296,8 @@
       activeProductId: null,
       detailImageIndex: 0,
       detailQuantity: 1,
+      detailLoading: false,
+      detailLoadedProductIds: new Set(),
       designEditorSection: "hero",
       designEditorBlockId: null,
       designPreviewDevice: "desktop",
@@ -10514,6 +10516,42 @@
       refreshIcons();
     }
 
+    async function loadStorefrontProductDetail(productId) {
+      if (!db || state.profile?.is_admin || !productId) return;
+      const product = state.products.find((item) => item.id === productId && item.published);
+      if (!product || state.detailLoadedProductIds.has(productId)) return;
+
+      state.detailLoading = true;
+      const { data, error } = await db.rpc("get_storefront_product_detail", { p_product_id: productId });
+      state.detailLoading = false;
+      if (error) {
+        console.warn("Unable to load storefront product detail", error);
+        return;
+      }
+      const detail = Array.isArray(data) ? data[0] : data;
+      if (!detail || detail.id !== productId) return;
+
+      Object.assign(product, {
+        title: detail.title ?? product.title,
+        titleEn: detail.title_en ?? product.titleEn,
+        titleZh: detail.title_zh ?? product.titleZh,
+        category: detail.category ?? product.category,
+        description: detail.description ?? "",
+        descriptionEn: detail.description_en ?? "",
+        descriptionZh: detail.description_zh ?? "",
+        price: Number(detail.price ?? product.price),
+        compareAtPrice: Number(detail.compare_at_price ?? product.compareAtPrice),
+        stock: Number(detail.stock ?? product.stock),
+        image: detail.image ?? product.image,
+        images: Array.isArray(detail.images) ? detail.images : (product.images || []),
+        sku: detail.sku ?? product.sku,
+        barcode: detail.barcode ?? product.barcode
+      });
+      state.detailLoadedProductIds.add(productId);
+      persistProducts();
+      if (state.activeProductId === productId) renderProductDetail();
+    }
+
     function showProductDetail(id, updateHash = true) {
       const product = state.products.find((item) => item.id === id && item.published);
       if (!product) return false;
@@ -10536,6 +10574,7 @@
       $("#admin").classList.remove("active");
       closePanels();
       renderProductDetail();
+      void loadStorefrontProductDetail(id);
 
       const nextHash = `#product=${encodeURIComponent(id)}`;
       if (updateHash && location.hash !== nextHash) location.hash = nextHash;
@@ -11057,7 +11096,10 @@
           ({ data, error } = await db.from("products").select("id,title,category,description,price,compare_at_price,cost_per_item,stock,sales,published,image,images,vendor,sku,barcode,tags,source_url,source_currency,source_price,source_variants,source_attributes"));
         }
       } else {
-        ({ data, error } = await db.rpc("get_storefront_products"));
+        ({ data, error } = await db.rpc("get_storefront_catalog"));
+        if (error) {
+          ({ data, error } = await db.rpc("get_storefront_products"));
+        }
         if (error) {
           ({ data, error } = await db.from("products")
             .select("id,title,category,description,price,compare_at_price,stock,published,image,images")
@@ -11116,8 +11158,8 @@
           image: remote.image ?? localProduct?.image ?? "",
           images: Array.isArray(remote.images) ? remote.images : (localProduct?.images || []),
           vendor: isAdmin ? (remote.vendor || localProduct?.vendor || "Go Go Shop") : "",
-          sku: isAdmin ? (remote.sku ?? localProduct?.sku ?? "") : "",
-          barcode: isAdmin ? (remote.barcode ?? localProduct?.barcode ?? "") : "",
+          sku: remote.sku ?? (isAdmin ? localProduct?.sku ?? "" : ""),
+          barcode: remote.barcode ?? (isAdmin ? localProduct?.barcode ?? "" : ""),
           tags: isAdmin ? (remote.tags ?? localProduct?.tags ?? "") : "",
           sourceUrl: isAdmin ? (remote.source_url ?? localProduct?.sourceUrl ?? "") : "",
           sourceCurrency: isAdmin ? sourceCurrency : "",
