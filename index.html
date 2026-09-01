@@ -3561,6 +3561,15 @@
       background: #f6f7f7;
     }
 
+    .admin-product-item.is-offline-only {
+      background: #fbfbfb;
+    }
+
+    .admin-product-item.is-offline-only > img {
+      filter: grayscale(0.7);
+      opacity: 0.82;
+    }
+
     .admin-product-item > img {
       width: 58px;
       height: 58px;
@@ -7683,6 +7692,7 @@
                 <button class="button ghost" type="button" data-toggle-product-trash aria-expanded="false"><i data-lucide="recycle"></i> 回收站 <span id="adminTrashCount">0</span></button>
                 <button class="button ghost" type="button" data-print-phone-case-atlas title="打印手机壳图谱"><i data-lucide="book-open"></i> <span data-i18n="phoneCaseAtlas">手机壳图谱</span></button>
                 <button class="button ghost" type="button" data-print-keychain-atlas title="打印钥匙链图谱"><i data-lucide="key-round"></i> <span data-i18n="keychainAtlas">钥匙链图谱</span></button>
+                <button class="button ghost" type="button" data-hide-all-products title="将所有当前网店商品设为仅线下销售"><i data-lucide="eye-off"></i> <span>一键隐藏全部</span></button>
                 <button class="button" type="button" data-new-product><i data-lucide="plus"></i> Add product</button>
               </div>
             </div>
@@ -8322,7 +8332,7 @@
             <section class="shopify-editor-card">
               <div class="shopify-card-head"><h3>发布</h3></div>
               <label class="shopify-check-row">
-                <span>在线商店</span>
+                <span>在线商店（取消勾选 = 仅线下销售）</span>
                 <input type="checkbox" name="onlineStore" checked>
               </label>
               <label class="shopify-check-row">
@@ -13520,7 +13530,7 @@
           ? `No products in ${escapeHtml(categoryName(category))}`
           : "No active products";
       $("#adminProductRows").innerHTML = products.map((product) => `
-        <article class="admin-product-item" data-edit-product-row="${escapeHtml(product.id)}" role="button" tabindex="0" aria-label="Edit ${escapeHtml(product.title)}">
+        <article class="admin-product-item ${product.published ? "" : "is-offline-only"}" data-edit-product-row="${escapeHtml(product.id)}" role="button" tabindex="0" aria-label="Edit ${escapeHtml(product.title)}">
           <img src="${escapeHtml(imageSource(product.image) || PRODUCT_IMAGE_FALLBACK)}" alt="${escapeHtml(product.title)}" loading="eager" decoding="async">
           <div class="admin-product-summary">
             <strong>${escapeHtml(product.title)}</strong>
@@ -13530,10 +13540,11 @@
           <div class="admin-product-meta">
             <span>${formatPrice(product.price)}</span>
             <span>Stock ${Number(product.stock) || 0}</span>
-            <span class="status ${product.published ? "live" : "draft"}">${product.published ? "Live" : "Draft"}</span>
+            <span class="status ${product.published ? "live" : "draft"}">${product.published ? "Live" : "Offline only"}</span>
           </div>
           <div class="row-actions">
             <button class="action-button" type="button" data-open-product-label="${escapeHtml(product.id)}" aria-label="打印 ${escapeHtml(product.title)} Label" title="打印 Label"><i data-lucide="printer"></i></button>
+            <button class="action-button ${product.published ? "" : "offline"}" type="button" data-toggle-product-online="${escapeHtml(product.id)}" aria-label="${product.published ? "Hide" : "Show"} ${escapeHtml(product.title)} ${product.published ? "from online store" : "in online store"}" title="${product.published ? "隐藏，仅线下销售" : "重新显示在网店"}"><i data-lucide="${product.published ? "eye-off" : "eye"}"></i></button>
             <button class="action-button ${product.featured ? "pinned" : ""}" type="button" data-toggle-featured="${escapeHtml(product.id)}" aria-label="${product.featured ? "Unpin" : "Pin"} ${escapeHtml(product.title)}" aria-pressed="${Boolean(product.featured)}" title="${product.featured ? "取消首页置顶" : "置顶到首页"}"><i data-lucide="${product.featured ? "pin-off" : "pin"}"></i></button>
             <button class="action-button" type="button" data-delete-product="${escapeHtml(product.id)}" aria-label="Delete ${escapeHtml(product.title)}"><i data-lucide="trash-2"></i></button>
           </div>
@@ -13845,7 +13856,7 @@
       fields.namedItem("titleZh").value = "";
       fields.namedItem("descriptionZh").value = "";
       fields.namedItem("vendor").value = "Go Go Shop";
-      fields.namedItem("onlineStore").checked = true;
+      fields.namedItem("onlineStore").checked = false;
       fields.namedItem("featured").checked = false;
       fields.namedItem("taxable").checked = true;
       fields.namedItem("trackQuantity").checked = true;
@@ -14349,7 +14360,7 @@
         ? fields.namedItem("titleZh").value.trim()
         : fields.namedItem("title").value.trim();
       $("[data-product-editor-title]").textContent = editorTitle || (fields.namedItem("id").value ? "编辑商品" : "添加商品");
-      const statusText = !active ? "草稿" : published ? "活跃" : "未发布";
+      const statusText = !active ? "草稿" : published ? "活跃" : fields.namedItem("onlineStore").checked ? "未发布" : "仅线下销售";
       const statusClass = `status ${published ? "live" : "draft"}`;
       status.textContent = statusText;
       status.className = statusClass;
@@ -14764,6 +14775,85 @@
       state.trashOpen = typeof forceOpen === "boolean" ? forceOpen : !state.trashOpen;
       renderAdminProducts();
       refreshIcons();
+    }
+
+    async function setProductOnlineState(id, online) {
+      const product = state.products.find((item) => item.id === id);
+      if (!product || Boolean(product.published) === Boolean(online)) return;
+      const button = $(`[data-toggle-product-online="${CSS.escape(String(id))}"]`);
+      if (button) {
+        button.disabled = true;
+        button.setAttribute("aria-busy", "true");
+      }
+      const published = Boolean(online);
+      const updatedAt = new Date().toISOString();
+      try {
+        if (db && state.profile?.is_admin) {
+          const { error } = await db.from("products").update({
+            published,
+            updated_at: updatedAt
+          }).eq("id", id);
+          if (error) throw error;
+        }
+        product.published = published;
+        product.onlineStore = published;
+        product.status = published ? "active" : "draft";
+        persistProducts();
+        renderAll();
+        showToast(state.lang === "zh"
+          ? (published ? "商品已重新显示在网店" : "商品已隐藏，仅支持线下销售")
+          : (published ? "Product is visible in the online store" : "Product hidden; offline sales only"));
+      } catch (error) {
+        showToast(authErrorMessage(error));
+      } finally {
+        if (button?.isConnected) {
+          button.disabled = false;
+          button.removeAttribute("aria-busy");
+        }
+      }
+    }
+
+    async function hideAllProductsFromStore() {
+      const onlineProducts = state.products.filter((product) => product.published);
+      if (!onlineProducts.length) {
+        showToast(state.lang === "zh" ? "当前没有网店商品" : "No products are currently visible online");
+        return;
+      }
+      const confirmed = window.confirm(state.lang === "zh"
+        ? `确定隐藏全部 ${onlineProducts.length} 个网店商品吗？\n\n商品资料、图片、库存和订单不会删除，之后可以逐个重新显示。`
+        : `Hide all ${onlineProducts.length} online products?\n\nProduct data, images, inventory and orders will be kept. You can show products again one by one.`);
+      if (!confirmed) return;
+      const button = $(`[data-hide-all-products]`);
+      if (button) {
+        button.disabled = true;
+        button.setAttribute("aria-busy", "true");
+      }
+      const updatedAt = new Date().toISOString();
+      try {
+        if (db && state.profile?.is_admin) {
+          const { error } = await db.from("products").update({
+            published: false,
+            updated_at: updatedAt
+          }).eq("published", true);
+          if (error) throw error;
+        }
+        state.products.forEach((product) => {
+          if (!product.published) return;
+          product.published = false;
+          product.onlineStore = false;
+          product.status = "draft";
+        });
+        persistProducts();
+        renderAll();
+        showToast(state.lang === "zh" ? `已隐藏 ${onlineProducts.length} 个商品，仅支持线下销售` : `${onlineProducts.length} products hidden; offline sales only`);
+      } catch (error) {
+        showToast(authErrorMessage(error));
+      } finally {
+        if (button?.isConnected) {
+          button.disabled = false;
+          button.removeAttribute("aria-busy");
+        }
+      }
     }
 
     function toggleFeaturedProduct(id) {
@@ -15229,6 +15319,15 @@
       if (target.matches("[data-clear-form]")) clearProductForm();
       if (target.matches("[data-edit-product]")) editProduct(target.dataset.editProduct);
       if (target.matches("[data-toggle-featured]")) toggleFeaturedProduct(target.dataset.toggleFeatured);
+      if (target.matches("[data-toggle-product-online]")) {
+        const product = state.products.find((item) => item.id === target.dataset.toggleProductOnline);
+        if (product) setProductOnlineState(product.id, !product.published);
+        return;
+      }
+      if (target.matches("[data-hide-all-products]")) {
+        hideAllProductsFromStore();
+        return;
+      }
       if (target.matches("[data-delete-product]")) deleteProduct(target.dataset.deleteProduct);
       if (target.matches("[data-toggle-product-trash]")) toggleProductTrash();
       if (target.matches("[data-close-product-trash]")) toggleProductTrash(false);
