@@ -9,7 +9,6 @@
   <link rel="icon" type="image/png" sizes="192x192" href="assets/app-icon-192.png">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
   <link rel="manifest" href="site.webmanifest">
-  <link rel="preconnect" href="https://cdn.shopify.com">
   <link rel="preconnect" href="https://unpkg.com">
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
   <script>
@@ -194,6 +193,31 @@
     img {
       display: block;
       max-width: 100%;
+    }
+
+    .image-placeholder {
+      display: grid;
+      width: 100%;
+      height: 100%;
+      min-height: 120px;
+      place-items: center;
+      align-content: center;
+      gap: 8px;
+      padding: 24px;
+      background: var(--soft);
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .image-placeholder svg {
+      width: 28px;
+      height: 28px;
+    }
+
+    img.is-image-fallback {
+      object-fit: contain !important;
+      padding: 18px;
+      background: var(--soft);
     }
 
     .sr-only {
@@ -8670,6 +8694,7 @@
     const PROCUREMENT_COVER_OPTIONS = Object.freeze([1, 2, 3, 4, 6]);
     const PURGED_PRODUCT_TAG = "__gogoshop_purged__";
     const PRODUCT_MEDIA_BUCKET = "product-media";
+    const PRODUCT_IMAGE_FALLBACK = "./assets/product-image-placeholder.svg";
     const SUPABASE_URL = "https://ucnkcddhrptqpdlvcohy.supabase.co";
     const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_zv6WbyD1hZKUx-Zyak-fPw_e1mURTN8";
     const SOURCE_COST_DIVISOR = 4;
@@ -9059,167 +9084,8 @@
     });
     const storefrontCategoryKeys = new Set(storefrontCategories.map((category) => category.key));
 
-    const seedProducts = [
-      {
-        id: "blind-box",
-        title: "Blind Box",
-        handle: "blind-box",
-        category: "Blind Box",
-        description: "",
-        price: 12.99,
-        stock: 0,
-        published: true,
-        sales: 31,
-        views: 342,
-        image: "https://cdn.shopify.com/s/files/1/0608/4165/6384/files/rn-image_picker_lib_temp_09c2f614-fcfa-4def-8c6e-9490a07a8a62.jpg?v=1782510734"
-      },
-      {
-        id: "blind-box-1",
-        title: "Blind Box",
-        handle: "blind-box-1",
-        category: "Blind Box",
-        description: "Twinkle Twinkle (Star Baby) Christmas Family",
-        price: 12.99,
-        stock: 0,
-        published: true,
-        sales: 24,
-        views: 289,
-        image: "https://cdn.shopify.com/s/files/1/0608/4165/6384/files/rn-image_picker_lib_temp_d0974c4b-368f-4096-85a8-3bb1b776cd0c.jpg?v=1782511848"
-      },
-      {
-        id: "key-chain",
-        title: "Key Chain",
-        handle: "key-chain",
-        category: "Key Chain",
-        description: "",
-        price: 9.99,
-        stock: 0,
-        published: true,
-        sales: 18,
-        views: 205,
-        image: "https://cdn.shopify.com/s/files/1/0608/4165/6384/files/rn-image_picker_lib_temp_ba75def8-8bc5-44f2-9c69-645934bef2ce.jpg?v=1782590358"
-      },
-      {
-        id: "phone-case-3",
-        title: "Phone Case",
-        handle: "phone-case-3",
-        category: "Phone Case",
-        description: "",
-        price: 4.99,
-        stock: 44,
-        published: true,
-        sales: 52,
-        views: 471,
-        image: "https://cdn.shopify.com/s/files/1/0608/4165/6384/files/rn-image_picker_lib_temp_80a58ee6-430b-469b-859b-0c3c0cf590c9.jpg?v=1782417831"
-      },
-      {
-        id: "phone-case-2",
-        title: "Phone Case",
-        handle: "phone-case-2",
-        category: "Phone Case",
-        description: "Coming Soon",
-        price: 9.99,
-        stock: 20,
-        published: true,
-        sales: 29,
-        views: 251,
-        image: "https://cdn.shopify.com/s/files/1/0608/4165/6384/files/rn-image_picker_lib_temp_a3f30fc5-e47f-47f6-a44a-419da0ea324b.jpg?v=1782330848"
-      },
-      {
-        id: "phone-case-1",
-        title: "Phone Case",
-        handle: "phone-case-1",
-        category: "Phone Case",
-        description: "Coming Soon",
-        price: 4.99,
-        stock: 35,
-        published: true,
-        sales: 43,
-        views: 390,
-        image: "https://cdn.shopify.com/s/files/1/0608/4165/6384/files/rn-image_picker_lib_temp_8bd7825f-57c3-4985-89a7-30f6d190bb4b.jpg?v=1782330572"
-      },
-      {
-        id: "phone-case",
-        title: "Phone Case",
-        handle: "phone-case",
-        category: "Phone Case",
-        description: "Coming Soon",
-        price: 4.99,
-        stock: 22,
-        published: true,
-        sales: 37,
-        views: 314,
-        image: "https://cdn.shopify.com/s/files/1/0608/4165/6384/files/rn-image_picker_lib_temp_8a4056c7-90f8-4af5-b387-da8dfdcdbc94.jpg?v=1782330561"
-      },
-      {
-        id: "smart-glasses",
-        title: "Smart Glasses",
-        handle: "smart-glasses",
-        category: "Smart Glasses",
-        description: "",
-        price: 14.99,
-        stock: 13,
-        published: true,
-        sales: 11,
-        views: 188,
-        image: "https://cdn.shopify.com/s/files/1/0608/4165/6384/files/rn-image_picker_lib_temp_3b0c0439-9771-408f-85ad-c70f8fef0b26.jpg?v=1782417962"
-      },
-      {
-        id: "soft-toy",
-        title: "Soft Toy",
-        handle: "soft-toy",
-        category: "Soft Toy",
-        description: "",
-        price: 14.99,
-        stock: 0,
-        published: true,
-        sales: 15,
-        views: 202,
-        image: "https://cdn.shopify.com/s/files/1/0608/4165/6384/files/rn-image_picker_lib_temp_496117a2-313a-41e5-940c-26a4324a739e.jpg?v=1782590358"
-      }
-    ];
-
-    const productImageSets = {
-      "blind-box": [
-        "https://cdn.shopify.com/s/files/1/0608/4165/6384/files/rn-image_picker_lib_temp_09c2f614-fcfa-4def-8c6e-9490a07a8a62.jpg?v=1782510734",
-        "https://cdn.shopify.com/s/files/1/0608/4165/6384/files/rn-image_picker_lib_temp_d7ae9586-aa4b-4812-8462-0ecc9ade1890.jpg?v=1782510771",
-        "https://cdn.shopify.com/s/files/1/0608/4165/6384/files/rn-image_picker_lib_temp_94888af2-6d97-4a19-a808-fcdd0310b0e1.jpg?v=1782510771",
-        "https://cdn.shopify.com/s/files/1/0608/4165/6384/files/rn-image_picker_lib_temp_19d66746-2e53-4e97-af4c-66e2c70d1b79.jpg?v=1782510771",
-        "https://cdn.shopify.com/s/files/1/0608/4165/6384/files/rn-image_picker_lib_temp_9fc3ffed-2953-4131-a37d-dd2022f2d1db.jpg?v=1782510772",
-        "https://cdn.shopify.com/s/files/1/0608/4165/6384/files/rn-image_picker_lib_temp_d8ca8eeb-0001-40c4-b027-abba148982f5.jpg?v=1782510771"
-      ],
-      "blind-box-1": [
-        "https://cdn.shopify.com/s/files/1/0608/4165/6384/files/rn-image_picker_lib_temp_d0974c4b-368f-4096-85a8-3bb1b776cd0c.jpg?v=1782511848",
-        "https://cdn.shopify.com/s/files/1/0608/4165/6384/files/rn-image_picker_lib_temp_d257bd68-ea03-43d2-9b4e-38cb4014f663.jpg?v=1782511872",
-        "https://cdn.shopify.com/s/files/1/0608/4165/6384/files/rn-image_picker_lib_temp_c3d7c0e7-cb2c-493f-8723-3bdf5e0d1616.jpg?v=1782511872",
-        "https://cdn.shopify.com/s/files/1/0608/4165/6384/files/rn-image_picker_lib_temp_e8cbe8b3-a11b-48d8-b755-0b06c46b5a90.jpg?v=1782511871",
-        "https://cdn.shopify.com/s/files/1/0608/4165/6384/files/rn-image_picker_lib_temp_254cdbef-54b4-4c1c-a181-f713a83f6f7d.jpg?v=1782511872",
-        "https://cdn.shopify.com/s/files/1/0608/4165/6384/files/rn-image_picker_lib_temp_a79f33e2-78d6-4785-84da-90403a58eb6d.jpg?v=1782511872"
-      ],
-      "key-chain": [
-        "https://cdn.shopify.com/s/files/1/0608/4165/6384/files/rn-image_picker_lib_temp_ba75def8-8bc5-44f2-9c69-645934bef2ce.jpg?v=1782590358",
-        "https://cdn.shopify.com/s/files/1/0608/4165/6384/files/rn-image_picker_lib_temp_c3ebf55b-cdd6-4390-8a85-e0190349829f.jpg?v=1782590358",
-        "https://cdn.shopify.com/s/files/1/0608/4165/6384/files/rn-image_picker_lib_temp_736b4185-e88d-41bc-8ddb-11be77312bd3.jpg?v=1782590358",
-        "https://cdn.shopify.com/s/files/1/0608/4165/6384/files/rn-image_picker_lib_temp_824cb801-9589-4812-bf31-4f965b8f8910.jpg?v=1782590358",
-        "https://cdn.shopify.com/s/files/1/0608/4165/6384/files/rn-image_picker_lib_temp_8942b7af-1982-4761-9b4e-63fc622515f0.jpg?v=1782590358"
-      ],
-      "phone-case-3": [
-        "https://cdn.shopify.com/s/files/1/0608/4165/6384/files/rn-image_picker_lib_temp_80a58ee6-430b-469b-859b-0c3c0cf590c9.jpg?v=1782417831",
-        "https://cdn.shopify.com/s/files/1/0608/4165/6384/files/rn-image_picker_lib_temp_038d76af-b167-40f6-bc83-9823a7ddd357.jpg?v=1782417844",
-        "https://cdn.shopify.com/s/files/1/0608/4165/6384/files/rn-image_picker_lib_temp_2d9e234a-d3c9-46a6-87ef-020ad658e30f.jpg?v=1782417845",
-        "https://cdn.shopify.com/s/files/1/0608/4165/6384/files/rn-image_picker_lib_temp_2cc63f5d-f11b-46af-801a-73347ee1f831.jpg?v=1782417830",
-        "https://cdn.shopify.com/s/files/1/0608/4165/6384/files/rn-image_picker_lib_temp_5ef4388c-2e79-49a6-836b-99c2a04b2bab.jpg?v=1782417831",
-        "https://cdn.shopify.com/s/files/1/0608/4165/6384/files/rn-image_picker_lib_temp_09fde627-7b7f-4725-b955-370030059883.jpg?v=1782417831"
-      ],
-      "smart-glasses": [
-        "https://cdn.shopify.com/s/files/1/0608/4165/6384/files/rn-image_picker_lib_temp_3b0c0439-9771-408f-85ad-c70f8fef0b26.jpg?v=1782417962",
-        "https://cdn.shopify.com/s/files/1/0608/4165/6384/files/rn-image_picker_lib_temp_0bfc125b-42c6-46e8-96bd-358f705fecbd.jpg?v=1782417980"
-      ],
-      "soft-toy": [
-        "https://cdn.shopify.com/s/files/1/0608/4165/6384/files/rn-image_picker_lib_temp_496117a2-313a-41e5-940c-26a4324a739e.jpg?v=1782590358",
-        "https://cdn.shopify.com/s/files/1/0608/4165/6384/files/rn-image_picker_lib_temp_73a33131-80c0-4bfe-a0f2-4da3c668b919.jpg?v=1782590358"
-      ]
-    };
+    const seedProducts = [];
+    const productImageSets = {};
 
     const seedOrders = [
       { id: "GGS-1048", date: "Mon", total: 64.92, items: 5 },
@@ -10364,11 +10230,27 @@
       container.innerHTML = blocks.length ? `<div class="custom-block-grid">${blocks.map(renderStoreBlock).join("")}</div>` : "";
     }
 
+    function imageSource(value) {
+      const source = String(value || "").trim();
+      if (!source) return "";
+      return /^assets\//i.test(source) ? `./${source}` : source;
+    }
+
+    function usableProductImage(value) {
+      const source = String(value || "").trim();
+      if (!source || /^data:/i.test(source)) return false;
+      if (!state.profile?.is_admin && /(^|:\/\/)(cdn\.shopify\.com|.*supabase\.co\/storage)/i.test(source)) return false;
+      return true;
+    }
+
     function productImages(product, limit = Infinity) {
       const gallery = Array.isArray(product.images) && product.images.length
         ? product.images
         : productImageSets[product.id] || [];
-      const images = [...new Set([product.image, ...gallery].filter(Boolean))];
+      const images = [...new Set([product.image, ...gallery]
+        .filter(usableProductImage)
+        .map(imageSource)
+        .filter(Boolean))];
       return Number.isFinite(limit) ? images.slice(0, limit) : images;
     }
 
@@ -10379,9 +10261,9 @@
         ${!available(product) ? `<span class="badge">${t("soldOut")}</span>` : ""}
         <a class="media-slider" href="#product=${encodeURIComponent(product.id)}" data-product-view="${escapeHtml(product.id)}" data-gallery="${escapeHtml(product.id)}" data-gallery-index="0" data-gallery-count="${images.length}" style="--active-slide: 0" aria-label="${escapeHtml(productName(product))}">
           <div class="media-track">
-            ${images.map((image, index) => `
+            ${images.length ? images.map((image, index) => `
               <img class="media-slide" src="${escapeHtml(image)}" alt="${escapeHtml(productName(product))} ${index + 1}" loading="lazy" draggable="false">
-            `).join("")}
+            `).join("") : `<span class="image-placeholder" role="img" aria-label="${escapeHtml(state.lang === "zh" ? "暂无图片" : "No image")}"><i data-lucide="image-off"></i><span>${state.lang === "zh" ? "暂无图片" : "No image"}</span></span>`}
           </div>
         </a>
         ${hasGallery ? `
@@ -10450,7 +10332,7 @@
       const images = productImages(product);
       state.detailImageIndex = Math.min(Math.max(0, state.detailImageIndex), Math.max(0, images.length - 1));
       state.detailQuantity = Math.min(Math.max(1, state.detailQuantity), Math.max(1, Number(product.stock) || 1));
-      const currentImage = images[state.detailImageIndex] || product.image;
+      const currentImage = images[state.detailImageIndex] || "";
       const soldOut = !available(product);
       const description = productDescription(product);
       const itemCode = productItemCode(product);
@@ -10463,7 +10345,7 @@
         <div class="product-detail-layout">
           <div class="product-detail-gallery">
             <div class="product-detail-main" data-detail-gallery data-detail-gallery-count="${images.length}" role="group" aria-label="Product images" tabindex="0">
-              <img src="${escapeHtml(currentImage)}" alt="${escapeHtml(productName(product))}" data-detail-main-image draggable="false">
+              ${currentImage ? `<img src="${escapeHtml(currentImage)}" alt="${escapeHtml(productName(product))}" data-detail-main-image draggable="false">` : `<div class="image-placeholder" role="img" aria-label="${escapeHtml(state.lang === "zh" ? "暂无图片" : "No image")}"><i data-lucide="image-off"></i><span>${state.lang === "zh" ? "暂无图片" : "No image"}</span></div>`}
             </div>
             ${images.length > 1 ? `
               <div class="product-detail-thumbnails" aria-label="Product images">
@@ -10543,7 +10425,7 @@
         compareAtPrice: Number(detail.compare_at_price ?? product.compareAtPrice),
         stock: Number(detail.stock ?? product.stock),
         image: detail.image ?? product.image,
-        images: Array.isArray(detail.images) ? detail.images : (product.images || []),
+          images: Array.isArray(detail.images) ? detail.images.filter(usableProductImage).map(imageSource) : (product.images || []),
         sku: detail.sku ?? product.sku,
         barcode: detail.barcode ?? product.barcode
       });
@@ -10610,7 +10492,7 @@
         ? ((requestedIndex % images.length) + images.length) % images.length
         : Math.min(Math.max(0, requestedIndex), Math.max(0, images.length - 1));
       const mainImage = $("[data-detail-main-image]");
-      if (mainImage) mainImage.src = images[state.detailImageIndex] || product.image;
+      if (mainImage) mainImage.src = images[state.detailImageIndex] || PRODUCT_IMAGE_FALLBACK;
       $$("[data-detail-image]").forEach((button) => {
         button.classList.toggle("active", Number(button.dataset.detailImage) === state.detailImageIndex);
       });
@@ -11156,7 +11038,7 @@
           status: remote.published ? "active" : "draft",
           onlineStore: Boolean(remote.published),
           image: remote.image ?? localProduct?.image ?? "",
-          images: Array.isArray(remote.images) ? remote.images : (localProduct?.images || []),
+          images: isAdmin && Array.isArray(remote.images) ? remote.images : [],
           vendor: isAdmin ? (remote.vendor || localProduct?.vendor || "Go Go Shop") : "",
           sku: remote.sku ?? (isAdmin ? localProduct?.sku ?? "" : ""),
           barcode: remote.barcode ?? (isAdmin ? localProduct?.barcode ?? "" : ""),
@@ -15002,6 +14884,22 @@
       renderAdmin();
       if (state.activeProductId) renderProductDetail();
     }
+
+    function handleImageLoadError(event) {
+      const image = event.target instanceof HTMLImageElement ? event.target : null;
+      if (!image) return;
+      if (image.dataset.imageFallbackApplied === "true") {
+        image.hidden = true;
+        return;
+      }
+      image.dataset.imageFallbackApplied = "true";
+      image.dataset.imageOriginal = image.currentSrc || image.src || "";
+      image.removeAttribute("srcset");
+      image.src = PRODUCT_IMAGE_FALLBACK;
+      image.classList.add("is-image-fallback");
+    }
+
+    document.addEventListener("error", handleImageLoadError, true);
 
     document.addEventListener("pointerup", dismissOrderDetailImmediately, true);
     document.addEventListener("click", dismissOrderDetailImmediately, true);
