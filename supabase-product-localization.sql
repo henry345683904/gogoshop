@@ -33,6 +33,7 @@ returns table (
   compare_at_price numeric,
   stock integer,
   published boolean,
+  sales_channel text,
   image text,
   images jsonb
 )
@@ -54,10 +55,12 @@ as $$
     products.compare_at_price,
     products.stock,
     products.published,
+    products.sales_channel,
     products.image,
     products.images
   from public.products
   where products.deleted_at is null
+    and products.sales_channel = 'online'
     and products.published = true
   order by products.updated_at desc, products.id;
 $$;

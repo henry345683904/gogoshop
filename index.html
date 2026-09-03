@@ -3322,6 +3322,38 @@
       font-size: 12px;
     }
 
+    .admin-product-channel-tabs {
+      display: inline-flex;
+      width: fit-content;
+      max-width: 100%;
+      align-items: center;
+      gap: 2px;
+      margin: 0 18px 12px;
+      border: 1px solid #c9cecc;
+      border-radius: 7px;
+      padding: 3px;
+      background: #f1f3f2;
+    }
+
+    .admin-product-channel-tabs button {
+      min-height: 34px;
+      border: 0;
+      border-radius: 5px;
+      padding: 0 14px;
+      background: transparent;
+      color: #596160;
+      font: inherit;
+      font-size: 13px;
+      font-weight: 750;
+      white-space: nowrap;
+    }
+
+    .admin-product-channel-tabs button.active {
+      background: #fff;
+      color: var(--ink);
+      box-shadow: 0 1px 3px rgba(18, 24, 24, 0.14);
+    }
+
     .product-inventory-summary {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -3742,6 +3774,64 @@
       background: #fff;
       color: var(--ink);
       box-shadow: 0 1px 3px rgba(18, 24, 24, 0.14);
+    }
+
+    .product-sales-channel-options {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .product-sales-channel-option {
+      position: relative;
+      display: grid;
+      min-width: 0;
+      min-height: 76px;
+      align-content: center;
+      gap: 4px;
+      border: 1px solid #c9cecc;
+      border-radius: 7px;
+      padding: 12px 12px 12px 38px;
+      background: #fff;
+      cursor: pointer;
+    }
+
+    .product-sales-channel-option:has(input:checked) {
+      border-color: #2c6ecb;
+      box-shadow: 0 0 0 1px #2c6ecb;
+    }
+
+    .product-sales-channel-option input {
+      position: absolute;
+      top: 50%;
+      left: 13px;
+      width: 16px;
+      height: 16px;
+      margin: -8px 0 0;
+      accent-color: #2c6ecb;
+    }
+
+    .product-sales-channel-option strong,
+    .product-sales-channel-option small {
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .product-sales-channel-option strong {
+      font-size: 13px;
+    }
+
+    .product-sales-channel-option small,
+    .product-channel-hint {
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.4;
+    }
+
+    .product-channel-hint {
+      display: block;
+      margin-top: 10px;
     }
 
     .product-editor-language-panel[hidden] {
@@ -7167,6 +7257,19 @@
         padding: 10px 12px;
       }
 
+      .admin-product-channel-tabs {
+        display: grid;
+        width: calc(100% - 24px);
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        margin: 0 12px 10px;
+      }
+
+      .admin-product-channel-tabs button {
+        min-width: 0;
+        padding: 0 8px;
+        white-space: normal;
+      }
+
       .admin-product-search-controls {
         display: grid;
         width: 100%;
@@ -7692,11 +7795,15 @@
                 <button class="button ghost" type="button" data-toggle-product-trash aria-expanded="false"><i data-lucide="recycle"></i> 回收站 <span id="adminTrashCount">0</span></button>
                 <button class="button ghost" type="button" data-print-phone-case-atlas title="打印手机壳图谱"><i data-lucide="book-open"></i> <span data-i18n="phoneCaseAtlas">手机壳图谱</span></button>
                 <button class="button ghost" type="button" data-print-keychain-atlas title="打印钥匙链图谱"><i data-lucide="key-round"></i> <span data-i18n="keychainAtlas">钥匙链图谱</span></button>
-                <button class="button ghost" type="button" data-hide-all-products title="将所有当前网店商品设为仅线下销售"><i data-lucide="eye-off"></i> <span>一键隐藏全部</span></button>
+                <button class="button ghost" type="button" data-hide-all-products title="下架所有网上商品"><i data-lucide="eye-off"></i> <span>一键下架全部</span></button>
                 <button class="button" type="button" data-new-product><i data-lucide="plus"></i> Add product</button>
               </div>
             </div>
             <div class="product-inventory-summary" id="adminProductInventorySummary" aria-label="Inventory valuation"></div>
+            <div class="admin-product-channel-tabs" role="tablist" aria-label="商品销售渠道">
+              <button class="active" type="button" role="tab" data-admin-product-channel="offline" aria-selected="true">拾光小铺</button>
+              <button type="button" role="tab" data-admin-product-channel="online" aria-selected="false">网上商店</button>
+            </div>
             <div class="admin-product-search">
               <div class="admin-product-search-controls">
                 <div class="admin-product-search-field">
@@ -8330,10 +8437,24 @@
             </section>
 
             <section class="shopify-editor-card">
-              <div class="shopify-card-head"><h3>发布</h3></div>
+              <div class="shopify-card-head"><h3>销售渠道</h3></div>
+              <div class="product-sales-channel-options" role="radiogroup" aria-label="销售渠道">
+                <label class="product-sales-channel-option">
+                  <input type="radio" name="salesChannel" value="offline" checked>
+                  <strong>拾光小铺</strong>
+                  <small>用于扫码点单，不显示在公开网页</small>
+                </label>
+                <label class="product-sales-channel-option">
+                  <input type="radio" name="salesChannel" value="online">
+                  <strong>网上商店</strong>
+                  <small>用于网页浏览、购物车和在线结账</small>
+                </label>
+              </div>
+              <span class="product-channel-hint" data-product-channel-hint>当前商品只在线下销售。</span>
+              <div class="shopify-editor-divider"></div>
               <label class="shopify-check-row">
-                <span>在线商店（取消勾选 = 仅线下销售）</span>
-                <input type="checkbox" name="onlineStore" checked>
+                <span>显示在公开网店</span>
+                <input type="checkbox" name="onlineStore">
               </label>
               <label class="shopify-check-row">
                 <span>在首页置顶</span>
@@ -9150,6 +9271,7 @@
       procurementCoverWeeks: PROCUREMENT_COVER_OPTIONS.includes(Number(savedProcurementSettings.coverWeeks)) ? Number(savedProcurementSettings.coverWeeks) : 3,
       adminProductSearch: "",
       adminProductCategory: "All",
+      adminProductChannel: "offline",
       trashOpen: false,
       session: null,
       profile: null,
@@ -9586,7 +9708,7 @@
 
     function phoneFilmAggregateProduct(products) {
       return (Array.isArray(products) ? products : []).find((product) => {
-        if (!product) return false;
+        if (!product || !isOfflineProduct(product)) return false;
         if (String(product.id || "") === "1688-905020913177") return true;
         if ([product.sku, product.barcode].some((value) => String(value || "").trim() === "6666")) return true;
         const attributes = [product.sourceAttributes, product.source_attributes]
@@ -9601,7 +9723,7 @@
     function phoneFilmStockTotal(products) {
       const aggregateProduct = phoneFilmAggregateProduct(products);
       return (Array.isArray(products) ? products : []).reduce((total, product) => {
-        if (!product || product.deleted_at || product.deletedAt || product === aggregateProduct || !isPhoneFilmProduct(product)) return total;
+        if (!product || !isOfflineProduct(product) || product.deleted_at || product.deletedAt || product === aggregateProduct || !isPhoneFilmProduct(product)) return total;
         return total + Math.max(0, Number(product.stock) || 0);
       }, 0);
     }
@@ -9657,7 +9779,7 @@
     function productAtlasProducts(predicate) {
       const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: "base" });
       return [...state.products]
-        .filter(predicate)
+        .filter((product) => isOfflineProduct(product) && predicate(product))
         .sort((a, b) => collator.compare(
           productItemCode(a) || productName(a),
           productItemCode(b) || productName(b)
@@ -9864,6 +9986,28 @@
       storageSet(key, JSON.stringify(value));
     }
 
+    function normalizeProductSalesChannel(value, product = {}) {
+      const channel = String(value || product?.sales_channel || "").trim().toLowerCase();
+      if (channel === "online" || channel === "offline") return channel;
+      return "offline";
+    }
+
+    function productSalesChannel(product) {
+      return normalizeProductSalesChannel(product?.salesChannel, product);
+    }
+
+    function isOnlineProduct(product) {
+      return productSalesChannel(product) === "online";
+    }
+
+    function isOfflineProduct(product) {
+      return productSalesChannel(product) === "offline";
+    }
+
+    function isStorefrontProduct(product) {
+      return isOnlineProduct(product) && Boolean(product?.published);
+    }
+
     function publicProductSnapshot(product) {
       const {
         costPerItem,
@@ -9875,7 +10019,10 @@
         sourceAttributes,
         ...publicProduct
       } = product || {};
-      return publicProduct;
+      return {
+        ...publicProduct,
+        salesChannel: normalizeProductSalesChannel(publicProduct.salesChannel, publicProduct)
+      };
     }
 
     function persistProducts() {
@@ -9906,7 +10053,7 @@
     }
 
     function available(product) {
-      return product.published && Number(product.stock) > 0;
+      return isStorefrontProduct(product) && Number(product.stock) > 0;
     }
 
     function formatPrice(value) {
@@ -10351,7 +10498,7 @@
     function renderProductDetail() {
       const detail = $("#productDetail");
       const content = $("#productDetailContent");
-      const product = state.products.find((item) => item.id === state.activeProductId && item.published);
+      const product = state.products.find((item) => item.id === state.activeProductId && isStorefrontProduct(item));
       if (!detail || !content || !product) return;
 
       const images = productImages(product);
@@ -10444,7 +10591,7 @@
 
     async function loadStorefrontProductDetail(productId) {
       if (!db || state.profile?.is_admin || !productId) return;
-      const product = state.products.find((item) => item.id === productId && item.published);
+      const product = state.products.find((item) => item.id === productId && isStorefrontProduct(item));
       if (!product || state.detailLoadedProductIds.has(productId)) return;
 
       state.detailLoading = true;
@@ -10479,7 +10626,7 @@
     }
 
     function showProductDetail(id, updateHash = true) {
-      const product = state.products.find((item) => item.id === id && item.published);
+      const product = state.products.find((item) => item.id === id && isStorefrontProduct(item));
       if (!product) return false;
 
       const detail = $("#productDetail");
@@ -10587,7 +10734,7 @@
 
     function categories() {
       const activeCategories = new Set(
-        state.products.filter((product) => product.published).map(productCategoryKey)
+        state.products.filter(isStorefrontProduct).map(productCategoryKey)
       );
       const ordered = storefrontCategories
         .filter((category) => activeCategories.has(category.key))
@@ -10598,7 +10745,7 @@
 
     function visibleProducts() {
       const filtered = state.products.filter((product) => {
-        if (!product.published) return false;
+        if (!isStorefrontProduct(product)) return false;
         return state.category === "All" || productCategoryKey(product) === state.category;
       });
       return filtered.sort((a, b) => {
@@ -10644,7 +10791,7 @@
         const definition = storefrontCategories.find((item) => item.key === category);
         const icon = category === "All" ? "layout-grid" : (definition?.icon || "package");
         const count = state.products.filter((product) => (
-          product.published && (category === "All" || productCategoryKey(product) === category)
+          isStorefrontProduct(product) && (category === "All" || productCategoryKey(product) === category)
         )).length;
         const active = category === state.category;
         return `
@@ -11016,7 +11163,7 @@
       let data;
       let error;
       if (isAdmin) {
-        ({ data, error } = await db.from("products").select("id,title,title_en,title_zh,category,description,description_en,description_zh,price,compare_at_price,cost_per_item,stock,sales,published,image,images,vendor,sku,barcode,tags,source_url,source_currency,source_price,source_variants,source_attributes,deleted_at,deleted_was_published"));
+        ({ data, error } = await db.from("products").select("id,title,title_en,title_zh,category,description,description_en,description_zh,price,compare_at_price,cost_per_item,stock,sales,published,sales_channel,image,images,vendor,sku,barcode,tags,source_url,source_currency,source_price,source_variants,source_attributes,deleted_at,deleted_was_published"));
         if (error) {
           supportsRecycleBin = false;
           ({ data, error } = await db.from("products").select("id,title,category,description,price,compare_at_price,cost_per_item,stock,sales,published,image,images,vendor,sku,barcode,tags,source_url,source_currency,source_price,source_variants,source_attributes"));
@@ -11028,7 +11175,8 @@
         }
         if (error) {
           ({ data, error } = await db.from("products")
-            .select("id,title,category,description,price,compare_at_price,stock,published,image,images")
+            .select("id,title,category,description,price,compare_at_price,stock,published,sales_channel,image,images")
+            .eq("sales_channel", "online")
             .eq("published", true));
         }
       }
@@ -11057,6 +11205,7 @@
         const sourcePricing = calculateSourcePricing(sourcePrice, sourceCurrency);
         const importedCategory = remote.category || localProduct?.category || "";
         const visibleCategory = isCil && /^1688 Imports$/i.test(importedCategory) ? "" : importedCategory;
+        const salesChannel = normalizeProductSalesChannel(remote.sales_channel, isAdmin ? (localProduct || remote) : { sales_channel: "online" });
         const remoteProduct = {
           id: remote.id,
           experimentalCode: localProduct?.experimentalCode || "",
@@ -11079,8 +11228,9 @@
           stock: Number(remote.stock),
           sales: Number(remote.sales ?? localProduct?.sales ?? 0),
           published: Boolean(remote.published),
-          status: remote.published ? "active" : "draft",
-          onlineStore: Boolean(remote.published),
+          status: salesChannel === "offline" || remote.published ? "active" : "draft",
+          salesChannel,
+          onlineStore: salesChannel === "online" && Boolean(remote.published),
           image: remote.image ?? localProduct?.image ?? "",
           images: isAdmin && Array.isArray(remote.images) ? remote.images : [],
           vendor: isAdmin ? (remote.vendor || localProduct?.vendor || "Go Go Shop") : "",
@@ -12001,7 +12151,7 @@
     function renderSearch() {
       const query = $("#searchInput").value.trim().toLowerCase();
       const results = state.products
-        .filter((product) => product.published)
+        .filter(isStorefrontProduct)
         .filter((product) => !query || [productName(product), categoryName(productCategoryKey(product)), productDescription(product), productItemCode(product), product.sku, product.barcode].join(" ").toLowerCase().includes(query));
       $("#searchResults").innerHTML = results.map((product) => `
         <div class="result-item">
@@ -12838,7 +12988,8 @@
         cost_per_item: Math.max(0, Number(product.costPerItem) || 0),
         stock: Math.max(0, Number(product.stock) || 0),
         sales: Math.max(0, Number(product.sales) || 0),
-        published: Boolean(product.published),
+        published: isOnlineProduct(product) && Boolean(product.published),
+        sales_channel: productSalesChannel(product),
         image: product.image || "",
         images: Array.isArray(product.images) ? product.images : [],
         vendor: product.vendor || "",
@@ -12860,10 +13011,10 @@
 
     function productSaveErrorMessage(error) {
       const message = authErrorMessage(error);
-      if (/title_en|title_zh|description_en|description_zh|schema cache/i.test(message)) {
+      if (/title_en|title_zh|description_en|description_zh|sales_channel|schema cache/i.test(message)) {
         return state.lang === "zh"
-          ? "数据库尚未完成中英文字段升级，商品没有保存。当前输入内容已保留，请先执行数据库迁移。"
-          : "The bilingual product fields are not installed yet. Nothing was saved and your edits are still here.";
+          ? "数据库尚未完成商品字段升级，商品没有保存。当前输入内容已保留，请先执行数据库迁移。"
+          : "The product database upgrade is not installed yet. Nothing was saved and your edits are still here.";
       }
       if (/administrator session|jwt|not authenticated|permission|row-level security/i.test(message)) {
         return state.lang === "zh"
@@ -12880,7 +13031,7 @@
       const revenue = confirmedOrders.reduce((sum, order) => sum + Math.max(0, Number(order.total) || 0), 0);
       const units = confirmedOrders.reduce((sum, order) => sum + analyticsOrderItemCount(order), 0);
       const views = state.products.reduce((sum, product) => sum + Number(product.views || 0), 0);
-      const live = state.products.filter((product) => product.published).length;
+      const live = state.products.filter(isStorefrontProduct).length;
       return { revenue, units, views, live, orderCount: confirmedOrders.length };
     }
 
@@ -13185,7 +13336,7 @@
 
     function procurementCategoryStats(definition, orders, days, coverWeeks) {
       const products = state.products
-        .filter((product) => phoneProcurementCategory(product) === definition.key)
+        .filter((product) => isOfflineProduct(product) && phoneProcurementCategory(product) === definition.key)
         .map((product) => procurementProductStats(product, orders, days, coverWeeks));
       return products.reduce((totals, item) => {
         totals.stock += item.stock;
@@ -13373,17 +13524,19 @@
 
     function renderInventoryStatus() {
       const isChinese = state.lang === "zh";
+      const offlineProducts = state.products.filter(isOfflineProduct);
+      const onlineProducts = state.products.filter(isOnlineProduct);
       const total = state.products.length;
-      const inStock = state.products.filter((product) => Number(product.stock) > 0).length;
-      const soldOut = state.products.filter((product) => Number(product.stock) <= 0).length;
-      const live = state.products.filter((product) => product.published).length;
+      const inStock = offlineProducts.filter((product) => Number(product.stock) > 0).length;
+      const soldOut = offlineProducts.filter((product) => Number(product.stock) <= 0).length;
+      const live = onlineProducts.filter((product) => product.published).length;
       const width = (value) => total > 0 ? (value / total) * 100 : 0;
       $("#overviewInventoryTitle").textContent = isChinese ? "库存状态" : "Inventory status";
       $("#inventoryStatus").innerHTML = `
         <div class="bar-chart">
           <div class="bar-row"><span>${isChinese ? "已上架" : "Published"}</span><div class="bar-track"><div class="bar-fill" style="width:${width(live)}%;min-width:${live > 0 ? "3px" : "0"}"></div></div><strong>${live}</strong></div>
-          <div class="bar-row"><span>${isChinese ? "有库存商品" : "In stock"}</span><div class="bar-track"><div class="bar-fill" style="width:${width(inStock)}%;min-width:${inStock > 0 ? "3px" : "0"}"></div></div><strong>${inStock}</strong></div>
-          <div class="bar-row"><span>${isChinese ? "售罄商品" : "Sold out"}</span><div class="bar-track"><div class="bar-fill" style="width:${width(soldOut)}%;min-width:${soldOut > 0 ? "3px" : "0"}"></div></div><strong>${soldOut}</strong></div>
+          <div class="bar-row"><span>${isChinese ? "线下有库存" : "Offline in stock"}</span><div class="bar-track"><div class="bar-fill" style="width:${width(inStock)}%;min-width:${inStock > 0 ? "3px" : "0"}"></div></div><strong>${inStock}</strong></div>
+          <div class="bar-row"><span>${isChinese ? "线下售罄" : "Offline sold out"}</span><div class="bar-track"><div class="bar-fill" style="width:${width(soldOut)}%;min-width:${soldOut > 0 ? "3px" : "0"}"></div></div><strong>${soldOut}</strong></div>
         </div>
       `;
     }
@@ -13437,7 +13590,8 @@
         ? state.adminProductCategory
         : "All";
       const categoryProducts = state.products.filter((product) => (
-        category === "All" || productCategoryKey(product) === category
+        productSalesChannel(product) === state.adminProductChannel
+        && (category === "All" || productCategoryKey(product) === category)
       ));
       if (!query) return categoryProducts;
       const terms = query.split(/\s+/).filter(Boolean);
@@ -13479,10 +13633,10 @@
       }, { units: 0, cost: 0, retail: 0 });
     }
 
-    function renderProductInventorySummary() {
+    function renderProductInventorySummary(products = state.products) {
       const summary = $("#adminProductInventorySummary");
       if (!summary) return;
-      const totals = productInventoryValuation();
+      const totals = productInventoryValuation(products);
       const labels = state.lang === "zh"
         ? ["剩余库存", "库存成本价值", "预计零售价值"]
         : ["Units in stock", "Inventory cost value", "Retail value"];
@@ -13503,22 +13657,32 @@
     function renderAdminProducts() {
       const searchInput = $("#adminProductSearch");
       if (searchInput && searchInput.value !== state.adminProductSearch) searchInput.value = state.adminProductSearch;
+      const channel = state.adminProductChannel === "online" ? "online" : "offline";
+      state.adminProductChannel = channel;
+      const channelProducts = state.products.filter((product) => productSalesChannel(product) === channel);
+      $$('[data-admin-product-channel]').forEach((button) => {
+        const active = button.dataset.adminProductChannel === channel;
+        button.classList.toggle("active", active);
+        button.setAttribute("aria-selected", String(active));
+      });
+      const hideAllButton = $("[data-hide-all-products]");
+      if (hideAllButton) hideAllButton.hidden = channel !== "online";
       const query = normalizeAdminProductSearch(state.adminProductSearch);
       const category = renderAdminProductCategoryFilter();
       const categoryActive = category !== "All";
       const products = adminProductSearchResults();
       $("#adminProductCount").textContent = query || categoryActive
-        ? `${products.length} of ${state.products.length} products`
-        : `${state.products.length} products`;
+        ? `${products.length} of ${channelProducts.length} ${channel === "offline" ? "offline" : "online"} products`
+        : `${channelProducts.length} ${channel === "offline" ? "offline" : "online"} products`;
       const searchStatus = $("#adminProductSearchStatus");
       if (searchStatus) searchStatus.textContent = query
         ? `${products.length} matching products`
         : categoryActive
           ? `${products.length} products in ${categoryName(category)}`
-        : `${state.products.length} products`;
+        : `${channelProducts.length} ${channel} products`;
       const clearSearch = $("[data-clear-admin-product-search]");
       if (clearSearch) clearSearch.hidden = !query;
-      renderProductInventorySummary();
+      renderProductInventorySummary(channelProducts);
       $("#adminTrashCount").textContent = String(state.deletedProducts.length);
       const trashToggle = $("[data-toggle-product-trash]");
       const trashPanel = $("[data-product-trash-panel]");
@@ -13528,9 +13692,9 @@
         ? `No products match “${escapeHtml(state.adminProductSearch.trim())}”`
         : categoryActive
           ? `No products in ${escapeHtml(categoryName(category))}`
-          : "No active products";
+          : channel === "offline" ? "No products in Go Go Shop" : "No online store products";
       $("#adminProductRows").innerHTML = products.map((product) => `
-        <article class="admin-product-item ${product.published ? "" : "is-offline-only"}" data-edit-product-row="${escapeHtml(product.id)}" role="button" tabindex="0" aria-label="Edit ${escapeHtml(product.title)}">
+        <article class="admin-product-item ${channel === "online" && !product.published ? "is-offline-only" : ""}" data-edit-product-row="${escapeHtml(product.id)}" role="button" tabindex="0" aria-label="Edit ${escapeHtml(product.title)}">
           <img src="${escapeHtml(imageSource(product.image) || PRODUCT_IMAGE_FALLBACK)}" alt="${escapeHtml(product.title)}" loading="eager" decoding="async">
           <div class="admin-product-summary">
             <strong>${escapeHtml(product.title)}</strong>
@@ -13540,12 +13704,12 @@
           <div class="admin-product-meta">
             <span>${formatPrice(product.price)}</span>
             <span>Stock ${Number(product.stock) || 0}</span>
-            <span class="status ${product.published ? "live" : "draft"}">${product.published ? "Live" : "Offline only"}</span>
+            <span class="status ${product.published ? "live" : "draft"}">${channel === "offline" ? "In-store" : product.published ? "Online" : "Online draft"}</span>
           </div>
           <div class="row-actions">
             <button class="action-button" type="button" data-open-product-label="${escapeHtml(product.id)}" aria-label="打印 ${escapeHtml(product.title)} Label" title="打印 Label"><i data-lucide="printer"></i></button>
-            <button class="action-button ${product.published ? "" : "offline"}" type="button" data-toggle-product-online="${escapeHtml(product.id)}" aria-label="${product.published ? "Hide" : "Show"} ${escapeHtml(product.title)} ${product.published ? "from online store" : "in online store"}" title="${product.published ? "隐藏，仅线下销售" : "重新显示在网店"}"><i data-lucide="${product.published ? "eye-off" : "eye"}"></i></button>
-            <button class="action-button ${product.featured ? "pinned" : ""}" type="button" data-toggle-featured="${escapeHtml(product.id)}" aria-label="${product.featured ? "Unpin" : "Pin"} ${escapeHtml(product.title)}" aria-pressed="${Boolean(product.featured)}" title="${product.featured ? "取消首页置顶" : "置顶到首页"}"><i data-lucide="${product.featured ? "pin-off" : "pin"}"></i></button>
+            ${channel === "online" ? `<button class="action-button ${product.published ? "" : "offline"}" type="button" data-toggle-product-online="${escapeHtml(product.id)}" aria-label="${product.published ? "Hide" : "Show"} ${escapeHtml(product.title)} ${product.published ? "from online store" : "in online store"}" title="${product.published ? "从公开网店下架" : "上架到公开网店"}"><i data-lucide="${product.published ? "eye-off" : "eye"}"></i></button>` : ""}
+            ${channel === "online" ? `<button class="action-button ${product.featured ? "pinned" : ""}" type="button" data-toggle-featured="${escapeHtml(product.id)}" aria-label="${product.featured ? "Unpin" : "Pin"} ${escapeHtml(product.title)}" aria-pressed="${Boolean(product.featured)}" title="${product.featured ? "取消首页置顶" : "置顶到首页"}"><i data-lucide="${product.featured ? "pin-off" : "pin"}"></i></button>` : ""}
             <button class="action-button" type="button" data-delete-product="${escapeHtml(product.id)}" aria-label="Delete ${escapeHtml(product.title)}"><i data-lucide="trash-2"></i></button>
           </div>
         </article>
@@ -13560,7 +13724,7 @@
           <div class="admin-product-meta">
             <span>${formatPrice(product.price)}</span>
             <span>库存 ${Number(product.stock) || 0}</span>
-            <span class="status ${product.restorePublished ? "live" : "draft"}">${product.restorePublished ? "原为上架" : "原为草稿"}</span>
+            <span class="status ${product.restorePublished ? "live" : "draft"}">${productSalesChannel(product) === "offline" ? "原为线下商品" : product.restorePublished ? "原为网上上架" : "原为网上草稿"}</span>
           </div>
           <div class="row-actions">
             <button class="action-button" type="button" data-restore-product="${escapeHtml(product.id)}" aria-label="恢复 ${escapeHtml(product.title)}" title="恢复商品"><i data-lucide="rotate-ccw"></i></button>
@@ -13664,7 +13828,7 @@
       const design = effectiveDesign();
       const heroBackground = design.heroImage ? `url("${escapeHtml(design.heroImage)}")` : "linear-gradient(135deg, #4d9298, #d88a76)";
       const previewProducts = state.products
-        .filter((product) => product.published)
+        .filter(isStorefrontProduct)
         .sort((a, b) => Number(Boolean(b.featured)) - Number(Boolean(a.featured)))
         .slice(0, 4);
       const selectedClass = (section, blockId = null) => (
@@ -13853,6 +14017,7 @@
       fields.namedItem("sourcePriceCny").value = "0";
       fields.namedItem("sourceCurrency").value = "CNY";
       fields.namedItem("status").value = "active";
+      fields.namedItem("salesChannel").value = "offline";
       fields.namedItem("titleZh").value = "";
       fields.namedItem("descriptionZh").value = "";
       fields.namedItem("vendor").value = "Go Go Shop";
@@ -14337,7 +14502,21 @@
       if (!form) return;
       const fields = form.elements;
       const active = fields.namedItem("status").value === "active";
-      const published = active && fields.namedItem("onlineStore").checked;
+      const salesChannel = normalizeProductSalesChannel(fields.namedItem("salesChannel").value);
+      const online = salesChannel === "online";
+      const onlineStore = fields.namedItem("onlineStore");
+      const featured = fields.namedItem("featured");
+      if (!online) {
+        onlineStore.checked = false;
+        featured.checked = false;
+      }
+      onlineStore.disabled = !online;
+      featured.disabled = !online;
+      const channelHint = $("[data-product-channel-hint]", form);
+      if (channelHint) channelHint.textContent = online
+        ? "网上商品不会出现在拾光小铺扫码点单中。"
+        : "线下商品会自动从公开网页隐藏，只用于拾光小铺扫码点单。";
+      const published = online && active && onlineStore.checked;
       const status = $("[data-product-editor-status]");
       const sideStatus = $("[data-product-editor-side-status]");
       const labelButton = $("[data-print-product-label-editor]", form);
@@ -14360,7 +14539,9 @@
         ? fields.namedItem("titleZh").value.trim()
         : fields.namedItem("title").value.trim();
       $("[data-product-editor-title]").textContent = editorTitle || (fields.namedItem("id").value ? "编辑商品" : "添加商品");
-      const statusText = !active ? "草稿" : published ? "活跃" : fields.namedItem("onlineStore").checked ? "未发布" : "仅线下销售";
+      const statusText = online
+        ? (!active ? "网上草稿" : published ? "网上已上架" : "网上未发布")
+        : "线下销售";
       const statusClass = `status ${published ? "live" : "draft"}`;
       status.textContent = statusText;
       status.className = statusClass;
@@ -14597,8 +14778,9 @@
       fields.namedItem("images").value = (product.images || []).filter((image) => image && image !== product.image).join("\n");
       fields.namedItem("description").value = product.descriptionEn || localization?.description || cleanStorefrontDescription(product.description, product) || "";
       fields.namedItem("descriptionZh").value = product.descriptionZh || "";
-      fields.namedItem("status").value = product.published ? "active" : "draft";
-      fields.namedItem("onlineStore").checked = product.onlineStore ?? product.published;
+      fields.namedItem("status").value = isOfflineProduct(product) || product.published ? "active" : "draft";
+      fields.namedItem("salesChannel").value = productSalesChannel(product);
+      fields.namedItem("onlineStore").checked = isOnlineProduct(product) && Boolean(product.onlineStore ?? product.published);
       fields.namedItem("featured").checked = Boolean(product.featured);
       fields.namedItem("compareAtPrice").value = product.compareAtPrice || "";
       fields.namedItem("sku").value = product.sku || "";
@@ -14674,7 +14856,7 @@
     async function restoreProduct(id) {
       const product = state.deletedProducts.find((item) => item.id === id);
       if (!product) return;
-      const published = Boolean(product.restorePublished);
+      const published = isOnlineProduct(product) && Boolean(product.restorePublished);
       if (db && state.profile?.is_admin) {
         const { error } = await db.from("products").update({
           deleted_at: null,
@@ -14692,10 +14874,10 @@
         deletedAt: null,
         restorePublished: false,
         published,
-        onlineStore: published,
+        onlineStore: isOnlineProduct(product) && published,
         featured: Boolean(product.restoreFeatured),
         restoreFeatured: false,
-        status: published ? "active" : "draft"
+        status: isOfflineProduct(product) || published ? "active" : "draft"
       };
       state.deletedProducts = state.deletedProducts.filter((item) => item.id !== id);
       state.products = state.products.filter((item) => item.id !== id);
@@ -14779,7 +14961,7 @@
 
     async function setProductOnlineState(id, online) {
       const product = state.products.find((item) => item.id === id);
-      if (!product || Boolean(product.published) === Boolean(online)) return;
+      if (!product || !isOnlineProduct(product) || Boolean(product.published) === Boolean(online)) return;
       const button = $(`[data-toggle-product-online="${CSS.escape(String(id))}"]`);
       if (button) {
         button.disabled = true;
@@ -14814,13 +14996,13 @@
     }
 
     async function hideAllProductsFromStore() {
-      const onlineProducts = state.products.filter((product) => product.published);
+      const onlineProducts = state.products.filter((product) => isOnlineProduct(product) && product.published);
       if (!onlineProducts.length) {
         showToast(state.lang === "zh" ? "当前没有网店商品" : "No products are currently visible online");
         return;
       }
       const confirmed = window.confirm(state.lang === "zh"
-        ? `确定隐藏全部 ${onlineProducts.length} 个网店商品吗？\n\n商品资料、图片、库存和订单不会删除，之后可以逐个重新显示。`
+        ? `确定下架全部 ${onlineProducts.length} 个网上商品吗？\n\n商品资料、图片、库存和订单不会删除，商品仍保留在“网上商店”列表中。`
         : `Hide all ${onlineProducts.length} online products?\n\nProduct data, images, inventory and orders will be kept. You can show products again one by one.`);
       if (!confirmed) return;
       const button = $(`[data-hide-all-products]`);
@@ -14834,7 +15016,7 @@
           const { error } = await db.from("products").update({
             published: false,
             updated_at: updatedAt
-          }).eq("published", true);
+          }).eq("sales_channel", "online").eq("published", true);
           if (error) throw error;
         }
         state.products.forEach((product) => {
@@ -14845,7 +15027,7 @@
         });
         persistProducts();
         renderAll();
-        showToast(state.lang === "zh" ? `已隐藏 ${onlineProducts.length} 个商品，仅支持线下销售` : `${onlineProducts.length} products hidden; offline sales only`);
+        showToast(state.lang === "zh" ? `已下架 ${onlineProducts.length} 个网上商品` : `${onlineProducts.length} online products unpublished`);
       } catch (error) {
         showToast(authErrorMessage(error));
       } finally {
@@ -14883,7 +15065,8 @@
       }
       const id = data.id || `${(titleEn || titleZh).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}-${Date.now().toString(36)}`;
       const existing = state.products.find((product) => product.id === id);
-      const featured = form.featured.checked;
+      const salesChannel = normalizeProductSalesChannel(data.salesChannel);
+      const featured = salesChannel === "online" && form.featured.checked;
       const image = data.image.trim();
       const images = [...new Set([image, ...String(data.images || "").split(/\r?\n/).map((value) => value.trim()).filter(Boolean)])];
       const sourcePriceCny = Number(data.sourcePriceCny || 0);
@@ -14932,9 +15115,10 @@
         sourceVariants: existing?.sourceVariants || [],
         sourceAttributes: existing?.sourceAttributes || [],
         stock: Number(data.stock),
-        published: data.status === "active" && form.onlineStore.checked,
+        salesChannel,
+        published: salesChannel === "online" && data.status === "active" && form.onlineStore.checked,
         status: data.status,
-        onlineStore: form.onlineStore.checked,
+        onlineStore: salesChannel === "online" && form.onlineStore.checked,
         featured,
         featuredAt: featured ? (existing?.featured ? Number(existing.featuredAt || Date.now()) : Date.now()) : 0,
         taxable: form.taxable.checked,
@@ -14986,7 +15170,7 @@
     }
 
     function exportProducts() {
-      const headers = ["id", "title", "titleEn", "titleZh", "category", "description", "descriptionEn", "descriptionZh", "price", "compareAtPrice", "costPerItem", "sourcePriceCny", "sourceCurrency", "stock", "published", "featured", "sku", "barcode", "vendor", "tags", "image", "images", "sourceUrl"];
+      const headers = ["id", "title", "titleEn", "titleZh", "category", "description", "descriptionEn", "descriptionZh", "price", "compareAtPrice", "costPerItem", "sourcePriceCny", "sourceCurrency", "stock", "salesChannel", "published", "featured", "sku", "barcode", "vendor", "tags", "image", "images", "sourceUrl"];
       const rows = state.products.map((product) => headers.map((key) => `"${String(product[key] ?? "").replace(/"/g, '""')}"`).join(","));
       const blob = new Blob([[headers.join(","), ...rows].join("\n")], { type: "text/csv" });
       const url = URL.createObjectURL(blob);
@@ -15314,6 +15498,12 @@
       if (target.matches("[data-toggle-order-trash]")) toggleOrderTrash();
       if (target.matches("[data-close-order-trash]")) toggleOrderTrash(false);
       if (target.matches("[data-refresh-admin-data]")) loadAdminData();
+      if (target.matches("[data-admin-product-channel]")) {
+        state.adminProductChannel = target.dataset.adminProductChannel === "online" ? "online" : "offline";
+        state.adminProductCategory = "All";
+        renderAdminProducts();
+        return;
+      }
       if (target.matches("[data-open-product-tab], [data-new-product]")) openNewProductEditor();
       if (target.matches("[data-close-product-editor]")) closeProductEditor();
       if (target.matches("[data-clear-form]")) clearProductForm();

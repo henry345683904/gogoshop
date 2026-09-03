@@ -123,7 +123,9 @@ begin
   loop
     v_quantity := (v_item ->> 'quantity')::integer;
     select * into v_product from public.products
-      where id = v_item ->> 'product_id' and deleted_at is null
+      where id = v_item ->> 'product_id'
+        and sales_channel = 'offline'
+        and deleted_at is null
       for update;
     if not found then raise exception 'Product unavailable: %', v_item ->> 'product_id'; end if;
     if v_product.stock < v_quantity then raise exception 'Insufficient stock for %', v_product.title; end if;

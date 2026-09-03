@@ -263,7 +263,10 @@ begin
   loop
     v_quantity := (v_item ->> 'quantity')::integer;
     select * into v_product from public.products
-    where id = v_item ->> 'product_id' and published = true and deleted_at is null;
+    where id = v_item ->> 'product_id'
+      and sales_channel = 'online'
+      and published = true
+      and deleted_at is null;
     if not found then raise exception 'Product unavailable: %', v_item ->> 'product_id'; end if;
     if v_product.stock < v_quantity then raise exception 'Insufficient stock for %', v_product.title; end if;
     v_subtotal := v_subtotal + (v_product.price * v_quantity);

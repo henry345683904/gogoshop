@@ -17,6 +17,7 @@ returns table (
   compare_at_price numeric,
   stock integer,
   published boolean,
+  sales_channel text,
   image text,
   sku text,
   barcode text
@@ -36,11 +37,13 @@ as $$
     products.compare_at_price,
     products.stock,
     products.published,
+    products.sales_channel,
     products.image,
     products.sku,
     products.barcode
   from public.products
   where products.deleted_at is null
+    and products.sales_channel = 'online'
     and products.published = true
     and coalesce(products.tags, '') <> '__gogoshop_purged__'
   order by products.updated_at desc, products.id;
@@ -61,6 +64,7 @@ returns table (
   compare_at_price numeric,
   stock integer,
   published boolean,
+  sales_channel text,
   image text,
   images jsonb,
   sku text,
@@ -84,6 +88,7 @@ as $$
     products.compare_at_price,
     products.stock,
     products.published,
+    products.sales_channel,
     products.image,
     products.images,
     products.sku,
@@ -91,6 +96,7 @@ as $$
   from public.products
   where products.id = p_product_id
     and products.deleted_at is null
+    and products.sales_channel = 'online'
     and products.published = true
     and coalesce(products.tags, '') <> '__gogoshop_purged__';
 $$;

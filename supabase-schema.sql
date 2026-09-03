@@ -31,7 +31,8 @@ create table if not exists public.products (
   cost_per_item numeric(12,2) not null default 0 check (cost_per_item >= 0),
   stock integer not null default 0 check (stock >= 0),
   sales integer not null default 0 check (sales >= 0),
-  published boolean not null default true,
+  published boolean not null default false,
+  sales_channel text not null default 'offline',
   image text not null default '',
   images jsonb not null default '[]'::jsonb,
   vendor text not null default '',
@@ -69,6 +70,19 @@ alter table public.products add column if not exists source_variants jsonb not n
 alter table public.products add column if not exists source_attributes jsonb not null default '[]'::jsonb;
 alter table public.products add column if not exists deleted_at timestamptz;
 alter table public.products add column if not exists deleted_was_published boolean not null default false;
+alter table public.products add column if not exists sales_channel text not null default 'offline';
+alter table public.products alter column published set default false;
+update public.products
+set published = false,
+    updated_at = now()
+where sales_channel = 'offline'
+  and published = true;
+alter table public.products drop constraint if exists products_sales_channel_check;
+alter table public.products add constraint products_sales_channel_check
+  check (sales_channel in ('offline', 'online'));
+alter table public.products drop constraint if exists products_offline_not_published_check;
+alter table public.products add constraint products_offline_not_published_check
+  check (sales_channel = 'online' or published = false);
 
 alter table public.profiles add column if not exists customer_barcode text not null default '';
 update public.profiles
@@ -88,6 +102,7 @@ create table if not exists public.orders (
   points_awarded integer not null default 0 check (points_awarded >= 0),
   payment_provider text not null default 'manual' check (payment_provider in ('manual', 'stripe')),
   payment_status text not null default 'unpaid' check (payment_status in ('unpaid', 'pending', 'paid', 'failed', 'refunded')),
+  order_source text not null default 'online' check (order_source in ('online', 'pos')),
   stripe_checkout_session_id text,
   stripe_payment_intent_id text,
   paid_at timestamptz,
@@ -99,6 +114,10 @@ create table if not exists public.orders (
 );
 
 alter table public.orders add column if not exists order_note text not null default '';
+alter table public.orders add column if not exists order_source text not null default 'online';
+alter table public.orders drop constraint if exists orders_order_source_check;
+alter table public.orders add constraint orders_order_source_check
+  check (order_source in ('online', 'pos'));
 
 alter table public.orders add column if not exists payment_provider text not null default 'manual';
 alter table public.orders add column if not exists payment_status text not null default 'unpaid';
@@ -126,6 +145,33 @@ alter table public.order_items drop constraint if exists order_items_product_id_
 alter table public.order_items add constraint order_items_product_id_fkey
   foreign key (product_id) references public.products(id) on delete set null;
 
+create or replace function public.enforce_order_item_sales_channel()
+returns trigger
+language plpgsql
+set search_path = public
+as $$
+declare
+  v_order_source text;
+  v_sales_channel text;
+begin
+  if new.product_id is null then return new; end if;
+  select order_source into v_order_source from public.orders where id = new.order_id;
+  select sales_channel into v_sales_channel from public.products where id = new.product_id;
+  if v_order_source = 'pos' and v_sales_channel <> 'offline' then
+    raise exception 'Online products cannot be sold through the in-store POS';
+  end if;
+  if coalesce(v_order_source, 'online') <> 'pos' and v_sales_channel <> 'online' then
+    raise exception 'Offline products cannot be added to online orders';
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists enforce_order_item_sales_channel_trigger on public.order_items;
+create trigger enforce_order_item_sales_channel_trigger
+  before insert or update of order_id, product_id on public.order_items
+  for each row execute procedure public.enforce_order_item_sales_channel();
+
 delete from public.products where tags = '__gogoshop_purged__';
 
 create index if not exists orders_user_id_idx on public.orders(user_id, created_at desc);
@@ -136,6 +182,9 @@ create unique index if not exists orders_stripe_checkout_session_idx on public.o
 create index if not exists order_items_order_id_idx on public.order_items(order_id);
 create unique index if not exists order_items_order_product_idx on public.order_items(order_id, product_id);
 create index if not exists products_deleted_at_idx on public.products(deleted_at);
+create index if not exists products_sales_channel_idx
+  on public.products(sales_channel, published, updated_at desc)
+  where deleted_at is null;
 
 create or replace function public.handle_new_user()
 returns trigger
@@ -207,6 +256,7 @@ returns table (
   compare_at_price numeric,
   stock integer,
   published boolean,
+  sales_channel text,
   image text,
   images jsonb
 )
@@ -228,10 +278,12 @@ as $$
     products.compare_at_price,
     products.stock,
     products.published,
+    products.sales_channel,
     products.image,
     products.images
   from public.products
   where products.deleted_at is null
+    and products.sales_channel = 'online'
     and products.published = true
   order by products.updated_at desc, products.id;
 $$;
@@ -303,7 +355,10 @@ begin
   loop
     v_quantity := greatest(1, coalesce((v_item ->> 'quantity')::integer, 1));
     select * into v_product from public.products
-      where id = v_item ->> 'product_id' and published = true;
+      where id = v_item ->> 'product_id'
+        and sales_channel = 'online'
+        and published = true
+        and deleted_at is null;
     if not found then raise exception 'Product unavailable: %', v_item ->> 'product_id'; end if;
     if v_product.stock < v_quantity then raise exception 'Insufficient stock for %', v_product.title; end if;
     v_total := v_total + (v_product.price * v_quantity);
@@ -510,14 +565,14 @@ grant select on public.products to authenticated;
 grant insert, update, delete on public.products to authenticated;
 grant select on public.profiles, public.orders, public.order_items to authenticated;
 
-insert into public.products (id, title, price, stock, sales, published) values
-  ('blind-box', 'Blind Box', 12.99, 0, 31, true),
-  ('blind-box-1', 'Blind Box', 12.99, 0, 24, true),
-  ('key-chain', 'Key Chain', 9.99, 0, 18, true),
-  ('phone-case-3', 'Phone Case', 4.99, 44, 52, true),
-  ('phone-case-2', 'Phone Case', 9.99, 20, 29, true),
-  ('phone-case-1', 'Phone Case', 4.99, 35, 43, true),
-  ('phone-case', 'Phone Case', 4.99, 22, 37, true),
-  ('smart-glasses', 'Smart Glasses', 14.99, 13, 11, true),
-  ('soft-toy', 'Soft Toy', 14.99, 0, 15, true)
+insert into public.products (id, title, price, stock, sales, sales_channel, published) values
+  ('blind-box', 'Blind Box', 12.99, 0, 31, 'offline', false),
+  ('blind-box-1', 'Blind Box', 12.99, 0, 24, 'offline', false),
+  ('key-chain', 'Key Chain', 9.99, 0, 18, 'offline', false),
+  ('phone-case-3', 'Phone Case', 4.99, 44, 52, 'offline', false),
+  ('phone-case-2', 'Phone Case', 9.99, 20, 29, 'offline', false),
+  ('phone-case-1', 'Phone Case', 4.99, 35, 43, 'offline', false),
+  ('phone-case', 'Phone Case', 4.99, 22, 37, 'offline', false),
+  ('smart-glasses', 'Smart Glasses', 14.99, 13, 11, 'offline', false),
+  ('soft-toy', 'Soft Toy', 14.99, 0, 15, 'offline', false)
 on conflict (id) do nothing;
