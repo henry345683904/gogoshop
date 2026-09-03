@@ -2577,8 +2577,11 @@
     }
 
     .login-wrap[hidden],
-    .admin-shell[hidden] {
-      display: none;
+    .admin-shell[hidden],
+    [data-full-admin-only][hidden],
+    [data-full-admin-product-field][hidden],
+    [data-role-hidden] {
+      display: none !important;
     }
 
     .admin-shell {
@@ -7722,17 +7725,17 @@
 
     <div id="adminShell" class="admin-shell" hidden>
       <aside class="admin-sidebar">
-        <div class="admin-logo">Go Go Shop</div>
+        <div class="admin-logo" data-admin-logo>Go Go Shop</div>
         <nav class="admin-nav">
-          <button class="tab-button active" type="button" data-admin-tab="overview" aria-label="Overview" title="Overview"><i data-lucide="layout-dashboard"></i><span>Overview</span></button>
+          <button class="tab-button active" type="button" data-admin-tab="overview" data-full-admin-only aria-label="Overview" title="Overview"><i data-lucide="layout-dashboard"></i><span>Overview</span></button>
           <button class="tab-button" type="button" data-admin-tab="products" aria-label="Products" title="Products"><i data-lucide="package-plus"></i><span>Products</span></button>
-          <button class="tab-button" type="button" data-admin-tab="orders" aria-label="Orders" title="Orders"><i data-lucide="receipt-text"></i><span>Orders</span><span class="admin-order-badge" id="adminOrderBadge" hidden>0</span></button>
-          <a class="tab-button" href="./pos.html?from=admin&v=pos-20260902" target="_blank" rel="noopener" aria-label="扫码收银" title="扫码收银"><i data-lucide="scan-barcode"></i><span>扫码收银</span></a>
-          <button class="tab-button" type="button" data-admin-tab="customers" aria-label="Customers" title="Customers"><i data-lucide="users"></i><span>Customers</span></button>
-          <button class="tab-button" type="button" data-admin-tab="vouchers" aria-label="Vouchers" title="Vouchers"><i data-lucide="ticket-percent"></i><span>Vouchers</span></button>
-          <button class="tab-button" type="button" data-admin-tab="analytics" aria-label="Analytics" title="Analytics"><i data-lucide="chart-column"></i><span>Analytics</span></button>
-          <button class="tab-button" type="button" data-admin-tab="procurement" aria-label="Procurement" title="Procurement"><i data-lucide="clipboard-list"></i><span>Procurement</span></button>
-          <button class="tab-button" type="button" data-admin-tab="design" aria-label="Design" title="Design"><i data-lucide="paintbrush"></i><span>Design</span></button>
+          <button class="tab-button" type="button" data-admin-tab="orders" data-full-admin-only aria-label="Orders" title="Orders"><i data-lucide="receipt-text"></i><span>Orders</span><span class="admin-order-badge" id="adminOrderBadge" hidden>0</span></button>
+          <a class="tab-button" href="./pos.html?from=admin&v=pos-20260902" target="_blank" rel="noopener" data-full-admin-only aria-label="扫码收银" title="扫码收银"><i data-lucide="scan-barcode"></i><span>扫码收银</span></a>
+          <button class="tab-button" type="button" data-admin-tab="customers" data-full-admin-only aria-label="Customers" title="Customers"><i data-lucide="users"></i><span>Customers</span></button>
+          <button class="tab-button" type="button" data-admin-tab="vouchers" data-full-admin-only aria-label="Vouchers" title="Vouchers"><i data-lucide="ticket-percent"></i><span>Vouchers</span></button>
+          <button class="tab-button" type="button" data-admin-tab="analytics" data-full-admin-only aria-label="Analytics" title="Analytics"><i data-lucide="chart-column"></i><span>Analytics</span></button>
+          <button class="tab-button" type="button" data-admin-tab="procurement" data-full-admin-only aria-label="Procurement" title="Procurement"><i data-lucide="clipboard-list"></i><span>Procurement</span></button>
+          <button class="tab-button" type="button" data-admin-tab="design" data-full-admin-only aria-label="Design" title="Design"><i data-lucide="paintbrush"></i><span>Design</span></button>
           <button class="tab-button" type="button" data-back-store aria-label="Storefront" title="Storefront"><i data-lucide="store"></i><span>Store</span></button>
         </nav>
       </aside>
@@ -7744,14 +7747,14 @@
             <p id="adminPageSub">Products, inventory, orders and storefront signals.</p>
           </div>
           <div class="form-actions">
-            <button class="button ghost admin-notification-button" type="button" data-enable-order-notifications aria-label="Enable order notifications" title="Enable order notifications"><i data-lucide="bell"></i></button>
+            <button class="button ghost admin-notification-button" type="button" data-enable-order-notifications data-full-admin-only aria-label="Enable order notifications" title="Enable order notifications"><i data-lucide="bell"></i></button>
             <button class="button ghost" type="button" data-export-products><i data-lucide="download"></i> Export</button>
             <button class="button ghost" type="button" data-admin-logout><i data-lucide="log-out"></i> 退出</button>
             <button class="button" type="button" data-open-product-tab><i data-lucide="plus"></i> Add product</button>
           </div>
         </div>
 
-        <div class="admin-order-alert" id="adminOrderAlert" role="status" aria-live="polite" hidden>
+        <div class="admin-order-alert" id="adminOrderAlert" data-full-admin-only role="status" aria-live="polite" hidden>
           <div class="admin-order-alert-icon"><i data-lucide="bell-ring"></i></div>
           <div class="admin-order-alert-copy">
             <strong id="adminOrderAlertTitle">New order</strong>
@@ -7793,15 +7796,15 @@
               </div>
               <div class="form-actions">
                 <button class="button ghost" type="button" data-toggle-product-trash aria-expanded="false"><i data-lucide="recycle"></i> 回收站 <span id="adminTrashCount">0</span></button>
-                <button class="button ghost" type="button" data-print-phone-case-atlas title="打印手机壳图谱"><i data-lucide="book-open"></i> <span data-i18n="phoneCaseAtlas">手机壳图谱</span></button>
-                <button class="button ghost" type="button" data-print-keychain-atlas title="打印钥匙链图谱"><i data-lucide="key-round"></i> <span data-i18n="keychainAtlas">钥匙链图谱</span></button>
+                <button class="button ghost" type="button" data-print-phone-case-atlas data-full-admin-only title="打印手机壳图谱"><i data-lucide="book-open"></i> <span data-i18n="phoneCaseAtlas">手机壳图谱</span></button>
+                <button class="button ghost" type="button" data-print-keychain-atlas data-full-admin-only title="打印钥匙链图谱"><i data-lucide="key-round"></i> <span data-i18n="keychainAtlas">钥匙链图谱</span></button>
                 <button class="button ghost" type="button" data-hide-all-products title="下架所有网上商品"><i data-lucide="eye-off"></i> <span>一键下架全部</span></button>
                 <button class="button" type="button" data-new-product><i data-lucide="plus"></i> Add product</button>
               </div>
             </div>
             <div class="product-inventory-summary" id="adminProductInventorySummary" aria-label="Inventory valuation"></div>
             <div class="admin-product-channel-tabs" role="tablist" aria-label="商品销售渠道">
-              <button class="active" type="button" role="tab" data-admin-product-channel="offline" aria-selected="true">拾光小铺</button>
+              <button class="active" type="button" role="tab" data-admin-product-channel="offline" data-full-admin-only aria-selected="true">拾光小铺</button>
               <button type="button" role="tab" data-admin-product-channel="online" aria-selected="false">网上商店</button>
             </div>
             <div class="admin-product-search">
@@ -8361,7 +8364,7 @@
               <div class="shopify-card-head"><h3>定价</h3></div>
               <div class="form-row">
                 <label class="field">
-                  <span>售价 NZD（可手动修改；供应价变化时自动计算）</span>
+                  <span data-product-price-label>售价 NZD（可手动修改；供应价变化时自动计算）</span>
                   <input class="product-price-input" type="number" name="price" min="0" step="0.01" data-price-mode="manual" required>
                 </label>
                 <label class="field">
@@ -8369,7 +8372,7 @@
                   <input type="number" name="compareAtPrice" min="0" step="0.01">
                 </label>
               </div>
-              <div class="form-row">
+              <div class="form-row" data-full-admin-product-field>
                 <label class="field">
                   <span>单件成本 NZD（1688：供应价 ÷ 4；CIL：采购价 × 1.15）</span>
                   <input type="number" name="costPerItem" min="0" step="0.01">
@@ -8379,7 +8382,7 @@
                   <input type="number" name="sourcePriceCny" min="0" step="0.01">
                 </label>
               </div>
-              <label class="field">
+              <label class="field" data-full-admin-product-field>
                 <span>采购币种</span>
                 <select name="sourceCurrency">
                   <option value="CNY">1688 / 人民币（CNY）</option>
@@ -8439,7 +8442,7 @@
             <section class="shopify-editor-card">
               <div class="shopify-card-head"><h3>销售渠道</h3></div>
               <div class="product-sales-channel-options" role="radiogroup" aria-label="销售渠道">
-                <label class="product-sales-channel-option">
+                <label class="product-sales-channel-option" data-full-admin-only>
                   <input type="radio" name="salesChannel" value="offline" checked>
                   <strong>拾光小铺</strong>
                   <small>用于扫码点单，不显示在公开网页</small>
@@ -8478,11 +8481,11 @@
                 <span>商品类型</span>
                 <input type="text" name="productType" autocomplete="off">
               </label>
-              <label class="field">
+              <label class="field" data-full-admin-product-field>
                 <span>厂商</span>
                 <input type="text" name="vendor" autocomplete="off">
               </label>
-              <label class="field">
+              <label class="field" data-full-admin-product-field>
                 <span>商品来源链接</span>
                 <input type="url" name="sourceUrl" autocomplete="off">
               </label>
@@ -10008,6 +10011,77 @@
       return isOnlineProduct(product) && Boolean(product?.published);
     }
 
+    function profileAdminRole(profile = state.profile) {
+      if (profile?.is_admin === true) return "full_admin";
+      return String(profile?.admin_role || "customer").trim().toLowerCase();
+    }
+
+    function isFullAdmin() {
+      return state.profile?.is_admin === true;
+    }
+
+    function isOnlineManager() {
+      return profileAdminRole() === "online_manager" && state.profile?.is_admin !== true;
+    }
+
+    function isStaffProfile(profile) {
+      return profile?.is_admin === true || ["full_admin", "online_manager"].includes(String(profile?.admin_role || "").toLowerCase());
+    }
+
+    function canManageProducts() {
+      return isFullAdmin() || isOnlineManager();
+    }
+
+    function canManageProduct(product) {
+      return isFullAdmin() || (isOnlineManager() && isOnlineProduct(product));
+    }
+
+    function clearFullAdminState() {
+      state.adminOrders = [];
+      state.deletedOrders = [];
+      state.customers = [];
+      state.vouchers = [];
+      state.voucherAssignments = [];
+      state.adminOrdersLoaded = false;
+      state.adminOrdersLoading = false;
+      state.adminOrdersError = "";
+      state.latestOrderAlert = null;
+      state.unreadOrderIds = [];
+      state.productMedia = [];
+      state.productMediaLoaded = false;
+      state.productMediaError = "";
+    }
+
+    function applyAdminRoleUi() {
+      const onlineOnly = isOnlineManager();
+      $$('[data-full-admin-only], [data-full-admin-product-field]').forEach((element) => {
+        if (onlineOnly) element.setAttribute("data-role-hidden", "");
+        else element.removeAttribute("data-role-hidden");
+      });
+      const offlineChannel = $('[data-admin-product-channel="offline"]');
+      if (offlineChannel) offlineChannel.disabled = onlineOnly;
+      const form = $('[data-product-form]');
+      const offlineInput = form?.querySelector('[name="salesChannel"][value="offline"]');
+      const onlineInput = form?.querySelector('[name="salesChannel"][value="online"]');
+      if (offlineInput) offlineInput.disabled = onlineOnly;
+      $$('[data-admin-menu-link] [data-i18n="adminDashboard"]').forEach((label) => {
+        label.textContent = onlineOnly
+          ? (state.lang === "zh" ? "网上商店后台" : "Online Store Admin")
+          : t("adminDashboard");
+      });
+      const adminLogo = $('[data-admin-logo]');
+      if (adminLogo) adminLogo.textContent = onlineOnly ? "Go Go Shop Online" : "Go Go Shop";
+      const priceLabel = $('[data-product-price-label]');
+      if (priceLabel) priceLabel.textContent = onlineOnly
+        ? (state.lang === "zh" ? "售价 NZD（可手动修改）" : "Price NZD (editable)")
+        : "售价 NZD（可手动修改；供应价变化时自动计算）";
+      if (onlineOnly) {
+        state.adminProductChannel = "online";
+        if (state.adminTab !== "products") state.adminTab = "products";
+        if (onlineInput) onlineInput.checked = true;
+      }
+    }
+
     function publicProductSnapshot(product) {
       const {
         costPerItem,
@@ -10411,7 +10485,7 @@
     function usableProductImage(value) {
       const source = String(value || "").trim();
       if (!source || /^data:/i.test(source)) return false;
-      if (!state.profile?.is_admin && /(^|:\/\/)(cdn\.shopify\.com|.*supabase\.co\/storage)/i.test(source)) return false;
+      if (!canManageProducts() && /(^|:\/\/)(cdn\.shopify\.com|.*supabase\.co\/storage)/i.test(source)) return false;
       return true;
     }
 
@@ -10590,7 +10664,7 @@
     }
 
     async function loadStorefrontProductDetail(productId) {
-      if (!db || state.profile?.is_admin || !productId) return;
+      if (!db || canManageProducts() || !productId) return;
       const product = state.products.find((item) => item.id === productId && isStorefrontProduct(item));
       if (!product || state.detailLoadedProductIds.has(productId)) return;
 
@@ -11069,7 +11143,7 @@
     }
 
     function updateAdminMenuVisibility() {
-      const showAdminLink = Boolean(state.session?.user && state.profile?.is_admin === true);
+      const showAdminLink = Boolean(state.session?.user && canManageProducts());
       $$('[data-admin-menu-link]').forEach((adminMenuLink) => {
         adminMenuLink.hidden = !showAdminLink;
       });
@@ -11158,16 +11232,21 @@
 
     async function loadStoreInventory() {
       if (!db) return;
-      const isAdmin = state.profile?.is_admin === true;
-      let supportsRecycleBin = isAdmin;
+      const fullAdmin = isFullAdmin();
+      const productManager = canManageProducts();
+      let supportsRecycleBin = productManager;
       let data;
       let error;
-      if (isAdmin) {
+      if (fullAdmin) {
         ({ data, error } = await db.from("products").select("id,title,title_en,title_zh,category,description,description_en,description_zh,price,compare_at_price,cost_per_item,stock,sales,published,sales_channel,image,images,vendor,sku,barcode,tags,source_url,source_currency,source_price,source_variants,source_attributes,deleted_at,deleted_was_published"));
         if (error) {
           supportsRecycleBin = false;
           ({ data, error } = await db.from("products").select("id,title,category,description,price,compare_at_price,cost_per_item,stock,sales,published,image,images,vendor,sku,barcode,tags,source_url,source_currency,source_price,source_variants,source_attributes"));
         }
+      } else if (isOnlineManager()) {
+        ({ data, error } = await db.from("products")
+          .select("id,title,title_en,title_zh,category,description,description_en,description_zh,price,compare_at_price,stock,sales,published,sales_channel,image,images,sku,barcode,tags,deleted_at,deleted_was_published")
+          .eq("sales_channel", "online"));
       } else {
         ({ data, error } = await db.rpc("get_storefront_catalog"));
         if (error) {
@@ -11182,9 +11261,9 @@
       }
       if (error) return;
       const remoteProducts = data.filter((product) => String(product.tags || "").trim() !== PURGED_PRODUCT_TAG);
-      if (isAdmin) await syncPhoneFilmAggregateStock(remoteProducts);
+      if (fullAdmin) await syncPhoneFilmAggregateStock(remoteProducts);
       const localProducts = [...state.products, ...state.deletedProducts];
-      const remoteProductIds = new Set(remoteProducts.filter((product) => !isAdmin || !product.deleted_at).map((product) => product.id));
+      const remoteProductIds = new Set(remoteProducts.filter((product) => !productManager || !product.deleted_at).map((product) => product.id));
       state.products = state.products.filter((product) => remoteProductIds.has(product.id));
       const cartSize = state.cart.length;
       state.cart = state.cart.filter((line) => remoteProductIds.has(line.id));
@@ -11205,24 +11284,24 @@
         const sourcePricing = calculateSourcePricing(sourcePrice, sourceCurrency);
         const importedCategory = remote.category || localProduct?.category || "";
         const visibleCategory = isCil && /^1688 Imports$/i.test(importedCategory) ? "" : importedCategory;
-        const salesChannel = normalizeProductSalesChannel(remote.sales_channel, isAdmin ? (localProduct || remote) : { sales_channel: "online" });
+        const salesChannel = normalizeProductSalesChannel(remote.sales_channel, productManager ? (localProduct || remote) : { sales_channel: "online" });
         const remoteProduct = {
           id: remote.id,
           experimentalCode: localProduct?.experimentalCode || "",
           handle: remote.id,
           title: remote.title,
-          titleEn: isAdmin ? (remote.title_en ?? localProduct?.titleEn ?? remote.title ?? "") : (remote.title_en ?? remote.title ?? ""),
+          titleEn: productManager ? (remote.title_en ?? localProduct?.titleEn ?? remote.title ?? "") : (remote.title_en ?? remote.title ?? ""),
           titleZh: remote.title_zh ?? localProduct?.titleZh ?? "",
           category: visibleCategory,
           productType: isCil && /^1688 Imports$/i.test(remote.category || localProduct?.productType || localProduct?.category || "")
             ? ""
             : remote.category || localProduct?.productType || localProduct?.category || "",
-          description: remote.description ?? (isAdmin ? localProduct?.description : "") ?? "",
+          description: remote.description ?? (productManager ? localProduct?.description : "") ?? "",
           descriptionEn: remote.description_en ?? localProduct?.descriptionEn ?? "",
           descriptionZh: remote.description_zh ?? localProduct?.descriptionZh ?? "",
           price: Number(remote.price),
           compareAtPrice: Number(remote.compare_at_price || 0),
-          costPerItem: isAdmin
+          costPerItem: fullAdmin
             ? (sourcePricing?.cost ?? Number(remote.cost_per_item || 0))
             : 0,
           stock: Number(remote.stock),
@@ -11232,18 +11311,18 @@
           salesChannel,
           onlineStore: salesChannel === "online" && Boolean(remote.published),
           image: remote.image ?? localProduct?.image ?? "",
-          images: isAdmin && Array.isArray(remote.images) ? remote.images : [],
-          vendor: isAdmin ? (remote.vendor || localProduct?.vendor || "Go Go Shop") : "",
-          sku: remote.sku ?? (isAdmin ? localProduct?.sku ?? "" : ""),
-          barcode: remote.barcode ?? (isAdmin ? localProduct?.barcode ?? "" : ""),
-          tags: isAdmin ? (remote.tags ?? localProduct?.tags ?? "") : "",
-          sourceUrl: isAdmin ? (remote.source_url ?? localProduct?.sourceUrl ?? "") : "",
-          sourceCurrency: isAdmin ? sourceCurrency : "",
-          sourcePriceCny: isAdmin ? sourcePrice : 0,
-          sourceVariants: isAdmin && Array.isArray(remote.source_variants) ? remote.source_variants : (isAdmin ? (localProduct?.sourceVariants || []) : []),
-          sourceAttributes: isAdmin && Array.isArray(remote.source_attributes) ? remote.source_attributes : (isAdmin ? (localProduct?.sourceAttributes || []) : []),
-          deletedAt: isAdmin && supportsRecycleBin ? (remote.deleted_at || null) : null,
-          restorePublished: isAdmin && supportsRecycleBin ? Boolean(remote.deleted_was_published) : false,
+          images: productManager && Array.isArray(remote.images) ? remote.images : [],
+          vendor: fullAdmin ? (remote.vendor || localProduct?.vendor || "Go Go Shop") : "",
+          sku: remote.sku ?? (productManager ? localProduct?.sku ?? "" : ""),
+          barcode: remote.barcode ?? (productManager ? localProduct?.barcode ?? "" : ""),
+          tags: productManager ? (remote.tags ?? localProduct?.tags ?? "") : "",
+          sourceUrl: fullAdmin ? (remote.source_url ?? localProduct?.sourceUrl ?? "") : "",
+          sourceCurrency: fullAdmin ? sourceCurrency : "",
+          sourcePriceCny: fullAdmin ? sourcePrice : 0,
+          sourceVariants: fullAdmin && Array.isArray(remote.source_variants) ? remote.source_variants : (fullAdmin ? (localProduct?.sourceVariants || []) : []),
+          sourceAttributes: fullAdmin && Array.isArray(remote.source_attributes) ? remote.source_attributes : (fullAdmin ? (localProduct?.sourceAttributes || []) : []),
+          deletedAt: productManager && supportsRecycleBin ? (remote.deleted_at || null) : null,
+          restorePublished: productManager && supportsRecycleBin ? Boolean(remote.deleted_was_published) : false,
           restoreFeatured: Boolean(localProduct?.restoreFeatured),
           taxable: true,
           trackQuantity: true,
@@ -11251,7 +11330,7 @@
           views: Number(localProduct?.views || 0)
         };
         if (remoteProduct.deletedAt) {
-          if (isAdmin) state.deletedProducts.push(remoteProduct);
+          if (productManager) state.deletedProducts.push(remoteProduct);
           return;
         }
         const product = state.products.find((item) => item.id === remote.id);
@@ -11277,9 +11356,9 @@
         return;
       }
       const userId = state.session.user.id;
-      let profilePromise = db.from("profiles").select("id,email,full_name,points,total_spent,is_admin,customer_barcode,created_at").eq("id", userId).single();
+      let profilePromise = db.from("profiles").select("id,email,full_name,points,total_spent,is_admin,admin_role,customer_barcode,created_at").eq("id", userId).single();
       profilePromise = profilePromise.then((result) => {
-        if (!result.error || !/customer_barcode/i.test(result.error.message || "")) return result;
+        if (!result.error || !/admin_role|customer_barcode/i.test(result.error.message || "")) return result;
         return db.from("profiles").select("id,email,full_name,points,total_spent,is_admin,created_at").eq("id", userId).single();
       });
       const voucherPaymentFields = "id,order_number,status,order_note,subtotal,discount_amount,voucher_code,total,item_count,points_awarded,payment_provider,payment_status,paid_at,created_at,confirmed_at,order_items(product_id,product_title,unit_price,quantity,item_note)";
@@ -11730,16 +11809,20 @@
         openPanel("account");
       }
       await loadCustomerData();
-      if (state.profile?.is_admin) {
+      applyAdminRoleUi();
+      if (canManageProducts()) {
         await loadStoreInventory();
+      }
+      if (isFullAdmin()) {
         await subscribeToAdminOrderRealtime();
         if (pendingNotificationOrderId && isAdminRoute()) openAdminOrderFromNotification(pendingNotificationOrderId);
-      } else if (state.deletedProducts.length) {
-        await stopAdminOrderRealtime();
-        state.deletedProducts = [];
-        persistDeletedProducts();
       } else {
         await stopAdminOrderRealtime();
+        clearFullAdminState();
+        if (!canManageProducts() && state.deletedProducts.length) {
+          state.deletedProducts = [];
+          persistDeletedProducts();
+        }
       }
       state.authReady = true;
       applyStoreDesign();
@@ -11754,7 +11837,7 @@
       }
       const { data } = await db.auth.getSession();
       await handleAuthSession(data.session);
-      if (!state.profile?.is_admin) await loadStoreInventory();
+      if (!canManageProducts()) await loadStoreInventory();
       db.auth.onAuthStateChange((_event, session) => {
         window.setTimeout(() => handleAuthSession(session), 0);
       });
@@ -12197,7 +12280,7 @@
         return;
       }
       await handleAuthSession(data.session);
-      if (!state.profile?.is_admin) {
+      if (!isFullAdmin()) {
         message.hidden = false;
         message.textContent = "此账户没有管理员权限";
         return;
@@ -12213,12 +12296,16 @@
       $("#storeView").style.display = "none";
       $("#admin").style.display = "";
       $("#admin").classList.add("active");
-      const unlocked = Boolean(state.profile?.is_admin);
+      const unlocked = canManageProducts();
       $("#loginScreen").hidden = unlocked;
       $("#adminShell").hidden = !unlocked;
+      applyAdminRoleUi();
       if (unlocked) {
-        loadAdminData();
-        subscribeToAdminOrderRealtime();
+        if (isOnlineManager()) setAdminTab("products");
+        else {
+          loadAdminData();
+          subscribeToAdminOrderRealtime();
+        }
       }
       renderAdmin();
       refreshIcons();
@@ -12275,6 +12362,8 @@
     }
 
     function setAdminTab(tab) {
+      if (!canManageProducts()) return;
+      if (isOnlineManager() && tab !== "products") tab = "products";
       state.adminTab = tab;
       if (tab === "orders") clearAdminOrderUnread();
       $$("[data-admin-tab]").forEach((button) => button.classList.toggle("active", button.dataset.adminTab === tab));
@@ -12293,17 +12382,20 @@
           : ["Procurement", "Phone case and screen protector stock, sales and replenishment suggestions."],
         design: ["Store design", "Build the home page with live section editing and responsive previews."]
       };
-      $("#adminPageTitle").textContent = titleMap[tab][0];
-      $("#adminPageSub").textContent = titleMap[tab][1];
+      const title = titleMap[tab] || titleMap.products;
+      $("#adminPageTitle").textContent = title[0];
+      $("#adminPageSub").textContent = isOnlineManager()
+        ? (state.lang === "zh" ? "仅管理网上商店商品。" : "Manage online store products only.")
+        : title[1];
       renderAdmin();
       refreshIcons();
     }
 
     async function loadAdminData() {
-      if (!db || !state.profile?.is_admin) return;
+      if (!db || !isFullAdmin()) return;
       state.adminOrdersLoading = true;
       state.adminOrdersError = "";
-      const customerPromise = db.from("profiles").select("id,email,full_name,points,total_spent,created_at,updated_at,is_admin").order("created_at", { ascending: false });
+      const customerPromise = db.from("profiles").select("id,email,full_name,points,total_spent,created_at,updated_at,is_admin,admin_role").order("created_at", { ascending: false });
       const voucherPromise = db.from("vouchers").select("*").order("created_at", { ascending: false });
       const voucherAssignmentPromise = db.from("customer_vouchers").select("id,voucher_id,user_id,source,redeemed_at,reserved_at,used_at,order_id,vouchers(code,name,active,starts_at,expires_at),profiles!customer_vouchers_user_id_fkey(email,full_name)").order("redeemed_at", { ascending: false });
       const voucherPaymentFields = "id,order_number,user_id,status,order_note,subtotal,discount_amount,voucher_code,total,item_count,points_awarded,payment_provider,payment_status,paid_at,created_at,confirmed_at,deleted_at,deleted_by,profiles!orders_user_id_fkey(email,full_name,customer_barcode,is_admin),order_items(product_id,product_title,quantity,unit_price,item_note)";
@@ -12577,14 +12669,14 @@
     function renderCustomers() {
       const target = $("#customerRows");
       if (!target) return;
-      $("#adminCustomerCount").textContent = `${state.customers.filter((customer) => !customer.is_admin).length} customer accounts`;
+      $("#adminCustomerCount").textContent = `${state.customers.filter((customer) => !isStaffProfile(customer)).length} customer accounts`;
       renderVipTierLegend();
       target.innerHTML = state.customers.length ? state.customers.map((customer) => {
         const stats = customerStats(customer);
         const vip = vipStatus(customer.total_spent);
         return `
           <tr class="customer-table-row" data-view-customer="${escapeHtml(customer.id)}">
-            <td><strong>${escapeHtml(customer.full_name || customer.email || "Customer")}</strong><div class="muted">${escapeHtml(customer.email || "")}</div>${customer.is_admin ? `<div class="status featured">Admin</div>` : ""}</td>
+            <td><strong>${escapeHtml(customer.full_name || customer.email || "Customer")}</strong><div class="muted">${escapeHtml(customer.email || "")}</div>${isStaffProfile(customer) ? `<div class="status featured">${customer.admin_role === "online_manager" ? "Online manager" : "Admin"}</div>` : ""}</td>
             <td>${vipBadge(vip)}</td>
             <td><strong>${stats.orders.length}</strong><div class="muted">${stats.confirmedOrders.length} confirmed</div></td>
             <td>${formatPrice(customer.total_spent)}</td>
@@ -12636,7 +12728,7 @@
       const voucherOptions = activeVouchers.map((voucher) => (
         `<option value="${escapeHtml(voucher.id)}">${escapeHtml(voucher.code)} · ${escapeHtml(voucher.name)} · ${escapeHtml(voucherValueLabel(voucher))}</option>`
       )).join("");
-      const issueForm = customer.is_admin ? "" : `
+      const issueForm = isStaffProfile(customer) ? "" : `
         <form class="customer-voucher-issue" data-voucher-issue-form data-customer-voucher-issue-form>
           <input type="hidden" name="userId" value="${escapeHtml(customer.id)}">
           <select name="voucherId" aria-label="Voucher" ${activeVouchers.length ? "required" : "disabled"}>
@@ -12765,7 +12857,7 @@
         .map((voucher) => `<option value="${voucher.id}">${escapeHtml(voucher.code)} · ${escapeHtml(voucher.name)}</option>`)
         .join("");
       customerSelect.innerHTML = state.customers
-        .filter((customer) => !customer.is_admin)
+        .filter((customer) => !isStaffProfile(customer))
         .map((customer) => `<option value="${customer.id}">${escapeHtml(customer.full_name || customer.email || "Customer")} · ${escapeHtml(customer.email || "")}</option>`)
         .join("");
       if ([...voucherSelect.options].some((option) => option.value === currentVoucher)) voucherSelect.value = currentVoucher;
@@ -12972,9 +13064,11 @@
 
     async function syncProductToSupabase(product) {
       if (!db) throw new Error("Database connection is unavailable");
-      if (!state.profile?.is_admin) throw new Error("Administrator session has expired");
+      if (!canManageProducts()) throw new Error("Administrator session has expired");
       if (!product) throw new Error("Product data is unavailable");
-      const { error } = await db.from("products").upsert({
+      if (!canManageProduct(product)) throw new Error("Online managers can manage online products only");
+      const salesChannel = isOnlineManager() ? "online" : productSalesChannel(product);
+      const payload = {
         id: product.id,
         title: product.title,
         category: product.category || "",
@@ -12985,26 +13079,29 @@
         description_zh: product.descriptionZh || "",
         price: Number(product.price),
         compare_at_price: Math.max(0, Number(product.compareAtPrice) || 0),
-        cost_per_item: Math.max(0, Number(product.costPerItem) || 0),
         stock: Math.max(0, Number(product.stock) || 0),
         sales: Math.max(0, Number(product.sales) || 0),
-        published: isOnlineProduct(product) && Boolean(product.published),
-        sales_channel: productSalesChannel(product),
+        published: salesChannel === "online" && Boolean(product.published),
+        sales_channel: salesChannel,
         image: product.image || "",
         images: Array.isArray(product.images) ? product.images : [],
-        vendor: product.vendor || "",
         sku: product.sku || "",
         barcode: product.barcode || "",
         tags: product.tags || "",
+        deleted_at: null,
+        deleted_was_published: false,
+        updated_at: new Date().toISOString()
+      };
+      if (isFullAdmin()) Object.assign(payload, {
+        cost_per_item: Math.max(0, Number(product.costPerItem) || 0),
+        vendor: product.vendor || "",
         source_url: product.sourceUrl || "",
         source_currency: product.sourceCurrency || "",
         source_price: Math.max(0, Number(product.sourcePriceCny) || 0),
         source_variants: Array.isArray(product.sourceVariants) ? product.sourceVariants : [],
-        source_attributes: Array.isArray(product.sourceAttributes) ? product.sourceAttributes : [],
-        deleted_at: null,
-        deleted_was_published: false,
-        updated_at: new Date().toISOString()
+        source_attributes: Array.isArray(product.sourceAttributes) ? product.sourceAttributes : []
       });
+      const { error } = await db.from("products").upsert(payload);
       if (error) throw error;
       return true;
     }
@@ -13637,14 +13734,19 @@
       const summary = $("#adminProductInventorySummary");
       if (!summary) return;
       const totals = productInventoryValuation(products);
-      const labels = state.lang === "zh"
-        ? ["剩余库存", "库存成本价值", "预计零售价值"]
-        : ["Units in stock", "Inventory cost value", "Retail value"];
-      const values = [
-        `${totals.units.toLocaleString(state.lang === "zh" ? "zh-CN" : "en-NZ")} ${state.lang === "zh" ? "件" : "units"}`,
-        formatPrice(totals.cost),
-        formatPrice(totals.retail)
-      ];
+      const labels = isOnlineManager()
+        ? (state.lang === "zh" ? ["剩余库存", "预计零售价值"] : ["Units in stock", "Retail value"])
+        : (state.lang === "zh" ? ["剩余库存", "库存成本价值", "预计零售价值"] : ["Units in stock", "Inventory cost value", "Retail value"]);
+      const values = isOnlineManager()
+        ? [
+            `${totals.units.toLocaleString(state.lang === "zh" ? "zh-CN" : "en-NZ")} ${state.lang === "zh" ? "件" : "units"}`,
+            formatPrice(totals.retail)
+          ]
+        : [
+            `${totals.units.toLocaleString(state.lang === "zh" ? "zh-CN" : "en-NZ")} ${state.lang === "zh" ? "件" : "units"}`,
+            formatPrice(totals.cost),
+            formatPrice(totals.retail)
+          ];
       summary.setAttribute("aria-label", state.lang === "zh" ? "库存价值" : "Inventory valuation");
       summary.innerHTML = labels.map((label, index) => `
         <div class="product-inventory-summary-item">
@@ -13655,6 +13757,8 @@
     }
 
     function renderAdminProducts() {
+      if (!canManageProducts()) return;
+      if (isOnlineManager()) state.adminProductChannel = "online";
       const searchInput = $("#adminProductSearch");
       if (searchInput && searchInput.value !== state.adminProductSearch) searchInput.value = state.adminProductSearch;
       const channel = state.adminProductChannel === "online" ? "online" : "offline";
@@ -13698,7 +13802,9 @@
           <img src="${escapeHtml(imageSource(product.image) || PRODUCT_IMAGE_FALLBACK)}" alt="${escapeHtml(product.title)}" loading="eager" decoding="async">
           <div class="admin-product-summary">
             <strong>${escapeHtml(product.title)}</strong>
-            <span>${product.featured ? "Pinned · " : ""}${escapeHtml([categoryName(productCategoryKey(product)), product.vendor, productSourcePriceText(product)].filter(Boolean).join(" · "))}</span>
+            <span>${product.featured ? "Pinned · " : ""}${escapeHtml((isFullAdmin()
+              ? [categoryName(productCategoryKey(product)), product.vendor, productSourcePriceText(product)]
+              : [categoryName(productCategoryKey(product))]).filter(Boolean).join(" · "))}</span>
             <span>货号 ${escapeHtml(productItemCode(product))}</span>
           </div>
           <div class="admin-product-meta">
@@ -13972,13 +14078,18 @@
 
     function renderAdmin() {
       if ($("#adminShell").hidden) return;
+      applyAdminRoleUi();
+      renderAdminProducts();
+      if (!isFullAdmin()) {
+        refreshIcons();
+        return;
+      }
       renderAdminOrderNotificationUi();
       renderMetrics("#metricGrid");
       renderSalesAnalytics();
       renderAdminProcurement();
       renderRevenueChart();
       renderInventoryStatus();
-      renderAdminProducts();
       renderAdminOrders();
       renderCustomers();
       renderAdminVouchers();
@@ -14017,11 +14128,11 @@
       fields.namedItem("sourcePriceCny").value = "0";
       fields.namedItem("sourceCurrency").value = "CNY";
       fields.namedItem("status").value = "active";
-      fields.namedItem("salesChannel").value = "offline";
+      fields.namedItem("salesChannel").value = isOnlineManager() ? "online" : "offline";
       fields.namedItem("titleZh").value = "";
       fields.namedItem("descriptionZh").value = "";
       fields.namedItem("vendor").value = "Go Go Shop";
-      fields.namedItem("onlineStore").checked = false;
+      fields.namedItem("onlineStore").checked = isOnlineManager();
       fields.namedItem("featured").checked = false;
       fields.namedItem("taxable").checked = true;
       fields.namedItem("trackQuantity").checked = true;
@@ -14034,6 +14145,7 @@
       $("#productFormTitle").textContent = "添加商品";
       resetProductBarcodeScanner();
       setProductEditorLanguage(state.lang);
+      applyAdminRoleUi();
       updateProductEditorPreview();
     }
 
@@ -14152,6 +14264,7 @@
         width: Math.max(0, Number(record?.width) || 0),
         height: Math.max(0, Number(record?.height) || 0),
         source: String(record?.source || "product"),
+        salesChannel: normalizeProductSalesChannel(record?.sales_channel),
         createdAt: record?.created_at || null,
         updatedAt: record?.updated_at || null
       };
@@ -14247,17 +14360,19 @@
     }
 
     async function loadProductMediaLibrary(force = false) {
-      if (!db || !state.profile?.is_admin || state.productMediaLoading || (state.productMediaLoaded && !force)) {
+      if (!db || !canManageProducts() || state.productMediaLoading || (state.productMediaLoaded && !force)) {
         renderProductMediaLibrary();
         return;
       }
       state.productMediaLoading = true;
       state.productMediaError = "";
       renderProductMediaLibrary();
-      const { data, error } = await db.from("product_media")
-        .select("id,url,storage_path,file_name,alt_text,mime_type,size_bytes,width,height,source,created_at,updated_at")
+      let query = db.from("product_media")
+        .select("id,url,storage_path,file_name,alt_text,mime_type,size_bytes,width,height,source,sales_channel,created_at,updated_at")
         .order("created_at", { ascending: false })
         .limit(1000);
+      if (isOnlineManager()) query = query.eq("sales_channel", "online");
+      const { data, error } = await query;
       state.productMediaLoading = false;
       if (error) {
         state.productMediaLoaded = false;
@@ -14329,7 +14444,8 @@
         .slice(0, 48) || "image";
       const id = crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
       const date = new Date();
-      return `products/${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, "0")}/${id}-${baseName}.${extension}`;
+      const root = isOnlineManager() ? "online-products" : "products";
+      return `${root}/${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, "0")}/${id}-${baseName}.${extension}`;
     }
 
     function resizeProductImageBlob(file) {
@@ -14368,7 +14484,7 @@
     async function uploadProductMediaFiles(files, options = {}) {
       const selectedFiles = [...(files || [])].filter((file) => /^image\/(jpeg|png|webp)$/i.test(file.type));
       if (!selectedFiles.length) return [];
-      if (!db || !state.profile?.is_admin) throw new Error(state.lang === "zh" ? "管理员登录已失效" : "Administrator session expired");
+      if (!db || !canManageProducts()) throw new Error(state.lang === "zh" ? "管理员登录已失效" : "Administrator session expired");
       state.productMediaLoading = true;
       state.productMediaError = "";
       renderProductMediaLibrary();
@@ -14394,8 +14510,9 @@
             size_bytes: optimized.blob.size,
             width: optimized.width,
             height: optimized.height,
-            source: "upload"
-          }).select("id,url,storage_path,file_name,alt_text,mime_type,size_bytes,width,height,source,created_at,updated_at").single();
+            source: "upload",
+            sales_channel: isOnlineManager() ? "online" : state.adminProductChannel
+          }).select("id,url,storage_path,file_name,alt_text,mime_type,size_bytes,width,height,source,sales_channel,created_at,updated_at").single();
           if (mediaError) {
             await db.storage.from(PRODUCT_MEDIA_BUCKET).remove([storagePath]);
             throw mediaError;
@@ -14418,12 +14535,14 @@
       }
     }
 
-    async function registerProductMediaUrls(urls) {
-      if (!db || !state.profile?.is_admin) return;
+    async function registerProductMediaUrls(urls, salesChannel = state.adminProductChannel) {
+      if (!db || !canManageProducts()) return;
+      const channel = isOnlineManager() ? "online" : normalizeProductSalesChannel(salesChannel);
       const records = [...new Set((urls || []).map((url) => String(url || "").trim()).filter((url) => url && !url.startsWith("data:")))].map((url) => ({
         url,
         file_name: productMediaFileName(url),
         source: "product",
+        sales_channel: channel,
         updated_at: new Date().toISOString()
       }));
       if (!records.length) return;
@@ -14559,6 +14678,7 @@
     }
 
     function openNewProductEditor() {
+      if (!canManageProducts()) return;
       setAdminTab("products");
       clearProductForm();
       openProductEditor();
@@ -14763,7 +14883,7 @@
 
     function editProduct(id) {
       const product = state.products.find((item) => item.id === id);
-      if (!product) return;
+      if (!product || !canManageProduct(product)) return;
       clearProductForm();
       const form = $("[data-product-form]");
       const fields = form.elements;
@@ -14818,11 +14938,11 @@
 
     async function deleteProduct(id) {
       const product = state.products.find((item) => item.id === id);
-      if (!product) return;
+      if (!product || !canManageProduct(product)) return;
       const confirmed = window.confirm(`确定将“${product.title}”移入回收站吗？\n\n商品会立即从商店隐藏，之后可以恢复。`);
       if (!confirmed) return;
       const deletedAt = new Date().toISOString();
-      if (db && state.profile?.is_admin) {
+      if (db && canManageProduct(product)) {
         const { error } = await db.from("products").update({
           deleted_at: deletedAt,
           deleted_was_published: Boolean(product.published),
@@ -14855,9 +14975,9 @@
 
     async function restoreProduct(id) {
       const product = state.deletedProducts.find((item) => item.id === id);
-      if (!product) return;
+      if (!product || !canManageProduct(product)) return;
       const published = isOnlineProduct(product) && Boolean(product.restorePublished);
-      if (db && state.profile?.is_admin) {
+      if (db && canManageProduct(product)) {
         const { error } = await db.from("products").update({
           deleted_at: null,
           deleted_was_published: false,
@@ -14890,14 +15010,14 @@
 
     async function permanentlyDeleteProduct(id) {
       const product = state.deletedProducts.find((item) => item.id === id);
-      if (!product) return;
+      if (!product || !canManageProduct(product)) return;
       const confirmed = window.confirm(`永久删除“${product.title}”？\n\n此操作无法撤销。`);
       if (!confirmed) return;
       const deleteButton = $$('[data-delete-product-permanently]').find((button) => button.dataset.deleteProductPermanently === id);
       if (deleteButton?.disabled) return;
       if (deleteButton) deleteButton.disabled = true;
       try {
-        if (db && state.profile?.is_admin) {
+        if (db && canManageProduct(product)) {
           const { data, error } = await db.from("products").delete().eq("id", id).select("id");
           if (error) {
             const isOrderReferenceError = /foreign key|constraint|23503/i.test(`${error.code || ""} ${error.message || ""}`);
@@ -14946,7 +15066,7 @@
         persistDeletedProducts();
         renderAdminProducts();
         refreshIcons();
-        if (db && state.profile?.is_admin) await loadStoreInventory();
+        if (db && canManageProducts()) await loadStoreInventory();
         showToast(state.lang === "zh" ? "商品已永久删除" : "Product permanently deleted");
       } finally {
         if (deleteButton?.isConnected) deleteButton.disabled = false;
@@ -14961,7 +15081,7 @@
 
     async function setProductOnlineState(id, online) {
       const product = state.products.find((item) => item.id === id);
-      if (!product || !isOnlineProduct(product) || Boolean(product.published) === Boolean(online)) return;
+      if (!product || !canManageProduct(product) || !isOnlineProduct(product) || Boolean(product.published) === Boolean(online)) return;
       const button = $(`[data-toggle-product-online="${CSS.escape(String(id))}"]`);
       if (button) {
         button.disabled = true;
@@ -14970,7 +15090,7 @@
       const published = Boolean(online);
       const updatedAt = new Date().toISOString();
       try {
-        if (db && state.profile?.is_admin) {
+        if (db && canManageProduct(product)) {
           const { error } = await db.from("products").update({
             published,
             updated_at: updatedAt
@@ -14996,6 +15116,7 @@
     }
 
     async function hideAllProductsFromStore() {
+      if (!canManageProducts()) return;
       const onlineProducts = state.products.filter((product) => isOnlineProduct(product) && product.published);
       if (!onlineProducts.length) {
         showToast(state.lang === "zh" ? "当前没有网店商品" : "No products are currently visible online");
@@ -15012,7 +15133,7 @@
       }
       const updatedAt = new Date().toISOString();
       try {
-        if (db && state.profile?.is_admin) {
+        if (db && canManageProducts()) {
           const { error } = await db.from("products").update({
             published: false,
             updated_at: updatedAt
@@ -15040,7 +15161,7 @@
 
     function toggleFeaturedProduct(id) {
       const product = state.products.find((item) => item.id === id);
-      if (!product) return;
+      if (!product || !canManageProduct(product) || !isOnlineProduct(product)) return;
       product.featured = !product.featured;
       product.featuredAt = product.featured ? Date.now() : 0;
       persistProducts();
@@ -15065,7 +15186,7 @@
       }
       const id = data.id || `${(titleEn || titleZh).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}-${Date.now().toString(36)}`;
       const existing = state.products.find((product) => product.id === id);
-      const salesChannel = normalizeProductSalesChannel(data.salesChannel);
+      const salesChannel = isOnlineManager() ? "online" : normalizeProductSalesChannel(data.salesChannel);
       const featured = salesChannel === "online" && form.featured.checked;
       const image = data.image.trim();
       const images = [...new Set([image, ...String(data.images || "").split(/\r?\n/).map((value) => value.trim()).filter(Boolean)])];
@@ -15142,7 +15263,7 @@
       }
       try {
         await syncProductToSupabase(product);
-        await registerProductMediaUrls(images);
+        await registerProductMediaUrls(images, salesChannel);
         if (existing) {
           Object.assign(existing, product);
         } else {
@@ -15170,7 +15291,9 @@
     }
 
     function exportProducts() {
-      const headers = ["id", "title", "titleEn", "titleZh", "category", "description", "descriptionEn", "descriptionZh", "price", "compareAtPrice", "costPerItem", "sourcePriceCny", "sourceCurrency", "stock", "salesChannel", "published", "featured", "sku", "barcode", "vendor", "tags", "image", "images", "sourceUrl"];
+      const headers = isOnlineManager()
+        ? ["id", "title", "titleEn", "titleZh", "category", "description", "descriptionEn", "descriptionZh", "price", "compareAtPrice", "stock", "salesChannel", "published", "featured", "sku", "barcode", "tags", "image", "images"]
+        : ["id", "title", "titleEn", "titleZh", "category", "description", "descriptionEn", "descriptionZh", "price", "compareAtPrice", "costPerItem", "sourcePriceCny", "sourceCurrency", "stock", "salesChannel", "published", "featured", "sku", "barcode", "vendor", "tags", "image", "images", "sourceUrl"];
       const rows = state.products.map((product) => headers.map((key) => `"${String(product[key] ?? "").replace(/"/g, '""')}"`).join(","));
       const blob = new Blob([[headers.join(","), ...rows].join("\n")], { type: "text/csv" });
       const url = URL.createObjectURL(blob);
@@ -15467,7 +15590,7 @@
       }
       if (target.matches("[data-open-admin]")) {
         event.preventDefault();
-        if (!state.profile?.is_admin) return;
+        if (!canManageProducts()) return;
         closePanels();
         location.hash = "admin";
         showAdmin();
@@ -15499,7 +15622,7 @@
       if (target.matches("[data-close-order-trash]")) toggleOrderTrash(false);
       if (target.matches("[data-refresh-admin-data]")) loadAdminData();
       if (target.matches("[data-admin-product-channel]")) {
-        state.adminProductChannel = target.dataset.adminProductChannel === "online" ? "online" : "offline";
+        state.adminProductChannel = isOnlineManager() || target.dataset.adminProductChannel === "online" ? "online" : "offline";
         state.adminProductCategory = "All";
         renderAdminProducts();
         return;
