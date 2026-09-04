@@ -9,6 +9,39 @@ const duplicatePreviewPath = new URL("../.codex-online-shop-duplicate-preview.sq
 const sourceProducts = JSON.parse(await readFile(sourcePath, "utf8"));
 const translations = JSON.parse(await readFile(translationsPath, "utf8"));
 
+const ONLINE_SOURCE_CATEGORY_KEYS = Object.freeze({
+  "清洁洗护": "online-cleaning-care",
+  "健康护理": "online-health-personal-care",
+  "家居和装饰": "online-home-decor",
+  "宠物用品": "online-pet-supplies",
+  "烘焙用具": "online-bakeware",
+  "厨具餐具": "online-kitchenware-tableware",
+  "一次性用品": "online-disposable-supplies",
+  "潮流玩具": "online-trending-toys",
+  "玩具潮玩": "online-toys-collectibles",
+  "收纳整理": "online-storage-organisation",
+  "沙滩戏水": "online-beach-water-play",
+  "园艺工具": "online-gardening-tools",
+  "五金日杂": "online-hardware-household",
+  "汽车用品": "online-automotive",
+  "手机配件": "online-phone-accessories",
+  "露营和户外": "online-camping-outdoors",
+  "运动户外": "online-sports-outdoors",
+  "影音设备": "online-audio-video",
+  "数码配件": "online-digital-accessories",
+  "文具笔具": "online-stationery-writing",
+  "电池与插排": "online-batteries-power-boards",
+  "包袋配饰": "online-bags-accessories",
+  "礼品包装": "online-gift-packaging",
+  "清洁厨具": "online-kitchen-cleaning",
+  "胶带纸品": "online-tape-paper-products",
+  "节日生日": "online-party-celebrations",
+  "日用百货": "online-everyday-essentials",
+  "服装配饰": "online-clothing-accessories",
+  "运动装备": "online-sports-equipment",
+  "厨房好物": "online-kitchen-essentials"
+});
+
 function extractSku(name, sourceId) {
   const normalizedName = String(name || "").trim();
   const match = normalizedName.match(/(?:\s*)([A-Z]{1,8}[A-Z0-9_-]*\d[A-Z0-9_-]*|\d{4,14})[*,;]*$/);
@@ -22,15 +55,8 @@ function extractSku(name, sourceId) {
   };
 }
 
-function storefrontCategory(sourceCategory, titleZh, titleEn) {
-  const category = String(sourceCategory || "").trim();
-  const text = `${category} ${titleZh} ${titleEn}`.toLowerCase();
-  if (/key\s*[- ]?(?:chain|ring)|钥匙(?:链|扣|圈|挂件)/i.test(text)) return "keychains";
-  if (/(?:phone|iphone|samsung|oppo|vivo).*case|case.*(?:phone|iphone|samsung|oppo|vivo)|手机壳|保护壳/i.test(text)) return "phone-cases";
-  if (/文具笔具|胶带纸品|stationery|pen|pencil|notebook|stapler|scissors|tape|glue|文具|笔|本子|订书机|剪刀|胶带|胶棒/i.test(text)) return "office-supplies";
-  if (/玩具潮玩|潮流玩具|toy|plush|blind\s*box|squishy|盲盒|毛绒|玩具|捏捏乐/i.test(text)) return "blind-box-plush";
-  if (/手机配件|数码配件|影音设备|电池与插排|phone|mobile|charger|cable|earphone|speaker|battery|power\s*board|手机|充电|数据线|耳机|音箱|电池|插排/i.test(text)) return "phone-accessories";
-  return "keychains-gifts";
+function storefrontCategory(sourceCategory) {
+  return ONLINE_SOURCE_CATEGORY_KEYS[String(sourceCategory || "").trim()] || "online-other";
 }
 
 const rows = sourceProducts.map((source) => {
@@ -43,7 +69,7 @@ const rows = sourceProducts.map((source) => {
     source_id: sourceId,
     title_en: titleEn || title,
     title_zh: title,
-    category: storefrontCategory(source.category, title, titleEn),
+    category: storefrontCategory(source.category),
     source_category: String(source.category || "").trim(),
     price: Math.max(0, Number(source.price) || 0),
     cost_per_item: Math.max(0, Number(source.cost_price) || 0),

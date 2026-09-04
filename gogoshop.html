@@ -13665,7 +13665,17 @@
     }
 
     function adminProductCategoryOptions() {
-      return ["All", ...storefrontCategories.map((category) => category.key)];
+      const activeCategories = new Set(
+        state.products
+          .filter((product) => productSalesChannel(product) === state.adminProductChannel)
+          .map((product) => productCategoryKey(product))
+      );
+      return [
+        "All",
+        ...storefrontCategories
+          .filter((category) => activeCategories.has(category.key))
+          .map((category) => category.key)
+      ];
     }
 
     function renderAdminProductCategoryFilter() {

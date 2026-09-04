@@ -164,6 +164,216 @@
         "cil-20608", "cil-22409", "cil-22862", "cil-60283", "cil-bf-zh-841",
         "cil-bo13376", "cil-bo13383", "cil-bo27687", "cil-bo27694"
       ]
+    },
+    {
+      key: "online-cleaning-care",
+      en: "Cleaning & Care",
+      zh: "清洁洗护",
+      icon: "sparkles",
+      ids: []
+    },
+    {
+      key: "online-health-personal-care",
+      en: "Health & Personal Care",
+      zh: "健康护理",
+      icon: "heart-pulse",
+      ids: []
+    },
+    {
+      key: "online-home-decor",
+      en: "Home & Decor",
+      zh: "家居和装饰",
+      icon: "house",
+      ids: []
+    },
+    {
+      key: "online-pet-supplies",
+      en: "Pet Supplies",
+      zh: "宠物用品",
+      icon: "paw-print",
+      ids: []
+    },
+    {
+      key: "online-bakeware",
+      en: "Bakeware",
+      zh: "烘焙用具",
+      icon: "cake-slice",
+      ids: []
+    },
+    {
+      key: "online-kitchenware-tableware",
+      en: "Kitchenware & Tableware",
+      zh: "厨具餐具",
+      icon: "utensils",
+      ids: []
+    },
+    {
+      key: "online-disposable-supplies",
+      en: "Disposable Supplies",
+      zh: "一次性用品",
+      icon: "package",
+      ids: []
+    },
+    {
+      key: "online-trending-toys",
+      en: "Trending Toys",
+      zh: "潮流玩具",
+      icon: "sparkles",
+      ids: []
+    },
+    {
+      key: "online-toys-collectibles",
+      en: "Toys & Collectibles",
+      zh: "玩具潮玩",
+      icon: "toy-brick",
+      ids: []
+    },
+    {
+      key: "online-storage-organisation",
+      en: "Storage & Organisation",
+      zh: "收纳整理",
+      icon: "boxes",
+      ids: []
+    },
+    {
+      key: "online-beach-water-play",
+      en: "Beach & Water Play",
+      zh: "沙滩戏水",
+      icon: "waves",
+      ids: []
+    },
+    {
+      key: "online-gardening-tools",
+      en: "Gardening Tools",
+      zh: "园艺工具",
+      icon: "flower-2",
+      ids: []
+    },
+    {
+      key: "online-hardware-household",
+      en: "Hardware & Household",
+      zh: "五金日杂",
+      icon: "wrench",
+      ids: []
+    },
+    {
+      key: "online-automotive",
+      en: "Automotive",
+      zh: "汽车用品",
+      icon: "car-front",
+      ids: []
+    },
+    {
+      key: "online-phone-accessories",
+      en: "Phone Accessories",
+      zh: "手机配件",
+      icon: "cable",
+      ids: []
+    },
+    {
+      key: "online-camping-outdoors",
+      en: "Camping & Outdoors",
+      zh: "露营和户外",
+      icon: "tent-tree",
+      ids: []
+    },
+    {
+      key: "online-sports-outdoors",
+      en: "Sports & Outdoors",
+      zh: "运动户外",
+      icon: "mountain",
+      ids: []
+    },
+    {
+      key: "online-audio-video",
+      en: "Audio & Video",
+      zh: "影音设备",
+      icon: "headphones",
+      ids: []
+    },
+    {
+      key: "online-digital-accessories",
+      en: "Digital Accessories",
+      zh: "数码配件",
+      icon: "cpu",
+      ids: []
+    },
+    {
+      key: "online-stationery-writing",
+      en: "Stationery & Writing",
+      zh: "文具笔具",
+      icon: "pen-line",
+      ids: []
+    },
+    {
+      key: "online-batteries-power-boards",
+      en: "Batteries & Power Boards",
+      zh: "电池与插排",
+      icon: "battery-charging",
+      ids: []
+    },
+    {
+      key: "online-bags-accessories",
+      en: "Bags & Accessories",
+      zh: "包袋配饰",
+      icon: "shopping-bag",
+      ids: []
+    },
+    {
+      key: "online-gift-packaging",
+      en: "Gift Packaging",
+      zh: "礼品包装",
+      icon: "gift",
+      ids: []
+    },
+    {
+      key: "online-kitchen-cleaning",
+      en: "Kitchen Cleaning",
+      zh: "清洁厨具",
+      icon: "spray-can",
+      ids: []
+    },
+    {
+      key: "online-tape-paper-products",
+      en: "Tape & Paper Products",
+      zh: "胶带纸品",
+      icon: "notebook-tabs",
+      ids: []
+    },
+    {
+      key: "online-party-celebrations",
+      en: "Party & Celebrations",
+      zh: "节日生日",
+      icon: "party-popper",
+      ids: []
+    },
+    {
+      key: "online-everyday-essentials",
+      en: "Everyday Essentials",
+      zh: "日用百货",
+      icon: "shopping-basket",
+      ids: []
+    },
+    {
+      key: "online-clothing-accessories",
+      en: "Clothing & Accessories",
+      zh: "服装配饰",
+      icon: "shirt",
+      ids: []
+    },
+    {
+      key: "online-sports-equipment",
+      en: "Sports Equipment",
+      zh: "运动装备",
+      icon: "dumbbell",
+      ids: []
+    },
+    {
+      key: "online-kitchen-essentials",
+      en: "Kitchen Essentials",
+      zh: "厨房好物",
+      icon: "utensils",
+      ids: []
     }
   ]);
 })();
