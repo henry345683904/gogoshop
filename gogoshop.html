@@ -1275,6 +1275,18 @@
       white-space: pre-line;
     }
 
+    .product-detail-description-block {
+      display: grid;
+      gap: 7px;
+    }
+
+    .product-detail-description-title {
+      margin: 0;
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 750;
+    }
+
     .product-detail-stock {
       display: flex;
       align-items: center;
@@ -8978,6 +8990,7 @@
         backProducts: "Back to products",
         quantity: "Quantity",
         addToCart: "Add to cart",
+        productDescriptionTitle: "Product description",
         productFallback: "Product details will be added soon.",
         pickupNote: "Pickup and delivery options are confirmed at checkout.",
         noProducts: "No products",
@@ -9113,6 +9126,7 @@
         backProducts: "返回商品列表",
         quantity: "数量",
         addToCart: "加入购物车",
+        productDescriptionTitle: "产品描述",
         productFallback: "商品详情即将补充。",
         pickupNote: "取货和配送方式将在结账时确认。",
         noProducts: "暂无商品",
@@ -10303,6 +10317,34 @@
         || t("productFallback");
     }
 
+    function productDetailDescription(product) {
+      const fallback = t("productFallback");
+      const description = productDescription(product);
+      if (description && description !== fallback) return description;
+
+      const source = state.lang === "zh"
+        ? product.titleZh || product.title
+        : product.titleEn || product.title;
+      const text = String(source || "");
+      const materialPattern = state.lang === "zh"
+        ? /超细纤维|不锈钢|碳钢|陶瓷|玻璃|塑料|硅胶|牛皮纸|无纺布|泡棉|乳胶|涤纶|聚酯|铝合金|木质|纸质/g
+        : /microfibre|microfiber|stainless steel|carbon steel|ceramic|glass|plastic|silicone|cotton|paper|non-woven|foam|latex|polyester|aluminium|aluminum|wood/gi;
+      const measurePattern = /\d+(?:\.\d+)?\s*[-‑–]\s*\d+(?:\.\d+)?\s*(?:毫升|厘米|千克|英寸|ml|cm|mm|kg|inch|升|米|克|m|l|g|in)|\d+(?:\.\d+)?\s*(?:[×x*]\s*\d+(?:\.\d+)?(?:\s*[×x*]\s*\d+(?:\.\d+)?)*\s*(?:cm|mm|m|in|inch|英寸)?|毫升|厘米|千克|英寸|ml|cm|mm|kg|inch|升|米|克|m|l|g|in)/gi;
+      const packPattern = /\d+\s*(?:pcs?|pieces?|pack|packs|只装|片装|件装|个装|支装|套装|入装)|(?:pcs?|pieces?|pack|packs)\s*\d+/gi;
+      const uniqueMatches = (pattern) => [...new Set((text.match(pattern) || []).map((value) => value.replace(/\s+/g, " ").trim()))];
+      const materials = uniqueMatches(materialPattern);
+      const measures = uniqueMatches(measurePattern);
+      const packs = uniqueMatches(packPattern);
+      const details = [];
+      if (materials.length) details.push(`${state.lang === "zh" ? "材质" : "Material"}: ${materials.join(", ")}`);
+      if (measures.length) details.push(`${state.lang === "zh" ? "尺寸/容量" : "Size/Capacity"}: ${measures.join(", ")}`);
+      if (packs.length) details.push(`${state.lang === "zh" ? "包装" : "Pack"}: ${packs.join(", ")}`);
+      if (details.length) return details.join(" · ");
+      return state.lang === "zh"
+        ? "材质、尺寸和规格以商品图片为准。"
+        : "Material, size and specifications are shown in the product images.";
+    }
+
     function productForOrderItem(item) {
       const productId = String(item?.product_id || "");
       return state.products.find((entry) => String(entry.id) === productId)
@@ -10580,8 +10622,7 @@
       state.detailQuantity = Math.min(Math.max(1, state.detailQuantity), Math.max(1, Number(product.stock) || 1));
       const currentImage = images[state.detailImageIndex] || "";
       const soldOut = !available(product);
-      const description = productDescription(product);
-      const itemCode = productItemCode(product);
+      const detailDescription = productDetailDescription(product);
       const eagerThumbnailLimit = images.length <= 25 ? images.length : 8;
 
       content.innerHTML = `
@@ -10608,13 +10649,10 @@
             <p class="product-detail-category">${escapeHtml(categoryName(productCategoryKey(product)))}</p>
             <h1>${escapeHtml(productName(product))}</h1>
             <p class="product-detail-price">${formatPrice(product.price)}</p>
-            ${itemCode ? `
-              <div class="product-detail-code">
-                <p class="product-detail-code-title">${state.lang === "zh" ? "扫码点单实验码" : "Scan-to-order trial code"}</p>
-                ${renderProductBarcode(product)}
-              </div>
-            ` : ""}
-            ${description ? `<p class="product-detail-description">${escapeHtml(description)}</p>` : ""}
+            <div class="product-detail-description-block">
+              <p class="product-detail-description-title">${t("productDescriptionTitle")}</p>
+              <p class="product-detail-description">${escapeHtml(detailDescription)}</p>
+            </div>
             <p class="product-detail-stock">
               <span class="stock-dot ${soldOut ? "sold-out" : ""}"></span>
               <span>${detailStockText(product)}</span>
