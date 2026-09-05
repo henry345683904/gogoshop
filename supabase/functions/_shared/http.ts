@@ -1,18 +1,28 @@
-const DEFAULT_SITE_URL = "https://henry345683904.github.io/gogoshop/";
-const LOCAL_ORIGINS = new Set([
+const DEFAULT_SITE_URL = "https://gogoshop.nz/";
+const LEGACY_SITE_ORIGIN = "https://henry345683904.github.io";
+const ALLOWED_ORIGINS = new Set([
+  "https://gogoshop.nz",
+  "https://www.gogoshop.nz",
+  LEGACY_SITE_ORIGIN,
   "http://127.0.0.1:8769",
   "http://localhost:8769"
 ]);
 
 export function siteUrl(): string {
-  return Deno.env.get("SITE_URL") || DEFAULT_SITE_URL;
+  const configured = Deno.env.get("SITE_URL")?.trim();
+  if (!configured) return DEFAULT_SITE_URL;
+  try {
+    const url = new URL(configured);
+    return url.origin === LEGACY_SITE_ORIGIN ? DEFAULT_SITE_URL : url.toString();
+  } catch {
+    return DEFAULT_SITE_URL;
+  }
 }
 
 export function requestOriginAllowed(request: Request): boolean {
   const origin = request.headers.get("origin");
   if (!origin) return true;
-  if (LOCAL_ORIGINS.has(origin)) return true;
-  return origin === new URL(siteUrl()).origin;
+  return ALLOWED_ORIGINS.has(origin) || origin === new URL(siteUrl()).origin;
 }
 
 export function corsHeaders(request: Request): HeadersInit {

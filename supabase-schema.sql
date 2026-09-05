@@ -103,6 +103,13 @@ create table if not exists public.orders (
   payment_provider text not null default 'manual' check (payment_provider in ('manual', 'stripe')),
   payment_status text not null default 'unpaid' check (payment_status in ('unpaid', 'pending', 'paid', 'failed', 'refunded')),
   order_source text not null default 'online' check (order_source in ('online', 'pos')),
+  fulfillment_method text not null default 'pickup' check (fulfillment_method in ('pickup', 'delivery')),
+  fulfillment_configured boolean not null default false,
+  delivery_fee numeric(12,2) not null default 0 check (delivery_fee in (0, 5)),
+  delivery_distance_km numeric(7,3) check (delivery_distance_km is null or delivery_distance_km between 0 and 12),
+  delivery_address text not null default '',
+  delivery_phone text not null default '',
+  pickup_location text not null default 'Flat Bush',
   stripe_checkout_session_id text,
   stripe_payment_intent_id text,
   paid_at timestamptz,
@@ -126,6 +133,42 @@ alter table public.orders add column if not exists stripe_payment_intent_id text
 alter table public.orders add column if not exists paid_at timestamptz;
 alter table public.orders add column if not exists deleted_at timestamptz;
 alter table public.orders add column if not exists deleted_by uuid references public.profiles(id) on delete set null;
+alter table public.orders add column if not exists fulfillment_method text not null default 'pickup';
+alter table public.orders add column if not exists fulfillment_configured boolean not null default false;
+alter table public.orders add column if not exists delivery_fee numeric(12,2) not null default 0;
+alter table public.orders add column if not exists delivery_distance_km numeric(7,3);
+alter table public.orders add column if not exists delivery_address text not null default '';
+alter table public.orders add column if not exists delivery_phone text not null default '';
+alter table public.orders add column if not exists pickup_location text not null default 'Flat Bush';
+
+alter table public.orders drop constraint if exists orders_fulfillment_method_check;
+alter table public.orders add constraint orders_fulfillment_method_check
+  check (fulfillment_method in ('pickup', 'delivery'));
+alter table public.orders drop constraint if exists orders_delivery_fee_check;
+alter table public.orders add constraint orders_delivery_fee_check
+  check (delivery_fee in (0, 5));
+alter table public.orders drop constraint if exists orders_delivery_distance_check;
+alter table public.orders add constraint orders_delivery_distance_check
+  check (delivery_distance_km is null or delivery_distance_km between 0 and 12);
+alter table public.orders drop constraint if exists orders_fulfillment_details_check;
+alter table public.orders add constraint orders_fulfillment_details_check
+  check (
+    fulfillment_configured = false
+    or (
+      fulfillment_method = 'pickup'
+      and delivery_fee = 0
+      and delivery_distance_km is null
+      and delivery_address = ''
+      and delivery_phone = ''
+      and nullif(trim(pickup_location), '') is not null
+    )
+    or (
+      fulfillment_method = 'delivery'
+      and delivery_distance_km is not null
+      and nullif(trim(delivery_address), '') is not null
+      and nullif(trim(delivery_phone), '') is not null
+    )
+  );
 
 create table if not exists public.order_items (
   id bigint generated always as identity primary key,

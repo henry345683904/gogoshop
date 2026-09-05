@@ -2158,6 +2158,10 @@
 
     .payment-dialog {
       width: min(100%, 480px);
+      max-height: min(92vh, 820px);
+      max-height: min(92dvh, 820px);
+      display: flex;
+      flex-direction: column;
       overflow: hidden;
       border: 1px solid var(--line);
       border-radius: 8px;
@@ -2166,9 +2170,186 @@
     }
 
     .payment-body {
+      min-height: 0;
       display: grid;
       gap: 18px;
+      overflow-y: auto;
+      overscroll-behavior: contain;
       padding: 20px 22px 22px;
+    }
+
+    .fulfillment-section {
+      display: grid;
+      gap: 12px;
+    }
+
+    .fulfillment-heading {
+      margin: 0;
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .fulfillment-options {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .fulfillment-option {
+      min-width: 0;
+      min-height: 54px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 10px 12px;
+      background: #fff;
+      color: var(--ink);
+      cursor: pointer;
+    }
+
+    .fulfillment-option.is-selected {
+      border-color: var(--ink);
+      box-shadow: inset 0 0 0 1px var(--ink);
+    }
+
+    .fulfillment-option.is-disabled {
+      opacity: .52;
+      cursor: not-allowed;
+    }
+
+    .fulfillment-option input {
+      width: 16px;
+      height: 16px;
+      flex: 0 0 auto;
+      margin: 0;
+      accent-color: var(--ink);
+    }
+
+    .fulfillment-option svg {
+      width: 19px;
+      height: 19px;
+      flex: 0 0 auto;
+      color: var(--muted);
+    }
+
+    .fulfillment-option span {
+      min-width: 0;
+      font-size: 13px;
+      font-weight: 750;
+      overflow-wrap: anywhere;
+    }
+
+    .fulfillment-panel {
+      display: grid;
+      gap: 11px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 12px;
+      background: var(--soft);
+    }
+
+    .fulfillment-panel[hidden] {
+      display: none;
+    }
+
+    .pickup-location {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      line-height: 1.45;
+    }
+
+    .pickup-location svg {
+      width: 18px;
+      height: 18px;
+      flex: 0 0 auto;
+      margin-top: 1px;
+    }
+
+    .pickup-location strong,
+    .pickup-location span {
+      display: block;
+    }
+
+    .pickup-location span {
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .delivery-rule-note {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .delivery-location-row {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      align-items: center;
+      gap: 10px;
+    }
+
+    .delivery-location-row .button {
+      min-height: 38px;
+      padding: 0 12px;
+      white-space: nowrap;
+    }
+
+    .delivery-location-status {
+      min-width: 0;
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+      overflow-wrap: anywhere;
+    }
+
+    .delivery-location-status.success {
+      color: #24623e;
+      font-weight: 700;
+    }
+
+    .delivery-location-status.error {
+      color: var(--danger);
+      font-weight: 700;
+    }
+
+    .delivery-fields {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(130px, .55fr);
+      gap: 10px;
+    }
+
+    .delivery-fields .field {
+      gap: 5px;
+    }
+
+    .delivery-fields .field > span {
+      color: #303434;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .delivery-fields input,
+    .delivery-fields textarea {
+      width: 100%;
+      min-height: 42px;
+      padding: 9px 11px;
+      background: #fff;
+    }
+
+    .delivery-fields textarea {
+      min-height: 70px;
+      resize: vertical;
+    }
+
+    .payment-total-row.delivery {
+      color: var(--ink);
     }
 
     .payment-total {
@@ -7081,6 +7262,44 @@
         width: 100%;
       }
 
+      .payment-modal {
+        padding: 8px;
+      }
+
+      .payment-dialog {
+        width: 100%;
+        max-height: calc(100vh - 16px);
+        max-height: calc(100dvh - 16px);
+      }
+
+      .payment-dialog .panel-head {
+        min-height: 56px;
+        padding: 0 14px;
+      }
+
+      .payment-body {
+        gap: 14px;
+        padding: 14px;
+      }
+
+      .fulfillment-options {
+        gap: 6px;
+      }
+
+      .fulfillment-option {
+        min-height: 50px;
+        padding: 8px 10px;
+      }
+
+      .delivery-location-row,
+      .delivery-fields {
+        grid-template-columns: 1fr;
+      }
+
+      .delivery-location-row .button {
+        width: 100%;
+      }
+
       .admin-order-note-editor {
         grid-template-columns: 1fr;
       }
@@ -8776,9 +8995,42 @@
         <button class="icon-button" type="button" data-close-payment aria-label="Close"><i data-lucide="x"></i></button>
       </div>
       <div class="payment-body">
+        <section class="fulfillment-section" aria-labelledby="fulfillmentHeading">
+          <p class="fulfillment-heading" id="fulfillmentHeading" data-i18n="fulfillmentHeading">How would you like to receive your order?</p>
+          <div class="fulfillment-options" role="radiogroup" aria-labelledby="fulfillmentHeading">
+            <label class="fulfillment-option is-selected" data-fulfillment-option="pickup">
+              <input type="radio" name="fulfillmentMethod" value="pickup" data-fulfillment-method checked>
+              <i data-lucide="shopping-bag"></i>
+              <span data-i18n="pickup">Pickup</span>
+            </label>
+            <label class="fulfillment-option" data-fulfillment-option="delivery">
+              <input type="radio" name="fulfillmentMethod" value="delivery" data-fulfillment-method>
+              <i data-lucide="truck"></i>
+              <span data-i18n="delivery">Delivery</span>
+            </label>
+          </div>
+          <div class="delivery-location-row" data-delivery-location-row hidden>
+            <button class="button ghost" type="button" data-use-location><i data-lucide="locate-fixed"></i><span data-i18n="checkDeliveryDistance">Check my distance</span></button>
+            <p class="delivery-location-status" id="deliveryLocationStatus" role="status" aria-live="polite" data-i18n="locationRequired">Location is required to check delivery eligibility.</p>
+          </div>
+          <div class="fulfillment-panel" data-pickup-panel>
+            <div class="pickup-location">
+              <i data-lucide="map-pin"></i>
+              <div><strong data-i18n="pickupFlatBush">Pickup in Flat Bush</strong><span data-i18n="pickupDetails">Pickup details will be confirmed after payment.</span></div>
+            </div>
+          </div>
+          <div class="fulfillment-panel" data-delivery-panel hidden>
+            <p class="delivery-rule-note" data-i18n="deliveryRules">Delivery is available within 12 km of Flat Bush. Free on merchandise totals of $80 or more after vouchers; otherwise $5. Your coordinates are used for this estimate and are not saved.</p>
+            <div class="delivery-fields">
+              <label class="field"><span data-i18n="deliveryAddress">Delivery address</span><textarea id="deliveryAddress" maxlength="500" autocomplete="street-address" data-i18n-placeholder="deliveryAddressPlaceholder" placeholder="Enter the full delivery address"></textarea></label>
+              <label class="field"><span data-i18n="deliveryPhone">Phone number</span><input id="deliveryPhone" type="tel" maxlength="80" autocomplete="tel" inputmode="tel" data-i18n-placeholder="deliveryPhonePlaceholder" placeholder="Contact phone"></label>
+            </div>
+          </div>
+        </section>
         <div class="payment-total-breakdown">
           <div class="payment-total-row"><span data-i18n="subtotal">Subtotal</span><strong data-payment-subtotal>$0.00</strong></div>
           <div class="payment-total-row discount" data-payment-discount-row hidden><span data-i18n="voucherDiscount">Voucher discount</span><strong data-payment-discount>-$0.00</strong></div>
+          <div class="payment-total-row delivery" data-payment-delivery-row hidden><span data-i18n="deliveryFee">Delivery fee</span><strong data-payment-delivery>$0.00</strong></div>
           <div class="payment-total-row final"><span data-i18n="total">Total</span><strong data-payment-total>$0.00</strong></div>
         </div>
         <div>
@@ -8846,6 +9098,10 @@
     const PRODUCT_IMAGE_ASSET_VERSION = "images-v2";
     const SUPABASE_URL = "https://ucnkcddhrptqpdlvcohy.supabase.co";
     const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_zv6WbyD1hZKUx-Zyak-fPw_e1mURTN8";
+    const FLAT_BUSH_PICKUP = Object.freeze({ name: "Flat Bush", latitude: -36.9661534, longitude: 174.9127100 });
+    const DELIVERY_MAX_DISTANCE_KM = 12;
+    const FREE_DELIVERY_MINIMUM = 80;
+    const DELIVERY_FEE = 5;
     const SOURCE_COST_DIVISOR = 4;
     const SOURCE_TAX_MULTIPLIER = 1.15;
     const SOURCE_PRICE_MULTIPLIER = 1.5 * SOURCE_TAX_MULTIPLIER;
@@ -8971,6 +9227,35 @@
         cartTitle: "Cart",
         total: "Total",
         checkout: "Checkout",
+        fulfillmentHeading: "How would you like to receive your order?",
+        pickup: "Pickup",
+        delivery: "Delivery",
+        pickupFlatBush: "Pickup in Flat Bush",
+        pickupDetails: "Pickup details will be confirmed after payment.",
+        deliveryRules: "Delivery is available within 12 km of Flat Bush. Free on merchandise totals of $80 or more after vouchers; otherwise $5. Your coordinates are used for this estimate and are not saved.",
+        checkDeliveryDistance: "Check my distance",
+        locationRequired: "Location is required to check delivery eligibility.",
+        locatingCustomer: "Checking your location...",
+        deliveryDistance: "Estimated distance: {distance} km",
+        deliveryEligibleFree: "{distance} km away · Free delivery",
+        deliveryEligiblePaid: "{distance} km away · $5 delivery",
+        deliveryTooFar: "{distance} km away · Outside the 12 km delivery area. Pickup only.",
+        geolocationUnsupported: "Location is not supported on this device. Please choose pickup.",
+        geolocationDenied: "Location permission was denied. Allow location access or choose pickup.",
+        geolocationUnavailable: "Your location could not be determined. Try again or choose pickup.",
+        geolocationTimeout: "Location request timed out. Try again or choose pickup.",
+        deliveryAddress: "Delivery address",
+        deliveryAddressPlaceholder: "Enter the full delivery address",
+        deliveryPhone: "Phone number",
+        deliveryPhonePlaceholder: "Contact phone",
+        deliveryFee: "Delivery fee",
+        free: "Free",
+        checkLocationFirst: "Check your location before choosing delivery.",
+        enterDeliveryAddress: "Enter the full delivery address.",
+        enterDeliveryPhone: "Enter a phone number for delivery.",
+        fulfillmentMethod: "Order method",
+        pickupLocation: "Pickup location",
+        estimatedDistance: "Estimated distance",
         paymentTitle: "Secure payment",
         paymentMethods: "Payment methods",
         cardPayment: "Credit or debit card",
@@ -9107,6 +9392,35 @@
         cartTitle: "购物车",
         total: "合计",
         checkout: "结账",
+        fulfillmentHeading: "请选择收货方式",
+        pickup: "到店自取",
+        delivery: "配送",
+        pickupFlatBush: "Flat Bush 自取",
+        pickupDetails: "付款后将确认具体自取安排。",
+        deliveryRules: "Flat Bush 12 公里内可配送。使用代金券后的商品金额满 NZ$80 免费配送，否则收取 NZ$5 配送费。定位坐标只用于本次估算，不会保存。",
+        checkDeliveryDistance: "定位并估算距离",
+        locationRequired: "需要获取定位以判断是否可以配送。",
+        locatingCustomer: "正在获取您的位置...",
+        deliveryDistance: "预估距离：{distance} 公里",
+        deliveryEligibleFree: "距离约 {distance} 公里 · 免费配送",
+        deliveryEligiblePaid: "距离约 {distance} 公里 · 配送费 NZ$5",
+        deliveryTooFar: "距离约 {distance} 公里 · 超出 12 公里配送范围，仅限自取。",
+        geolocationUnsupported: "此设备不支持定位，请选择到店自取。",
+        geolocationDenied: "定位权限被拒绝，请允许定位或选择到店自取。",
+        geolocationUnavailable: "暂时无法获取您的位置，请重试或选择到店自取。",
+        geolocationTimeout: "获取位置超时，请重试或选择到店自取。",
+        deliveryAddress: "配送地址",
+        deliveryAddressPlaceholder: "请输入完整配送地址",
+        deliveryPhone: "联系电话",
+        deliveryPhonePlaceholder: "请输入联系电话",
+        deliveryFee: "配送费",
+        free: "免费",
+        checkLocationFirst: "选择配送前请先完成定位。",
+        enterDeliveryAddress: "请输入完整配送地址。",
+        enterDeliveryPhone: "请输入配送联系电话。",
+        fulfillmentMethod: "收货方式",
+        pickupLocation: "自取地点",
+        estimatedDistance: "预估距离",
         paymentTitle: "安全付款",
         paymentMethods: "付款方式",
         cardPayment: "信用卡或借记卡",
@@ -9296,6 +9610,16 @@
       customerVouchers: [],
       selectedCustomerVoucherId: null,
       voucherQuote: null,
+      checkoutFulfillment: {
+        method: "pickup",
+        latitude: null,
+        longitude: null,
+        distanceKm: null,
+        locating: false,
+        locationError: "",
+        address: "",
+        phone: ""
+      },
       adminOrders: [],
       adminOrdersLoaded: false,
       adminOrdersLoading: false,
@@ -10272,6 +10596,13 @@
       return translations[state.lang]?.[key] || translations.en[key] || key;
     }
 
+    function tWithValues(key, values = {}) {
+      return Object.entries(values).reduce(
+        (text, [name, value]) => text.replaceAll(`{${name}}`, String(value)),
+        t(key)
+      );
+    }
+
     function cleanStorefrontDescription(value, product = null) {
       const hiddenValues = [product?.vendor, product?.sourceUrl]
         .map((entry) => String(entry || "").trim().toLowerCase())
@@ -10980,6 +11311,26 @@
       return "featured";
     }
 
+    function hasOrderFulfillment(order) {
+      return order?.fulfillment_configured === true;
+    }
+
+    function orderFulfillmentLabel(order) {
+      return order?.fulfillment_method === "delivery" ? t("delivery") : t("pickup");
+    }
+
+    function orderFulfillmentSummary(order) {
+      if (!hasOrderFulfillment(order)) return "";
+      if (order.fulfillment_method === "delivery") {
+        const distance = Number(order.delivery_distance_km);
+        const parts = [t("delivery")];
+        if (Number.isFinite(distance)) parts.push(`${distance.toFixed(1)} km`);
+        parts.push(Number(order.delivery_fee || 0) > 0 ? formatPrice(order.delivery_fee) : t("free"));
+        return parts.join(" · ");
+      }
+      return `${t("pickup")} · ${order.pickup_location || FLAT_BUSH_PICKUP.name}`;
+    }
+
     function voucherValueLabel(voucher) {
       return voucher.discount_type === "percent"
         ? `${Number(voucher.discount_value || 0).toLocaleString()}%`
@@ -11173,6 +11524,7 @@
             </div>
           </div>
           <strong>${formatPrice(order.total)}</strong> · ${Number(order.item_count || 0)} ${state.lang === "zh" ? "件" : "items"}
+          ${hasOrderFulfillment(order) ? `<div class="account-order-meta">${escapeHtml(orderFulfillmentSummary(order))}</div>` : ""}
           ${order.status === "confirmed" ? `<div class="account-order-meta">+${Number(order.points_awarded || 0)} ${t("rewardPoints")}</div>` : ""}
           <div class="account-order-items">${(order.order_items || []).map((item) => `${escapeHtml(orderItemName(item))} × ${Number(item.quantity)} · ${formatPrice(item.unit_price)}`).join("<br>")}</div>
         </article>
@@ -11217,6 +11569,7 @@
       ), 0);
       const subtotal = Number(order.subtotal ?? calculatedSubtotal ?? order.total);
       const discount = Number(order.discount_amount || 0);
+      const deliveryFee = Number(order.delivery_fee || 0);
       const discountLabel = String(order.order_number || "").startsWith("POS-") ? t("orderDiscount") : t("voucherDiscount");
       const itemCount = items.reduce((sum, item) => sum + Number(item.quantity || 0), 0)
         || Number(order.item_count || 0);
@@ -11233,6 +11586,9 @@
           <div><dt>${t("orderDate")}</dt><dd>${escapeHtml(formatDate(order.created_at))}</dd></div>
           <div><dt>${t("paymentMethod")}</dt><dd>${escapeHtml(paymentMethod)}</dd></div>
           <div><dt>${order.paid_at ? t("paidAt") : t("confirmedAt")}</dt><dd>${escapeHtml(formatDate(order.paid_at || order.confirmed_at))}</dd></div>
+          ${hasOrderFulfillment(order) ? `<div><dt>${t("fulfillmentMethod")}</dt><dd>${escapeHtml(orderFulfillmentLabel(order))}</dd></div>` : ""}
+          ${hasOrderFulfillment(order) && order.fulfillment_method === "pickup" ? `<div><dt>${t("pickupLocation")}</dt><dd>${escapeHtml(order.pickup_location || FLAT_BUSH_PICKUP.name)}</dd></div>` : ""}
+          ${hasOrderFulfillment(order) && order.fulfillment_method === "delivery" ? `<div><dt>${t("estimatedDistance")}</dt><dd>${Number(order.delivery_distance_km || 0).toFixed(1)} km</dd></div><div><dt>${t("deliveryPhone")}</dt><dd>${escapeHtml(order.delivery_phone || "-")}</dd></div><div><dt>${t("deliveryAddress")}</dt><dd>${escapeHtml(order.delivery_address || "-")}</dd></div>` : ""}
         </dl>
         <section class="order-detail-section">
           <h3>${t("orderItems")}</h3>
@@ -11257,6 +11613,7 @@
         <div class="order-detail-totals">
           <div class="order-detail-total-row"><span>${t("subtotal")}</span><strong>${formatPrice(subtotal || order.total)}</strong></div>
           ${discount > 0 ? `<div class="order-detail-total-row"><span>${escapeHtml(discountLabel)}${order.voucher_code ? ` · ${escapeHtml(order.voucher_code)}` : ""}</span><strong>-${formatPrice(discount)}</strong></div>` : ""}
+          ${hasOrderFulfillment(order) && order.fulfillment_method === "delivery" ? `<div class="order-detail-total-row"><span>${t("deliveryFee")}</span><strong>${deliveryFee > 0 ? formatPrice(deliveryFee) : t("free")}</strong></div>` : ""}
           <div class="order-detail-total-row"><span>${t("itemCount")}</span><strong>${itemCount}</strong></div>
           ${order.status === "confirmed" ? `<div class="order-detail-total-row"><span>${t("pointsEarned")}</span><strong>+${Number(order.points_awarded || 0)}</strong></div>` : ""}
           <div class="order-detail-total-row final"><span>${t("total")}</span><strong>${formatPrice(order.total)}</strong></div>
@@ -11399,14 +11756,20 @@
         if (!result.error || !/admin_role|customer_barcode/i.test(result.error.message || "")) return result;
         return db.from("profiles").select("id,email,full_name,points,total_spent,is_admin,created_at").eq("id", userId).single();
       });
+      const fulfillmentPaymentFields = "id,order_number,status,order_note,subtotal,discount_amount,voucher_code,total,item_count,points_awarded,payment_provider,payment_status,paid_at,created_at,confirmed_at,fulfillment_method,fulfillment_configured,delivery_fee,delivery_distance_km,delivery_address,delivery_phone,pickup_location,order_items(product_id,product_title,unit_price,quantity,item_note)";
       const voucherPaymentFields = "id,order_number,status,order_note,subtotal,discount_amount,voucher_code,total,item_count,points_awarded,payment_provider,payment_status,paid_at,created_at,confirmed_at,order_items(product_id,product_title,unit_price,quantity,item_note)";
       const paymentFields = "id,order_number,status,total,item_count,points_awarded,payment_provider,payment_status,paid_at,created_at,confirmed_at,order_items(product_id,product_title,unit_price,quantity)";
       const basicFields = "id,order_number,status,total,item_count,points_awarded,created_at,confirmed_at,order_items(product_id,product_title,unit_price,quantity)";
       let supportsOrderRecycle = true;
-      let orderResult = await db.from("orders").select(voucherPaymentFields).eq("user_id", userId).is("deleted_at", null).order("created_at", { ascending: false });
+      let orderResult = await db.from("orders").select(fulfillmentPaymentFields).eq("user_id", userId).is("deleted_at", null).order("created_at", { ascending: false });
       if (orderResult.error && /deleted_at/i.test(orderResult.error.message || "")) {
         supportsOrderRecycle = false;
-        orderResult = await db.from("orders").select(voucherPaymentFields).eq("user_id", userId).order("created_at", { ascending: false });
+        orderResult = await db.from("orders").select(fulfillmentPaymentFields).eq("user_id", userId).order("created_at", { ascending: false });
+      }
+      if (orderResult.error && /fulfillment_|delivery_|pickup_location/i.test(orderResult.error.message || "")) {
+        let voucherQuery = db.from("orders").select(voucherPaymentFields).eq("user_id", userId);
+        if (supportsOrderRecycle) voucherQuery = voucherQuery.is("deleted_at", null);
+        orderResult = await voucherQuery.order("created_at", { ascending: false });
       }
       if (orderResult.error && /subtotal|discount_amount|voucher_code|order_note|item_note/i.test(orderResult.error.message || "")) {
         let paymentQuery = db.from("orders").select(paymentFields).eq("user_id", userId);
@@ -11957,6 +12320,209 @@
       }, 0);
     }
 
+    function resetCheckoutFulfillment() {
+      Object.assign(state.checkoutFulfillment, {
+        method: "pickup",
+        latitude: null,
+        longitude: null,
+        distanceKm: null,
+        locating: false,
+        locationError: ""
+      });
+    }
+
+    function distanceKmBetween(latitude, longitude, targetLatitude, targetLongitude) {
+      const radians = (degrees) => Number(degrees) * Math.PI / 180;
+      const latitudeDelta = radians(Number(targetLatitude) - Number(latitude));
+      const longitudeDelta = radians(Number(targetLongitude) - Number(longitude));
+      const startLatitude = radians(latitude);
+      const endLatitude = radians(targetLatitude);
+      const haversine = Math.sin(latitudeDelta / 2) ** 2
+        + Math.cos(startLatitude) * Math.cos(endLatitude) * Math.sin(longitudeDelta / 2) ** 2;
+      return 6371.0088 * 2 * Math.asin(Math.sqrt(Math.min(1, Math.max(0, haversine))));
+    }
+
+    function checkoutDeliveryFee() {
+      const fulfillment = state.checkoutFulfillment;
+      const distance = Number(fulfillment.distanceKm);
+      if (fulfillment.method !== "delivery" || fulfillment.distanceKm == null || !Number.isFinite(distance) || distance > DELIVERY_MAX_DISTANCE_KM) return 0;
+      return cartFinalTotal() + Number.EPSILON >= FREE_DELIVERY_MINIMUM ? 0 : DELIVERY_FEE;
+    }
+
+    function checkoutFinalTotal() {
+      return Math.max(0, cartFinalTotal() + checkoutDeliveryFee());
+    }
+
+    function renderCheckoutFulfillment() {
+      const modal = $("#paymentModal");
+      if (!modal) return;
+      const fulfillment = state.checkoutFulfillment;
+      const distance = Number(fulfillment.distanceKm);
+      const hasDistance = fulfillment.distanceKm != null && Number.isFinite(distance);
+      const tooFar = hasDistance && distance > DELIVERY_MAX_DISTANCE_KM;
+      if (tooFar && fulfillment.method === "delivery") fulfillment.method = "pickup";
+
+      $$('[data-fulfillment-option]').forEach((option) => {
+        const selected = option.dataset.fulfillmentOption === fulfillment.method;
+        const unavailable = option.dataset.fulfillmentOption === "delivery" && tooFar;
+        option.classList.toggle("is-selected", selected);
+        option.classList.toggle("is-disabled", unavailable);
+        const radio = option.querySelector("input");
+        if (radio) {
+          radio.checked = selected;
+          radio.disabled = unavailable;
+        }
+      });
+
+      const pickupPanel = $("[data-pickup-panel]");
+      const deliveryPanel = $("[data-delivery-panel]");
+      const locationRow = $("[data-delivery-location-row]");
+      if (pickupPanel) pickupPanel.hidden = fulfillment.method !== "pickup";
+      if (deliveryPanel) deliveryPanel.hidden = fulfillment.method !== "delivery";
+      if (locationRow) locationRow.hidden = fulfillment.method !== "delivery" && !tooFar;
+
+      const status = $("#deliveryLocationStatus");
+      if (status) {
+        status.className = "delivery-location-status";
+        if (fulfillment.locating) {
+          status.textContent = t("locatingCustomer");
+        } else if (fulfillment.locationError) {
+          status.textContent = t(fulfillment.locationError);
+          status.classList.add("error");
+        } else if (tooFar) {
+          status.textContent = tWithValues("deliveryTooFar", { distance: distance.toFixed(1) });
+          status.classList.add("error");
+        } else if (hasDistance) {
+          const key = checkoutDeliveryFee() > 0 ? "deliveryEligiblePaid" : "deliveryEligibleFree";
+          status.textContent = tWithValues(key, { distance: distance.toFixed(1) });
+          status.classList.add("success");
+        } else {
+          status.textContent = t("locationRequired");
+        }
+      }
+
+      const locationButton = $("[data-use-location]");
+      if (locationButton) locationButton.disabled = fulfillment.locating;
+      const addressInput = $("#deliveryAddress");
+      const phoneInput = $("#deliveryPhone");
+      if (addressInput && document.activeElement !== addressInput && addressInput.value !== fulfillment.address) addressInput.value = fulfillment.address;
+      if (phoneInput && document.activeElement !== phoneInput && phoneInput.value !== fulfillment.phone) phoneInput.value = fulfillment.phone;
+
+      const subtotal = cartTotal();
+      const discount = voucherDiscount();
+      const deliveryFee = checkoutDeliveryFee();
+      const deliveryRow = $("[data-payment-delivery-row]");
+      $("[data-payment-subtotal]").textContent = formatPrice(subtotal);
+      $("[data-payment-discount]").textContent = `-${formatPrice(discount)}`;
+      $("[data-payment-discount-row]").hidden = discount <= 0;
+      if (deliveryRow) deliveryRow.hidden = fulfillment.method !== "delivery" || !hasDistance || tooFar;
+      $("[data-payment-delivery]").textContent = deliveryFee > 0 ? formatPrice(deliveryFee) : t("free");
+      $("[data-payment-total]").textContent = formatPrice(checkoutFinalTotal());
+    }
+
+    function setCheckoutFulfillmentMethod(method) {
+      const fulfillment = state.checkoutFulfillment;
+      if (method === "pickup") {
+        fulfillment.method = "pickup";
+        fulfillment.locationError = "";
+        renderCheckoutFulfillment();
+        return;
+      }
+      if (fulfillment.distanceKm != null && Number(fulfillment.distanceKm) > DELIVERY_MAX_DISTANCE_KM) {
+        fulfillment.method = "pickup";
+        renderCheckoutFulfillment();
+        showToast(tWithValues("deliveryTooFar", { distance: Number(fulfillment.distanceKm).toFixed(1) }));
+        return;
+      }
+      fulfillment.method = "delivery";
+      fulfillment.locationError = "";
+      renderCheckoutFulfillment();
+      if (fulfillment.distanceKm == null || !Number.isFinite(Number(fulfillment.distanceKm))) locateForDelivery();
+    }
+
+    function geolocationErrorKey(error) {
+      if (error?.code === 1) return "geolocationDenied";
+      if (error?.code === 3) return "geolocationTimeout";
+      return "geolocationUnavailable";
+    }
+
+    function locateForDelivery() {
+      const fulfillment = state.checkoutFulfillment;
+      if (!navigator.geolocation) {
+        fulfillment.locationError = "geolocationUnsupported";
+        fulfillment.locating = false;
+        renderCheckoutFulfillment();
+        return;
+      }
+      fulfillment.method = "delivery";
+      fulfillment.latitude = null;
+      fulfillment.longitude = null;
+      fulfillment.distanceKm = null;
+      fulfillment.locating = true;
+      fulfillment.locationError = "";
+      renderCheckoutFulfillment();
+      navigator.geolocation.getCurrentPosition((position) => {
+        const latitude = Number(position.coords.latitude);
+        const longitude = Number(position.coords.longitude);
+        const distance = distanceKmBetween(latitude, longitude, FLAT_BUSH_PICKUP.latitude, FLAT_BUSH_PICKUP.longitude);
+        fulfillment.latitude = latitude;
+        fulfillment.longitude = longitude;
+        fulfillment.distanceKm = distance;
+        fulfillment.locating = false;
+        fulfillment.locationError = "";
+        fulfillment.method = distance <= DELIVERY_MAX_DISTANCE_KM ? "delivery" : "pickup";
+        renderCheckoutFulfillment();
+        if (distance > DELIVERY_MAX_DISTANCE_KM) {
+          showToast(tWithValues("deliveryTooFar", { distance: distance.toFixed(1) }));
+        }
+      }, (error) => {
+        fulfillment.latitude = null;
+        fulfillment.longitude = null;
+        fulfillment.distanceKm = null;
+        fulfillment.locating = false;
+        fulfillment.locationError = geolocationErrorKey(error);
+        renderCheckoutFulfillment();
+      }, {
+        enableHighAccuracy: false,
+        timeout: 12000,
+        maximumAge: 0
+      });
+    }
+
+    function checkoutFulfillmentError() {
+      const fulfillment = state.checkoutFulfillment;
+      if (fulfillment.method === "pickup") return "";
+      if (fulfillment.locationError) return t(fulfillment.locationError);
+      if (fulfillment.locating || fulfillment.distanceKm == null || !Number.isFinite(Number(fulfillment.distanceKm))) return t("checkLocationFirst");
+      if (Number(fulfillment.distanceKm) > DELIVERY_MAX_DISTANCE_KM) {
+        return tWithValues("deliveryTooFar", { distance: Number(fulfillment.distanceKm).toFixed(1) });
+      }
+      if (String(fulfillment.address || "").trim().length < 5) return t("enterDeliveryAddress");
+      if (String(fulfillment.phone || "").trim().length < 5) return t("enterDeliveryPhone");
+      return "";
+    }
+
+    function checkoutFulfillmentPayload() {
+      const fulfillment = state.checkoutFulfillment;
+      if (fulfillment.method === "pickup") return { method: "pickup" };
+      return {
+        method: "delivery",
+        address: String(fulfillment.address || "").trim(),
+        phone: String(fulfillment.phone || "").trim(),
+        latitude: fulfillment.latitude,
+        longitude: fulfillment.longitude
+      };
+    }
+
+    function checkoutServerErrorMessage(message) {
+      const value = String(message || "");
+      if (/within 12 km|delivery area/i.test(value)) return tWithValues("deliveryTooFar", { distance: Number(state.checkoutFulfillment.distanceKm || 0).toFixed(1) });
+      if (/delivery address/i.test(value)) return t("enterDeliveryAddress");
+      if (/phone/i.test(value)) return t("enterDeliveryPhone");
+      if (/location/i.test(value)) return t("checkLocationFirst");
+      return value;
+    }
+
     function renderCart() {
       const count = cartProductCount();
       const subtotal = cartTotal();
@@ -12024,6 +12590,7 @@
         `;
       }).join("");
       refreshIcons();
+      if (!$("#paymentModal")?.hidden) renderCheckoutFulfillment();
     }
 
     function addToCart(id, quantity = 1) {
@@ -12077,14 +12644,10 @@
         return;
       }
       closePanels();
-      const subtotal = cartTotal();
-      const discount = voucherDiscount();
-      $("[data-payment-subtotal]").textContent = formatPrice(subtotal);
-      $("[data-payment-discount]").textContent = `-${formatPrice(discount)}`;
-      $("[data-payment-discount-row]").hidden = discount <= 0;
-      $("[data-payment-total]").textContent = formatPrice(Math.max(0, subtotal - discount));
+      resetCheckoutFulfillment();
       $("#paymentMessage").textContent = "";
       $("#paymentModal").hidden = false;
+      renderCheckoutFulfillment();
       refreshIcons();
     }
 
@@ -12099,6 +12662,15 @@
       const button = $("[data-start-payment]");
       const message = $("#paymentMessage");
       if (!button || !message || !state.cart.length || !db) return;
+      const deliveryAddressInput = $("#deliveryAddress");
+      const deliveryPhoneInput = $("#deliveryPhone");
+      if (deliveryAddressInput) state.checkoutFulfillment.address = deliveryAddressInput.value;
+      if (deliveryPhoneInput) state.checkoutFulfillment.phone = deliveryPhoneInput.value;
+      const fulfillmentError = checkoutFulfillmentError();
+      if (fulfillmentError) {
+        message.textContent = fulfillmentError;
+        return;
+      }
       button.disabled = true;
       message.textContent = t("paymentProcessing");
 
@@ -12123,6 +12695,7 @@
           body: JSON.stringify({
             items: state.cart.map((line) => ({ product_id: line.id, quantity: line.quantity })),
             customer_voucher_id: state.selectedCustomerVoucherId || null,
+            fulfillment: checkoutFulfillmentPayload(),
             locale: state.lang
           })
         });
@@ -12131,7 +12704,7 @@
           const unavailable = response.status === 404
             || response.status === 503
             || /not configured|not found/i.test(result.error || "");
-          throw new Error(unavailable ? t("paymentUnavailable") : (result.error || "Unable to start payment"));
+          throw new Error(unavailable ? t("paymentUnavailable") : checkoutServerErrorMessage(result.error || "Unable to start payment"));
         }
         window.location.assign(result.checkout_url);
       } catch (error) {
@@ -12436,6 +13009,8 @@
       const customerPromise = db.from("profiles").select("id,email,full_name,points,total_spent,created_at,updated_at,is_admin,admin_role").order("created_at", { ascending: false });
       const voucherPromise = db.from("vouchers").select("*").order("created_at", { ascending: false });
       const voucherAssignmentPromise = db.from("customer_vouchers").select("id,voucher_id,user_id,source,redeemed_at,reserved_at,used_at,order_id,vouchers(code,name,active,starts_at,expires_at),profiles!customer_vouchers_user_id_fkey(email,full_name)").order("redeemed_at", { ascending: false });
+      const fulfillmentPaymentFields = "id,order_number,user_id,status,order_note,subtotal,discount_amount,voucher_code,total,item_count,points_awarded,payment_provider,payment_status,paid_at,created_at,confirmed_at,deleted_at,deleted_by,fulfillment_method,fulfillment_configured,delivery_fee,delivery_distance_km,delivery_address,delivery_phone,pickup_location,profiles!orders_user_id_fkey(email,full_name,customer_barcode,is_admin),order_items(product_id,product_title,quantity,unit_price,item_note)";
+      const fulfillmentPaymentFieldsWithoutRecycle = "id,order_number,user_id,status,order_note,subtotal,discount_amount,voucher_code,total,item_count,points_awarded,payment_provider,payment_status,paid_at,created_at,confirmed_at,fulfillment_method,fulfillment_configured,delivery_fee,delivery_distance_km,delivery_address,delivery_phone,pickup_location,profiles!orders_user_id_fkey(email,full_name,customer_barcode,is_admin),order_items(product_id,product_title,quantity,unit_price,item_note)";
       const voucherPaymentFields = "id,order_number,user_id,status,order_note,subtotal,discount_amount,voucher_code,total,item_count,points_awarded,payment_provider,payment_status,paid_at,created_at,confirmed_at,deleted_at,deleted_by,profiles!orders_user_id_fkey(email,full_name,customer_barcode,is_admin),order_items(product_id,product_title,quantity,unit_price,item_note)";
       const voucherPaymentFieldsWithoutRecycle = "id,order_number,user_id,status,order_note,subtotal,discount_amount,voucher_code,total,item_count,points_awarded,payment_provider,payment_status,paid_at,created_at,confirmed_at,profiles!orders_user_id_fkey(email,full_name,customer_barcode,is_admin),order_items(product_id,product_title,quantity,unit_price,item_note)";
       const paymentFields = "id,order_number,user_id,status,total,item_count,points_awarded,payment_provider,payment_status,paid_at,created_at,confirmed_at,deleted_at,deleted_by,profiles!orders_user_id_fkey(email,full_name),order_items(product_id,product_title,quantity,unit_price)";
@@ -12443,10 +13018,14 @@
       const basicFields = "id,order_number,user_id,status,total,item_count,points_awarded,created_at,confirmed_at,deleted_at,deleted_by,profiles!orders_user_id_fkey(email,full_name),order_items(product_id,product_title,quantity,unit_price)";
       const basicFieldsWithoutRecycle = "id,order_number,user_id,status,total,item_count,points_awarded,created_at,confirmed_at,profiles!orders_user_id_fkey(email,full_name),order_items(product_id,product_title,quantity,unit_price)";
       state.orderRecycleSupported = true;
-      let ordersResult = await db.from("orders").select(voucherPaymentFields).order("created_at", { ascending: false });
+      let ordersResult = await db.from("orders").select(fulfillmentPaymentFields).order("created_at", { ascending: false });
       if (ordersResult.error && /deleted_at|deleted_by/i.test(ordersResult.error.message || "")) {
         state.orderRecycleSupported = false;
-        ordersResult = await db.from("orders").select(voucherPaymentFieldsWithoutRecycle).order("created_at", { ascending: false });
+        ordersResult = await db.from("orders").select(fulfillmentPaymentFieldsWithoutRecycle).order("created_at", { ascending: false });
+      }
+      if (ordersResult.error && /fulfillment_|delivery_|pickup_location/i.test(ordersResult.error.message || "")) {
+        const fields = state.orderRecycleSupported ? voucherPaymentFields : voucherPaymentFieldsWithoutRecycle;
+        ordersResult = await db.from("orders").select(fields).order("created_at", { ascending: false });
       }
       if (ordersResult.error && /subtotal|discount_amount|voucher_code|order_note|item_note/i.test(ordersResult.error.message || "")) {
         const fields = state.orderRecycleSupported ? paymentFields : paymentFieldsWithoutRecycle;
@@ -12496,6 +13075,11 @@
       const orderNote = includeNotes && order?.order_note && !includeAdminEditor
         ? `<div><strong>${state.lang === "zh" ? "订单备注" : "Order note"}:</strong> ${escapeHtml(order.order_note)}</div>`
         : "";
+      const fulfillment = hasOrderFulfillment(order)
+        ? order.fulfillment_method === "delivery"
+          ? `<div><strong>${t("delivery")}:</strong> ${escapeHtml(order.delivery_address || "-")} · ${escapeHtml(order.delivery_phone || "-")} · ${Number(order.delivery_distance_km || 0).toFixed(1)} km · ${t("deliveryFee")} ${Number(order.delivery_fee || 0) > 0 ? formatPrice(order.delivery_fee) : t("free")}</div>`
+          : `<div><strong>${t("pickup")}:</strong> ${escapeHtml(order.pickup_location || FLAT_BUSH_PICKUP.name)}</div>`
+        : "";
       const adminOrderNoteEditor = includeAdminEditor && state.profile?.is_admin
         ? `<div class="admin-order-note-editor" data-admin-order-note-editor="${escapeHtml(order.id)}">
             <label class="admin-order-note-field" for="adminOrderNote-${escapeHtml(order.id)}">
@@ -12508,7 +13092,7 @@
         : "";
       return `<div class="admin-order-item-summary">
         <div class="admin-order-item-thumbnails" aria-label="${itemLabel}">${thumbnails}${more}</div>
-        <div class="admin-order-item-copy"><div>${itemText}</div>${orderNote}${adminOrderNoteEditor}</div>
+        <div class="admin-order-item-copy"><div>${itemText}</div>${fulfillment}${orderNote}${adminOrderNoteEditor}</div>
       </div>`;
     }
 
@@ -12539,7 +13123,7 @@
           <tr data-admin-order-row="${escapeHtml(order.id)}">
             <td><strong>${escapeHtml(order.order_number)}</strong><div class="muted">${new Date(order.created_at).toLocaleString("en-NZ")}</div></td>
             <td>${order.order_number?.startsWith("POS-") && order.user_id === state.session?.user?.id ? '<strong>到店顾客</strong><div class="muted">线下扫码</div>' : `${escapeHtml(customer.full_name || customer.email || "Customer")}<div class="muted">${escapeHtml(customer.email || "")}</div>`}</td>
-            <td>${formatPrice(order.total)}<div class="muted">${Number(order.item_count)} items${Number(order.discount_amount || 0) > 0 ? ` · ${escapeHtml(order.voucher_code || (String(order.order_number || "").startsWith("POS-") ? "POS Discount" : "Discount"))} -${formatPrice(order.discount_amount)}` : ""}</div></td>
+            <td>${formatPrice(order.total)}<div class="muted">${Number(order.item_count)} items${Number(order.discount_amount || 0) > 0 ? ` · ${escapeHtml(order.voucher_code || (String(order.order_number || "").startsWith("POS-") ? "POS Discount" : "Discount"))} -${formatPrice(order.discount_amount)}` : ""}</div>${hasOrderFulfillment(order) ? `<div class="muted">${escapeHtml(orderFulfillmentSummary(order))}</div>` : ""}</td>
             <td>
               <div class="order-statuses" style="justify-content: flex-start;">
                 <span class="status ${paymentStatusClass(order)}">${escapeHtml(paymentStatusLabel(order))}</span>
@@ -12580,6 +13164,7 @@
       const items = order.order_items || [];
       const total = Number(order.total || 0);
       const discount = Number(order.discount_amount || 0);
+      const deliveryFee = Number(order.delivery_fee || 0);
       const subtotal = Number(order.subtotal ?? total + discount);
       const discountLabel = String(order.order_number || "").startsWith("POS-") ? (isChinese ? "本单折扣" : "Order Discount") : (isChinese ? "代金券" : "Voucher");
       const voucher = order.voucher_code ? state.vouchers.find((item) => item.code === order.voucher_code) : null;
@@ -12611,6 +13196,11 @@
       const discountLine = discount > 0 ? `<span>${escapeHtml(discountLabel)}${order.voucher_code ? ` ${escapeHtml(order.voucher_code)}` : ""}: ${discountOffer ? `${discountOffer} ` : ""}(-${formatPrice(discount)})</span>` : "";
       const totalSavingsLine = discount > 0 ? `<span><strong>${isChinese ? "总优惠" : "Total Savings"}</strong>: -${formatPrice(discount)}</span>` : "";
       const discountBlock = discount > 0 ? `<div class="meta"><span>${isChinese ? "原价" : "Subtotal"}: ${formatPrice(subtotal)}</span>${discountLine}${totalSavingsLine}</div>` : "";
+      const fulfillmentBlock = hasOrderFulfillment(order)
+        ? order.fulfillment_method === "delivery"
+          ? `<div class="meta"><span><strong>${isChinese ? "配送" : "Delivery"}</strong></span><span>${isChinese ? "地址" : "Address"}: ${escapeHtml(order.delivery_address || "-")}</span><span>${isChinese ? "电话" : "Phone"}: ${escapeHtml(order.delivery_phone || "-")}</span><span>${isChinese ? "预估距离" : "Estimated Distance"}: ${Number(order.delivery_distance_km || 0).toFixed(1)} km</span><span>${isChinese ? "配送费" : "Delivery Fee"}: ${deliveryFee > 0 ? formatPrice(deliveryFee) : (isChinese ? "免费" : "Free")}</span></div>`
+          : `<div class="meta"><span><strong>${isChinese ? "自取" : "Pickup"}</strong>: ${escapeHtml(order.pickup_location || FLAT_BUSH_PICKUP.name)}</span></div>`
+        : "";
       const orderNoteBlock = order.order_note ? `<div class="meta"><span>${isChinese ? "订单备注" : "Order Note"}: ${escapeHtml(order.order_note)}</span></div>` : "";
       let receiptPrint = document.querySelector("#adminReceiptPrint");
       if (!receiptPrint) {
@@ -12624,7 +13214,7 @@
         printStyle.textContent = `#adminReceiptPrint{display:none}@page{size:55mm auto;margin:0}@media print{html,body{width:55mm!important;min-width:0!important;margin:0!important;padding:0!important;background:#fff!important}body.admin-receipt-printing>*:not(#adminReceiptPrint){display:none!important}body.admin-receipt-printing #adminReceiptPrint{display:block!important;width:51mm!important;padding:0 1mm .5mm!important;color:#000;background:#fff;font-family:Arial,"Microsoft YaHei",sans-serif;font-size:10px;line-height:1.35;overflow-wrap:anywhere}#adminReceiptPrint .head{text-align:center;border-bottom:1px dashed #000;padding-bottom:4px}#adminReceiptPrint .head strong{display:block;font-size:15px}#adminReceiptPrint .meta{display:grid;gap:2px;padding:4px 0;border-bottom:1px dashed #000}#adminReceiptPrint .line{padding:4px 0;border-bottom:1px dotted #777}#adminReceiptPrint .line strong,#adminReceiptPrint .line span,#adminReceiptPrint .line small{display:block}#adminReceiptPrint .line span{text-align:right}#adminReceiptPrint .line .discounted-line{font-size:9px}#adminReceiptPrint .line small{margin-top:2px}#adminReceiptPrint .total{display:flex;justify-content:space-between;font-size:14px;font-weight:700;padding:7px 0;border-bottom:1px dashed #000}#adminReceiptPrint .tax{display:grid;gap:2px;padding:5px 0;border-bottom:1px dashed #000}#adminReceiptPrint .tax span{display:flex;justify-content:space-between}#adminReceiptPrint .footer{text-align:center;padding-top:6px}}`;
         document.head.appendChild(printStyle);
       }
-      receiptPrint.innerHTML = `<div class="head"><strong>GO GO SHOP</strong><span>${isChinese ? "销售小票" : "SALES RECEIPT"}</span></div><div class="meta"><span>${isChinese ? "订单号" : "Order"}: ${escapeHtml(order.order_number)}</span><span>${isChinese ? "时间" : "Date"}: ${escapeHtml(new Date(order.confirmed_at || order.created_at).toLocaleString(locale))}</span>${customerBlock}</div>${itemLines}${discountBlock}${orderNoteBlock}<div class="total"><span>${isChinese ? "合计" : "TOTAL"}</span><span>${formatPrice(total)}</span></div><div class="tax"><strong>${isChinese ? "价格包含 GST 15%" : "Prices Include GST 15%"}</strong><span><span>${isChinese ? "其中 GST 税额" : "GST Included"}</span><b>${formatPrice(gstAmount)}</b></span></div><div class="footer">${isChinese ? "谢谢惠顾" : "Thank You"}</div>`;
+      receiptPrint.innerHTML = `<div class="head"><strong>GO GO SHOP</strong><span>${isChinese ? "销售小票" : "SALES RECEIPT"}</span></div><div class="meta"><span>${isChinese ? "订单号" : "Order"}: ${escapeHtml(order.order_number)}</span><span>${isChinese ? "时间" : "Date"}: ${escapeHtml(new Date(order.confirmed_at || order.created_at).toLocaleString(locale))}</span>${customerBlock}</div>${itemLines}${discountBlock}${fulfillmentBlock}${orderNoteBlock}<div class="total"><span>${isChinese ? "合计" : "TOTAL"}</span><span>${formatPrice(total)}</span></div><div class="tax"><strong>${isChinese ? "价格包含 GST 15%" : "Prices Include GST 15%"}</strong><span><span>${isChinese ? "其中 GST 税额" : "GST Included"}</span><b>${formatPrice(gstAmount)}</b></span></div><div class="footer">${isChinese ? "谢谢惠顾" : "Thank You"}</div>`;
       document.body.classList.add("admin-receipt-printing");
       window.addEventListener("afterprint", () => document.body.classList.remove("admin-receipt-printing"), { once: true });
       setTimeout(() => window.print(), 50);
@@ -15359,6 +15949,7 @@
       renderAccount();
       renderVipRules();
       renderCustomerVouchers();
+      if (!$("#paymentModal")?.hidden) renderCheckoutFulfillment();
       applyStoreDesign();
       renderAdmin();
       if (state.activeProductId) renderProductDetail();
@@ -15587,6 +16178,7 @@
       if (target.matches("[data-open-vip-rules]")) openVipRules();
       if (target.matches("[data-close-panels]")) closePanels();
       if (target.matches("[data-close-payment]")) closePaymentModal();
+      if (target.matches("[data-use-location]")) locateForDelivery();
       if (target.matches("[data-start-payment]")) startStripeCheckout();
       if (target.matches("[data-oauth-provider]")) signInWithProvider(target.dataset.oauthProvider);
       if (target.matches("[data-customer-logout]")) customerSignOut();
@@ -15704,6 +16296,13 @@
     });
 
     document.addEventListener("input", (event) => {
+      if (event.target instanceof Element && event.target.matches("#deliveryAddress, #deliveryPhone")) {
+        const key = event.target.matches("#deliveryAddress") ? "address" : "phone";
+        state.checkoutFulfillment[key] = event.target.value;
+        const message = $("#paymentMessage");
+        if (message) message.textContent = "";
+        return;
+      }
       if (event.target instanceof Element && event.target.closest("[data-product-label-controls]")) {
         renderProductLabelPreview();
         return;
@@ -15752,6 +16351,12 @@
     });
 
     document.addEventListener("change", (event) => {
+      if (event.target instanceof Element && event.target.matches("[data-fulfillment-method]")) {
+        setCheckoutFulfillmentMethod(event.target.value);
+        const message = $("#paymentMessage");
+        if (message) message.textContent = "";
+        return;
+      }
       if (event.target instanceof Element && event.target.closest("[data-product-label-controls]")) {
         renderProductLabelPreview();
         return;

@@ -60,7 +60,11 @@ as $$
 begin
   if tg_op = 'INSERT' then
     new.subtotal := coalesce(new.subtotal, new.total);
-  elsif new.subtotal is null or (coalesce(new.discount_amount, 0) = 0 and new.voucher_id is null) then
+  elsif new.subtotal is null or (
+    coalesce(new.discount_amount, 0) = 0
+    and new.voucher_id is null
+    and coalesce((to_jsonb(new) ->> 'delivery_fee')::numeric, 0) = 0
+  ) then
     new.subtotal := new.total;
   end if;
   return new;

@@ -9,6 +9,8 @@
 
 完成基础数据库和付款设置后，再运行一次 `supabase-vouchers.sql`。该脚本会添加代金券兑换、客户代金券账户、后台发放、服务端折扣校验和订单优惠明细。
 
+完成代金券脚本后，再运行一次 `supabase-order-fulfillment.sql`。该脚本会添加 Flat Bush 自取、12 公里内配送、运费和配送联系方式，并由数据库重新计算距离与费用。满 NZ$80 的门槛按使用代金券后的商品金额计算；12 公里包含边界值。
+
 该脚本会创建：客户资料、商品库存、订单、订单明细、积分、权限策略，以及创建订单和确认订单的数据库函数。
 
 已有数据库只需额外运行一次 `supabase-storefront-security.sql`。该脚本会让普通访客仅能读取公开店面字段，供应商、进货价和 1688 货源信息只对管理员开放。
@@ -83,11 +85,11 @@ Apple Client Secret 通常最长有效 6 个月，到期前需要重新生成。
 
 网站使用 Stripe 托管结账，因此银行卡号不会进入网页或 Supabase 数据库。Stripe 会根据客户的设备和浏览器自动显示 Apple Pay、Google Pay 和银行卡。
 
-1. 在 SQL Editor 运行一次 `supabase-payments.sql`。
+1. 在 SQL Editor 依次运行 `supabase-payments.sql`、`supabase-vouchers.sql` 和 `supabase-order-fulfillment.sql`。
 2. 部署 `supabase/functions/create-checkout-session` 和 `supabase/functions/stripe-webhook`。
 3. 在 Supabase **Edge Functions > Secrets** 添加：
    - `STRIPE_SECRET_KEY`：Stripe 后台提供的 Secret key。
-   - `SITE_URL`：`https://henry345683904.github.io/gogoshop/`
+   - `SITE_URL`：`https://gogoshop.nz/`
 4. 在 Stripe **Developers > Webhooks** 添加 Endpoint：
 
    `https://ucnkcddhrptqpdlvcohy.supabase.co/functions/v1/stripe-webhook`

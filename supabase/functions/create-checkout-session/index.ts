@@ -1,14 +1,70 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
-import {
-  corsHeaders,
-  jsonResponse,
-  requestOriginAllowed,
-  siteUrl
-} from "../_shared/http.ts";
+
+const DEFAULT_SITE_URL = "https://gogoshop.nz/";
+const LEGACY_SITE_ORIGIN = "https://henry345683904.github.io";
+const ALLOWED_ORIGINS = new Set([
+  "https://gogoshop.nz",
+  "https://www.gogoshop.nz",
+  LEGACY_SITE_ORIGIN,
+  "http://127.0.0.1:8769",
+  "http://localhost:8769"
+]);
+
+function siteUrl(): string {
+  const configured = Deno.env.get("SITE_URL")?.trim();
+  if (!configured) return DEFAULT_SITE_URL;
+  try {
+    const url = new URL(configured);
+    return url.origin === LEGACY_SITE_ORIGIN ? DEFAULT_SITE_URL : url.toString();
+  } catch {
+    return DEFAULT_SITE_URL;
+  }
+}
+
+function requestOriginAllowed(request: Request): boolean {
+  const origin = request.headers.get("origin");
+  if (!origin) return true;
+  return ALLOWED_ORIGINS.has(origin) || origin === new URL(siteUrl()).origin;
+}
+
+function corsHeaders(request: Request): HeadersInit {
+  const origin = request.headers.get("origin");
+  const allowedOrigin = origin && requestOriginAllowed(request)
+    ? origin
+    : new URL(siteUrl()).origin;
+  return {
+    "Access-Control-Allow-Origin": allowedOrigin,
+    "Access-Control-Allow-Headers": "authorization, apikey, content-type, x-client-info",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Vary": "Origin"
+  };
+}
+
+function jsonResponse(
+  request: Request,
+  body: Record<string, unknown>,
+  status = 200
+): Response {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: {
+      ...corsHeaders(request),
+      "Content-Type": "application/json"
+    }
+  });
+}
 
 type CartItem = {
   product_id: string;
   quantity: number;
+};
+
+type FulfillmentRequest = {
+  method: "pickup" | "delivery";
+  address: string;
+  phone: string;
+  latitude: number | null;
+  longitude: number | null;
 };
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
@@ -26,6 +82,27 @@ function normalizedItems(value: unknown): CartItem[] {
     };
   });
   return items.every((item) => item.product_id) ? items : [];
+}
+
+function normalizedFulfillment(value: unknown): FulfillmentRequest | null {
+  if (value == null) {
+    return { method: "pickup", address: "", phone: "", latitude: null, longitude: null };
+  }
+  const record = value && typeof value === "object" ? value as Record<string, unknown> : {};
+  const method = String(record.method || "").trim().toLowerCase();
+  if (method !== "pickup" && method !== "delivery") return null;
+  if (method === "pickup") {
+    return { method, address: "", phone: "", latitude: null, longitude: null };
+  }
+
+  const address = String(record.address || "").trim();
+  const phone = String(record.phone || "").trim();
+  const latitude = Number(record.latitude);
+  const longitude = Number(record.longitude);
+  if (address.length < 5 || address.length > 500 || phone.length < 5 || phone.length > 80) return null;
+  if (!Number.isFinite(latitude) || latitude < -90 || latitude > 90) return null;
+  if (!Number.isFinite(longitude) || longitude < -180 || longitude > 180) return null;
+  return { method, address, phone, latitude, longitude };
 }
 
 function checkoutReturnUrl(status: "success" | "cancelled", orderId = ""): string {
@@ -104,10 +181,17 @@ Deno.serve(async (request: Request) => {
 
   const items = normalizedItems(body.items);
   if (!items.length) return jsonResponse(request, { error: "Cart is empty or invalid" }, 400);
+  const fulfillment = normalizedFulfillment(body.fulfillment);
+  if (!fulfillment) return jsonResponse(request, { error: "Delivery or pickup details are invalid" }, 400);
 
   const { data: orderId, error: orderError } = await userClient.rpc("create_payment_order", {
     p_items: items,
-    p_customer_voucher_id: body.customer_voucher_id || null
+    p_customer_voucher_id: body.customer_voucher_id || null,
+    p_fulfillment_method: fulfillment.method,
+    p_delivery_address: fulfillment.address,
+    p_delivery_phone: fulfillment.phone,
+    p_customer_lat: fulfillment.latitude,
+    p_customer_lng: fulfillment.longitude
   });
   if (orderError || !orderId) {
     return jsonResponse(request, { error: orderError?.message || "Unable to create order" }, 400);
@@ -115,7 +199,7 @@ Deno.serve(async (request: Request) => {
 
   const { data: order, error: orderLoadError } = await adminClient
     .from("orders")
-    .select("id,order_number,subtotal,discount_amount,total,voucher_code,order_items(product_title,unit_price,quantity)")
+    .select("id,order_number,subtotal,discount_amount,total,voucher_code,fulfillment_method,delivery_fee,delivery_distance_km,pickup_location,order_items(product_title,unit_price,quantity)")
     .eq("id", orderId)
     .single();
 
@@ -133,8 +217,14 @@ Deno.serve(async (request: Request) => {
   form.set("client_reference_id", order.id);
   form.set("metadata[order_id]", order.id);
   form.set("metadata[order_number]", order.order_number);
+  form.set("metadata[fulfillment_method]", order.fulfillment_method);
+  form.set("metadata[delivery_fee]", String(order.delivery_fee || 0));
+  if (order.delivery_distance_km != null) form.set("metadata[delivery_distance_km]", String(order.delivery_distance_km));
+  if (order.fulfillment_method === "pickup") form.set("metadata[pickup_location]", order.pickup_location || "Flat Bush");
   form.set("payment_intent_data[metadata][order_id]", order.id);
   form.set("payment_intent_data[metadata][order_number]", order.order_number);
+  form.set("payment_intent_data[metadata][fulfillment_method]", order.fulfillment_method);
+  form.set("payment_intent_data[metadata][delivery_fee]", String(order.delivery_fee || 0));
   if (userData.user.email) form.set("customer_email", userData.user.email);
   form.set("locale", body.locale === "zh" ? "zh" : "en");
 
@@ -176,6 +266,15 @@ Deno.serve(async (request: Request) => {
     form.set(prefix + "[price_data][product_data][name]", item.product_title);
     form.set(prefix + "[quantity]", String(item.quantity));
   });
+
+  if (Number(order.delivery_fee) > 0) {
+    const index = (order.order_items || []).length;
+    const prefix = "line_items[" + index + "]";
+    form.set(prefix + "[price_data][currency]", "nzd");
+    form.set(prefix + "[price_data][unit_amount]", String(Math.round(Number(order.delivery_fee) * 100)));
+    form.set(prefix + "[price_data][product_data][name]", body.locale === "zh" ? "配送费" : "Delivery fee");
+    form.set(prefix + "[quantity]", "1");
+  }
 
   const stripeResponse = await fetch("https://api.stripe.com/v1/checkout/sessions", {
     method: "POST",
