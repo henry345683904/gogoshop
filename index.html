@@ -13193,7 +13193,11 @@
         : configuredDiscountType === "fixed" && configuredDiscountValue > 0
           ? `${formatPrice(configuredDiscountValue)} OFF`
           : "";
+      const isOfflineOrder = String(order.order_number || "").startsWith("POS-");
       const gstAmount = Math.round(total * 15 / 115 * 100) / 100;
+      const receiptTaxBlock = isOfflineOrder
+        ? ""
+        : `<div class="tax"><strong>${isChinese ? "价格包含 GST 15%" : "Prices Include GST 15%"}</strong><span><span>${isChinese ? "其中 GST 税额" : "GST Included"}</span><b>${formatPrice(gstAmount)}</b></span></div>`;
       const customer = order.profiles || {};
       const hasCustomer = !String(order.order_number || "").startsWith("POS-") || (customer.is_admin !== true && order.user_id !== state.session?.user?.id);
       const customerName = customer.full_name || customer.email || (isChinese ? "客户" : "Customer");
@@ -13232,7 +13236,7 @@
         printStyle.textContent = `#adminReceiptPrint{display:none}@page{size:55mm auto;margin:0}@media print{html,body{width:55mm!important;min-width:0!important;margin:0!important;padding:0!important;background:#fff!important}body.admin-receipt-printing>*:not(#adminReceiptPrint){display:none!important}body.admin-receipt-printing #adminReceiptPrint{display:block!important;width:51mm!important;padding:0 1mm .5mm!important;color:#000;background:#fff;font-family:Arial,"Microsoft YaHei",sans-serif;font-size:10px;line-height:1.35;overflow-wrap:anywhere}#adminReceiptPrint .head{text-align:center;border-bottom:1px dashed #000;padding-bottom:4px}#adminReceiptPrint .head strong{display:block;font-size:15px}#adminReceiptPrint .meta{display:grid;gap:2px;padding:4px 0;border-bottom:1px dashed #000}#adminReceiptPrint .line{padding:4px 0;border-bottom:1px dotted #777}#adminReceiptPrint .line strong,#adminReceiptPrint .line span,#adminReceiptPrint .line small{display:block}#adminReceiptPrint .line span{text-align:right}#adminReceiptPrint .line .discounted-line{font-size:9px}#adminReceiptPrint .line small{margin-top:2px}#adminReceiptPrint .total{display:flex;justify-content:space-between;font-size:14px;font-weight:700;padding:7px 0;border-bottom:1px dashed #000}#adminReceiptPrint .tax{display:grid;gap:2px;padding:5px 0;border-bottom:1px dashed #000}#adminReceiptPrint .tax span{display:flex;justify-content:space-between}#adminReceiptPrint .footer{text-align:center;padding-top:6px}}`;
         document.head.appendChild(printStyle);
       }
-      receiptPrint.innerHTML = `<div class="head"><strong>GO GO SHOP</strong><span>${isChinese ? "销售小票" : "SALES RECEIPT"}</span></div><div class="meta"><span>${isChinese ? "订单号" : "Order"}: ${escapeHtml(order.order_number)}</span><span>${isChinese ? "时间" : "Date"}: ${escapeHtml(new Date(order.confirmed_at || order.created_at).toLocaleString(locale))}</span>${customerBlock}</div>${itemLines}${discountBlock}${fulfillmentBlock}${orderNoteBlock}<div class="total"><span>${isChinese ? "合计" : "TOTAL"}</span><span>${formatPrice(total)}</span></div><div class="tax"><strong>${isChinese ? "价格包含 GST 15%" : "Prices Include GST 15%"}</strong><span><span>${isChinese ? "其中 GST 税额" : "GST Included"}</span><b>${formatPrice(gstAmount)}</b></span></div><div class="footer">${isChinese ? "谢谢惠顾" : "Thank You"}</div>`;
+      receiptPrint.innerHTML = `<div class="head"><strong>GO GO SHOP</strong><span>${isChinese ? "销售小票" : "SALES RECEIPT"}</span></div><div class="meta"><span>${isChinese ? "订单号" : "Order"}: ${escapeHtml(order.order_number)}</span><span>${isChinese ? "时间" : "Date"}: ${escapeHtml(new Date(order.confirmed_at || order.created_at).toLocaleString(locale))}</span>${customerBlock}</div>${itemLines}${discountBlock}${fulfillmentBlock}${orderNoteBlock}<div class="total"><span>${isChinese ? "合计" : "TOTAL"}</span><span>${formatPrice(total)}</span></div>${receiptTaxBlock}<div class="footer">${isChinese ? "谢谢惠顾" : "Thank You"}</div>`;
       document.body.classList.add("admin-receipt-printing");
       window.addEventListener("afterprint", () => document.body.classList.remove("admin-receipt-printing"), { once: true });
       setTimeout(() => window.print(), 50);
