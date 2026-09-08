@@ -1070,8 +1070,9 @@
 
     .product-code-chip {
       display: inline-flex;
-      flex: 0 0 auto;
-      width: max-content;
+      flex: 0 1 auto;
+      width: auto;
+      max-width: 100%;
       align-items: center;
       border: 1px solid var(--line);
       border-radius: 999px;
@@ -1080,6 +1081,8 @@
       font-size: 11px;
       font-weight: 750;
       letter-spacing: 0.04em;
+      overflow-wrap: anywhere;
+      text-align: right;
     }
 
     .product-barcode {
@@ -2329,7 +2332,8 @@
       gap: 5px;
     }
 
-    .delivery-fields .field > span {
+    .delivery-fields .field > span,
+    .delivery-fields .field > label {
       color: #303434;
       font-size: 12px;
       font-weight: 700;
@@ -2346,6 +2350,124 @@
     .delivery-fields textarea {
       min-height: 70px;
       resize: vertical;
+    }
+
+    .address-autocomplete {
+      min-width: 0;
+      display: grid;
+      gap: 6px;
+    }
+
+    .address-autocomplete input[aria-expanded="true"] {
+      border-color: #68736f;
+      box-shadow: 0 0 0 2px rgba(36, 98, 62, .1);
+    }
+
+    .address-suggestions {
+      max-height: 190px;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      border: 1px solid #cfd5d2;
+      border-radius: 6px;
+      background: #fff;
+      box-shadow: 0 9px 22px rgba(20, 24, 24, .1);
+    }
+
+    .address-suggestions[hidden] {
+      display: none;
+    }
+
+    .address-google-attribution {
+      min-height: 14px;
+      display: flex;
+      justify-content: flex-end;
+      margin: 0;
+    }
+
+    .address-google-attribution[hidden] {
+      display: none;
+    }
+
+    .address-google-attribution img {
+      width: 120px;
+      height: 14px;
+      object-fit: contain;
+    }
+
+    .address-suggestion {
+      width: 100%;
+      min-width: 0;
+      display: grid;
+      gap: 2px;
+      border: 0;
+      border-bottom: 1px solid #e5e8e6;
+      border-radius: 0;
+      padding: 9px 10px;
+      background: #fff;
+      color: var(--ink);
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .address-suggestion:last-child {
+      border-bottom: 0;
+    }
+
+    .address-suggestion:hover,
+    .address-suggestion.is-active {
+      background: #f0f5f2;
+    }
+
+    .address-suggestion strong,
+    .address-suggestion span {
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .address-suggestion strong {
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .address-suggestion span {
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.35;
+    }
+
+    .address-search-status,
+    .address-verified-status {
+      min-width: 0;
+      margin: 0;
+      font-size: 11px;
+      line-height: 1.4;
+      overflow-wrap: anywhere;
+    }
+
+    .address-search-status {
+      color: var(--muted);
+    }
+
+    .address-search-status.error {
+      color: var(--danger);
+    }
+
+    .address-verified-status {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      color: #24623e;
+      font-weight: 750;
+    }
+
+    .address-verified-status[hidden] {
+      display: none;
+    }
+
+    .address-verified-status svg {
+      width: 14px;
+      height: 14px;
+      flex: 0 0 auto;
     }
 
     .payment-total-row.delivery {
@@ -2379,18 +2501,36 @@
 
     .payment-methods {
       display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       border-top: 1px solid var(--line);
     }
 
     .payment-method {
+      min-width: 0;
       min-height: 52px;
       display: flex;
       align-items: center;
       gap: 12px;
       border-bottom: 1px solid var(--line);
+      padding: 0 12px;
       color: var(--ink);
       font-size: 14px;
       font-weight: 700;
+    }
+
+    .payment-method:nth-child(2) {
+      border-left: 1px solid var(--line);
+    }
+
+    .payment-method:last-child {
+      grid-column: 1 / -1;
+    }
+
+    .payment-method span {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .payment-method svg {
@@ -9022,7 +9162,16 @@
           <div class="fulfillment-panel" data-delivery-panel hidden>
             <p class="delivery-rule-note" data-i18n="deliveryRules">Delivery is available within 12 km of Flat Bush. Free on merchandise totals of $80 or more after vouchers; otherwise $5. Your coordinates are used for this estimate and are not saved.</p>
             <div class="delivery-fields">
-              <label class="field"><span data-i18n="deliveryAddress">Delivery address</span><textarea id="deliveryAddress" maxlength="500" autocomplete="street-address" data-i18n-placeholder="deliveryAddressPlaceholder" placeholder="Enter the full delivery address"></textarea></label>
+              <div class="field delivery-address-field">
+                <label for="deliveryAddress" data-i18n="deliveryAddress">Delivery address</label>
+                <div class="address-autocomplete" data-address-autocomplete>
+                  <input id="deliveryAddress" type="text" maxlength="500" autocomplete="shipping street-address" role="combobox" aria-autocomplete="list" aria-controls="deliveryAddressSuggestions" aria-expanded="false" data-i18n-placeholder="deliveryAddressPlaceholder" placeholder="Start typing your delivery address">
+                  <div class="address-suggestions" id="deliveryAddressSuggestions" role="listbox" hidden></div>
+                  <p class="address-google-attribution" data-address-google-attribution hidden><img data-address-google-logo data-no-image-fallback alt="Powered by Google" width="120" height="14"></p>
+                  <p class="address-search-status" data-address-search-status role="status" aria-live="polite" hidden></p>
+                  <p class="address-verified-status" data-address-verified-status hidden><i data-lucide="badge-check"></i><span data-i18n="addressVerified">Verified New Zealand address</span></p>
+                </div>
+              </div>
               <label class="field"><span data-i18n="deliveryPhone">Phone number</span><input id="deliveryPhone" type="tel" maxlength="80" autocomplete="tel" inputmode="tel" data-i18n-placeholder="deliveryPhonePlaceholder" placeholder="Contact phone"></label>
             </div>
           </div>
@@ -9096,8 +9245,8 @@
     const PRODUCT_MEDIA_BUCKET = "product-media";
     const PRODUCT_IMAGE_FALLBACK = "./assets/product-image-placeholder.svg?imgv=images-v2";
     const PRODUCT_IMAGE_ASSET_VERSION = "images-v2";
-    const SUPABASE_URL = "https://ucnkcddhrptqpdlvcohy.supabase.co";
-    const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_zv6WbyD1hZKUx-Zyak-fPw_e1mURTN8";
+    const SUPABASE_URL = "https://ehfqtvsyyuhisizwndlm.supabase.co";
+    const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_c5DLXT7RGntvs60kZqMS-A_dzzp2GZW";
     const FLAT_BUSH_PICKUP = Object.freeze({ name: "Flat Bush", latitude: -36.9661534, longitude: 174.9127100 });
     const DELIVERY_MAX_DISTANCE_KM = 12;
     const FREE_DELIVERY_MINIMUM = 80;
@@ -9180,7 +9329,7 @@
       { key: "diamond", minSpend: 500, labelKey: "vipDiamond" },
       { key: "black", minSpend: 1000, labelKey: "vipBlack" }
     ]);
-    const SUPABASE_AUTH_STORAGE_KEY = "sb-ucnkcddhrptqpdlvcohy-auth-token";
+    const SUPABASE_AUTH_STORAGE_KEY = "sb-ehfqtvsyyuhisizwndlm-auth-token";
     const db = window.supabase?.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
       auth: {
         flowType: "pkce",
@@ -9245,7 +9394,13 @@
         geolocationUnavailable: "Your location could not be determined. Try again or choose pickup.",
         geolocationTimeout: "Location request timed out. Try again or choose pickup.",
         deliveryAddress: "Delivery address",
-        deliveryAddressPlaceholder: "Enter the full delivery address",
+        deliveryAddressPlaceholder: "Start typing your delivery address",
+        addressSearching: "Searching verified New Zealand addresses...",
+        addressNoResults: "No matching New Zealand address found. Keep typing or use your current location.",
+        addressSearchUnavailable: "Verified address search is temporarily unavailable. You can still use your current location.",
+        addressVerifying: "Verifying the selected address...",
+        addressVerified: "Verified New Zealand address",
+        addressVerificationFailed: "This address could not be verified. Please choose another suggestion or use your current location.",
         deliveryPhone: "Phone number",
         deliveryPhonePlaceholder: "Contact phone",
         deliveryFee: "Delivery fee",
@@ -9410,7 +9565,13 @@
         geolocationUnavailable: "暂时无法获取您的位置，请重试或选择到店自取。",
         geolocationTimeout: "获取位置超时，请重试或选择到店自取。",
         deliveryAddress: "配送地址",
-        deliveryAddressPlaceholder: "请输入完整配送地址",
+        deliveryAddressPlaceholder: "请输入配送地址进行搜索",
+        addressSearching: "正在搜索已核验的新西兰地址...",
+        addressNoResults: "未找到匹配的新西兰地址，请继续输入或使用当前位置。",
+        addressSearchUnavailable: "标准地址搜索暂时不可用，您仍可使用当前位置。",
+        addressVerifying: "正在核验所选地址...",
+        addressVerified: "已核验的新西兰地址",
+        addressVerificationFailed: "无法核验此地址，请选择其他建议地址或使用当前位置。",
         deliveryPhone: "联系电话",
         deliveryPhonePlaceholder: "请输入联系电话",
         deliveryFee: "配送费",
@@ -9618,7 +9779,18 @@
         locating: false,
         locationError: "",
         address: "",
-        phone: ""
+        phone: "",
+        addressSuggestions: [],
+        addressSearching: false,
+        addressVerifying: false,
+        addressSearchError: "",
+        addressSearchCompletedFor: "",
+        addressSuggestionsOpen: false,
+        addressSessionToken: "",
+        selectedPlaceResource: "",
+        verifiedAddress: "",
+        addressVerified: false,
+        addressActiveIndex: -1
       },
       adminOrders: [],
       adminOrdersLoaded: false,
@@ -9654,6 +9826,10 @@
       productReturnHash: "#catalog",
       productReturnScroll: 0
     };
+
+    let addressSearchTimer = 0;
+    let addressSearchRequestId = 0;
+    let addressSearchController = null;
 
     const retiredLegacyProductIds = new Set(["phone-case", "phone-case-1", "phone-case-2", "phone-case-3"]);
     state.products = state.products.filter((product) => !retiredLegacyProductIds.has(product.id));
@@ -12321,13 +12497,25 @@
     }
 
     function resetCheckoutFulfillment() {
+      cancelAddressSearch();
       Object.assign(state.checkoutFulfillment, {
         method: "pickup",
         latitude: null,
         longitude: null,
         distanceKm: null,
         locating: false,
-        locationError: ""
+        locationError: "",
+        addressSuggestions: [],
+        addressSearching: false,
+        addressVerifying: false,
+        addressSearchError: "",
+        addressSearchCompletedFor: "",
+        addressSuggestionsOpen: false,
+        addressSessionToken: "",
+        selectedPlaceResource: "",
+        verifiedAddress: "",
+        addressVerified: false,
+        addressActiveIndex: -1
       });
     }
 
@@ -12340,6 +12528,259 @@
       const haversine = Math.sin(latitudeDelta / 2) ** 2
         + Math.cos(startLatitude) * Math.cos(endLatitude) * Math.sin(longitudeDelta / 2) ** 2;
       return 6371.0088 * 2 * Math.asin(Math.sqrt(Math.min(1, Math.max(0, haversine))));
+    }
+
+    function createAddressSessionToken() {
+      if (window.crypto?.randomUUID) return window.crypto.randomUUID();
+      return `addr_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 12)}`;
+    }
+
+    function cancelAddressSearch() {
+      window.clearTimeout(addressSearchTimer);
+      addressSearchTimer = 0;
+      addressSearchRequestId += 1;
+      if (addressSearchController) addressSearchController.abort();
+      addressSearchController = null;
+    }
+
+    async function callCheckoutFunction(payload, signal = null) {
+      if (!db) throw new Error("Authentication required");
+      const { data: sessionData } = await db.auth.getSession();
+      const accessToken = sessionData.session?.access_token;
+      if (!accessToken) throw new Error("Authentication required");
+      const response = await fetch(SUPABASE_URL + "/functions/v1/create-checkout-session", {
+        method: "POST",
+        headers: {
+          "Authorization": "Bearer " + accessToken,
+          "apikey": SUPABASE_PUBLISHABLE_KEY,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload),
+        signal
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        const error = new Error(result.error || "Request failed");
+        error.code = result.code || "";
+        error.status = response.status;
+        throw error;
+      }
+      return result;
+    }
+
+    function renderAddressAutocomplete() {
+      const input = $("#deliveryAddress");
+      const list = $("#deliveryAddressSuggestions");
+      const status = $("[data-address-search-status]");
+      const verifiedStatus = $("[data-address-verified-status]");
+      const attribution = $("[data-address-google-attribution]");
+      if (!input || !list || !status || !verifiedStatus || !attribution) return;
+      const fulfillment = state.checkoutFulfillment;
+      const suggestions = Array.isArray(fulfillment.addressSuggestions) ? fulfillment.addressSuggestions : [];
+      const listOpen = fulfillment.addressSuggestionsOpen && suggestions.length > 0;
+      input.setAttribute("aria-expanded", String(listOpen));
+      if (listOpen && fulfillment.addressActiveIndex >= 0) {
+        input.setAttribute("aria-activedescendant", `delivery-address-option-${fulfillment.addressActiveIndex}`);
+      } else {
+        input.removeAttribute("aria-activedescendant");
+      }
+
+      list.hidden = !listOpen;
+      list.innerHTML = listOpen ? suggestions.map((suggestion, index) => {
+        const primary = suggestion.primary_text || suggestion.full_text;
+        const secondary = suggestion.secondary_text && suggestion.secondary_text !== primary
+          ? `<span>${escapeHtml(suggestion.secondary_text)}</span>`
+          : "";
+        return `<button class="address-suggestion${index === fulfillment.addressActiveIndex ? " is-active" : ""}" id="delivery-address-option-${index}" type="button" role="option" aria-selected="${index === fulfillment.addressActiveIndex}" data-address-suggestion="${index}"><strong>${escapeHtml(primary)}</strong>${secondary}</button>`;
+      }).join("") : "";
+      attribution.hidden = !listOpen;
+      const googleLogo = $("[data-address-google-logo]", attribution);
+      if (listOpen && googleLogo && !googleLogo.src) {
+        googleLogo.src = "./assets/powered-by-google-on-white3.png";
+      }
+
+      status.hidden = true;
+      status.classList.remove("error");
+      if (fulfillment.addressVerifying) {
+        status.textContent = t("addressVerifying");
+        status.hidden = false;
+      } else if (fulfillment.addressSearching) {
+        status.textContent = t("addressSearching");
+        status.hidden = false;
+      } else if (fulfillment.addressSearchError) {
+        status.textContent = t(fulfillment.addressSearchError);
+        status.classList.add("error");
+        status.hidden = false;
+      } else if (
+        fulfillment.addressSuggestionsOpen
+        && fulfillment.addressSearchCompletedFor
+        && fulfillment.addressSearchCompletedFor === String(fulfillment.address || "").trim()
+        && suggestions.length === 0
+      ) {
+        status.textContent = t("addressNoResults");
+        status.hidden = false;
+      }
+      verifiedStatus.hidden = !fulfillment.addressVerified;
+    }
+
+    function closeAddressSuggestions() {
+      const fulfillment = state.checkoutFulfillment;
+      window.clearTimeout(addressSearchTimer);
+      addressSearchTimer = 0;
+      if (fulfillment.addressSearching && addressSearchController) {
+        addressSearchRequestId += 1;
+        addressSearchController.abort();
+        addressSearchController = null;
+      }
+      fulfillment.addressSearching = false;
+      fulfillment.addressSuggestionsOpen = false;
+      fulfillment.addressActiveIndex = -1;
+      renderAddressAutocomplete();
+    }
+
+    function clearVerifiedDeliveryAddress() {
+      const fulfillment = state.checkoutFulfillment;
+      if (!fulfillment.addressVerified && !fulfillment.selectedPlaceResource) return;
+      fulfillment.selectedPlaceResource = "";
+      fulfillment.verifiedAddress = "";
+      fulfillment.addressVerified = false;
+      fulfillment.latitude = null;
+      fulfillment.longitude = null;
+      fulfillment.distanceKm = null;
+      fulfillment.locationError = "";
+    }
+
+    function queueDeliveryAddressSearch(value) {
+      const fulfillment = state.checkoutFulfillment;
+      const query = String(value || "").trim().replace(/\s+/g, " ");
+      cancelAddressSearch();
+      fulfillment.addressSuggestions = [];
+      fulfillment.addressSearching = false;
+      fulfillment.addressVerifying = false;
+      fulfillment.addressSearchError = "";
+      fulfillment.addressSearchCompletedFor = "";
+      fulfillment.addressActiveIndex = -1;
+      fulfillment.addressSuggestionsOpen = query.length >= 3;
+      if (query.length < 3 || !state.session?.user) {
+        renderAddressAutocomplete();
+        return;
+      }
+      if (!fulfillment.addressSessionToken) fulfillment.addressSessionToken = createAddressSessionToken();
+      addressSearchTimer = window.setTimeout(() => searchDeliveryAddresses(query), 350);
+      renderAddressAutocomplete();
+    }
+
+    async function searchDeliveryAddresses(query) {
+      const fulfillment = state.checkoutFulfillment;
+      const requestId = ++addressSearchRequestId;
+      addressSearchController = new AbortController();
+      fulfillment.addressSearching = true;
+      fulfillment.addressSearchError = "";
+      renderAddressAutocomplete();
+      try {
+        const result = await callCheckoutFunction({
+          action: "address-search",
+          query,
+          session_token: fulfillment.addressSessionToken,
+          locale: state.lang
+        }, addressSearchController.signal);
+        if (requestId !== addressSearchRequestId || query !== String(fulfillment.address || "").trim().replace(/\s+/g, " ")) return;
+        fulfillment.addressSuggestions = Array.isArray(result.suggestions) ? result.suggestions.slice(0, 5) : [];
+        fulfillment.addressSearchCompletedFor = query;
+        fulfillment.addressSuggestionsOpen = true;
+        fulfillment.addressActiveIndex = -1;
+      } catch (error) {
+        if (error.name === "AbortError" || requestId !== addressSearchRequestId) return;
+        fulfillment.addressSuggestions = [];
+        fulfillment.addressSearchCompletedFor = query;
+        fulfillment.addressSuggestionsOpen = true;
+        fulfillment.addressSearchError = "addressSearchUnavailable";
+      } finally {
+        if (requestId === addressSearchRequestId) {
+          fulfillment.addressSearching = false;
+          addressSearchController = null;
+          renderAddressAutocomplete();
+        }
+      }
+    }
+
+    async function selectDeliveryAddressSuggestion(index) {
+      const fulfillment = state.checkoutFulfillment;
+      const suggestion = fulfillment.addressSuggestions[Number(index)];
+      if (!suggestion?.place_resource) return;
+      cancelAddressSearch();
+      const requestId = addressSearchRequestId;
+      addressSearchController = new AbortController();
+      const sessionToken = fulfillment.addressSessionToken || createAddressSessionToken();
+      fulfillment.address = suggestion.full_text || suggestion.primary_text || "";
+      fulfillment.addressSuggestionsOpen = false;
+      fulfillment.addressSearchError = "";
+      fulfillment.addressSearchCompletedFor = "";
+      fulfillment.addressSearching = false;
+      fulfillment.addressVerifying = true;
+      fulfillment.addressActiveIndex = -1;
+      const input = $("#deliveryAddress");
+      if (input) input.value = fulfillment.address;
+      renderAddressAutocomplete();
+      try {
+        const result = await callCheckoutFunction({
+          action: "address-details",
+          place_resource: suggestion.place_resource,
+          session_token: sessionToken,
+          locale: state.lang
+        }, addressSearchController.signal);
+        if (requestId !== addressSearchRequestId) return;
+        const latitude = Number(result.latitude);
+        const longitude = Number(result.longitude);
+        if (!result.formatted_address || !Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+          throw new Error("Invalid address details");
+        }
+        fulfillment.address = String(result.formatted_address).trim();
+        fulfillment.selectedPlaceResource = String(result.place_resource || suggestion.place_resource);
+        fulfillment.verifiedAddress = fulfillment.address;
+        fulfillment.addressVerified = true;
+        fulfillment.latitude = latitude;
+        fulfillment.longitude = longitude;
+        fulfillment.distanceKm = distanceKmBetween(latitude, longitude, FLAT_BUSH_PICKUP.latitude, FLAT_BUSH_PICKUP.longitude);
+        fulfillment.locationError = "";
+        fulfillment.method = fulfillment.distanceKm <= DELIVERY_MAX_DISTANCE_KM ? "delivery" : "pickup";
+        if (input) input.value = fulfillment.address;
+        if (fulfillment.distanceKm > DELIVERY_MAX_DISTANCE_KM) {
+          showToast(tWithValues("deliveryTooFar", { distance: fulfillment.distanceKm.toFixed(1) }));
+        }
+      } catch (error) {
+        if (error.name === "AbortError" || requestId !== addressSearchRequestId) return;
+        fulfillment.selectedPlaceResource = "";
+        fulfillment.verifiedAddress = "";
+        fulfillment.addressVerified = false;
+        fulfillment.latitude = null;
+        fulfillment.longitude = null;
+        fulfillment.distanceKm = null;
+        fulfillment.addressSearchError = error.code === "address_search_unavailable"
+          ? "addressSearchUnavailable"
+          : "addressVerificationFailed";
+      } finally {
+        if (requestId === addressSearchRequestId) {
+          fulfillment.addressVerifying = false;
+          fulfillment.addressSessionToken = "";
+          addressSearchController = null;
+          renderCheckoutFulfillment();
+        }
+      }
+    }
+
+    function moveAddressSuggestionSelection(delta) {
+      const fulfillment = state.checkoutFulfillment;
+      const count = fulfillment.addressSuggestions.length;
+      if (!count) return;
+      fulfillment.addressSuggestionsOpen = true;
+      fulfillment.addressActiveIndex = fulfillment.addressActiveIndex < 0
+        ? (delta > 0 ? 0 : count - 1)
+        : (fulfillment.addressActiveIndex + delta + count) % count;
+      renderAddressAutocomplete();
+      window.requestAnimationFrame(() => {
+        $(`#delivery-address-option-${fulfillment.addressActiveIndex}`)?.scrollIntoView({ block: "nearest" });
+      });
     }
 
     function checkoutDeliveryFee() {
@@ -12407,6 +12848,7 @@
       const phoneInput = $("#deliveryPhone");
       if (addressInput && document.activeElement !== addressInput && addressInput.value !== fulfillment.address) addressInput.value = fulfillment.address;
       if (phoneInput && document.activeElement !== phoneInput && phoneInput.value !== fulfillment.phone) phoneInput.value = fulfillment.phone;
+      renderAddressAutocomplete();
 
       const subtotal = cartTotal();
       const discount = voucherDiscount();
@@ -12448,6 +12890,16 @@
 
     function locateForDelivery() {
       const fulfillment = state.checkoutFulfillment;
+      cancelAddressSearch();
+      fulfillment.addressSuggestions = [];
+      fulfillment.addressSuggestionsOpen = false;
+      fulfillment.addressSearchError = "";
+      fulfillment.addressSearching = false;
+      fulfillment.addressVerifying = false;
+      fulfillment.addressSessionToken = "";
+      fulfillment.selectedPlaceResource = "";
+      fulfillment.verifiedAddress = "";
+      fulfillment.addressVerified = false;
       if (!navigator.geolocation) {
         fulfillment.locationError = "geolocationUnsupported";
         fulfillment.locating = false;
@@ -12510,13 +12962,15 @@
         address: String(fulfillment.address || "").trim(),
         phone: String(fulfillment.phone || "").trim(),
         latitude: fulfillment.latitude,
-        longitude: fulfillment.longitude
+        longitude: fulfillment.longitude,
+        place_resource: fulfillment.addressVerified ? fulfillment.selectedPlaceResource : ""
       };
     }
 
     function checkoutServerErrorMessage(message) {
       const value = String(message || "");
       if (/within 12 km|delivery area/i.test(value)) return tWithValues("deliveryTooFar", { distance: Number(state.checkoutFulfillment.distanceKm || 0).toFixed(1) });
+      if (/verified|verify/i.test(value)) return t("addressVerificationFailed");
       if (/delivery address/i.test(value)) return t("enterDeliveryAddress");
       if (/phone/i.test(value)) return t("enterDeliveryPhone");
       if (/location/i.test(value)) return t("checkLocationFirst");
@@ -12652,6 +13106,11 @@
     }
 
     function closePaymentModal() {
+      cancelAddressSearch();
+      state.checkoutFulfillment.addressSuggestions = [];
+      state.checkoutFulfillment.addressSuggestionsOpen = false;
+      state.checkoutFulfillment.addressSearching = false;
+      state.checkoutFulfillment.addressVerifying = false;
       const modal = $("#paymentModal");
       if (modal) modal.hidden = true;
       const message = $("#paymentMessage");
@@ -12664,7 +13123,13 @@
       if (!button || !message || !state.cart.length || !db) return;
       const deliveryAddressInput = $("#deliveryAddress");
       const deliveryPhoneInput = $("#deliveryPhone");
-      if (deliveryAddressInput) state.checkoutFulfillment.address = deliveryAddressInput.value;
+      if (deliveryAddressInput) {
+        const latestAddress = deliveryAddressInput.value;
+        if (state.checkoutFulfillment.addressVerified && latestAddress.trim() !== state.checkoutFulfillment.verifiedAddress) {
+          clearVerifiedDeliveryAddress();
+        }
+        state.checkoutFulfillment.address = latestAddress;
+      }
       if (deliveryPhoneInput) state.checkoutFulfillment.phone = deliveryPhoneInput.value;
       const fulfillmentError = checkoutFulfillmentError();
       if (fulfillmentError) {
@@ -13175,7 +13640,11 @@
         : configuredDiscountType === "fixed" && configuredDiscountValue > 0
           ? `${formatPrice(configuredDiscountValue)} OFF`
           : "";
+      const isOfflineOrder = String(order.order_number || "").startsWith("POS-");
       const gstAmount = Math.round(total * 15 / 115 * 100) / 100;
+      const receiptTaxBlock = isOfflineOrder
+        ? ""
+        : `<div class="tax"><strong>${isChinese ? "价格包含 GST 15%" : "Prices Include GST 15%"}</strong><span><span>${isChinese ? "其中 GST 税额" : "GST Included"}</span><b>${formatPrice(gstAmount)}</b></span></div>`;
       const customer = order.profiles || {};
       const hasCustomer = !String(order.order_number || "").startsWith("POS-") || (customer.is_admin !== true && order.user_id !== state.session?.user?.id);
       const customerName = customer.full_name || customer.email || (isChinese ? "客户" : "Customer");
@@ -13214,7 +13683,7 @@
         printStyle.textContent = `#adminReceiptPrint{display:none}@page{size:55mm auto;margin:0}@media print{html,body{width:55mm!important;min-width:0!important;margin:0!important;padding:0!important;background:#fff!important}body.admin-receipt-printing>*:not(#adminReceiptPrint){display:none!important}body.admin-receipt-printing #adminReceiptPrint{display:block!important;width:51mm!important;padding:0 1mm .5mm!important;color:#000;background:#fff;font-family:Arial,"Microsoft YaHei",sans-serif;font-size:10px;line-height:1.35;overflow-wrap:anywhere}#adminReceiptPrint .head{text-align:center;border-bottom:1px dashed #000;padding-bottom:4px}#adminReceiptPrint .head strong{display:block;font-size:15px}#adminReceiptPrint .meta{display:grid;gap:2px;padding:4px 0;border-bottom:1px dashed #000}#adminReceiptPrint .line{padding:4px 0;border-bottom:1px dotted #777}#adminReceiptPrint .line strong,#adminReceiptPrint .line span,#adminReceiptPrint .line small{display:block}#adminReceiptPrint .line span{text-align:right}#adminReceiptPrint .line .discounted-line{font-size:9px}#adminReceiptPrint .line small{margin-top:2px}#adminReceiptPrint .total{display:flex;justify-content:space-between;font-size:14px;font-weight:700;padding:7px 0;border-bottom:1px dashed #000}#adminReceiptPrint .tax{display:grid;gap:2px;padding:5px 0;border-bottom:1px dashed #000}#adminReceiptPrint .tax span{display:flex;justify-content:space-between}#adminReceiptPrint .footer{text-align:center;padding-top:6px}}`;
         document.head.appendChild(printStyle);
       }
-      receiptPrint.innerHTML = `<div class="head"><strong>GO GO SHOP</strong><span>${isChinese ? "销售小票" : "SALES RECEIPT"}</span></div><div class="meta"><span>${isChinese ? "订单号" : "Order"}: ${escapeHtml(order.order_number)}</span><span>${isChinese ? "时间" : "Date"}: ${escapeHtml(new Date(order.confirmed_at || order.created_at).toLocaleString(locale))}</span>${customerBlock}</div>${itemLines}${discountBlock}${fulfillmentBlock}${orderNoteBlock}<div class="total"><span>${isChinese ? "合计" : "TOTAL"}</span><span>${formatPrice(total)}</span></div><div class="tax"><strong>${isChinese ? "价格包含 GST 15%" : "Prices Include GST 15%"}</strong><span><span>${isChinese ? "其中 GST 税额" : "GST Included"}</span><b>${formatPrice(gstAmount)}</b></span></div><div class="footer">${isChinese ? "谢谢惠顾" : "Thank You"}</div>`;
+      receiptPrint.innerHTML = `<div class="head"><strong>GO GO SHOP</strong><span>${isChinese ? "销售小票" : "SALES RECEIPT"}</span></div><div class="meta"><span>${isChinese ? "订单号" : "Order"}: ${escapeHtml(order.order_number)}</span><span>${isChinese ? "时间" : "Date"}: ${escapeHtml(new Date(order.confirmed_at || order.created_at).toLocaleString(locale))}</span>${customerBlock}</div>${itemLines}${discountBlock}${fulfillmentBlock}${orderNoteBlock}<div class="total"><span>${isChinese ? "合计" : "TOTAL"}</span><span>${formatPrice(total)}</span></div>${receiptTaxBlock}<div class="footer">${isChinese ? "谢谢惠顾" : "Thank You"}</div>`;
       document.body.classList.add("admin-receipt-printing");
       window.addEventListener("afterprint", () => document.body.classList.remove("admin-receipt-printing"), { once: true });
       setTimeout(() => window.print(), 50);
@@ -15958,6 +16427,10 @@
     function handleImageLoadError(event) {
       const image = event.target instanceof HTMLImageElement ? event.target : null;
       if (!image) return;
+      if (image.matches("[data-no-image-fallback]")) {
+        image.hidden = true;
+        return;
+      }
       if (image.dataset.imageFallbackApplied === "true") {
         image.hidden = true;
         return;
@@ -15977,6 +16450,14 @@
     document.addEventListener("click", (event) => {
       const clickedElement = event.target instanceof Element ? event.target : event.target.parentElement;
       if (!clickedElement) return;
+
+      const addressSuggestion = clickedElement.closest("[data-address-suggestion]");
+      if (addressSuggestion) {
+        event.preventDefault();
+        selectDeliveryAddressSuggestion(addressSuggestion.dataset.addressSuggestion);
+        return;
+      }
+      if (!clickedElement.closest("[data-address-autocomplete]")) closeAddressSuggestions();
 
       const desktopNavToggle = clickedElement.closest("[data-desktop-nav-toggle]");
       if (desktopNavToggle) {
@@ -16298,7 +16779,14 @@
     document.addEventListener("input", (event) => {
       if (event.target instanceof Element && event.target.matches("#deliveryAddress, #deliveryPhone")) {
         const key = event.target.matches("#deliveryAddress") ? "address" : "phone";
+        if (key === "address" && state.checkoutFulfillment.addressVerified && event.target.value.trim() !== state.checkoutFulfillment.verifiedAddress) {
+          clearVerifiedDeliveryAddress();
+        }
         state.checkoutFulfillment[key] = event.target.value;
+        if (key === "address") {
+          queueDeliveryAddressSearch(event.target.value);
+          renderCheckoutFulfillment();
+        }
         const message = $("#paymentMessage");
         if (message) message.textContent = "";
         return;
@@ -16408,6 +16896,17 @@
         state.selectedCustomerVoucherId = event.target.value || null;
         state.voucherQuote = null;
         refreshVoucherQuote();
+      }
+    });
+
+    document.addEventListener("focusin", (event) => {
+      if (!(event.target instanceof Element) || !event.target.matches("#deliveryAddress")) return;
+      const fulfillment = state.checkoutFulfillment;
+      if (fulfillment.addressSuggestions.length) {
+        fulfillment.addressSuggestionsOpen = true;
+        renderAddressAutocomplete();
+      } else if (!fulfillment.addressVerified && String(event.target.value || "").trim().length >= 3) {
+        queueDeliveryAddressSearch(event.target.value);
       }
     });
 
@@ -16620,6 +17119,28 @@
     });
 
     document.addEventListener("keydown", (event) => {
+      const deliveryAddressInput = event.target instanceof Element && event.target.matches("#deliveryAddress")
+        ? event.target
+        : null;
+      if (deliveryAddressInput) {
+        if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+          if (state.checkoutFulfillment.addressSuggestions.length) {
+            event.preventDefault();
+            moveAddressSuggestionSelection(event.key === "ArrowDown" ? 1 : -1);
+          }
+          return;
+        }
+        if (event.key === "Enter" && state.checkoutFulfillment.addressActiveIndex >= 0) {
+          event.preventDefault();
+          selectDeliveryAddressSuggestion(state.checkoutFulfillment.addressActiveIndex);
+          return;
+        }
+        if (event.key === "Escape" && (state.checkoutFulfillment.addressSuggestionsOpen || state.checkoutFulfillment.addressSearching)) {
+          event.preventDefault();
+          closeAddressSuggestions();
+          return;
+        }
+      }
       if (event.key === "Escape" && !$("#productLabelModal").hidden) {
         event.preventDefault();
         closeProductLabel();
