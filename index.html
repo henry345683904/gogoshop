@@ -1070,9 +1070,8 @@
 
     .product-code-chip {
       display: inline-flex;
-      flex: 0 1 auto;
-      width: auto;
-      max-width: 100%;
+      flex: 0 0 auto;
+      width: max-content;
       align-items: center;
       border: 1px solid var(--line);
       border-radius: 999px;
@@ -1081,8 +1080,6 @@
       font-size: 11px;
       font-weight: 750;
       letter-spacing: 0.04em;
-      overflow-wrap: anywhere;
-      text-align: right;
     }
 
     .product-barcode {
@@ -1276,18 +1273,6 @@
       font-size: 15px;
       line-height: 1.65;
       white-space: pre-line;
-    }
-
-    .product-detail-description-block {
-      display: grid;
-      gap: 7px;
-    }
-
-    .product-detail-description-title {
-      margin: 0;
-      color: var(--ink);
-      font-size: 13px;
-      font-weight: 750;
     }
 
     .product-detail-stock {
@@ -2149,6 +2134,38 @@
       display: none;
     }
 
+    .delivery-notice-modal[hidden] { display: none; }
+
+    .delivery-notice-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 400;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      background: rgba(20, 24, 24, .58);
+    }
+
+    .delivery-notice-dialog {
+      width: min(440px, 100%);
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      box-shadow: 0 24px 80px rgba(20, 24, 24, .3);
+    }
+
+    .delivery-notice-content { display: grid; gap: 18px; padding: 20px 22px 22px; }
+    .delivery-notice-list { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; }
+    .delivery-notice-list li { display: grid; grid-template-columns: 20px minmax(0, 1fr); align-items: start; gap: 10px; color: var(--ink); font-size: 14px; line-height: 1.55; }
+    .delivery-notice-list svg { width: 18px; height: 18px; margin-top: 2px; color: var(--accent); }
+    .delivery-notice-content .button { width: 100%; }
+
+    @media (max-width: 520px) {
+      .delivery-notice-modal { padding: 10px; }
+      .delivery-notice-content { padding: 18px 16px 16px; }
+    }
+
     .payment-modal {
       position: fixed;
       inset: 0;
@@ -2161,10 +2178,8 @@
 
     .payment-dialog {
       width: min(100%, 480px);
-      max-height: min(92vh, 820px);
-      max-height: min(92dvh, 820px);
-      display: flex;
-      flex-direction: column;
+      max-height: calc(100vh - 36px);
+      max-height: calc(100dvh - 36px);
       overflow: hidden;
       border: 1px solid var(--line);
       border-radius: 8px;
@@ -2173,306 +2188,19 @@
     }
 
     .payment-body {
-      min-height: 0;
       display: grid;
       gap: 18px;
+      max-height: calc(100vh - 98px);
+      max-height: calc(100dvh - 98px);
       overflow-y: auto;
       overscroll-behavior: contain;
       padding: 20px 22px 22px;
     }
 
-    .fulfillment-section {
-      display: grid;
-      gap: 12px;
-    }
-
-    .fulfillment-heading {
-      margin: 0;
-      color: var(--ink);
-      font-size: 13px;
-      font-weight: 800;
-    }
-
-    .fulfillment-options {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 8px;
-    }
-
-    .fulfillment-option {
-      min-width: 0;
-      min-height: 54px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      border: 1px solid var(--line);
-      border-radius: 7px;
-      padding: 10px 12px;
-      background: #fff;
-      color: var(--ink);
-      cursor: pointer;
-    }
-
-    .fulfillment-option.is-selected {
-      border-color: var(--ink);
-      box-shadow: inset 0 0 0 1px var(--ink);
-    }
-
-    .fulfillment-option.is-disabled {
-      opacity: .52;
-      cursor: not-allowed;
-    }
-
-    .fulfillment-option input {
-      width: 16px;
-      height: 16px;
-      flex: 0 0 auto;
-      margin: 0;
-      accent-color: var(--ink);
-    }
-
-    .fulfillment-option svg {
-      width: 19px;
-      height: 19px;
-      flex: 0 0 auto;
-      color: var(--muted);
-    }
-
-    .fulfillment-option span {
-      min-width: 0;
-      font-size: 13px;
-      font-weight: 750;
-      overflow-wrap: anywhere;
-    }
-
-    .fulfillment-panel {
-      display: grid;
-      gap: 11px;
-      border: 1px solid var(--line);
-      border-radius: 7px;
-      padding: 12px;
-      background: var(--soft);
-    }
-
-    .fulfillment-panel[hidden] {
-      display: none;
-    }
-
-    .pickup-location {
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
-      line-height: 1.45;
-    }
-
-    .pickup-location svg {
-      width: 18px;
-      height: 18px;
-      flex: 0 0 auto;
-      margin-top: 1px;
-    }
-
-    .pickup-location strong,
-    .pickup-location span {
-      display: block;
-    }
-
-    .pickup-location span {
-      margin-top: 2px;
-      color: var(--muted);
-      font-size: 12px;
-    }
-
-    .delivery-rule-note {
-      margin: 0;
-      color: var(--muted);
-      font-size: 12px;
-      line-height: 1.5;
-    }
-
-    .delivery-location-row {
-      display: grid;
-      grid-template-columns: auto minmax(0, 1fr);
-      align-items: center;
-      gap: 10px;
-    }
-
-    .delivery-location-row .button {
-      min-height: 38px;
-      padding: 0 12px;
-      white-space: nowrap;
-    }
-
-    .delivery-location-status {
-      min-width: 0;
-      margin: 0;
-      color: var(--muted);
-      font-size: 12px;
-      line-height: 1.45;
-      overflow-wrap: anywhere;
-    }
-
-    .delivery-location-status.success {
-      color: #24623e;
-      font-weight: 700;
-    }
-
-    .delivery-location-status.error {
-      color: var(--danger);
-      font-weight: 700;
-    }
-
-    .delivery-fields {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(130px, .55fr);
-      gap: 10px;
-    }
-
-    .delivery-fields .field {
-      gap: 5px;
-    }
-
-    .delivery-fields .field > span,
-    .delivery-fields .field > label {
-      color: #303434;
-      font-size: 12px;
-      font-weight: 700;
-    }
-
-    .delivery-fields input,
-    .delivery-fields textarea {
-      width: 100%;
-      min-height: 42px;
-      padding: 9px 11px;
-      background: #fff;
-    }
-
-    .delivery-fields textarea {
-      min-height: 70px;
-      resize: vertical;
-    }
-
-    .address-autocomplete {
-      min-width: 0;
-      display: grid;
-      gap: 6px;
-    }
-
-    .address-autocomplete input[aria-expanded="true"] {
-      border-color: #68736f;
-      box-shadow: 0 0 0 2px rgba(36, 98, 62, .1);
-    }
-
-    .address-suggestions {
-      max-height: 190px;
-      overflow-y: auto;
-      overscroll-behavior: contain;
-      border: 1px solid #cfd5d2;
-      border-radius: 6px;
-      background: #fff;
-      box-shadow: 0 9px 22px rgba(20, 24, 24, .1);
-    }
-
-    .address-suggestions[hidden] {
-      display: none;
-    }
-
-    .address-google-attribution {
-      min-height: 14px;
-      display: flex;
-      justify-content: flex-end;
-      margin: 0;
-    }
-
-    .address-google-attribution[hidden] {
-      display: none;
-    }
-
-    .address-google-attribution img {
-      width: 120px;
-      height: 14px;
-      object-fit: contain;
-    }
-
-    .address-suggestion {
-      width: 100%;
-      min-width: 0;
-      display: grid;
-      gap: 2px;
-      border: 0;
-      border-bottom: 1px solid #e5e8e6;
-      border-radius: 0;
-      padding: 9px 10px;
-      background: #fff;
-      color: var(--ink);
-      text-align: left;
-      cursor: pointer;
-    }
-
-    .address-suggestion:last-child {
-      border-bottom: 0;
-    }
-
-    .address-suggestion:hover,
-    .address-suggestion.is-active {
-      background: #f0f5f2;
-    }
-
-    .address-suggestion strong,
-    .address-suggestion span {
-      min-width: 0;
-      overflow-wrap: anywhere;
-    }
-
-    .address-suggestion strong {
-      font-size: 12px;
-      line-height: 1.35;
-    }
-
-    .address-suggestion span {
-      color: var(--muted);
-      font-size: 11px;
-      line-height: 1.35;
-    }
-
-    .address-search-status,
-    .address-verified-status {
-      min-width: 0;
-      margin: 0;
-      font-size: 11px;
-      line-height: 1.4;
-      overflow-wrap: anywhere;
-    }
-
-    .address-search-status {
-      color: var(--muted);
-    }
-
-    .address-search-status.error {
-      color: var(--danger);
-    }
-
-    .address-verified-status {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      color: #24623e;
-      font-weight: 750;
-    }
-
-    .address-verified-status[hidden] {
-      display: none;
-    }
-
-    .address-verified-status svg {
-      width: 14px;
-      height: 14px;
-      flex: 0 0 auto;
-    }
-
-    .payment-total-row.delivery {
-      color: var(--ink);
-    }
+    .guest-checkout-fields { display: grid; gap: 12px; }
+    .guest-checkout-fields[hidden] { display: none; }
+    .guest-checkout-heading { margin: 0; font-size: 14px; font-weight: 800; }
+    .guest-checkout-fields textarea { min-height: 76px; resize: vertical; }
 
     .payment-total {
       display: flex;
@@ -2501,36 +2229,18 @@
 
     .payment-methods {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
       border-top: 1px solid var(--line);
     }
 
     .payment-method {
-      min-width: 0;
       min-height: 52px;
       display: flex;
       align-items: center;
       gap: 12px;
       border-bottom: 1px solid var(--line);
-      padding: 0 12px;
       color: var(--ink);
       font-size: 14px;
       font-weight: 700;
-    }
-
-    .payment-method:nth-child(2) {
-      border-left: 1px solid var(--line);
-    }
-
-    .payment-method:last-child {
-      grid-column: 1 / -1;
-    }
-
-    .payment-method span {
-      min-width: 0;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
     }
 
     .payment-method svg {
@@ -2910,11 +2620,8 @@
     }
 
     .login-wrap[hidden],
-    .admin-shell[hidden],
-    [data-full-admin-only][hidden],
-    [data-full-admin-product-field][hidden],
-    [data-role-hidden] {
-      display: none !important;
+    .admin-shell[hidden] {
+      display: none;
     }
 
     .admin-shell {
@@ -3658,38 +3365,6 @@
       font-size: 12px;
     }
 
-    .admin-product-channel-tabs {
-      display: inline-flex;
-      width: fit-content;
-      max-width: 100%;
-      align-items: center;
-      gap: 2px;
-      margin: 0 18px 12px;
-      border: 1px solid #c9cecc;
-      border-radius: 7px;
-      padding: 3px;
-      background: #f1f3f2;
-    }
-
-    .admin-product-channel-tabs button {
-      min-height: 34px;
-      border: 0;
-      border-radius: 5px;
-      padding: 0 14px;
-      background: transparent;
-      color: #596160;
-      font: inherit;
-      font-size: 13px;
-      font-weight: 750;
-      white-space: nowrap;
-    }
-
-    .admin-product-channel-tabs button.active {
-      background: #fff;
-      color: var(--ink);
-      box-shadow: 0 1px 3px rgba(18, 24, 24, 0.14);
-    }
-
     .product-inventory-summary {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -4110,64 +3785,6 @@
       background: #fff;
       color: var(--ink);
       box-shadow: 0 1px 3px rgba(18, 24, 24, 0.14);
-    }
-
-    .product-sales-channel-options {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 8px;
-      margin-top: 12px;
-    }
-
-    .product-sales-channel-option {
-      position: relative;
-      display: grid;
-      min-width: 0;
-      min-height: 76px;
-      align-content: center;
-      gap: 4px;
-      border: 1px solid #c9cecc;
-      border-radius: 7px;
-      padding: 12px 12px 12px 38px;
-      background: #fff;
-      cursor: pointer;
-    }
-
-    .product-sales-channel-option:has(input:checked) {
-      border-color: #2c6ecb;
-      box-shadow: 0 0 0 1px #2c6ecb;
-    }
-
-    .product-sales-channel-option input {
-      position: absolute;
-      top: 50%;
-      left: 13px;
-      width: 16px;
-      height: 16px;
-      margin: -8px 0 0;
-      accent-color: #2c6ecb;
-    }
-
-    .product-sales-channel-option strong,
-    .product-sales-channel-option small {
-      min-width: 0;
-      overflow-wrap: anywhere;
-    }
-
-    .product-sales-channel-option strong {
-      font-size: 13px;
-    }
-
-    .product-sales-channel-option small,
-    .product-channel-hint {
-      color: var(--muted);
-      font-size: 11px;
-      line-height: 1.4;
-    }
-
-    .product-channel-hint {
-      display: block;
-      margin-top: 10px;
     }
 
     .product-editor-language-panel[hidden] {
@@ -5085,6 +4702,24 @@
       margin-top: 2px;
       color: var(--muted);
       font-size: 11px;
+    }
+
+    .theme-save-status {
+      color: #5f6868;
+      font-style: normal;
+    }
+
+    .theme-save-status[data-state="saving"],
+    .theme-save-status[data-state="loading"] {
+      color: #9a641d;
+    }
+
+    .theme-save-status[data-state="saved"] {
+      color: #177245;
+    }
+
+    .theme-save-status[data-state="error"] {
+      color: #b3261e;
     }
 
     .theme-editor-devices {
@@ -7279,9 +6914,22 @@
 
     @media (max-width: 760px) {
       .theme-editor {
+        width: 100%;
+        max-width: 100%;
         height: auto;
         min-height: 0;
         overflow: visible;
+      }
+
+      .theme-editor-toolbar,
+      .theme-editor-workspace,
+      .theme-editor-sections,
+      .theme-editor-preview-pane,
+      .theme-editor-inspector,
+      .design-preview {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
       }
 
       .theme-editor-toolbar {
@@ -7302,6 +6950,9 @@
 
       .theme-editor-toolbar-actions .button {
         flex: 1 1 0;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
 
       .theme-editor-workspace {
@@ -7345,6 +6996,7 @@
       }
 
       .design-preview {
+        box-sizing: border-box;
         padding: 12px;
       }
     }
@@ -7399,44 +7051,6 @@
       }
 
       .drawer {
-        width: 100%;
-      }
-
-      .payment-modal {
-        padding: 8px;
-      }
-
-      .payment-dialog {
-        width: 100%;
-        max-height: calc(100vh - 16px);
-        max-height: calc(100dvh - 16px);
-      }
-
-      .payment-dialog .panel-head {
-        min-height: 56px;
-        padding: 0 14px;
-      }
-
-      .payment-body {
-        gap: 14px;
-        padding: 14px;
-      }
-
-      .fulfillment-options {
-        gap: 6px;
-      }
-
-      .fulfillment-option {
-        min-height: 50px;
-        padding: 8px 10px;
-      }
-
-      .delivery-location-row,
-      .delivery-fields {
-        grid-template-columns: 1fr;
-      }
-
-      .delivery-location-row .button {
         width: 100%;
       }
 
@@ -7629,19 +7243,6 @@
 
       .admin-product-search {
         padding: 10px 12px;
-      }
-
-      .admin-product-channel-tabs {
-        display: grid;
-        width: calc(100% - 24px);
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        margin: 0 12px 10px;
-      }
-
-      .admin-product-channel-tabs button {
-        min-width: 0;
-        padding: 0 8px;
-        white-space: normal;
       }
 
       .admin-product-search-controls {
@@ -7952,9 +7553,6 @@
               <button class="desktop-nav-popover-item" type="button" data-open-contact>
                 <span><i data-lucide="mail"></i><span data-i18n="menuContact">Contact Us</span></span><i data-lucide="chevron-right"></i>
               </button>
-              <a class="desktop-nav-popover-item" href="downloads/GO-GO-SHOP.apk?v=8" download data-close-panels>
-                <span><i data-lucide="smartphone"></i><span data-i18n="androidApp">App For Android</span></span><i data-lucide="download"></i>
-              </a>
               <button class="desktop-nav-popover-item desktop-nav-admin" type="button" data-open-admin data-admin-menu-link hidden>
                 <span><i data-lucide="shield-check"></i><span data-i18n="adminDashboard">Admin Dashboard</span></span><i data-lucide="chevron-right"></i>
               </button>
@@ -8096,17 +7694,17 @@
 
     <div id="adminShell" class="admin-shell" hidden>
       <aside class="admin-sidebar">
-        <div class="admin-logo" data-admin-logo>Go Go Shop</div>
+        <div class="admin-logo">Go Go Shop</div>
         <nav class="admin-nav">
-          <button class="tab-button active" type="button" data-admin-tab="overview" data-full-admin-only aria-label="Overview" title="Overview"><i data-lucide="layout-dashboard"></i><span>Overview</span></button>
+          <button class="tab-button active" type="button" data-admin-tab="overview" aria-label="Overview" title="Overview"><i data-lucide="layout-dashboard"></i><span>Overview</span></button>
           <button class="tab-button" type="button" data-admin-tab="products" aria-label="Products" title="Products"><i data-lucide="package-plus"></i><span>Products</span></button>
-          <button class="tab-button" type="button" data-admin-tab="orders" data-full-admin-only aria-label="Orders" title="Orders"><i data-lucide="receipt-text"></i><span>Orders</span><span class="admin-order-badge" id="adminOrderBadge" hidden>0</span></button>
-          <a class="tab-button" href="./pos.html?from=admin&v=pos-20260902" target="_blank" rel="noopener" data-full-admin-only aria-label="扫码收银" title="扫码收银"><i data-lucide="scan-barcode"></i><span>扫码收银</span></a>
-          <button class="tab-button" type="button" data-admin-tab="customers" data-full-admin-only aria-label="Customers" title="Customers"><i data-lucide="users"></i><span>Customers</span></button>
-          <button class="tab-button" type="button" data-admin-tab="vouchers" data-full-admin-only aria-label="Vouchers" title="Vouchers"><i data-lucide="ticket-percent"></i><span>Vouchers</span></button>
-          <button class="tab-button" type="button" data-admin-tab="analytics" data-full-admin-only aria-label="Analytics" title="Analytics"><i data-lucide="chart-column"></i><span>Analytics</span></button>
-          <button class="tab-button" type="button" data-admin-tab="procurement" data-full-admin-only aria-label="Procurement" title="Procurement"><i data-lucide="clipboard-list"></i><span>Procurement</span></button>
-          <button class="tab-button" type="button" data-admin-tab="design" data-full-admin-only aria-label="Design" title="Design"><i data-lucide="paintbrush"></i><span>Design</span></button>
+          <button class="tab-button" type="button" data-admin-tab="orders" aria-label="Orders" title="Orders"><i data-lucide="receipt-text"></i><span>Orders</span><span class="admin-order-badge" id="adminOrderBadge" hidden>0</span></button>
+          <a class="tab-button" href="./pos.html?from=admin" target="_blank" rel="noopener" aria-label="扫码收银" title="扫码收银"><i data-lucide="scan-barcode"></i><span>扫码收银</span></a>
+          <button class="tab-button" type="button" data-admin-tab="customers" aria-label="Customers" title="Customers"><i data-lucide="users"></i><span>Customers</span></button>
+          <button class="tab-button" type="button" data-admin-tab="vouchers" aria-label="Vouchers" title="Vouchers"><i data-lucide="ticket-percent"></i><span>Vouchers</span></button>
+          <button class="tab-button" type="button" data-admin-tab="analytics" aria-label="Analytics" title="Analytics"><i data-lucide="chart-column"></i><span>Analytics</span></button>
+          <button class="tab-button" type="button" data-admin-tab="procurement" aria-label="Procurement" title="Procurement"><i data-lucide="clipboard-list"></i><span>Procurement</span></button>
+          <button class="tab-button" type="button" data-admin-tab="design" aria-label="Design" title="Design"><i data-lucide="paintbrush"></i><span>Design</span></button>
           <button class="tab-button" type="button" data-back-store aria-label="Storefront" title="Storefront"><i data-lucide="store"></i><span>Store</span></button>
         </nav>
       </aside>
@@ -8118,14 +7716,14 @@
             <p id="adminPageSub">Products, inventory, orders and storefront signals.</p>
           </div>
           <div class="form-actions">
-            <button class="button ghost admin-notification-button" type="button" data-enable-order-notifications data-full-admin-only aria-label="Enable order notifications" title="Enable order notifications"><i data-lucide="bell"></i></button>
+            <button class="button ghost admin-notification-button" type="button" data-enable-order-notifications aria-label="Enable order notifications" title="Enable order notifications"><i data-lucide="bell"></i></button>
             <button class="button ghost" type="button" data-export-products><i data-lucide="download"></i> Export</button>
             <button class="button ghost" type="button" data-admin-logout><i data-lucide="log-out"></i> 退出</button>
             <button class="button" type="button" data-open-product-tab><i data-lucide="plus"></i> Add product</button>
           </div>
         </div>
 
-        <div class="admin-order-alert" id="adminOrderAlert" data-full-admin-only role="status" aria-live="polite" hidden>
+        <div class="admin-order-alert" id="adminOrderAlert" role="status" aria-live="polite" hidden>
           <div class="admin-order-alert-icon"><i data-lucide="bell-ring"></i></div>
           <div class="admin-order-alert-copy">
             <strong id="adminOrderAlertTitle">New order</strong>
@@ -8167,17 +7765,13 @@
               </div>
               <div class="form-actions">
                 <button class="button ghost" type="button" data-toggle-product-trash aria-expanded="false"><i data-lucide="recycle"></i> 回收站 <span id="adminTrashCount">0</span></button>
-                <button class="button ghost" type="button" data-print-phone-case-atlas data-full-admin-only title="打印手机壳图谱"><i data-lucide="book-open"></i> <span data-i18n="phoneCaseAtlas">手机壳图谱</span></button>
-                <button class="button ghost" type="button" data-print-keychain-atlas data-full-admin-only title="打印钥匙链图谱"><i data-lucide="key-round"></i> <span data-i18n="keychainAtlas">钥匙链图谱</span></button>
-                <button class="button ghost" type="button" data-hide-all-products title="下架所有网上商品"><i data-lucide="eye-off"></i> <span>一键下架全部</span></button>
+                <button class="button ghost" type="button" data-print-phone-case-atlas title="打印手机壳图谱"><i data-lucide="book-open"></i> <span data-i18n="phoneCaseAtlas">手机壳图谱</span></button>
+                <button class="button ghost" type="button" data-print-keychain-atlas title="打印钥匙链图谱"><i data-lucide="key-round"></i> <span data-i18n="keychainAtlas">钥匙链图谱</span></button>
+                <button class="button ghost" type="button" data-hide-all-products title="将所有当前网店商品设为仅线下销售"><i data-lucide="eye-off"></i> <span>一键隐藏全部</span></button>
                 <button class="button" type="button" data-new-product><i data-lucide="plus"></i> Add product</button>
               </div>
             </div>
             <div class="product-inventory-summary" id="adminProductInventorySummary" aria-label="Inventory valuation"></div>
-            <div class="admin-product-channel-tabs" role="tablist" aria-label="商品销售渠道">
-              <button class="active" type="button" role="tab" data-admin-product-channel="offline" data-full-admin-only aria-selected="true">拾光小铺</button>
-              <button type="button" role="tab" data-admin-product-channel="online" aria-selected="false">网上商店</button>
-            </div>
             <div class="admin-product-search">
               <div class="admin-product-search-controls">
                 <div class="admin-product-search-field">
@@ -8334,7 +7928,7 @@
             <div class="theme-editor-toolbar">
               <div class="theme-editor-title">
                 <span class="theme-editor-title-icon"><i data-lucide="paintbrush"></i></span>
-                <div><strong>GO GO SHOP</strong><span>Home page · Saved automatically</span></div>
+                <div><strong>GO GO SHOP</strong><span>Home page · <em class="theme-save-status" id="designSaveStatus" data-state="local">Saved in this browser</em></span></div>
               </div>
               <div class="theme-editor-devices" aria-label="Preview device">
                 <button class="theme-device-button active" type="button" data-design-device="desktop" aria-label="Desktop preview" title="Desktop preview"><i data-lucide="monitor"></i></button>
@@ -8424,8 +8018,12 @@
 
                     <section class="theme-inspector-panel" data-design-panel="announcement" hidden>
                       <label class="field">
-                        <span>Announcement text</span>
-                        <input type="text" name="announcement" placeholder="Welcome to our store">
+                        <span>English announcement</span>
+                        <input type="text" name="announcement" placeholder="Welcome to our store" maxlength="240">
+                      </label>
+                      <label class="field">
+                        <span>Chinese announcement</span>
+                        <input type="text" name="announcementZh" placeholder="欢迎来到我们的商店" maxlength="240">
                       </label>
                       <div class="theme-setting-summary">
                         <div><span>Signed-in customers</span><strong>Hi, customer name</strong></div>
@@ -8735,7 +8333,7 @@
               <div class="shopify-card-head"><h3>定价</h3></div>
               <div class="form-row">
                 <label class="field">
-                  <span data-product-price-label>售价 NZD（可手动修改；供应价变化时自动计算）</span>
+                  <span>售价 NZD（可手动修改；供应价变化时自动计算）</span>
                   <input class="product-price-input" type="number" name="price" min="0" step="0.01" data-price-mode="manual" required>
                 </label>
                 <label class="field">
@@ -8743,7 +8341,7 @@
                   <input type="number" name="compareAtPrice" min="0" step="0.01">
                 </label>
               </div>
-              <div class="form-row" data-full-admin-product-field>
+              <div class="form-row">
                 <label class="field">
                   <span>单件成本 NZD（1688：供应价 ÷ 4；CIL：采购价 × 1.15）</span>
                   <input type="number" name="costPerItem" min="0" step="0.01">
@@ -8753,7 +8351,7 @@
                   <input type="number" name="sourcePriceCny" min="0" step="0.01">
                 </label>
               </div>
-              <label class="field" data-full-admin-product-field>
+              <label class="field">
                 <span>采购币种</span>
                 <select name="sourceCurrency">
                   <option value="CNY">1688 / 人民币（CNY）</option>
@@ -8811,24 +8409,10 @@
             </section>
 
             <section class="shopify-editor-card">
-              <div class="shopify-card-head"><h3>销售渠道</h3></div>
-              <div class="product-sales-channel-options" role="radiogroup" aria-label="销售渠道">
-                <label class="product-sales-channel-option" data-full-admin-only>
-                  <input type="radio" name="salesChannel" value="offline" checked>
-                  <strong>拾光小铺</strong>
-                  <small>用于扫码点单，不显示在公开网页</small>
-                </label>
-                <label class="product-sales-channel-option">
-                  <input type="radio" name="salesChannel" value="online">
-                  <strong>网上商店</strong>
-                  <small>用于网页浏览、购物车和在线结账</small>
-                </label>
-              </div>
-              <span class="product-channel-hint" data-product-channel-hint>当前商品只在线下销售。</span>
-              <div class="shopify-editor-divider"></div>
+              <div class="shopify-card-head"><h3>发布</h3></div>
               <label class="shopify-check-row">
-                <span>显示在公开网店</span>
-                <input type="checkbox" name="onlineStore">
+                <span>在线商店（取消勾选 = 仅线下销售）</span>
+                <input type="checkbox" name="onlineStore" checked>
               </label>
               <label class="shopify-check-row">
                 <span>在首页置顶</span>
@@ -8852,11 +8436,11 @@
                 <span>商品类型</span>
                 <input type="text" name="productType" autocomplete="off">
               </label>
-              <label class="field" data-full-admin-product-field>
+              <label class="field">
                 <span>厂商</span>
                 <input type="text" name="vendor" autocomplete="off">
               </label>
-              <label class="field" data-full-admin-product-field>
+              <label class="field">
                 <span>商品来源链接</span>
                 <input type="url" name="sourceUrl" autocomplete="off">
               </label>
@@ -9016,10 +8600,6 @@
           <span><i data-lucide="shield-check"></i><span data-i18n="adminDashboard">Admin Dashboard</span></span>
           <i data-lucide="chevron-right"></i>
         </button>
-        <a class="menu-link menu-app-download" href="downloads/GO-GO-SHOP.apk?v=8" download data-close-panels>
-          <span><i data-lucide="smartphone"></i><span data-i18n="androidApp">App For Android</span></span>
-          <i data-lucide="download"></i>
-        </a>
       </nav>
     </div>
   </aside>
@@ -9128,6 +8708,27 @@
     </div>
   </section>
 
+  <section class="delivery-notice-modal" id="deliveryNoticeModal" data-delivery-notice-backdrop aria-hidden="true" hidden>
+    <div class="delivery-notice-dialog" role="dialog" aria-modal="true" aria-labelledby="deliveryNoticeTitle">
+      <div class="panel-head">
+        <h2 class="panel-title" id="deliveryNoticeTitle" data-i18n="deliveryNoticeTitle">Delivery information</h2>
+        <div class="language-toggle" data-language-toggle aria-label="Language">
+          <button type="button" data-lang="en">EN</button>
+          <button type="button" data-lang="zh">中文</button>
+        </div>
+        <button class="icon-button" type="button" data-close-delivery-notice aria-label="Close"><i data-lucide="x"></i></button>
+      </div>
+      <div class="delivery-notice-content">
+        <ul class="delivery-notice-list">
+          <li><i data-lucide="truck"></i><span data-i18n="deliveryNoticeFree">Free home delivery on orders of NZ$80 or more within 12 km.</span></li>
+          <li><i data-lucide="badge-dollar-sign"></i><span data-i18n="deliveryNoticeFee">A $5 delivery fee applies to orders under NZ$80.</span></li>
+          <li><i data-lucide="map-pin"></i><span data-i18n="deliveryNoticePickup">Outside the delivery area, pickup only.</span></li>
+        </ul>
+        <button class="button" type="button" data-close-delivery-notice data-i18n="deliveryNoticeConfirm">Got it</button>
+      </div>
+    </div>
+  </section>
+
   <section class="payment-modal" id="paymentModal" data-payment-backdrop hidden>
     <div class="payment-dialog" role="dialog" aria-modal="true" aria-labelledby="paymentTitle">
       <div class="panel-head">
@@ -9135,52 +8736,16 @@
         <button class="icon-button" type="button" data-close-payment aria-label="Close"><i data-lucide="x"></i></button>
       </div>
       <div class="payment-body">
-        <section class="fulfillment-section" aria-labelledby="fulfillmentHeading">
-          <p class="fulfillment-heading" id="fulfillmentHeading" data-i18n="fulfillmentHeading">How would you like to receive your order?</p>
-          <div class="fulfillment-options" role="radiogroup" aria-labelledby="fulfillmentHeading">
-            <label class="fulfillment-option is-selected" data-fulfillment-option="pickup">
-              <input type="radio" name="fulfillmentMethod" value="pickup" data-fulfillment-method checked>
-              <i data-lucide="shopping-bag"></i>
-              <span data-i18n="pickup">Pickup</span>
-            </label>
-            <label class="fulfillment-option" data-fulfillment-option="delivery">
-              <input type="radio" name="fulfillmentMethod" value="delivery" data-fulfillment-method>
-              <i data-lucide="truck"></i>
-              <span data-i18n="delivery">Delivery</span>
-            </label>
-          </div>
-          <div class="delivery-location-row" data-delivery-location-row hidden>
-            <button class="button ghost" type="button" data-use-location><i data-lucide="locate-fixed"></i><span data-i18n="checkDeliveryDistance">Check my distance</span></button>
-            <p class="delivery-location-status" id="deliveryLocationStatus" role="status" aria-live="polite" data-i18n="locationRequired">Location is required to check delivery eligibility.</p>
-          </div>
-          <div class="fulfillment-panel" data-pickup-panel>
-            <div class="pickup-location">
-              <i data-lucide="map-pin"></i>
-              <div><strong data-i18n="pickupFlatBush">Pickup in Flat Bush</strong><span data-i18n="pickupDetails">Pickup details will be confirmed after payment.</span></div>
-            </div>
-          </div>
-          <div class="fulfillment-panel" data-delivery-panel hidden>
-            <p class="delivery-rule-note" data-i18n="deliveryRules">Delivery is available within 12 km of Flat Bush. Free on merchandise totals of $80 or more after vouchers; otherwise $5. Your coordinates are used for this estimate and are not saved.</p>
-            <div class="delivery-fields">
-              <div class="field delivery-address-field">
-                <label for="deliveryAddress" data-i18n="deliveryAddress">Delivery address</label>
-                <div class="address-autocomplete" data-address-autocomplete>
-                  <input id="deliveryAddress" type="text" maxlength="500" autocomplete="shipping street-address" role="combobox" aria-autocomplete="list" aria-controls="deliveryAddressSuggestions" aria-expanded="false" data-i18n-placeholder="deliveryAddressPlaceholder" placeholder="Start typing your delivery address">
-                  <div class="address-suggestions" id="deliveryAddressSuggestions" role="listbox" hidden></div>
-                  <p class="address-google-attribution" data-address-google-attribution hidden><img data-address-google-logo data-no-image-fallback alt="Powered by Google" width="120" height="14"></p>
-                  <p class="address-search-status" data-address-search-status role="status" aria-live="polite" hidden></p>
-                  <p class="address-verified-status" data-address-verified-status hidden><i data-lucide="badge-check"></i><span data-i18n="addressVerified">Verified New Zealand address</span></p>
-                </div>
-              </div>
-              <label class="field"><span data-i18n="deliveryPhone">Phone number</span><input id="deliveryPhone" type="tel" maxlength="80" autocomplete="tel" inputmode="tel" data-i18n-placeholder="deliveryPhonePlaceholder" placeholder="Contact phone"></label>
-            </div>
-          </div>
-        </section>
         <div class="payment-total-breakdown">
           <div class="payment-total-row"><span data-i18n="subtotal">Subtotal</span><strong data-payment-subtotal>$0.00</strong></div>
           <div class="payment-total-row discount" data-payment-discount-row hidden><span data-i18n="voucherDiscount">Voucher discount</span><strong data-payment-discount>-$0.00</strong></div>
-          <div class="payment-total-row delivery" data-payment-delivery-row hidden><span data-i18n="deliveryFee">Delivery fee</span><strong data-payment-delivery>$0.00</strong></div>
           <div class="payment-total-row final"><span data-i18n="total">Total</span><strong data-payment-total>$0.00</strong></div>
+        </div>
+        <div class="guest-checkout-fields" data-guest-checkout-fields hidden>
+          <p class="guest-checkout-heading" data-i18n="guestCheckoutTitle">Contact and delivery details</p>
+          <label class="field"><span data-i18n="fieldName">Name</span><input type="text" id="guestCheckoutName" autocomplete="name" maxlength="120" required data-i18n-placeholder="placeholderName" placeholder="Your name"></label>
+          <label class="field"><span data-i18n="fieldPhone">Phone</span><input type="tel" id="guestCheckoutPhone" autocomplete="tel" maxlength="40" required data-i18n-placeholder="placeholderPhone" placeholder="Your phone number"></label>
+          <label class="field"><span data-i18n="fieldAddress">Delivery address</span><textarea id="guestCheckoutAddress" autocomplete="street-address" maxlength="500" required data-i18n-placeholder="placeholderAddress" placeholder="Your delivery address"></textarea></label>
         </div>
         <div>
           <p class="muted" style="margin: 0 0 8px; font-size: 13px; font-weight: 700;" data-i18n="paymentMethods">Payment methods</p>
@@ -9224,12 +8789,15 @@
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="store-config.js"></script>
   <script src="product-localizations.js?v=5"></script>
+  <script src="products-data.js?v=20260901-3"></script>
   <script>
-    const STORAGE_KEY = "gogoshop_products_v1";
+    const STORAGE_KEY = "gogoshop_online_products_v3";
     const CART_KEY = "gogoshop_cart_v1";
     const ORDER_KEY = "gogoshop_orders_v1";
     const DESIGN_KEY = "gogoshop_store_design_v1";
+    const DESIGN_REMOTE_ID = "online";
     const TRASH_KEY = "gogoshop_product_trash_v1";
     const ADMIN_KEY = "gogoshop_admin_unlocked_v1";
     const LANG_KEY = "gogoshop_lang_v1";
@@ -9245,12 +8813,11 @@
     const PRODUCT_MEDIA_BUCKET = "product-media";
     const PRODUCT_IMAGE_FALLBACK = "./assets/product-image-placeholder.svg?imgv=images-v2";
     const PRODUCT_IMAGE_ASSET_VERSION = "images-v2";
-    const SUPABASE_URL = "https://ehfqtvsyyuhisizwndlm.supabase.co";
-    const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_c5DLXT7RGntvs60kZqMS-A_dzzp2GZW";
-    const FLAT_BUSH_PICKUP = Object.freeze({ name: "Flat Bush", latitude: -36.9661534, longitude: 174.9127100 });
-    const DELIVERY_MAX_DISTANCE_KM = 12;
-    const FREE_DELIVERY_MINIMUM = 80;
-    const DELIVERY_FEE = 5;
+    // Bump this on every catalog refresh so an updated image at the same URL is fetched.
+    let productImageRefreshVersion = Date.now().toString();
+    const STORE_CONFIG = window.GOGO_SHOP_CONFIG || {};
+    const SUPABASE_URL = String(STORE_CONFIG.supabaseUrl || "").trim();
+    const SUPABASE_PUBLISHABLE_KEY = String(STORE_CONFIG.supabasePublishableKey || "").trim();
     const SOURCE_COST_DIVISOR = 4;
     const SOURCE_TAX_MULTIPLIER = 1.15;
     const SOURCE_PRICE_MULTIPLIER = 1.5 * SOURCE_TAX_MULTIPLIER;
@@ -9329,8 +8896,10 @@
       { key: "diamond", minSpend: 500, labelKey: "vipDiamond" },
       { key: "black", minSpend: 1000, labelKey: "vipBlack" }
     ]);
-    const SUPABASE_AUTH_STORAGE_KEY = "sb-ehfqtvsyyuhisizwndlm-auth-token";
-    const db = window.supabase?.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+    const SUPABASE_PROJECT_REF = /^https:\/\/([a-z0-9-]+)\.supabase\.co/i.exec(SUPABASE_URL)?.[1] || "unconfigured";
+    const REMOTE_CATALOG_STATE_KEY = `gogoshop_remote_catalog_state_v1_${SUPABASE_PROJECT_REF}`;
+    const SUPABASE_AUTH_STORAGE_KEY = `sb-${SUPABASE_PROJECT_REF}-auth-token`;
+    const db = SUPABASE_URL && SUPABASE_PUBLISHABLE_KEY && window.supabase?.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
       auth: {
         flowType: "pkce",
         detectSessionInUrl: true,
@@ -9347,6 +8916,9 @@
     let nativeOAuthListenersReady = false;
     let nativeOAuthProcessing = false;
     let nativeOAuthBrowserActive = false;
+    let designSaveTimer = null;
+    let designSaveVersion = 0;
+    let designLoadPromise = null;
 
     const translations = {
       en: {
@@ -9376,41 +8948,6 @@
         cartTitle: "Cart",
         total: "Total",
         checkout: "Checkout",
-        fulfillmentHeading: "How would you like to receive your order?",
-        pickup: "Pickup",
-        delivery: "Delivery",
-        pickupFlatBush: "Pickup in Flat Bush",
-        pickupDetails: "Pickup details will be confirmed after payment.",
-        deliveryRules: "Delivery is available within 12 km of Flat Bush. Free on merchandise totals of $80 or more after vouchers; otherwise $5. Your coordinates are used for this estimate and are not saved.",
-        checkDeliveryDistance: "Check my distance",
-        locationRequired: "Location is required to check delivery eligibility.",
-        locatingCustomer: "Checking your location...",
-        deliveryDistance: "Estimated distance: {distance} km",
-        deliveryEligibleFree: "{distance} km away · Free delivery",
-        deliveryEligiblePaid: "{distance} km away · $5 delivery",
-        deliveryTooFar: "{distance} km away · Outside the 12 km delivery area. Pickup only.",
-        geolocationUnsupported: "Location is not supported on this device. Please choose pickup.",
-        geolocationDenied: "Location permission was denied. Allow location access or choose pickup.",
-        geolocationUnavailable: "Your location could not be determined. Try again or choose pickup.",
-        geolocationTimeout: "Location request timed out. Try again or choose pickup.",
-        deliveryAddress: "Delivery address",
-        deliveryAddressPlaceholder: "Start typing your delivery address",
-        addressSearching: "Searching verified New Zealand addresses...",
-        addressNoResults: "No matching New Zealand address found. Keep typing or use your current location.",
-        addressSearchUnavailable: "Verified address search is temporarily unavailable. You can still use your current location.",
-        addressVerifying: "Verifying the selected address...",
-        addressVerified: "Verified New Zealand address",
-        addressVerificationFailed: "This address could not be verified. Please choose another suggestion or use your current location.",
-        deliveryPhone: "Phone number",
-        deliveryPhonePlaceholder: "Contact phone",
-        deliveryFee: "Delivery fee",
-        free: "Free",
-        checkLocationFirst: "Check your location before choosing delivery.",
-        enterDeliveryAddress: "Enter the full delivery address.",
-        enterDeliveryPhone: "Enter a phone number for delivery.",
-        fulfillmentMethod: "Order method",
-        pickupLocation: "Pickup location",
-        estimatedDistance: "Estimated distance",
         paymentTitle: "Secure payment",
         paymentMethods: "Payment methods",
         cardPayment: "Credit or debit card",
@@ -9421,6 +8958,17 @@
         paymentSuccess: "Payment received. Your order is waiting for confirmation.",
         paymentCancelled: "Payment was cancelled.",
         paymentUnavailable: "Online payments are not configured yet.",
+        guestCheckoutTitle: "Contact and delivery details",
+        fieldPhone: "Phone",
+        fieldAddress: "Delivery address",
+        placeholderPhone: "Your phone number",
+        placeholderAddress: "Your delivery address",
+        guestDetailsRequired: "Enter your name, phone number and delivery address.",
+        deliveryNoticeTitle: "Delivery information",
+        deliveryNoticeFree: "Free home delivery on orders of NZ$80 or more within 12 km.",
+        deliveryNoticeFee: "A $5 delivery fee applies to orders under NZ$80.",
+        deliveryNoticePickup: "Outside the delivery area, pickup only.",
+        deliveryNoticeConfirm: "Got it",
         searchTitle: "Search",
         searchPlaceholder: "Search products",
         clear: "Clear",
@@ -9430,7 +8978,6 @@
         backProducts: "Back to products",
         quantity: "Quantity",
         addToCart: "Add to cart",
-        productDescriptionTitle: "Product description",
         productFallback: "Product details will be added soon.",
         pickupNote: "Pickup and delivery options are confirmed at checkout.",
         noProducts: "No products",
@@ -9547,41 +9094,6 @@
         cartTitle: "购物车",
         total: "合计",
         checkout: "结账",
-        fulfillmentHeading: "请选择收货方式",
-        pickup: "到店自取",
-        delivery: "配送",
-        pickupFlatBush: "Flat Bush 自取",
-        pickupDetails: "付款后将确认具体自取安排。",
-        deliveryRules: "Flat Bush 12 公里内可配送。使用代金券后的商品金额满 NZ$80 免费配送，否则收取 NZ$5 配送费。定位坐标只用于本次估算，不会保存。",
-        checkDeliveryDistance: "定位并估算距离",
-        locationRequired: "需要获取定位以判断是否可以配送。",
-        locatingCustomer: "正在获取您的位置...",
-        deliveryDistance: "预估距离：{distance} 公里",
-        deliveryEligibleFree: "距离约 {distance} 公里 · 免费配送",
-        deliveryEligiblePaid: "距离约 {distance} 公里 · 配送费 NZ$5",
-        deliveryTooFar: "距离约 {distance} 公里 · 超出 12 公里配送范围，仅限自取。",
-        geolocationUnsupported: "此设备不支持定位，请选择到店自取。",
-        geolocationDenied: "定位权限被拒绝，请允许定位或选择到店自取。",
-        geolocationUnavailable: "暂时无法获取您的位置，请重试或选择到店自取。",
-        geolocationTimeout: "获取位置超时，请重试或选择到店自取。",
-        deliveryAddress: "配送地址",
-        deliveryAddressPlaceholder: "请输入配送地址进行搜索",
-        addressSearching: "正在搜索已核验的新西兰地址...",
-        addressNoResults: "未找到匹配的新西兰地址，请继续输入或使用当前位置。",
-        addressSearchUnavailable: "标准地址搜索暂时不可用，您仍可使用当前位置。",
-        addressVerifying: "正在核验所选地址...",
-        addressVerified: "已核验的新西兰地址",
-        addressVerificationFailed: "无法核验此地址，请选择其他建议地址或使用当前位置。",
-        deliveryPhone: "联系电话",
-        deliveryPhonePlaceholder: "请输入联系电话",
-        deliveryFee: "配送费",
-        free: "免费",
-        checkLocationFirst: "选择配送前请先完成定位。",
-        enterDeliveryAddress: "请输入完整配送地址。",
-        enterDeliveryPhone: "请输入配送联系电话。",
-        fulfillmentMethod: "收货方式",
-        pickupLocation: "自取地点",
-        estimatedDistance: "预估距离",
         paymentTitle: "安全付款",
         paymentMethods: "付款方式",
         cardPayment: "信用卡或借记卡",
@@ -9592,6 +9104,17 @@
         paymentSuccess: "付款成功，订单正在等待商家确认。",
         paymentCancelled: "已取消付款。",
         paymentUnavailable: "在线付款尚未完成配置。",
+        guestCheckoutTitle: "联系方式和配送地址",
+        fieldPhone: "电话",
+        fieldAddress: "配送地址",
+        placeholderPhone: "请输入联系电话",
+        placeholderAddress: "请输入配送地址",
+        guestDetailsRequired: "请填写姓名、联系电话和配送地址。",
+        deliveryNoticeTitle: "配送说明",
+        deliveryNoticeFree: "满 NZ$80 免费配送到家（12KM 内）。",
+        deliveryNoticeFee: "金额不足 NZ$80 收取 $5 配送费。",
+        deliveryNoticePickup: "超出配送范围仅限自取。",
+        deliveryNoticeConfirm: "知道了",
         searchTitle: "搜索",
         searchPlaceholder: "搜索商品",
         clear: "清除",
@@ -9601,7 +9124,6 @@
         backProducts: "返回商品列表",
         quantity: "数量",
         addToCart: "加入购物车",
-        productDescriptionTitle: "产品描述",
         productFallback: "商品详情即将补充。",
         pickupNote: "取货和配送方式将在结账时确认。",
         noProducts: "暂无商品",
@@ -9710,7 +9232,7 @@
     });
     const storefrontCategoryKeys = new Set(storefrontCategories.map((category) => category.key));
 
-    const seedProducts = [];
+    const seedProducts = Array.isArray(window.GOGO_SHOP_PRODUCTS) ? window.GOGO_SHOP_PRODUCTS : [];
     const productImageSets = {};
 
     const seedOrders = [
@@ -9732,6 +9254,7 @@
       accentColor: "#111111",
       softColor: "#f7f7f7",
       announcement: "",
+      announcementZh: "",
       headerTitle: "",
       heroTitle: "",
       heroSubtitle: "",
@@ -9753,6 +9276,10 @@
       cart: load(CART_KEY, []),
       orders: load(ORDER_KEY, seedOrders),
       design: load(DESIGN_KEY, seedDesign),
+      designRemoteLoaded: false,
+      designRemoteStatus: "local",
+      designRemoteError: "",
+      remoteCatalogReady: storageGet(REMOTE_CATALOG_STATE_KEY) === "ready",
       category: "All",
       sort: "featured",
       lang: storageGet(LANG_KEY) || "en",
@@ -9763,7 +9290,6 @@
       procurementCoverWeeks: PROCUREMENT_COVER_OPTIONS.includes(Number(savedProcurementSettings.coverWeeks)) ? Number(savedProcurementSettings.coverWeeks) : 3,
       adminProductSearch: "",
       adminProductCategory: "All",
-      adminProductChannel: "offline",
       trashOpen: false,
       session: null,
       profile: null,
@@ -9771,27 +9297,6 @@
       customerVouchers: [],
       selectedCustomerVoucherId: null,
       voucherQuote: null,
-      checkoutFulfillment: {
-        method: "pickup",
-        latitude: null,
-        longitude: null,
-        distanceKm: null,
-        locating: false,
-        locationError: "",
-        address: "",
-        phone: "",
-        addressSuggestions: [],
-        addressSearching: false,
-        addressVerifying: false,
-        addressSearchError: "",
-        addressSearchCompletedFor: "",
-        addressSuggestionsOpen: false,
-        addressSessionToken: "",
-        selectedPlaceResource: "",
-        verifiedAddress: "",
-        addressVerified: false,
-        addressActiveIndex: -1
-      },
       adminOrders: [],
       adminOrdersLoaded: false,
       adminOrdersLoading: false,
@@ -9827,9 +9332,9 @@
       productReturnScroll: 0
     };
 
-    let addressSearchTimer = 0;
-    let addressSearchRequestId = 0;
-    let addressSearchController = null;
+    let designLoadPromise = null;
+    let designSaveTimer = null;
+    let designSaveVersion = 0;
 
     const retiredLegacyProductIds = new Set(["phone-case", "phone-case-1", "phone-case-2", "phone-case-3"]);
     state.products = state.products.filter((product) => !retiredLegacyProductIds.has(product.id));
@@ -10225,7 +9730,7 @@
 
     function phoneFilmAggregateProduct(products) {
       return (Array.isArray(products) ? products : []).find((product) => {
-        if (!product || !isOfflineProduct(product)) return false;
+        if (!product) return false;
         if (String(product.id || "") === "1688-905020913177") return true;
         if ([product.sku, product.barcode].some((value) => String(value || "").trim() === "6666")) return true;
         const attributes = [product.sourceAttributes, product.source_attributes]
@@ -10240,7 +9745,7 @@
     function phoneFilmStockTotal(products) {
       const aggregateProduct = phoneFilmAggregateProduct(products);
       return (Array.isArray(products) ? products : []).reduce((total, product) => {
-        if (!product || !isOfflineProduct(product) || product.deleted_at || product.deletedAt || product === aggregateProduct || !isPhoneFilmProduct(product)) return total;
+        if (!product || product.deleted_at || product.deletedAt || product === aggregateProduct || !isPhoneFilmProduct(product)) return total;
         return total + Math.max(0, Number(product.stock) || 0);
       }, 0);
     }
@@ -10296,7 +9801,7 @@
     function productAtlasProducts(predicate) {
       const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: "base" });
       return [...state.products]
-        .filter((product) => isOfflineProduct(product) && predicate(product))
+        .filter(predicate)
         .sort((a, b) => collator.compare(
           productItemCode(a) || productName(a),
           productItemCode(b) || productName(b)
@@ -10448,6 +9953,14 @@
 
     function normalizeDesign(value = {}) {
       const design = { ...seedDesign, ...(value || {}) };
+      design.announcement = String(design.announcement || "").trim().slice(0, 240);
+      design.announcementZh = String(design.announcementZh || "").trim().slice(0, 240);
+      design.headerTitle = String(design.headerTitle || "").trim().slice(0, 60);
+      design.heroTitle = String(design.heroTitle || "").trim().slice(0, 120);
+      design.heroSubtitle = String(design.heroSubtitle || "").trim().slice(0, 500);
+      design.heroButton = String(design.heroButton || "").trim().slice(0, 60);
+      design.heroImage = String(design.heroImage || "").trim();
+      design.productTitle = String(design.productTitle || "").trim().slice(0, 80);
       design.baseFontSize = clampNumber(design.baseFontSize, 13, 19, seedDesign.baseFontSize);
       design.headingScale = clampNumber(design.headingScale, 0.85, 1.25, seedDesign.headingScale);
       design.heroHeight = clampNumber(design.heroHeight, 280, 560, seedDesign.heroHeight);
@@ -10503,99 +10016,6 @@
       storageSet(key, JSON.stringify(value));
     }
 
-    function normalizeProductSalesChannel(value, product = {}) {
-      const channel = String(value || product?.sales_channel || "").trim().toLowerCase();
-      if (channel === "online" || channel === "offline") return channel;
-      return "offline";
-    }
-
-    function productSalesChannel(product) {
-      return normalizeProductSalesChannel(product?.salesChannel, product);
-    }
-
-    function isOnlineProduct(product) {
-      return productSalesChannel(product) === "online";
-    }
-
-    function isOfflineProduct(product) {
-      return productSalesChannel(product) === "offline";
-    }
-
-    function isStorefrontProduct(product) {
-      return isOnlineProduct(product) && Boolean(product?.published);
-    }
-
-    function profileAdminRole(profile = state.profile) {
-      if (profile?.is_admin === true) return "full_admin";
-      return String(profile?.admin_role || "customer").trim().toLowerCase();
-    }
-
-    function isFullAdmin() {
-      return state.profile?.is_admin === true;
-    }
-
-    function isOnlineManager() {
-      return profileAdminRole() === "online_manager" && state.profile?.is_admin !== true;
-    }
-
-    function isStaffProfile(profile) {
-      return profile?.is_admin === true || ["full_admin", "online_manager"].includes(String(profile?.admin_role || "").toLowerCase());
-    }
-
-    function canManageProducts() {
-      return isFullAdmin() || isOnlineManager();
-    }
-
-    function canManageProduct(product) {
-      return isFullAdmin() || (isOnlineManager() && isOnlineProduct(product));
-    }
-
-    function clearFullAdminState() {
-      state.adminOrders = [];
-      state.deletedOrders = [];
-      state.customers = [];
-      state.vouchers = [];
-      state.voucherAssignments = [];
-      state.adminOrdersLoaded = false;
-      state.adminOrdersLoading = false;
-      state.adminOrdersError = "";
-      state.latestOrderAlert = null;
-      state.unreadOrderIds = [];
-      state.productMedia = [];
-      state.productMediaLoaded = false;
-      state.productMediaError = "";
-    }
-
-    function applyAdminRoleUi() {
-      const onlineOnly = isOnlineManager();
-      $$('[data-full-admin-only], [data-full-admin-product-field]').forEach((element) => {
-        if (onlineOnly) element.setAttribute("data-role-hidden", "");
-        else element.removeAttribute("data-role-hidden");
-      });
-      const offlineChannel = $('[data-admin-product-channel="offline"]');
-      if (offlineChannel) offlineChannel.disabled = onlineOnly;
-      const form = $('[data-product-form]');
-      const offlineInput = form?.querySelector('[name="salesChannel"][value="offline"]');
-      const onlineInput = form?.querySelector('[name="salesChannel"][value="online"]');
-      if (offlineInput) offlineInput.disabled = onlineOnly;
-      $$('[data-admin-menu-link] [data-i18n="adminDashboard"]').forEach((label) => {
-        label.textContent = onlineOnly
-          ? (state.lang === "zh" ? "网上商店后台" : "Online Store Admin")
-          : t("adminDashboard");
-      });
-      const adminLogo = $('[data-admin-logo]');
-      if (adminLogo) adminLogo.textContent = onlineOnly ? "Go Go Shop Online" : "Go Go Shop";
-      const priceLabel = $('[data-product-price-label]');
-      if (priceLabel) priceLabel.textContent = onlineOnly
-        ? (state.lang === "zh" ? "售价 NZD（可手动修改）" : "Price NZD (editable)")
-        : "售价 NZD（可手动修改；供应价变化时自动计算）";
-      if (onlineOnly) {
-        state.adminProductChannel = "online";
-        if (state.adminTab !== "products") state.adminTab = "products";
-        if (onlineInput) onlineInput.checked = true;
-      }
-    }
-
     function publicProductSnapshot(product) {
       const {
         costPerItem,
@@ -10607,10 +10027,7 @@
         sourceAttributes,
         ...publicProduct
       } = product || {};
-      return {
-        ...publicProduct,
-        salesChannel: normalizeProductSalesChannel(publicProduct.salesChannel, publicProduct)
-      };
+      return publicProduct;
     }
 
     function persistProducts() {
@@ -10631,9 +10048,162 @@
       save(CART_KEY, state.cart);
     }
 
-    function persistDesign() {
+    function designStatusText(status) {
+      const chinese = state.lang === "zh";
+      const labels = chinese
+        ? {
+          loading: "正在读取线上装修...",
+          saving: "正在同步线上...",
+          saved: "已同步到线上商店",
+          local: "仅保存在本浏览器",
+          error: "线上同步失败，请运行装修迁移"
+        }
+        : {
+          loading: "Loading online design...",
+          saving: "Saving online...",
+          saved: "Saved to online store",
+          local: "Saved in this browser",
+          error: "Online sync unavailable - run the design migration"
+        };
+      return labels[status] || labels.local;
+    }
+
+    function setDesignRemoteStatus(status, errorMessage = "") {
+      const allowed = new Set(["loading", "saving", "saved", "local", "error"]);
+      const nextStatus = allowed.has(status) ? status : "local";
+      state.designRemoteStatus = nextStatus;
+      state.designRemoteError = String(errorMessage || "");
+      const statusNode = $("#designSaveStatus");
+      if (!statusNode) return;
+      statusNode.dataset.state = nextStatus;
+      statusNode.textContent = designStatusText(nextStatus);
+      statusNode.title = state.designRemoteError || "";
+    }
+
+    function designHasCustomValues(value) {
+      const current = normalizeDesign(value);
+      const defaults = normalizeDesign(seedDesign);
+      return Object.keys(defaults).some((key) => {
+        if (key === "blocks") return current.blocks.length > 0;
+        return JSON.stringify(current[key]) !== JSON.stringify(defaults[key]);
+      });
+    }
+
+    function designObjectFromRemote(value) {
+      if (value && typeof value === "object" && !Array.isArray(value)) return value;
+      if (typeof value === "string") {
+        try {
+          const parsed = JSON.parse(value);
+          return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
+        } catch (error) {}
+      }
+      return {};
+    }
+
+    async function fetchRemoteStorefrontDesign() {
+      let result = await db.rpc("get_storefront_design");
+      if (result.error && /function|schema cache|does not exist/i.test(result.error.message || "")) {
+        const fallback = await db.from("storefront_settings")
+          .select("design")
+          .eq("id", DESIGN_REMOTE_ID)
+          .maybeSingle();
+        if (!fallback.error) return { data: fallback.data?.design || {}, error: null };
+      }
+      return result;
+    }
+
+    async function loadStorefrontDesign(force = false) {
+      if (!db) {
+        setDesignRemoteStatus("local");
+        return false;
+      }
+      if (!force && state.designRemoteLoaded) return true;
+      if (designLoadPromise && !force) return designLoadPromise;
+      designLoadPromise = (async () => {
+        setDesignRemoteStatus("loading");
+        const { data, error } = await fetchRemoteStorefrontDesign();
+        if (error) {
+          state.designRemoteLoaded = false;
+          setDesignRemoteStatus("error", error.message || "Unable to load storefront design");
+          console.warn("Unable to load online storefront design", error);
+          return false;
+        }
+
+        const remoteDesign = designObjectFromRemote(data);
+        if (Object.keys(remoteDesign).length) {
+          state.design = normalizeDesign(remoteDesign);
+          save(DESIGN_KEY, state.design);
+          setDesignRemoteStatus("saved");
+        } else if (state.profile?.is_admin && designHasCustomValues(state.design)) {
+          // Preserve an existing local draft once, then make it the shared online version.
+          persistDesign();
+        } else {
+          state.design = normalizeDesign(seedDesign);
+          save(DESIGN_KEY, state.design);
+          setDesignRemoteStatus("local");
+        }
+        state.designRemoteLoaded = true;
+        applyStoreDesign();
+        if (!$("#adminShell")?.hidden) renderAdminDesign();
+        return true;
+      })().catch((error) => {
+        state.designRemoteLoaded = false;
+        setDesignRemoteStatus("error", error?.message || "Unable to load storefront design");
+        console.warn("Unable to load online storefront design", error);
+        return false;
+      }).finally(() => {
+        designLoadPromise = null;
+      });
+      return designLoadPromise;
+    }
+
+    function queueDesignRemoteSave() {
+      if (!db || !state.profile?.is_admin) {
+        setDesignRemoteStatus("local");
+        return;
+      }
+      designSaveVersion += 1;
+      const version = designSaveVersion;
+      window.clearTimeout(designSaveTimer);
+      setDesignRemoteStatus("saving");
+      designSaveTimer = window.setTimeout(() => {
+        designSaveTimer = null;
+        void saveStorefrontDesign(version);
+      }, 700);
+    }
+
+    async function saveStorefrontDesign(version) {
+      if (!db || !state.profile?.is_admin) return;
+      const design = normalizeDesign(state.design);
+      let result = await db.rpc("save_storefront_design", { p_design: design });
+      if (result.error && /function|schema cache|does not exist/i.test(result.error.message || "")) {
+        result = await db.from("storefront_settings").upsert({
+          id: DESIGN_REMOTE_ID,
+          design,
+          updated_at: new Date().toISOString(),
+          updated_by: state.session?.user?.id || null
+        }, { onConflict: "id" }).select("design").single();
+      }
+      if (version !== designSaveVersion || !state.profile?.is_admin) return;
+      if (result.error) {
+        setDesignRemoteStatus("error", result.error.message || "Unable to save storefront design");
+        console.warn("Unable to save online storefront design", result.error);
+        return;
+      }
+      state.designRemoteLoaded = true;
+      setDesignRemoteStatus("saved");
+    }
+
+    function cancelDesignRemoteSave() {
+      window.clearTimeout(designSaveTimer);
+      designSaveTimer = null;
+      designSaveVersion += 1;
+    }
+
+    function persistDesign(options = {}) {
       state.design = normalizeDesign(state.design);
       save(DESIGN_KEY, state.design);
+      if (options.remote !== false) queueDesignRemoteSave();
     }
 
     function persistOrders() {
@@ -10641,7 +10211,7 @@
     }
 
     function available(product) {
-      return isStorefrontProduct(product) && Number(product.stock) > 0;
+      return product.published && Number(product.stock) > 0;
     }
 
     function formatPrice(value) {
@@ -10725,6 +10295,25 @@
       openVipRules.lastFocus = null;
     }
 
+    function openDeliveryNotice() {
+      const modal = $("#deliveryNoticeModal");
+      if (!modal || isAdminRoute()) return;
+      openDeliveryNotice.lastFocus = document.activeElement;
+      modal.hidden = false;
+      modal.setAttribute("aria-hidden", "false");
+      refreshIcons();
+      window.requestAnimationFrame(() => modal.querySelector("[data-close-delivery-notice]")?.focus());
+    }
+
+    function closeDeliveryNotice() {
+      const modal = $("#deliveryNoticeModal");
+      if (!modal || modal.hidden) return;
+      modal.hidden = true;
+      modal.setAttribute("aria-hidden", "true");
+      if (openDeliveryNotice.lastFocus instanceof HTMLElement) openDeliveryNotice.lastFocus.focus();
+      openDeliveryNotice.lastFocus = null;
+    }
+
     function calculateSourcePricing(value, currency = "CNY") {
       const sourcePrice = Number(value);
       if (!Number.isFinite(sourcePrice) || sourcePrice <= 0) return null;
@@ -10772,13 +10361,6 @@
       return translations[state.lang]?.[key] || translations.en[key] || key;
     }
 
-    function tWithValues(key, values = {}) {
-      return Object.entries(values).reduce(
-        (text, [name, value]) => text.replaceAll(`{${name}}`, String(value)),
-        t(key)
-      );
-    }
-
     function cleanStorefrontDescription(value, product = null) {
       const hiddenValues = [product?.vendor, product?.sourceUrl]
         .map((entry) => String(entry || "").trim().toLowerCase())
@@ -10824,34 +10406,6 @@
         || t("productFallback");
     }
 
-    function productDetailDescription(product) {
-      const fallback = t("productFallback");
-      const description = productDescription(product);
-      if (description && description !== fallback) return description;
-
-      const source = state.lang === "zh"
-        ? product.titleZh || product.title
-        : product.titleEn || product.title;
-      const text = String(source || "");
-      const materialPattern = state.lang === "zh"
-        ? /超细纤维|不锈钢|碳钢|陶瓷|玻璃|塑料|硅胶|牛皮纸|无纺布|泡棉|乳胶|涤纶|聚酯|铝合金|木质|纸质/g
-        : /microfibre|microfiber|stainless steel|carbon steel|ceramic|glass|plastic|silicone|cotton|paper|non-woven|foam|latex|polyester|aluminium|aluminum|wood/gi;
-      const measurePattern = /\d+(?:\.\d+)?\s*[-‑–]\s*\d+(?:\.\d+)?\s*(?:毫升|厘米|千克|英寸|ml|cm|mm|kg|inch|升|米|克|m|l|g|in)|\d+(?:\.\d+)?\s*(?:[×x*]\s*\d+(?:\.\d+)?(?:\s*[×x*]\s*\d+(?:\.\d+)?)*\s*(?:cm|mm|m|in|inch|英寸)?|毫升|厘米|千克|英寸|ml|cm|mm|kg|inch|升|米|克|m|l|g|in)/gi;
-      const packPattern = /\d+\s*(?:pcs?|pieces?|pack|packs|只装|片装|件装|个装|支装|套装|入装)|(?:pcs?|pieces?|pack|packs)\s*\d+/gi;
-      const uniqueMatches = (pattern) => [...new Set((text.match(pattern) || []).map((value) => value.replace(/\s+/g, " ").trim()))];
-      const materials = uniqueMatches(materialPattern);
-      const measures = uniqueMatches(measurePattern);
-      const packs = uniqueMatches(packPattern);
-      const details = [];
-      if (materials.length) details.push(`${state.lang === "zh" ? "材质" : "Material"}: ${materials.join(", ")}`);
-      if (measures.length) details.push(`${state.lang === "zh" ? "尺寸/容量" : "Size/Capacity"}: ${measures.join(", ")}`);
-      if (packs.length) details.push(`${state.lang === "zh" ? "包装" : "Pack"}: ${packs.join(", ")}`);
-      if (details.length) return details.join(" · ");
-      return state.lang === "zh"
-        ? "材质、尺寸和规格以商品图片为准。"
-        : "Material, size and specifications are shown in the product images.";
-    }
-
     function productForOrderItem(item) {
       const productId = String(item?.product_id || "");
       return state.products.find((entry) => String(entry.id) === productId)
@@ -10869,6 +10423,9 @@
       if (category === "other") return t("otherCategory");
       const storefrontCategory = storefrontCategories.find((item) => item.key === category);
       if (storefrontCategory) return state.lang === "zh" ? storefrontCategory.zh : storefrontCategory.en;
+      if (state.lang !== "zh" && window.GOGO_SHOP_CATEGORY_TRANSLATIONS?.[category]) {
+        return window.GOGO_SHOP_CATEGORY_TRANSLATIONS[category];
+      }
       return state.lang === "zh" ? productLabels[category]?.zh || category : category;
     }
 
@@ -10898,6 +10455,7 @@
     }
 
     function productCategoryKey(product) {
+      if (String(product?.id || "").startsWith("kdh-")) return String(product.category || "other").trim() || "other";
       return storefrontCategoryByProductId.get(product.id)
         || (storefrontCategoryKeys.has(product.category) ? product.category : "")
         || (isOfficeSupplyProduct(product) ? "office-supplies" : "keychains-gifts");
@@ -10915,11 +10473,18 @@
       return name ? `Hi, ${name}` : t("announcement");
     }
 
-    function effectiveDesign() {
+    function storefrontAnnouncementText(design) {
+      if (state.lang === "zh") return design.announcementZh || design.announcement || t("announcement");
+      return design.announcement || t("announcement");
+    }
+
+    function effectiveDesign(options = {}) {
       const design = normalizeDesign(state.design);
       return {
         ...design,
-        announcementText: state.session?.user ? customerWelcomeText() : (design.announcement || t("announcement")),
+        announcementText: !options.preview && state.session?.user
+          ? customerWelcomeText()
+          : storefrontAnnouncementText(design),
         headerTitleText: design.headerTitle || "GO GO SHOP",
         heroTitleText: design.heroTitle || t("heroTitle"),
         heroButtonText: design.heroButton || t("shopAll"),
@@ -11018,8 +10583,9 @@
       if (!source) return "";
       const isLocalAsset = /^(?:\.\/|\/)?assets\//i.test(source)
         || /(^|:\/\/)(?:www\.)?gogoshop\.nz\/assets\//i.test(source);
-      if (!isLocalAsset || /(?:^|[?&])imgv=/i.test(source)) return source;
-      return `${source}${source.includes("?") ? "&" : "?"}imgv=${PRODUCT_IMAGE_ASSET_VERSION}`;
+      if (/(?:^|[?&])imgv=/i.test(source)) return source;
+      if (isLocalAsset) return `${source}${source.includes("?") ? "&" : "?"}imgv=${PRODUCT_IMAGE_ASSET_VERSION}`;
+      return `${source}${source.includes("?") ? "&" : "?"}imgv=${productImageRefreshVersion}`;
     }
 
     function setImageSource(image, source) {
@@ -11034,7 +10600,7 @@
     function usableProductImage(value) {
       const source = String(value || "").trim();
       if (!source || /^data:/i.test(source)) return false;
-      if (!canManageProducts() && /(^|:\/\/)(cdn\.shopify\.com|.*supabase\.co\/storage)/i.test(source)) return false;
+      if (!state.profile?.is_admin && /(^|:\/\/)(cdn\.shopify\.com|.*supabase\.co\/storage)/i.test(source)) return false;
       return true;
     }
 
@@ -11049,7 +10615,7 @@
       return Number.isFinite(limit) ? images.slice(0, limit) : images;
     }
 
-    function renderProductGallery(product) {
+    function renderProductGallery(product, prioritize = false) {
       const images = productImages(product, 6);
       const hasGallery = images.length > 1;
       return `
@@ -11057,7 +10623,7 @@
         <a class="media-slider" href="#product=${encodeURIComponent(product.id)}" data-product-view="${escapeHtml(product.id)}" data-gallery="${escapeHtml(product.id)}" data-gallery-index="0" data-gallery-count="${images.length}" style="--active-slide: 0" aria-label="${escapeHtml(productName(product))}">
           <div class="media-track">
             ${images.length ? images.map((image, index) => `
-              <img class="media-slide" src="${escapeHtml(image)}" alt="${escapeHtml(productName(product))} ${index + 1}" loading="${index === 0 ? "eager" : "lazy"}" decoding="async" fetchpriority="${index === 0 ? "high" : "auto"}" draggable="false">
+              <img class="media-slide" src="${escapeHtml(image)}" alt="${escapeHtml(productName(product))} ${index + 1}" loading="${index === 0 && prioritize ? "eager" : "lazy"}" decoding="async" fetchpriority="${index === 0 && prioritize ? "high" : "auto"}" draggable="false">
             `).join("") : `<span class="image-placeholder" role="img" aria-label="${escapeHtml(state.lang === "zh" ? "暂无图片" : "No image")}"><i data-lucide="image-off"></i><span>${state.lang === "zh" ? "暂无图片" : "No image"}</span></span>`}
           </div>
         </a>
@@ -11121,7 +10687,7 @@
     function renderProductDetail() {
       const detail = $("#productDetail");
       const content = $("#productDetailContent");
-      const product = state.products.find((item) => item.id === state.activeProductId && isStorefrontProduct(item));
+      const product = state.products.find((item) => item.id === state.activeProductId && item.published);
       if (!detail || !content || !product) return;
 
       const images = productImages(product);
@@ -11129,7 +10695,8 @@
       state.detailQuantity = Math.min(Math.max(1, state.detailQuantity), Math.max(1, Number(product.stock) || 1));
       const currentImage = images[state.detailImageIndex] || "";
       const soldOut = !available(product);
-      const detailDescription = productDetailDescription(product);
+      const description = productDescription(product);
+      const itemCode = productItemCode(product);
       const eagerThumbnailLimit = images.length <= 25 ? images.length : 8;
 
       content.innerHTML = `
@@ -11156,10 +10723,13 @@
             <p class="product-detail-category">${escapeHtml(categoryName(productCategoryKey(product)))}</p>
             <h1>${escapeHtml(productName(product))}</h1>
             <p class="product-detail-price">${formatPrice(product.price)}</p>
-            <div class="product-detail-description-block">
-              <p class="product-detail-description-title">${t("productDescriptionTitle")}</p>
-              <p class="product-detail-description">${escapeHtml(detailDescription)}</p>
-            </div>
+            ${itemCode ? `
+              <div class="product-detail-code">
+                <p class="product-detail-code-title">${state.lang === "zh" ? "扫码点单实验码" : "Scan-to-order trial code"}</p>
+                ${renderProductBarcode(product)}
+              </div>
+            ` : ""}
+            ${description ? `<p class="product-detail-description">${escapeHtml(description)}</p>` : ""}
             <p class="product-detail-stock">
               <span class="stock-dot ${soldOut ? "sold-out" : ""}"></span>
               <span>${detailStockText(product)}</span>
@@ -11209,8 +10779,8 @@
     }
 
     async function loadStorefrontProductDetail(productId) {
-      if (!db || canManageProducts() || !productId) return;
-      const product = state.products.find((item) => item.id === productId && isStorefrontProduct(item));
+      if (!db || state.profile?.is_admin || !productId) return;
+      const product = state.products.find((item) => item.id === productId && item.published);
       if (!product || state.detailLoadedProductIds.has(productId)) return;
 
       state.detailLoading = true;
@@ -11245,7 +10815,7 @@
     }
 
     function showProductDetail(id, updateHash = true) {
-      const product = state.products.find((item) => item.id === id && isStorefrontProduct(item));
+      const product = state.products.find((item) => item.id === id && item.published);
       if (!product) return false;
 
       const detail = $("#productDetail");
@@ -11321,6 +10891,7 @@
       storageSet(LANG_KEY, state.lang);
       document.documentElement.lang = state.lang === "zh" ? "zh-CN" : "en";
       applyLanguage();
+      setDesignRemoteStatus(state.designRemoteStatus);
       renderAll();
     }
 
@@ -11353,18 +10924,21 @@
 
     function categories() {
       const activeCategories = new Set(
-        state.products.filter(isStorefrontProduct).map(productCategoryKey)
+        state.products.filter((product) => product.published).map(productCategoryKey)
       );
       const ordered = storefrontCategories
         .filter((category) => activeCategories.has(category.key))
         .map((category) => category.key);
-      if (activeCategories.has("other")) ordered.push("other");
-      return ["All", ...ordered];
+      const dynamic = [...activeCategories]
+        .filter((category) => category !== "other" && !ordered.includes(category))
+        .sort((a, b) => categoryName(a).localeCompare(categoryName(b), state.lang === "zh" ? "zh-CN" : "en-NZ"));
+      if (activeCategories.has("other")) dynamic.push("other");
+      return ["All", ...ordered, ...dynamic];
     }
 
     function visibleProducts() {
       const filtered = state.products.filter((product) => {
-        if (!isStorefrontProduct(product)) return false;
+        if (!product.published) return false;
         return state.category === "All" || productCategoryKey(product) === state.category;
       });
       return filtered.sort((a, b) => {
@@ -11410,7 +10984,7 @@
         const definition = storefrontCategories.find((item) => item.key === category);
         const icon = category === "All" ? "layout-grid" : (definition?.icon || "package");
         const count = state.products.filter((product) => (
-          isStorefrontProduct(product) && (category === "All" || productCategoryKey(product) === category)
+          product.published && (category === "All" || productCategoryKey(product) === category)
         )).length;
         const active = category === state.category;
         return `
@@ -11433,10 +11007,10 @@
         refreshIcons();
         return;
       }
-      grid.innerHTML = products.map((product) => `
+      grid.innerHTML = products.map((product, index) => `
         <article class="product-card">
           <div class="product-media" role="group" aria-label="${escapeHtml(productName(product))}">
-            ${renderProductGallery(product)}
+            ${renderProductGallery(product, index < 8)}
           </div>
           <div class="product-info">
             <a class="product-summary-link" href="#product=${encodeURIComponent(product.id)}" data-product-view="${escapeHtml(product.id)}">
@@ -11485,26 +11059,6 @@
       if (order.payment_status === "paid") return "live";
       if (["failed", "refunded"].includes(order.payment_status)) return "draft";
       return "featured";
-    }
-
-    function hasOrderFulfillment(order) {
-      return order?.fulfillment_configured === true;
-    }
-
-    function orderFulfillmentLabel(order) {
-      return order?.fulfillment_method === "delivery" ? t("delivery") : t("pickup");
-    }
-
-    function orderFulfillmentSummary(order) {
-      if (!hasOrderFulfillment(order)) return "";
-      if (order.fulfillment_method === "delivery") {
-        const distance = Number(order.delivery_distance_km);
-        const parts = [t("delivery")];
-        if (Number.isFinite(distance)) parts.push(`${distance.toFixed(1)} km`);
-        parts.push(Number(order.delivery_fee || 0) > 0 ? formatPrice(order.delivery_fee) : t("free"));
-        return parts.join(" · ");
-      }
-      return `${t("pickup")} · ${order.pickup_location || FLAT_BUSH_PICKUP.name}`;
     }
 
     function voucherValueLabel(voucher) {
@@ -11700,7 +11254,6 @@
             </div>
           </div>
           <strong>${formatPrice(order.total)}</strong> · ${Number(order.item_count || 0)} ${state.lang === "zh" ? "件" : "items"}
-          ${hasOrderFulfillment(order) ? `<div class="account-order-meta">${escapeHtml(orderFulfillmentSummary(order))}</div>` : ""}
           ${order.status === "confirmed" ? `<div class="account-order-meta">+${Number(order.points_awarded || 0)} ${t("rewardPoints")}</div>` : ""}
           <div class="account-order-items">${(order.order_items || []).map((item) => `${escapeHtml(orderItemName(item))} × ${Number(item.quantity)} · ${formatPrice(item.unit_price)}`).join("<br>")}</div>
         </article>
@@ -11709,7 +11262,7 @@
     }
 
     function updateAdminMenuVisibility() {
-      const showAdminLink = Boolean(state.session?.user && canManageProducts());
+      const showAdminLink = Boolean(state.session?.user && state.profile?.is_admin === true);
       $$('[data-admin-menu-link]').forEach((adminMenuLink) => {
         adminMenuLink.hidden = !showAdminLink;
       });
@@ -11745,7 +11298,6 @@
       ), 0);
       const subtotal = Number(order.subtotal ?? calculatedSubtotal ?? order.total);
       const discount = Number(order.discount_amount || 0);
-      const deliveryFee = Number(order.delivery_fee || 0);
       const discountLabel = String(order.order_number || "").startsWith("POS-") ? t("orderDiscount") : t("voucherDiscount");
       const itemCount = items.reduce((sum, item) => sum + Number(item.quantity || 0), 0)
         || Number(order.item_count || 0);
@@ -11762,9 +11314,6 @@
           <div><dt>${t("orderDate")}</dt><dd>${escapeHtml(formatDate(order.created_at))}</dd></div>
           <div><dt>${t("paymentMethod")}</dt><dd>${escapeHtml(paymentMethod)}</dd></div>
           <div><dt>${order.paid_at ? t("paidAt") : t("confirmedAt")}</dt><dd>${escapeHtml(formatDate(order.paid_at || order.confirmed_at))}</dd></div>
-          ${hasOrderFulfillment(order) ? `<div><dt>${t("fulfillmentMethod")}</dt><dd>${escapeHtml(orderFulfillmentLabel(order))}</dd></div>` : ""}
-          ${hasOrderFulfillment(order) && order.fulfillment_method === "pickup" ? `<div><dt>${t("pickupLocation")}</dt><dd>${escapeHtml(order.pickup_location || FLAT_BUSH_PICKUP.name)}</dd></div>` : ""}
-          ${hasOrderFulfillment(order) && order.fulfillment_method === "delivery" ? `<div><dt>${t("estimatedDistance")}</dt><dd>${Number(order.delivery_distance_km || 0).toFixed(1)} km</dd></div><div><dt>${t("deliveryPhone")}</dt><dd>${escapeHtml(order.delivery_phone || "-")}</dd></div><div><dt>${t("deliveryAddress")}</dt><dd>${escapeHtml(order.delivery_address || "-")}</dd></div>` : ""}
         </dl>
         <section class="order-detail-section">
           <h3>${t("orderItems")}</h3>
@@ -11789,7 +11338,6 @@
         <div class="order-detail-totals">
           <div class="order-detail-total-row"><span>${t("subtotal")}</span><strong>${formatPrice(subtotal || order.total)}</strong></div>
           ${discount > 0 ? `<div class="order-detail-total-row"><span>${escapeHtml(discountLabel)}${order.voucher_code ? ` · ${escapeHtml(order.voucher_code)}` : ""}</span><strong>-${formatPrice(discount)}</strong></div>` : ""}
-          ${hasOrderFulfillment(order) && order.fulfillment_method === "delivery" ? `<div class="order-detail-total-row"><span>${t("deliveryFee")}</span><strong>${deliveryFee > 0 ? formatPrice(deliveryFee) : t("free")}</strong></div>` : ""}
           <div class="order-detail-total-row"><span>${t("itemCount")}</span><strong>${itemCount}</strong></div>
           ${order.status === "confirmed" ? `<div class="order-detail-total-row"><span>${t("pointsEarned")}</span><strong>+${Number(order.points_awarded || 0)}</strong></div>` : ""}
           <div class="order-detail-total-row final"><span>${t("total")}</span><strong>${formatPrice(order.total)}</strong></div>
@@ -11803,21 +11351,17 @@
 
     async function loadStoreInventory() {
       if (!db) return;
-      const fullAdmin = isFullAdmin();
-      const productManager = canManageProducts();
-      let supportsRecycleBin = productManager;
+      productImageRefreshVersion = Date.now().toString();
+      const isAdmin = state.profile?.is_admin === true;
+      let supportsRecycleBin = isAdmin;
       let data;
       let error;
-      if (fullAdmin) {
-        ({ data, error } = await db.from("products").select("id,title,title_en,title_zh,category,description,description_en,description_zh,price,compare_at_price,cost_per_item,stock,sales,published,sales_channel,image,images,vendor,sku,barcode,tags,source_url,source_currency,source_price,source_variants,source_attributes,deleted_at,deleted_was_published"));
+      if (isAdmin) {
+        ({ data, error } = await db.from("products").select("id,title,title_en,title_zh,category,description,description_en,description_zh,price,compare_at_price,cost_per_item,stock,sales,published,image,images,vendor,sku,barcode,tags,source_url,source_currency,source_price,source_variants,source_attributes,deleted_at,deleted_was_published"));
         if (error) {
           supportsRecycleBin = false;
           ({ data, error } = await db.from("products").select("id,title,category,description,price,compare_at_price,cost_per_item,stock,sales,published,image,images,vendor,sku,barcode,tags,source_url,source_currency,source_price,source_variants,source_attributes"));
         }
-      } else if (isOnlineManager()) {
-        ({ data, error } = await db.from("products")
-          .select("id,title,title_en,title_zh,category,description,description_en,description_zh,price,compare_at_price,stock,sales,published,sales_channel,image,images,sku,barcode,tags,deleted_at,deleted_was_published")
-          .eq("sales_channel", "online"));
       } else {
         ({ data, error } = await db.rpc("get_storefront_catalog"));
         if (error) {
@@ -11825,16 +11369,33 @@
         }
         if (error) {
           ({ data, error } = await db.from("products")
-            .select("id,title,category,description,price,compare_at_price,stock,published,sales_channel,image,images")
-            .eq("sales_channel", "online")
+            .select("id,title,category,description,price,compare_at_price,stock,published,image,images")
             .eq("published", true));
         }
       }
-      if (error) return;
+      if (error || !Array.isArray(data)) return;
       const remoteProducts = data.filter((product) => String(product.tags || "").trim() !== PURGED_PRODUCT_TAG);
-      if (fullAdmin) await syncPhoneFilmAggregateStock(remoteProducts);
+      if (!remoteProducts.length && !state.remoteCatalogReady && seedProducts.length) {
+        const localProducts = [...state.products, ...state.deletedProducts];
+        const localById = new Map(localProducts.map((product) => [String(product.id), product]));
+        state.products = seedProducts.map((seed) => ({
+          ...publicProductSnapshot(seed),
+          ...(localById.get(String(seed.id)) || {})
+        }));
+        state.deletedProducts = [];
+        persistProducts();
+        persistDeletedProducts();
+        renderProducts();
+        renderCart();
+        return;
+      }
+      if (remoteProducts.length && !state.remoteCatalogReady) {
+        state.remoteCatalogReady = true;
+        storageSet(REMOTE_CATALOG_STATE_KEY, "ready");
+      }
+      if (isAdmin) await syncPhoneFilmAggregateStock(remoteProducts);
       const localProducts = [...state.products, ...state.deletedProducts];
-      const remoteProductIds = new Set(remoteProducts.filter((product) => !productManager || !product.deleted_at).map((product) => product.id));
+      const remoteProductIds = new Set(remoteProducts.filter((product) => !isAdmin || !product.deleted_at).map((product) => product.id));
       state.products = state.products.filter((product) => remoteProductIds.has(product.id));
       const cartSize = state.cart.length;
       state.cart = state.cart.filter((line) => remoteProductIds.has(line.id));
@@ -11855,45 +11416,43 @@
         const sourcePricing = calculateSourcePricing(sourcePrice, sourceCurrency);
         const importedCategory = remote.category || localProduct?.category || "";
         const visibleCategory = isCil && /^1688 Imports$/i.test(importedCategory) ? "" : importedCategory;
-        const salesChannel = normalizeProductSalesChannel(remote.sales_channel, productManager ? (localProduct || remote) : { sales_channel: "online" });
         const remoteProduct = {
           id: remote.id,
           experimentalCode: localProduct?.experimentalCode || "",
           handle: remote.id,
           title: remote.title,
-          titleEn: productManager ? (remote.title_en ?? localProduct?.titleEn ?? remote.title ?? "") : (remote.title_en ?? remote.title ?? ""),
+          titleEn: isAdmin ? (remote.title_en ?? localProduct?.titleEn ?? remote.title ?? "") : (remote.title_en ?? remote.title ?? ""),
           titleZh: remote.title_zh ?? localProduct?.titleZh ?? "",
           category: visibleCategory,
           productType: isCil && /^1688 Imports$/i.test(remote.category || localProduct?.productType || localProduct?.category || "")
             ? ""
             : remote.category || localProduct?.productType || localProduct?.category || "",
-          description: remote.description ?? (productManager ? localProduct?.description : "") ?? "",
+          description: remote.description ?? (isAdmin ? localProduct?.description : "") ?? "",
           descriptionEn: remote.description_en ?? localProduct?.descriptionEn ?? "",
           descriptionZh: remote.description_zh ?? localProduct?.descriptionZh ?? "",
           price: Number(remote.price),
           compareAtPrice: Number(remote.compare_at_price || 0),
-          costPerItem: fullAdmin
+          costPerItem: isAdmin
             ? (sourcePricing?.cost ?? Number(remote.cost_per_item || 0))
             : 0,
           stock: Number(remote.stock),
           sales: Number(remote.sales ?? localProduct?.sales ?? 0),
           published: Boolean(remote.published),
-          status: salesChannel === "offline" || remote.published ? "active" : "draft",
-          salesChannel,
-          onlineStore: salesChannel === "online" && Boolean(remote.published),
+          status: remote.published ? "active" : "draft",
+          onlineStore: Boolean(remote.published),
           image: remote.image ?? localProduct?.image ?? "",
-          images: productManager && Array.isArray(remote.images) ? remote.images : [],
-          vendor: fullAdmin ? (remote.vendor || localProduct?.vendor || "Go Go Shop") : "",
-          sku: remote.sku ?? (productManager ? localProduct?.sku ?? "" : ""),
-          barcode: remote.barcode ?? (productManager ? localProduct?.barcode ?? "" : ""),
-          tags: productManager ? (remote.tags ?? localProduct?.tags ?? "") : "",
-          sourceUrl: fullAdmin ? (remote.source_url ?? localProduct?.sourceUrl ?? "") : "",
-          sourceCurrency: fullAdmin ? sourceCurrency : "",
-          sourcePriceCny: fullAdmin ? sourcePrice : 0,
-          sourceVariants: fullAdmin && Array.isArray(remote.source_variants) ? remote.source_variants : (fullAdmin ? (localProduct?.sourceVariants || []) : []),
-          sourceAttributes: fullAdmin && Array.isArray(remote.source_attributes) ? remote.source_attributes : (fullAdmin ? (localProduct?.sourceAttributes || []) : []),
-          deletedAt: productManager && supportsRecycleBin ? (remote.deleted_at || null) : null,
-          restorePublished: productManager && supportsRecycleBin ? Boolean(remote.deleted_was_published) : false,
+          images: isAdmin && Array.isArray(remote.images) ? remote.images : [],
+          vendor: isAdmin ? (remote.vendor || localProduct?.vendor || "Go Go Shop") : "",
+          sku: remote.sku ?? (isAdmin ? localProduct?.sku ?? "" : ""),
+          barcode: remote.barcode ?? (isAdmin ? localProduct?.barcode ?? "" : ""),
+          tags: isAdmin ? (remote.tags ?? localProduct?.tags ?? "") : "",
+          sourceUrl: isAdmin ? (remote.source_url ?? localProduct?.sourceUrl ?? "") : "",
+          sourceCurrency: isAdmin ? sourceCurrency : "",
+          sourcePriceCny: isAdmin ? sourcePrice : 0,
+          sourceVariants: isAdmin && Array.isArray(remote.source_variants) ? remote.source_variants : (isAdmin ? (localProduct?.sourceVariants || []) : []),
+          sourceAttributes: isAdmin && Array.isArray(remote.source_attributes) ? remote.source_attributes : (isAdmin ? (localProduct?.sourceAttributes || []) : []),
+          deletedAt: isAdmin && supportsRecycleBin ? (remote.deleted_at || null) : null,
+          restorePublished: isAdmin && supportsRecycleBin ? Boolean(remote.deleted_was_published) : false,
           restoreFeatured: Boolean(localProduct?.restoreFeatured),
           taxable: true,
           trackQuantity: true,
@@ -11901,7 +11460,7 @@
           views: Number(localProduct?.views || 0)
         };
         if (remoteProduct.deletedAt) {
-          if (productManager) state.deletedProducts.push(remoteProduct);
+          if (isAdmin) state.deletedProducts.push(remoteProduct);
           return;
         }
         const product = state.products.find((item) => item.id === remote.id);
@@ -11927,25 +11486,19 @@
         return;
       }
       const userId = state.session.user.id;
-      let profilePromise = db.from("profiles").select("id,email,full_name,points,total_spent,is_admin,admin_role,customer_barcode,created_at").eq("id", userId).single();
+      let profilePromise = db.from("profiles").select("id,email,full_name,points,total_spent,is_admin,customer_barcode,created_at").eq("id", userId).single();
       profilePromise = profilePromise.then((result) => {
-        if (!result.error || !/admin_role|customer_barcode/i.test(result.error.message || "")) return result;
+        if (!result.error || !/customer_barcode/i.test(result.error.message || "")) return result;
         return db.from("profiles").select("id,email,full_name,points,total_spent,is_admin,created_at").eq("id", userId).single();
       });
-      const fulfillmentPaymentFields = "id,order_number,status,order_note,subtotal,discount_amount,voucher_code,total,item_count,points_awarded,payment_provider,payment_status,paid_at,created_at,confirmed_at,fulfillment_method,fulfillment_configured,delivery_fee,delivery_distance_km,delivery_address,delivery_phone,pickup_location,order_items(product_id,product_title,unit_price,quantity,item_note)";
       const voucherPaymentFields = "id,order_number,status,order_note,subtotal,discount_amount,voucher_code,total,item_count,points_awarded,payment_provider,payment_status,paid_at,created_at,confirmed_at,order_items(product_id,product_title,unit_price,quantity,item_note)";
       const paymentFields = "id,order_number,status,total,item_count,points_awarded,payment_provider,payment_status,paid_at,created_at,confirmed_at,order_items(product_id,product_title,unit_price,quantity)";
       const basicFields = "id,order_number,status,total,item_count,points_awarded,created_at,confirmed_at,order_items(product_id,product_title,unit_price,quantity)";
       let supportsOrderRecycle = true;
-      let orderResult = await db.from("orders").select(fulfillmentPaymentFields).eq("user_id", userId).is("deleted_at", null).order("created_at", { ascending: false });
+      let orderResult = await db.from("orders").select(voucherPaymentFields).eq("user_id", userId).is("deleted_at", null).order("created_at", { ascending: false });
       if (orderResult.error && /deleted_at/i.test(orderResult.error.message || "")) {
         supportsOrderRecycle = false;
-        orderResult = await db.from("orders").select(fulfillmentPaymentFields).eq("user_id", userId).order("created_at", { ascending: false });
-      }
-      if (orderResult.error && /fulfillment_|delivery_|pickup_location/i.test(orderResult.error.message || "")) {
-        let voucherQuery = db.from("orders").select(voucherPaymentFields).eq("user_id", userId);
-        if (supportsOrderRecycle) voucherQuery = voucherQuery.is("deleted_at", null);
-        orderResult = await voucherQuery.order("created_at", { ascending: false });
+        orderResult = await db.from("orders").select(voucherPaymentFields).eq("user_id", userId).order("created_at", { ascending: false });
       }
       if (orderResult.error && /subtotal|discount_amount|voucher_code|order_note|item_note/i.test(orderResult.error.message || "")) {
         let paymentQuery = db.from("orders").select(paymentFields).eq("user_id", userId);
@@ -12256,9 +11809,8 @@
     }
 
     function oauthRedirectUrl() {
-      const url = /^(www\.)?gogoshop\.nz$/i.test(location.hostname)
-        ? new URL("https://gogoshop.nz/")
-        : new URL(`${location.origin}${location.pathname}`);
+      const configuredSiteUrl = String(STORE_CONFIG.siteUrl || "").trim();
+      const url = new URL(configuredSiteUrl || `${location.origin}${location.pathname}`);
       url.searchParams.set("oauth", "return");
       if (nativeOAuthPlugins()) url.searchParams.set("app", "1");
       return url.href;
@@ -12267,7 +11819,8 @@
     function nativeOAuthCallbackUrl(value) {
       try {
         const url = new URL(value);
-        const validHost = /^(www\.)?gogoshop\.nz$/i.test(url.hostname);
+        const configuredSiteUrl = String(STORE_CONFIG.siteUrl || "").trim();
+        const validHost = configuredSiteUrl && url.origin === new URL(configuredSiteUrl).origin;
         const validAppScheme = url.protocol === "nz.gogoshop.app:"
           && url.hostname === "auth"
           && url.pathname === "/callback";
@@ -12378,6 +11931,7 @@
     }
 
     async function handleAuthSession(session) {
+      if (!session?.user) cancelDesignRemoteSave();
       state.session = session;
       renderAccount();
       if (session?.user && hasPendingOAuth()) {
@@ -12386,20 +11940,17 @@
         openPanel("account");
       }
       await loadCustomerData();
-      applyAdminRoleUi();
-      if (canManageProducts()) {
+      await loadStorefrontDesign();
+      if (state.profile?.is_admin) {
         await loadStoreInventory();
-      }
-      if (isFullAdmin()) {
         await subscribeToAdminOrderRealtime();
         if (pendingNotificationOrderId && isAdminRoute()) openAdminOrderFromNotification(pendingNotificationOrderId);
+      } else if (state.deletedProducts.length) {
+        await stopAdminOrderRealtime();
+        state.deletedProducts = [];
+        persistDeletedProducts();
       } else {
         await stopAdminOrderRealtime();
-        clearFullAdminState();
-        if (!canManageProducts() && state.deletedProducts.length) {
-          state.deletedProducts = [];
-          persistDeletedProducts();
-        }
       }
       state.authReady = true;
       applyStoreDesign();
@@ -12414,10 +11965,18 @@
       }
       const { data } = await db.auth.getSession();
       await handleAuthSession(data.session);
-      if (!canManageProducts()) await loadStoreInventory();
+      if (!state.profile?.is_admin) await loadStoreInventory();
       db.auth.onAuthStateChange((_event, session) => {
         window.setTimeout(() => handleAuthSession(session), 0);
       });
+      if (!state.profile?.is_admin) {
+        window.setInterval(() => {
+          if (!document.hidden && !state.profile?.is_admin) void loadStoreInventory();
+        }, 30000);
+        document.addEventListener("visibilitychange", () => {
+          if (!document.hidden && !state.profile?.is_admin) void loadStoreInventory();
+        });
+      }
     }
 
     async function submitCustomerAuth(form, action) {
@@ -12496,487 +12055,6 @@
       }, 0);
     }
 
-    function resetCheckoutFulfillment() {
-      cancelAddressSearch();
-      Object.assign(state.checkoutFulfillment, {
-        method: "pickup",
-        latitude: null,
-        longitude: null,
-        distanceKm: null,
-        locating: false,
-        locationError: "",
-        addressSuggestions: [],
-        addressSearching: false,
-        addressVerifying: false,
-        addressSearchError: "",
-        addressSearchCompletedFor: "",
-        addressSuggestionsOpen: false,
-        addressSessionToken: "",
-        selectedPlaceResource: "",
-        verifiedAddress: "",
-        addressVerified: false,
-        addressActiveIndex: -1
-      });
-    }
-
-    function distanceKmBetween(latitude, longitude, targetLatitude, targetLongitude) {
-      const radians = (degrees) => Number(degrees) * Math.PI / 180;
-      const latitudeDelta = radians(Number(targetLatitude) - Number(latitude));
-      const longitudeDelta = radians(Number(targetLongitude) - Number(longitude));
-      const startLatitude = radians(latitude);
-      const endLatitude = radians(targetLatitude);
-      const haversine = Math.sin(latitudeDelta / 2) ** 2
-        + Math.cos(startLatitude) * Math.cos(endLatitude) * Math.sin(longitudeDelta / 2) ** 2;
-      return 6371.0088 * 2 * Math.asin(Math.sqrt(Math.min(1, Math.max(0, haversine))));
-    }
-
-    function createAddressSessionToken() {
-      if (window.crypto?.randomUUID) return window.crypto.randomUUID();
-      return `addr_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 12)}`;
-    }
-
-    function cancelAddressSearch() {
-      window.clearTimeout(addressSearchTimer);
-      addressSearchTimer = 0;
-      addressSearchRequestId += 1;
-      if (addressSearchController) addressSearchController.abort();
-      addressSearchController = null;
-    }
-
-    async function callCheckoutFunction(payload, signal = null) {
-      if (!db) throw new Error("Authentication required");
-      const { data: sessionData } = await db.auth.getSession();
-      const accessToken = sessionData.session?.access_token;
-      if (!accessToken) throw new Error("Authentication required");
-      const response = await fetch(SUPABASE_URL + "/functions/v1/create-checkout-session", {
-        method: "POST",
-        headers: {
-          "Authorization": "Bearer " + accessToken,
-          "apikey": SUPABASE_PUBLISHABLE_KEY,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(payload),
-        signal
-      });
-      const result = await response.json().catch(() => ({}));
-      if (!response.ok) {
-        const error = new Error(result.error || "Request failed");
-        error.code = result.code || "";
-        error.status = response.status;
-        throw error;
-      }
-      return result;
-    }
-
-    function renderAddressAutocomplete() {
-      const input = $("#deliveryAddress");
-      const list = $("#deliveryAddressSuggestions");
-      const status = $("[data-address-search-status]");
-      const verifiedStatus = $("[data-address-verified-status]");
-      const attribution = $("[data-address-google-attribution]");
-      if (!input || !list || !status || !verifiedStatus || !attribution) return;
-      const fulfillment = state.checkoutFulfillment;
-      const suggestions = Array.isArray(fulfillment.addressSuggestions) ? fulfillment.addressSuggestions : [];
-      const listOpen = fulfillment.addressSuggestionsOpen && suggestions.length > 0;
-      input.setAttribute("aria-expanded", String(listOpen));
-      if (listOpen && fulfillment.addressActiveIndex >= 0) {
-        input.setAttribute("aria-activedescendant", `delivery-address-option-${fulfillment.addressActiveIndex}`);
-      } else {
-        input.removeAttribute("aria-activedescendant");
-      }
-
-      list.hidden = !listOpen;
-      list.innerHTML = listOpen ? suggestions.map((suggestion, index) => {
-        const primary = suggestion.primary_text || suggestion.full_text;
-        const secondary = suggestion.secondary_text && suggestion.secondary_text !== primary
-          ? `<span>${escapeHtml(suggestion.secondary_text)}</span>`
-          : "";
-        return `<button class="address-suggestion${index === fulfillment.addressActiveIndex ? " is-active" : ""}" id="delivery-address-option-${index}" type="button" role="option" aria-selected="${index === fulfillment.addressActiveIndex}" data-address-suggestion="${index}"><strong>${escapeHtml(primary)}</strong>${secondary}</button>`;
-      }).join("") : "";
-      attribution.hidden = !listOpen;
-      const googleLogo = $("[data-address-google-logo]", attribution);
-      if (listOpen && googleLogo && !googleLogo.src) {
-        googleLogo.src = "./assets/powered-by-google-on-white3.png";
-      }
-
-      status.hidden = true;
-      status.classList.remove("error");
-      if (fulfillment.addressVerifying) {
-        status.textContent = t("addressVerifying");
-        status.hidden = false;
-      } else if (fulfillment.addressSearching) {
-        status.textContent = t("addressSearching");
-        status.hidden = false;
-      } else if (fulfillment.addressSearchError) {
-        status.textContent = t(fulfillment.addressSearchError);
-        status.classList.add("error");
-        status.hidden = false;
-      } else if (
-        fulfillment.addressSuggestionsOpen
-        && fulfillment.addressSearchCompletedFor
-        && fulfillment.addressSearchCompletedFor === String(fulfillment.address || "").trim()
-        && suggestions.length === 0
-      ) {
-        status.textContent = t("addressNoResults");
-        status.hidden = false;
-      }
-      verifiedStatus.hidden = !fulfillment.addressVerified;
-    }
-
-    function closeAddressSuggestions() {
-      const fulfillment = state.checkoutFulfillment;
-      window.clearTimeout(addressSearchTimer);
-      addressSearchTimer = 0;
-      if (fulfillment.addressSearching && addressSearchController) {
-        addressSearchRequestId += 1;
-        addressSearchController.abort();
-        addressSearchController = null;
-      }
-      fulfillment.addressSearching = false;
-      fulfillment.addressSuggestionsOpen = false;
-      fulfillment.addressActiveIndex = -1;
-      renderAddressAutocomplete();
-    }
-
-    function clearVerifiedDeliveryAddress() {
-      const fulfillment = state.checkoutFulfillment;
-      if (!fulfillment.addressVerified && !fulfillment.selectedPlaceResource) return;
-      fulfillment.selectedPlaceResource = "";
-      fulfillment.verifiedAddress = "";
-      fulfillment.addressVerified = false;
-      fulfillment.latitude = null;
-      fulfillment.longitude = null;
-      fulfillment.distanceKm = null;
-      fulfillment.locationError = "";
-    }
-
-    function queueDeliveryAddressSearch(value) {
-      const fulfillment = state.checkoutFulfillment;
-      const query = String(value || "").trim().replace(/\s+/g, " ");
-      cancelAddressSearch();
-      fulfillment.addressSuggestions = [];
-      fulfillment.addressSearching = false;
-      fulfillment.addressVerifying = false;
-      fulfillment.addressSearchError = "";
-      fulfillment.addressSearchCompletedFor = "";
-      fulfillment.addressActiveIndex = -1;
-      fulfillment.addressSuggestionsOpen = query.length >= 3;
-      if (query.length < 3 || !state.session?.user) {
-        renderAddressAutocomplete();
-        return;
-      }
-      if (!fulfillment.addressSessionToken) fulfillment.addressSessionToken = createAddressSessionToken();
-      addressSearchTimer = window.setTimeout(() => searchDeliveryAddresses(query), 350);
-      renderAddressAutocomplete();
-    }
-
-    async function searchDeliveryAddresses(query) {
-      const fulfillment = state.checkoutFulfillment;
-      const requestId = ++addressSearchRequestId;
-      addressSearchController = new AbortController();
-      fulfillment.addressSearching = true;
-      fulfillment.addressSearchError = "";
-      renderAddressAutocomplete();
-      try {
-        const result = await callCheckoutFunction({
-          action: "address-search",
-          query,
-          session_token: fulfillment.addressSessionToken,
-          locale: state.lang
-        }, addressSearchController.signal);
-        if (requestId !== addressSearchRequestId || query !== String(fulfillment.address || "").trim().replace(/\s+/g, " ")) return;
-        fulfillment.addressSuggestions = Array.isArray(result.suggestions) ? result.suggestions.slice(0, 5) : [];
-        fulfillment.addressSearchCompletedFor = query;
-        fulfillment.addressSuggestionsOpen = true;
-        fulfillment.addressActiveIndex = -1;
-      } catch (error) {
-        if (error.name === "AbortError" || requestId !== addressSearchRequestId) return;
-        fulfillment.addressSuggestions = [];
-        fulfillment.addressSearchCompletedFor = query;
-        fulfillment.addressSuggestionsOpen = true;
-        fulfillment.addressSearchError = "addressSearchUnavailable";
-      } finally {
-        if (requestId === addressSearchRequestId) {
-          fulfillment.addressSearching = false;
-          addressSearchController = null;
-          renderAddressAutocomplete();
-        }
-      }
-    }
-
-    async function selectDeliveryAddressSuggestion(index) {
-      const fulfillment = state.checkoutFulfillment;
-      const suggestion = fulfillment.addressSuggestions[Number(index)];
-      if (!suggestion?.place_resource) return;
-      cancelAddressSearch();
-      const requestId = addressSearchRequestId;
-      addressSearchController = new AbortController();
-      const sessionToken = fulfillment.addressSessionToken || createAddressSessionToken();
-      fulfillment.address = suggestion.full_text || suggestion.primary_text || "";
-      fulfillment.addressSuggestionsOpen = false;
-      fulfillment.addressSearchError = "";
-      fulfillment.addressSearchCompletedFor = "";
-      fulfillment.addressSearching = false;
-      fulfillment.addressVerifying = true;
-      fulfillment.addressActiveIndex = -1;
-      const input = $("#deliveryAddress");
-      if (input) input.value = fulfillment.address;
-      renderAddressAutocomplete();
-      try {
-        const result = await callCheckoutFunction({
-          action: "address-details",
-          place_resource: suggestion.place_resource,
-          session_token: sessionToken,
-          locale: state.lang
-        }, addressSearchController.signal);
-        if (requestId !== addressSearchRequestId) return;
-        const latitude = Number(result.latitude);
-        const longitude = Number(result.longitude);
-        if (!result.formatted_address || !Number.isFinite(latitude) || !Number.isFinite(longitude)) {
-          throw new Error("Invalid address details");
-        }
-        fulfillment.address = String(result.formatted_address).trim();
-        fulfillment.selectedPlaceResource = String(result.place_resource || suggestion.place_resource);
-        fulfillment.verifiedAddress = fulfillment.address;
-        fulfillment.addressVerified = true;
-        fulfillment.latitude = latitude;
-        fulfillment.longitude = longitude;
-        fulfillment.distanceKm = distanceKmBetween(latitude, longitude, FLAT_BUSH_PICKUP.latitude, FLAT_BUSH_PICKUP.longitude);
-        fulfillment.locationError = "";
-        fulfillment.method = fulfillment.distanceKm <= DELIVERY_MAX_DISTANCE_KM ? "delivery" : "pickup";
-        if (input) input.value = fulfillment.address;
-        if (fulfillment.distanceKm > DELIVERY_MAX_DISTANCE_KM) {
-          showToast(tWithValues("deliveryTooFar", { distance: fulfillment.distanceKm.toFixed(1) }));
-        }
-      } catch (error) {
-        if (error.name === "AbortError" || requestId !== addressSearchRequestId) return;
-        fulfillment.selectedPlaceResource = "";
-        fulfillment.verifiedAddress = "";
-        fulfillment.addressVerified = false;
-        fulfillment.latitude = null;
-        fulfillment.longitude = null;
-        fulfillment.distanceKm = null;
-        fulfillment.addressSearchError = error.code === "address_search_unavailable"
-          ? "addressSearchUnavailable"
-          : "addressVerificationFailed";
-      } finally {
-        if (requestId === addressSearchRequestId) {
-          fulfillment.addressVerifying = false;
-          fulfillment.addressSessionToken = "";
-          addressSearchController = null;
-          renderCheckoutFulfillment();
-        }
-      }
-    }
-
-    function moveAddressSuggestionSelection(delta) {
-      const fulfillment = state.checkoutFulfillment;
-      const count = fulfillment.addressSuggestions.length;
-      if (!count) return;
-      fulfillment.addressSuggestionsOpen = true;
-      fulfillment.addressActiveIndex = fulfillment.addressActiveIndex < 0
-        ? (delta > 0 ? 0 : count - 1)
-        : (fulfillment.addressActiveIndex + delta + count) % count;
-      renderAddressAutocomplete();
-      window.requestAnimationFrame(() => {
-        $(`#delivery-address-option-${fulfillment.addressActiveIndex}`)?.scrollIntoView({ block: "nearest" });
-      });
-    }
-
-    function checkoutDeliveryFee() {
-      const fulfillment = state.checkoutFulfillment;
-      const distance = Number(fulfillment.distanceKm);
-      if (fulfillment.method !== "delivery" || fulfillment.distanceKm == null || !Number.isFinite(distance) || distance > DELIVERY_MAX_DISTANCE_KM) return 0;
-      return cartFinalTotal() + Number.EPSILON >= FREE_DELIVERY_MINIMUM ? 0 : DELIVERY_FEE;
-    }
-
-    function checkoutFinalTotal() {
-      return Math.max(0, cartFinalTotal() + checkoutDeliveryFee());
-    }
-
-    function renderCheckoutFulfillment() {
-      const modal = $("#paymentModal");
-      if (!modal) return;
-      const fulfillment = state.checkoutFulfillment;
-      const distance = Number(fulfillment.distanceKm);
-      const hasDistance = fulfillment.distanceKm != null && Number.isFinite(distance);
-      const tooFar = hasDistance && distance > DELIVERY_MAX_DISTANCE_KM;
-      if (tooFar && fulfillment.method === "delivery") fulfillment.method = "pickup";
-
-      $$('[data-fulfillment-option]').forEach((option) => {
-        const selected = option.dataset.fulfillmentOption === fulfillment.method;
-        const unavailable = option.dataset.fulfillmentOption === "delivery" && tooFar;
-        option.classList.toggle("is-selected", selected);
-        option.classList.toggle("is-disabled", unavailable);
-        const radio = option.querySelector("input");
-        if (radio) {
-          radio.checked = selected;
-          radio.disabled = unavailable;
-        }
-      });
-
-      const pickupPanel = $("[data-pickup-panel]");
-      const deliveryPanel = $("[data-delivery-panel]");
-      const locationRow = $("[data-delivery-location-row]");
-      if (pickupPanel) pickupPanel.hidden = fulfillment.method !== "pickup";
-      if (deliveryPanel) deliveryPanel.hidden = fulfillment.method !== "delivery";
-      if (locationRow) locationRow.hidden = fulfillment.method !== "delivery" && !tooFar;
-
-      const status = $("#deliveryLocationStatus");
-      if (status) {
-        status.className = "delivery-location-status";
-        if (fulfillment.locating) {
-          status.textContent = t("locatingCustomer");
-        } else if (fulfillment.locationError) {
-          status.textContent = t(fulfillment.locationError);
-          status.classList.add("error");
-        } else if (tooFar) {
-          status.textContent = tWithValues("deliveryTooFar", { distance: distance.toFixed(1) });
-          status.classList.add("error");
-        } else if (hasDistance) {
-          const key = checkoutDeliveryFee() > 0 ? "deliveryEligiblePaid" : "deliveryEligibleFree";
-          status.textContent = tWithValues(key, { distance: distance.toFixed(1) });
-          status.classList.add("success");
-        } else {
-          status.textContent = t("locationRequired");
-        }
-      }
-
-      const locationButton = $("[data-use-location]");
-      if (locationButton) locationButton.disabled = fulfillment.locating;
-      const addressInput = $("#deliveryAddress");
-      const phoneInput = $("#deliveryPhone");
-      if (addressInput && document.activeElement !== addressInput && addressInput.value !== fulfillment.address) addressInput.value = fulfillment.address;
-      if (phoneInput && document.activeElement !== phoneInput && phoneInput.value !== fulfillment.phone) phoneInput.value = fulfillment.phone;
-      renderAddressAutocomplete();
-
-      const subtotal = cartTotal();
-      const discount = voucherDiscount();
-      const deliveryFee = checkoutDeliveryFee();
-      const deliveryRow = $("[data-payment-delivery-row]");
-      $("[data-payment-subtotal]").textContent = formatPrice(subtotal);
-      $("[data-payment-discount]").textContent = `-${formatPrice(discount)}`;
-      $("[data-payment-discount-row]").hidden = discount <= 0;
-      if (deliveryRow) deliveryRow.hidden = fulfillment.method !== "delivery" || !hasDistance || tooFar;
-      $("[data-payment-delivery]").textContent = deliveryFee > 0 ? formatPrice(deliveryFee) : t("free");
-      $("[data-payment-total]").textContent = formatPrice(checkoutFinalTotal());
-    }
-
-    function setCheckoutFulfillmentMethod(method) {
-      const fulfillment = state.checkoutFulfillment;
-      if (method === "pickup") {
-        fulfillment.method = "pickup";
-        fulfillment.locationError = "";
-        renderCheckoutFulfillment();
-        return;
-      }
-      if (fulfillment.distanceKm != null && Number(fulfillment.distanceKm) > DELIVERY_MAX_DISTANCE_KM) {
-        fulfillment.method = "pickup";
-        renderCheckoutFulfillment();
-        showToast(tWithValues("deliveryTooFar", { distance: Number(fulfillment.distanceKm).toFixed(1) }));
-        return;
-      }
-      fulfillment.method = "delivery";
-      fulfillment.locationError = "";
-      renderCheckoutFulfillment();
-      if (fulfillment.distanceKm == null || !Number.isFinite(Number(fulfillment.distanceKm))) locateForDelivery();
-    }
-
-    function geolocationErrorKey(error) {
-      if (error?.code === 1) return "geolocationDenied";
-      if (error?.code === 3) return "geolocationTimeout";
-      return "geolocationUnavailable";
-    }
-
-    function locateForDelivery() {
-      const fulfillment = state.checkoutFulfillment;
-      cancelAddressSearch();
-      fulfillment.addressSuggestions = [];
-      fulfillment.addressSuggestionsOpen = false;
-      fulfillment.addressSearchError = "";
-      fulfillment.addressSearching = false;
-      fulfillment.addressVerifying = false;
-      fulfillment.addressSessionToken = "";
-      fulfillment.selectedPlaceResource = "";
-      fulfillment.verifiedAddress = "";
-      fulfillment.addressVerified = false;
-      if (!navigator.geolocation) {
-        fulfillment.locationError = "geolocationUnsupported";
-        fulfillment.locating = false;
-        renderCheckoutFulfillment();
-        return;
-      }
-      fulfillment.method = "delivery";
-      fulfillment.latitude = null;
-      fulfillment.longitude = null;
-      fulfillment.distanceKm = null;
-      fulfillment.locating = true;
-      fulfillment.locationError = "";
-      renderCheckoutFulfillment();
-      navigator.geolocation.getCurrentPosition((position) => {
-        const latitude = Number(position.coords.latitude);
-        const longitude = Number(position.coords.longitude);
-        const distance = distanceKmBetween(latitude, longitude, FLAT_BUSH_PICKUP.latitude, FLAT_BUSH_PICKUP.longitude);
-        fulfillment.latitude = latitude;
-        fulfillment.longitude = longitude;
-        fulfillment.distanceKm = distance;
-        fulfillment.locating = false;
-        fulfillment.locationError = "";
-        fulfillment.method = distance <= DELIVERY_MAX_DISTANCE_KM ? "delivery" : "pickup";
-        renderCheckoutFulfillment();
-        if (distance > DELIVERY_MAX_DISTANCE_KM) {
-          showToast(tWithValues("deliveryTooFar", { distance: distance.toFixed(1) }));
-        }
-      }, (error) => {
-        fulfillment.latitude = null;
-        fulfillment.longitude = null;
-        fulfillment.distanceKm = null;
-        fulfillment.locating = false;
-        fulfillment.locationError = geolocationErrorKey(error);
-        renderCheckoutFulfillment();
-      }, {
-        enableHighAccuracy: false,
-        timeout: 12000,
-        maximumAge: 0
-      });
-    }
-
-    function checkoutFulfillmentError() {
-      const fulfillment = state.checkoutFulfillment;
-      if (fulfillment.method === "pickup") return "";
-      if (fulfillment.locationError) return t(fulfillment.locationError);
-      if (fulfillment.locating || fulfillment.distanceKm == null || !Number.isFinite(Number(fulfillment.distanceKm))) return t("checkLocationFirst");
-      if (Number(fulfillment.distanceKm) > DELIVERY_MAX_DISTANCE_KM) {
-        return tWithValues("deliveryTooFar", { distance: Number(fulfillment.distanceKm).toFixed(1) });
-      }
-      if (String(fulfillment.address || "").trim().length < 5) return t("enterDeliveryAddress");
-      if (String(fulfillment.phone || "").trim().length < 5) return t("enterDeliveryPhone");
-      return "";
-    }
-
-    function checkoutFulfillmentPayload() {
-      const fulfillment = state.checkoutFulfillment;
-      if (fulfillment.method === "pickup") return { method: "pickup" };
-      return {
-        method: "delivery",
-        address: String(fulfillment.address || "").trim(),
-        phone: String(fulfillment.phone || "").trim(),
-        latitude: fulfillment.latitude,
-        longitude: fulfillment.longitude,
-        place_resource: fulfillment.addressVerified ? fulfillment.selectedPlaceResource : ""
-      };
-    }
-
-    function checkoutServerErrorMessage(message) {
-      const value = String(message || "");
-      if (/within 12 km|delivery area/i.test(value)) return tWithValues("deliveryTooFar", { distance: Number(state.checkoutFulfillment.distanceKm || 0).toFixed(1) });
-      if (/verified|verify/i.test(value)) return t("addressVerificationFailed");
-      if (/delivery address/i.test(value)) return t("enterDeliveryAddress");
-      if (/phone/i.test(value)) return t("enterDeliveryPhone");
-      if (/location/i.test(value)) return t("checkLocationFirst");
-      return value;
-    }
-
     function renderCart() {
       const count = cartProductCount();
       const subtotal = cartTotal();
@@ -13044,7 +12122,6 @@
         `;
       }).join("");
       refreshIcons();
-      if (!$("#paymentModal")?.hidden) renderCheckoutFulfillment();
     }
 
     function addToCart(id, quantity = 1) {
@@ -13088,9 +12165,8 @@
         showToast(t("cartEmpty"));
         return;
       }
-      if (!db || !state.session?.user) {
-        openPanel("account");
-        showToast(t("loginToCheckout"));
+      if (!db) {
+        showToast(t("backendNotReady"));
         return;
       }
       if (state.selectedCustomerVoucherId && !await refreshVoucherQuote()) {
@@ -13098,19 +12174,34 @@
         return;
       }
       closePanels();
-      resetCheckoutFulfillment();
+      const subtotal = cartTotal();
+      const discount = voucherDiscount();
+      $("[data-payment-subtotal]").textContent = formatPrice(subtotal);
+      $("[data-payment-discount]").textContent = `-${formatPrice(discount)}`;
+      $("[data-payment-discount-row]").hidden = discount <= 0;
+      $("[data-payment-total]").textContent = formatPrice(Math.max(0, subtotal - discount));
       $("#paymentMessage").textContent = "";
+      $("[data-guest-checkout-fields]").hidden = Boolean(state.session?.user);
       $("#paymentModal").hidden = false;
-      renderCheckoutFulfillment();
       refreshIcons();
     }
 
+    function guestCheckoutDetails() {
+      if (state.session?.user) return null;
+      const fields = [$("#guestCheckoutName"), $("#guestCheckoutPhone"), $("#guestCheckoutAddress")];
+      const invalid = fields.find((field) => !field?.checkValidity());
+      if (invalid) {
+        invalid.reportValidity();
+        return false;
+      }
+      return {
+        name: fields[0].value.trim(),
+        phone: fields[1].value.trim(),
+        address: fields[2].value.trim()
+      };
+    }
+
     function closePaymentModal() {
-      cancelAddressSearch();
-      state.checkoutFulfillment.addressSuggestions = [];
-      state.checkoutFulfillment.addressSuggestionsOpen = false;
-      state.checkoutFulfillment.addressSearching = false;
-      state.checkoutFulfillment.addressVerifying = false;
       const modal = $("#paymentModal");
       if (modal) modal.hidden = true;
       const message = $("#paymentMessage");
@@ -13121,31 +12212,15 @@
       const button = $("[data-start-payment]");
       const message = $("#paymentMessage");
       if (!button || !message || !state.cart.length || !db) return;
-      const deliveryAddressInput = $("#deliveryAddress");
-      const deliveryPhoneInput = $("#deliveryPhone");
-      if (deliveryAddressInput) {
-        const latestAddress = deliveryAddressInput.value;
-        if (state.checkoutFulfillment.addressVerified && latestAddress.trim() !== state.checkoutFulfillment.verifiedAddress) {
-          clearVerifiedDeliveryAddress();
-        }
-        state.checkoutFulfillment.address = latestAddress;
-      }
-      if (deliveryPhoneInput) state.checkoutFulfillment.phone = deliveryPhoneInput.value;
-      const fulfillmentError = checkoutFulfillmentError();
-      if (fulfillmentError) {
-        message.textContent = fulfillmentError;
-        return;
-      }
       button.disabled = true;
       message.textContent = t("paymentProcessing");
 
       const { data: sessionData } = await db.auth.getSession();
       const accessToken = sessionData.session?.access_token;
-      if (!accessToken) {
+      const guest = guestCheckoutDetails();
+      if (guest === false) {
         button.disabled = false;
-        closePaymentModal();
-        openPanel("account");
-        showToast(t("loginToCheckout"));
+        message.textContent = t("guestDetailsRequired");
         return;
       }
 
@@ -13153,14 +12228,14 @@
         const response = await fetch(SUPABASE_URL + "/functions/v1/create-checkout-session", {
           method: "POST",
           headers: {
-            "Authorization": "Bearer " + accessToken,
+            "Authorization": "Bearer " + (accessToken || SUPABASE_PUBLISHABLE_KEY),
             "apikey": SUPABASE_PUBLISHABLE_KEY,
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
             items: state.cart.map((line) => ({ product_id: line.id, quantity: line.quantity })),
             customer_voucher_id: state.selectedCustomerVoucherId || null,
-            fulfillment: checkoutFulfillmentPayload(),
+            guest,
             locale: state.lang
           })
         });
@@ -13169,7 +12244,7 @@
           const unavailable = response.status === 404
             || response.status === 503
             || /not configured|not found/i.test(result.error || "");
-          throw new Error(unavailable ? t("paymentUnavailable") : checkoutServerErrorMessage(result.error || "Unable to start payment"));
+          throw new Error(unavailable ? t("paymentUnavailable") : (result.error || "Unable to start payment"));
         }
         window.location.assign(result.checkout_url);
       } catch (error) {
@@ -13183,9 +12258,11 @@
       const paymentResult = url.searchParams.get("payment");
       if (!paymentResult) return;
       const cancelledOrderId = url.searchParams.get("order_id");
+      const cancelToken = url.searchParams.get("cancel_token");
       url.searchParams.delete("payment");
       url.searchParams.delete("session_id");
       url.searchParams.delete("order_id");
+      url.searchParams.delete("cancel_token");
       history.replaceState(null, "", url.pathname + url.search + url.hash);
 
       if (paymentResult === "success") {
@@ -13201,22 +12278,20 @@
         return;
       }
 
-      if (cancelledOrderId && db && state.session?.user) {
+      if (cancelledOrderId && db) {
         try {
           const { data: sessionData } = await db.auth.getSession();
           const accessToken = sessionData.session?.access_token;
-          if (accessToken) {
-            await fetch(SUPABASE_URL + "/functions/v1/create-checkout-session", {
-              method: "POST",
-              headers: {
-                "Authorization": "Bearer " + accessToken,
-                "apikey": SUPABASE_PUBLISHABLE_KEY,
-                "Content-Type": "application/json"
-              },
-              body: JSON.stringify({ action: "cancel", order_id: cancelledOrderId })
-            });
-            await loadCustomerData();
-          }
+          await fetch(SUPABASE_URL + "/functions/v1/create-checkout-session", {
+            method: "POST",
+            headers: {
+              "Authorization": "Bearer " + (accessToken || SUPABASE_PUBLISHABLE_KEY),
+              "apikey": SUPABASE_PUBLISHABLE_KEY,
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ action: "cancel", order_id: cancelledOrderId, cancel_token: cancelToken })
+          });
+          if (accessToken) await loadCustomerData();
         } catch (error) {}
       }
       openPanel("cart");
@@ -13310,7 +12385,7 @@
     function renderSearch() {
       const query = $("#searchInput").value.trim().toLowerCase();
       const results = state.products
-        .filter(isStorefrontProduct)
+        .filter((product) => product.published)
         .filter((product) => !query || [productName(product), categoryName(productCategoryKey(product)), productDescription(product), productItemCode(product), product.sku, product.barcode].join(" ").toLowerCase().includes(query));
       $("#searchResults").innerHTML = results.map((product) => `
         <div class="result-item">
@@ -13356,7 +12431,7 @@
         return;
       }
       await handleAuthSession(data.session);
-      if (!isFullAdmin()) {
+      if (!state.profile?.is_admin) {
         message.hidden = false;
         message.textContent = "此账户没有管理员权限";
         return;
@@ -13372,16 +12447,12 @@
       $("#storeView").style.display = "none";
       $("#admin").style.display = "";
       $("#admin").classList.add("active");
-      const unlocked = canManageProducts();
+      const unlocked = Boolean(state.profile?.is_admin);
       $("#loginScreen").hidden = unlocked;
       $("#adminShell").hidden = !unlocked;
-      applyAdminRoleUi();
       if (unlocked) {
-        if (isOnlineManager()) setAdminTab("products");
-        else {
-          loadAdminData();
-          subscribeToAdminOrderRealtime();
-        }
+        loadAdminData();
+        subscribeToAdminOrderRealtime();
       }
       renderAdmin();
       refreshIcons();
@@ -13421,6 +12492,7 @@
     async function logoutAdmin() {
       closeProductEditor();
       closeCustomerDetail();
+      cancelDesignRemoteSave();
       clearAdminAccess();
       await stopAdminOrderRealtime();
       if (db) await db.auth.signOut();
@@ -13438,8 +12510,6 @@
     }
 
     function setAdminTab(tab) {
-      if (!canManageProducts()) return;
-      if (isOnlineManager() && tab !== "products") tab = "products";
       state.adminTab = tab;
       if (tab === "orders") clearAdminOrderUnread();
       $$("[data-admin-tab]").forEach((button) => button.classList.toggle("active", button.dataset.adminTab === tab));
@@ -13458,41 +12528,32 @@
           : ["Procurement", "Phone case and screen protector stock, sales and replenishment suggestions."],
         design: ["Store design", "Build the home page with live section editing and responsive previews."]
       };
-      const title = titleMap[tab] || titleMap.products;
-      $("#adminPageTitle").textContent = title[0];
-      $("#adminPageSub").textContent = isOnlineManager()
-        ? (state.lang === "zh" ? "仅管理网上商店商品。" : "Manage online store products only.")
-        : title[1];
+      $("#adminPageTitle").textContent = titleMap[tab][0];
+      $("#adminPageSub").textContent = titleMap[tab][1];
       renderAdmin();
       refreshIcons();
     }
 
     async function loadAdminData() {
-      if (!db || !isFullAdmin()) return;
+      if (!db || !state.profile?.is_admin) return;
       state.adminOrdersLoading = true;
       state.adminOrdersError = "";
-      const customerPromise = db.from("profiles").select("id,email,full_name,points,total_spent,created_at,updated_at,is_admin,admin_role").order("created_at", { ascending: false });
+      const customerPromise = db.from("profiles").select("id,email,full_name,points,total_spent,created_at,updated_at,is_admin").order("created_at", { ascending: false });
       const voucherPromise = db.from("vouchers").select("*").order("created_at", { ascending: false });
       const voucherAssignmentPromise = db.from("customer_vouchers").select("id,voucher_id,user_id,source,redeemed_at,reserved_at,used_at,order_id,vouchers(code,name,active,starts_at,expires_at),profiles!customer_vouchers_user_id_fkey(email,full_name)").order("redeemed_at", { ascending: false });
-      const fulfillmentPaymentFields = "id,order_number,user_id,status,order_note,subtotal,discount_amount,voucher_code,total,item_count,points_awarded,payment_provider,payment_status,paid_at,created_at,confirmed_at,deleted_at,deleted_by,fulfillment_method,fulfillment_configured,delivery_fee,delivery_distance_km,delivery_address,delivery_phone,pickup_location,profiles!orders_user_id_fkey(email,full_name,customer_barcode,is_admin),order_items(product_id,product_title,quantity,unit_price,item_note)";
-      const fulfillmentPaymentFieldsWithoutRecycle = "id,order_number,user_id,status,order_note,subtotal,discount_amount,voucher_code,total,item_count,points_awarded,payment_provider,payment_status,paid_at,created_at,confirmed_at,fulfillment_method,fulfillment_configured,delivery_fee,delivery_distance_km,delivery_address,delivery_phone,pickup_location,profiles!orders_user_id_fkey(email,full_name,customer_barcode,is_admin),order_items(product_id,product_title,quantity,unit_price,item_note)";
-      const voucherPaymentFields = "id,order_number,user_id,status,order_note,subtotal,discount_amount,voucher_code,total,item_count,points_awarded,payment_provider,payment_status,paid_at,created_at,confirmed_at,deleted_at,deleted_by,profiles!orders_user_id_fkey(email,full_name,customer_barcode,is_admin),order_items(product_id,product_title,quantity,unit_price,item_note)";
-      const voucherPaymentFieldsWithoutRecycle = "id,order_number,user_id,status,order_note,subtotal,discount_amount,voucher_code,total,item_count,points_awarded,payment_provider,payment_status,paid_at,created_at,confirmed_at,profiles!orders_user_id_fkey(email,full_name,customer_barcode,is_admin),order_items(product_id,product_title,quantity,unit_price,item_note)";
+      const voucherPaymentFields = "id,order_number,user_id,status,order_note,subtotal,discount_amount,voucher_code,total,item_count,points_awarded,payment_provider,payment_status,paid_at,created_at,confirmed_at,deleted_at,deleted_by,guest_name,guest_phone,guest_address,profiles!orders_user_id_fkey(email,full_name,customer_barcode,is_admin),order_items(product_id,product_title,quantity,unit_price,item_note)";
+      const voucherPaymentFieldsWithoutRecycle = "id,order_number,user_id,status,order_note,subtotal,discount_amount,voucher_code,total,item_count,points_awarded,payment_provider,payment_status,paid_at,created_at,confirmed_at,guest_name,guest_phone,guest_address,profiles!orders_user_id_fkey(email,full_name,customer_barcode,is_admin),order_items(product_id,product_title,quantity,unit_price,item_note)";
       const paymentFields = "id,order_number,user_id,status,total,item_count,points_awarded,payment_provider,payment_status,paid_at,created_at,confirmed_at,deleted_at,deleted_by,profiles!orders_user_id_fkey(email,full_name),order_items(product_id,product_title,quantity,unit_price)";
       const paymentFieldsWithoutRecycle = "id,order_number,user_id,status,total,item_count,points_awarded,payment_provider,payment_status,paid_at,created_at,confirmed_at,profiles!orders_user_id_fkey(email,full_name),order_items(product_id,product_title,quantity,unit_price)";
       const basicFields = "id,order_number,user_id,status,total,item_count,points_awarded,created_at,confirmed_at,deleted_at,deleted_by,profiles!orders_user_id_fkey(email,full_name),order_items(product_id,product_title,quantity,unit_price)";
       const basicFieldsWithoutRecycle = "id,order_number,user_id,status,total,item_count,points_awarded,created_at,confirmed_at,profiles!orders_user_id_fkey(email,full_name),order_items(product_id,product_title,quantity,unit_price)";
       state.orderRecycleSupported = true;
-      let ordersResult = await db.from("orders").select(fulfillmentPaymentFields).order("created_at", { ascending: false });
+      let ordersResult = await db.from("orders").select(voucherPaymentFields).order("created_at", { ascending: false });
       if (ordersResult.error && /deleted_at|deleted_by/i.test(ordersResult.error.message || "")) {
         state.orderRecycleSupported = false;
-        ordersResult = await db.from("orders").select(fulfillmentPaymentFieldsWithoutRecycle).order("created_at", { ascending: false });
+        ordersResult = await db.from("orders").select(voucherPaymentFieldsWithoutRecycle).order("created_at", { ascending: false });
       }
-      if (ordersResult.error && /fulfillment_|delivery_|pickup_location/i.test(ordersResult.error.message || "")) {
-        const fields = state.orderRecycleSupported ? voucherPaymentFields : voucherPaymentFieldsWithoutRecycle;
-        ordersResult = await db.from("orders").select(fields).order("created_at", { ascending: false });
-      }
-      if (ordersResult.error && /subtotal|discount_amount|voucher_code|order_note|item_note/i.test(ordersResult.error.message || "")) {
+      if (ordersResult.error && /subtotal|discount_amount|voucher_code|order_note|item_note|guest_name|guest_phone|guest_address/i.test(ordersResult.error.message || "")) {
         const fields = state.orderRecycleSupported ? paymentFields : paymentFieldsWithoutRecycle;
         ordersResult = await db.from("orders").select(fields).order("created_at", { ascending: false });
       }
@@ -13540,11 +12601,6 @@
       const orderNote = includeNotes && order?.order_note && !includeAdminEditor
         ? `<div><strong>${state.lang === "zh" ? "订单备注" : "Order note"}:</strong> ${escapeHtml(order.order_note)}</div>`
         : "";
-      const fulfillment = hasOrderFulfillment(order)
-        ? order.fulfillment_method === "delivery"
-          ? `<div><strong>${t("delivery")}:</strong> ${escapeHtml(order.delivery_address || "-")} · ${escapeHtml(order.delivery_phone || "-")} · ${Number(order.delivery_distance_km || 0).toFixed(1)} km · ${t("deliveryFee")} ${Number(order.delivery_fee || 0) > 0 ? formatPrice(order.delivery_fee) : t("free")}</div>`
-          : `<div><strong>${t("pickup")}:</strong> ${escapeHtml(order.pickup_location || FLAT_BUSH_PICKUP.name)}</div>`
-        : "";
       const adminOrderNoteEditor = includeAdminEditor && state.profile?.is_admin
         ? `<div class="admin-order-note-editor" data-admin-order-note-editor="${escapeHtml(order.id)}">
             <label class="admin-order-note-field" for="adminOrderNote-${escapeHtml(order.id)}">
@@ -13557,7 +12613,7 @@
         : "";
       return `<div class="admin-order-item-summary">
         <div class="admin-order-item-thumbnails" aria-label="${itemLabel}">${thumbnails}${more}</div>
-        <div class="admin-order-item-copy"><div>${itemText}</div>${fulfillment}${orderNote}${adminOrderNoteEditor}</div>
+        <div class="admin-order-item-copy"><div>${itemText}</div>${orderNote}${adminOrderNoteEditor}</div>
       </div>`;
     }
 
@@ -13574,6 +12630,12 @@
       trashPanel.hidden = !state.orderTrashOpen;
       target.innerHTML = state.adminOrders.length ? state.adminOrders.map((order) => {
         const customer = order.profiles || {};
+        const guestCustomer = !order.user_id && order.guest_name;
+        const customerCell = guestCustomer
+          ? `<strong>${escapeHtml(order.guest_name)}</strong><div class="muted">${escapeHtml(order.guest_phone || "")}</div><div class="muted">${escapeHtml(order.guest_address || "")}</div>`
+          : (order.order_number?.startsWith("POS-") && order.user_id === state.session?.user?.id
+              ? '<strong>到店顾客</strong><div class="muted">线下扫码</div>'
+              : `${escapeHtml(customer.full_name || customer.email || "Customer")}<div class="muted">${escapeHtml(customer.email || "")}</div>`);
         const canEdit = order.status === "pending" && order.payment_provider !== "stripe";
         const canConfirm = order.status === "pending"
           && (order.payment_provider !== "stripe" || order.payment_status === "paid");
@@ -13587,8 +12649,8 @@
         return `
           <tr data-admin-order-row="${escapeHtml(order.id)}">
             <td><strong>${escapeHtml(order.order_number)}</strong><div class="muted">${new Date(order.created_at).toLocaleString("en-NZ")}</div></td>
-            <td>${order.order_number?.startsWith("POS-") && order.user_id === state.session?.user?.id ? '<strong>到店顾客</strong><div class="muted">线下扫码</div>' : `${escapeHtml(customer.full_name || customer.email || "Customer")}<div class="muted">${escapeHtml(customer.email || "")}</div>`}</td>
-            <td>${formatPrice(order.total)}<div class="muted">${Number(order.item_count)} items${Number(order.discount_amount || 0) > 0 ? ` · ${escapeHtml(order.voucher_code || (String(order.order_number || "").startsWith("POS-") ? "POS Discount" : "Discount"))} -${formatPrice(order.discount_amount)}` : ""}</div>${hasOrderFulfillment(order) ? `<div class="muted">${escapeHtml(orderFulfillmentSummary(order))}</div>` : ""}</td>
+            <td>${customerCell}</td>
+            <td>${formatPrice(order.total)}<div class="muted">${Number(order.item_count)} items${Number(order.discount_amount || 0) > 0 ? ` · ${escapeHtml(order.voucher_code || (String(order.order_number || "").startsWith("POS-") ? "POS Discount" : "Discount"))} -${formatPrice(order.discount_amount)}` : ""}</div></td>
             <td>
               <div class="order-statuses" style="justify-content: flex-start;">
                 <span class="status ${paymentStatusClass(order)}">${escapeHtml(paymentStatusLabel(order))}</span>
@@ -13629,7 +12691,6 @@
       const items = order.order_items || [];
       const total = Number(order.total || 0);
       const discount = Number(order.discount_amount || 0);
-      const deliveryFee = Number(order.delivery_fee || 0);
       const subtotal = Number(order.subtotal ?? total + discount);
       const discountLabel = String(order.order_number || "").startsWith("POS-") ? (isChinese ? "本单折扣" : "Order Discount") : (isChinese ? "代金券" : "Voucher");
       const voucher = order.voucher_code ? state.vouchers.find((item) => item.code === order.voucher_code) : null;
@@ -13640,15 +12701,13 @@
         : configuredDiscountType === "fixed" && configuredDiscountValue > 0
           ? `${formatPrice(configuredDiscountValue)} OFF`
           : "";
-      const isOfflineOrder = String(order.order_number || "").startsWith("POS-");
       const gstAmount = Math.round(total * 15 / 115 * 100) / 100;
-      const receiptTaxBlock = isOfflineOrder
-        ? ""
-        : `<div class="tax"><strong>${isChinese ? "价格包含 GST 15%" : "Prices Include GST 15%"}</strong><span><span>${isChinese ? "其中 GST 税额" : "GST Included"}</span><b>${formatPrice(gstAmount)}</b></span></div>`;
       const customer = order.profiles || {};
-      const hasCustomer = !String(order.order_number || "").startsWith("POS-") || (customer.is_admin !== true && order.user_id !== state.session?.user?.id);
-      const customerName = customer.full_name || customer.email || (isChinese ? "客户" : "Customer");
-      const customerBlock = hasCustomer ? `<span>${isChinese ? "客户" : "Customer"}: ${escapeHtml(customerName)}</span>${customer.email ? `<span>${isChinese ? "邮箱" : "Email"}: ${escapeHtml(customer.email)}</span>` : ""}${customer.customer_barcode ? `<span>${isChinese ? "客户号" : "Customer ID"}: ${escapeHtml(customer.customer_barcode)}</span>` : ""}<span>${isChinese ? "本次积分" : "Points Earned"}: +${Number(order.points_awarded || 0)}</span>` : "";
+      const isGuest = !order.user_id && order.guest_name;
+      const hasCustomer = isGuest || !String(order.order_number || "").startsWith("POS-") || (customer.is_admin !== true && order.user_id !== state.session?.user?.id);
+      const customerName = isGuest ? order.guest_name : (customer.full_name || customer.email || (isChinese ? "客户" : "Customer"));
+      const guestDetails = isGuest ? `<span>${isChinese ? "电话" : "Phone"}: ${escapeHtml(order.guest_phone || "")}</span><span>${isChinese ? "地址" : "Address"}: ${escapeHtml(order.guest_address || "")}</span>` : "";
+      const customerBlock = hasCustomer ? `<span>${isChinese ? "客户" : "Customer"}: ${escapeHtml(customerName)}</span>${guestDetails}${customer.email ? `<span>${isChinese ? "邮箱" : "Email"}: ${escapeHtml(customer.email)}</span>` : ""}${customer.customer_barcode ? `<span>${isChinese ? "客户号" : "Customer ID"}: ${escapeHtml(customer.customer_barcode)}</span>` : ""}${isGuest ? "" : `<span>${isChinese ? "本次积分" : "Points Earned"}: +${Number(order.points_awarded || 0)}</span>`}` : "";
       const itemLines = items.map((item) => {
         const quantity = Number(item.quantity || 0);
         const unitPrice = Number(item.unit_price || 0);
@@ -13665,11 +12724,6 @@
       const discountLine = discount > 0 ? `<span>${escapeHtml(discountLabel)}${order.voucher_code ? ` ${escapeHtml(order.voucher_code)}` : ""}: ${discountOffer ? `${discountOffer} ` : ""}(-${formatPrice(discount)})</span>` : "";
       const totalSavingsLine = discount > 0 ? `<span><strong>${isChinese ? "总优惠" : "Total Savings"}</strong>: -${formatPrice(discount)}</span>` : "";
       const discountBlock = discount > 0 ? `<div class="meta"><span>${isChinese ? "原价" : "Subtotal"}: ${formatPrice(subtotal)}</span>${discountLine}${totalSavingsLine}</div>` : "";
-      const fulfillmentBlock = hasOrderFulfillment(order)
-        ? order.fulfillment_method === "delivery"
-          ? `<div class="meta"><span><strong>${isChinese ? "配送" : "Delivery"}</strong></span><span>${isChinese ? "地址" : "Address"}: ${escapeHtml(order.delivery_address || "-")}</span><span>${isChinese ? "电话" : "Phone"}: ${escapeHtml(order.delivery_phone || "-")}</span><span>${isChinese ? "预估距离" : "Estimated Distance"}: ${Number(order.delivery_distance_km || 0).toFixed(1)} km</span><span>${isChinese ? "配送费" : "Delivery Fee"}: ${deliveryFee > 0 ? formatPrice(deliveryFee) : (isChinese ? "免费" : "Free")}</span></div>`
-          : `<div class="meta"><span><strong>${isChinese ? "自取" : "Pickup"}</strong>: ${escapeHtml(order.pickup_location || FLAT_BUSH_PICKUP.name)}</span></div>`
-        : "";
       const orderNoteBlock = order.order_note ? `<div class="meta"><span>${isChinese ? "订单备注" : "Order Note"}: ${escapeHtml(order.order_note)}</span></div>` : "";
       let receiptPrint = document.querySelector("#adminReceiptPrint");
       if (!receiptPrint) {
@@ -13683,7 +12737,7 @@
         printStyle.textContent = `#adminReceiptPrint{display:none}@page{size:55mm auto;margin:0}@media print{html,body{width:55mm!important;min-width:0!important;margin:0!important;padding:0!important;background:#fff!important}body.admin-receipt-printing>*:not(#adminReceiptPrint){display:none!important}body.admin-receipt-printing #adminReceiptPrint{display:block!important;width:51mm!important;padding:0 1mm .5mm!important;color:#000;background:#fff;font-family:Arial,"Microsoft YaHei",sans-serif;font-size:10px;line-height:1.35;overflow-wrap:anywhere}#adminReceiptPrint .head{text-align:center;border-bottom:1px dashed #000;padding-bottom:4px}#adminReceiptPrint .head strong{display:block;font-size:15px}#adminReceiptPrint .meta{display:grid;gap:2px;padding:4px 0;border-bottom:1px dashed #000}#adminReceiptPrint .line{padding:4px 0;border-bottom:1px dotted #777}#adminReceiptPrint .line strong,#adminReceiptPrint .line span,#adminReceiptPrint .line small{display:block}#adminReceiptPrint .line span{text-align:right}#adminReceiptPrint .line .discounted-line{font-size:9px}#adminReceiptPrint .line small{margin-top:2px}#adminReceiptPrint .total{display:flex;justify-content:space-between;font-size:14px;font-weight:700;padding:7px 0;border-bottom:1px dashed #000}#adminReceiptPrint .tax{display:grid;gap:2px;padding:5px 0;border-bottom:1px dashed #000}#adminReceiptPrint .tax span{display:flex;justify-content:space-between}#adminReceiptPrint .footer{text-align:center;padding-top:6px}}`;
         document.head.appendChild(printStyle);
       }
-      receiptPrint.innerHTML = `<div class="head"><strong>GO GO SHOP</strong><span>${isChinese ? "销售小票" : "SALES RECEIPT"}</span></div><div class="meta"><span>${isChinese ? "订单号" : "Order"}: ${escapeHtml(order.order_number)}</span><span>${isChinese ? "时间" : "Date"}: ${escapeHtml(new Date(order.confirmed_at || order.created_at).toLocaleString(locale))}</span>${customerBlock}</div>${itemLines}${discountBlock}${fulfillmentBlock}${orderNoteBlock}<div class="total"><span>${isChinese ? "合计" : "TOTAL"}</span><span>${formatPrice(total)}</span></div>${receiptTaxBlock}<div class="footer">${isChinese ? "谢谢惠顾" : "Thank You"}</div>`;
+      receiptPrint.innerHTML = `<div class="head"><strong>GO GO SHOP</strong><span>${isChinese ? "销售小票" : "SALES RECEIPT"}</span></div><div class="meta"><span>${isChinese ? "订单号" : "Order"}: ${escapeHtml(order.order_number)}</span><span>${isChinese ? "时间" : "Date"}: ${escapeHtml(new Date(order.confirmed_at || order.created_at).toLocaleString(locale))}</span>${customerBlock}</div>${itemLines}${discountBlock}${orderNoteBlock}<div class="total"><span>${isChinese ? "合计" : "TOTAL"}</span><span>${formatPrice(total)}</span></div><div class="tax"><strong>${isChinese ? "价格包含 GST 15%" : "Prices Include GST 15%"}</strong><span><span>${isChinese ? "其中 GST 税额" : "GST Included"}</span><b>${formatPrice(gstAmount)}</b></span></div><div class="footer">${isChinese ? "谢谢惠顾" : "Thank You"}</div>`;
       document.body.classList.add("admin-receipt-printing");
       window.addEventListener("afterprint", () => document.body.classList.remove("admin-receipt-printing"), { once: true });
       setTimeout(() => window.print(), 50);
@@ -13766,14 +12820,14 @@
     function renderCustomers() {
       const target = $("#customerRows");
       if (!target) return;
-      $("#adminCustomerCount").textContent = `${state.customers.filter((customer) => !isStaffProfile(customer)).length} customer accounts`;
+      $("#adminCustomerCount").textContent = `${state.customers.filter((customer) => !customer.is_admin).length} customer accounts`;
       renderVipTierLegend();
       target.innerHTML = state.customers.length ? state.customers.map((customer) => {
         const stats = customerStats(customer);
         const vip = vipStatus(customer.total_spent);
         return `
           <tr class="customer-table-row" data-view-customer="${escapeHtml(customer.id)}">
-            <td><strong>${escapeHtml(customer.full_name || customer.email || "Customer")}</strong><div class="muted">${escapeHtml(customer.email || "")}</div>${isStaffProfile(customer) ? `<div class="status featured">${customer.admin_role === "online_manager" ? "Online manager" : "Admin"}</div>` : ""}</td>
+            <td><strong>${escapeHtml(customer.full_name || customer.email || "Customer")}</strong><div class="muted">${escapeHtml(customer.email || "")}</div>${customer.is_admin ? `<div class="status featured">Admin</div>` : ""}</td>
             <td>${vipBadge(vip)}</td>
             <td><strong>${stats.orders.length}</strong><div class="muted">${stats.confirmedOrders.length} confirmed</div></td>
             <td>${formatPrice(customer.total_spent)}</td>
@@ -13825,7 +12879,7 @@
       const voucherOptions = activeVouchers.map((voucher) => (
         `<option value="${escapeHtml(voucher.id)}">${escapeHtml(voucher.code)} · ${escapeHtml(voucher.name)} · ${escapeHtml(voucherValueLabel(voucher))}</option>`
       )).join("");
-      const issueForm = isStaffProfile(customer) ? "" : `
+      const issueForm = customer.is_admin ? "" : `
         <form class="customer-voucher-issue" data-voucher-issue-form data-customer-voucher-issue-form>
           <input type="hidden" name="userId" value="${escapeHtml(customer.id)}">
           <select name="voucherId" aria-label="Voucher" ${activeVouchers.length ? "required" : "disabled"}>
@@ -13954,7 +13008,7 @@
         .map((voucher) => `<option value="${voucher.id}">${escapeHtml(voucher.code)} · ${escapeHtml(voucher.name)}</option>`)
         .join("");
       customerSelect.innerHTML = state.customers
-        .filter((customer) => !isStaffProfile(customer))
+        .filter((customer) => !customer.is_admin)
         .map((customer) => `<option value="${customer.id}">${escapeHtml(customer.full_name || customer.email || "Customer")} · ${escapeHtml(customer.email || "")}</option>`)
         .join("");
       if ([...voucherSelect.options].some((option) => option.value === currentVoucher)) voucherSelect.value = currentVoucher;
@@ -14161,11 +13215,9 @@
 
     async function syncProductToSupabase(product) {
       if (!db) throw new Error("Database connection is unavailable");
-      if (!canManageProducts()) throw new Error("Administrator session has expired");
+      if (!state.profile?.is_admin) throw new Error("Administrator session has expired");
       if (!product) throw new Error("Product data is unavailable");
-      if (!canManageProduct(product)) throw new Error("Online managers can manage online products only");
-      const salesChannel = isOnlineManager() ? "online" : productSalesChannel(product);
-      const payload = {
+      const { error } = await db.from("products").upsert({
         id: product.id,
         title: product.title,
         category: product.category || "",
@@ -14176,39 +13228,35 @@
         description_zh: product.descriptionZh || "",
         price: Number(product.price),
         compare_at_price: Math.max(0, Number(product.compareAtPrice) || 0),
+        cost_per_item: Math.max(0, Number(product.costPerItem) || 0),
         stock: Math.max(0, Number(product.stock) || 0),
         sales: Math.max(0, Number(product.sales) || 0),
-        published: salesChannel === "online" && Boolean(product.published),
-        sales_channel: salesChannel,
+        published: Boolean(product.published),
         image: product.image || "",
         images: Array.isArray(product.images) ? product.images : [],
+        vendor: product.vendor || "",
         sku: product.sku || "",
         barcode: product.barcode || "",
         tags: product.tags || "",
-        deleted_at: null,
-        deleted_was_published: false,
-        updated_at: new Date().toISOString()
-      };
-      if (isFullAdmin()) Object.assign(payload, {
-        cost_per_item: Math.max(0, Number(product.costPerItem) || 0),
-        vendor: product.vendor || "",
         source_url: product.sourceUrl || "",
         source_currency: product.sourceCurrency || "",
         source_price: Math.max(0, Number(product.sourcePriceCny) || 0),
         source_variants: Array.isArray(product.sourceVariants) ? product.sourceVariants : [],
-        source_attributes: Array.isArray(product.sourceAttributes) ? product.sourceAttributes : []
+        source_attributes: Array.isArray(product.sourceAttributes) ? product.sourceAttributes : [],
+        deleted_at: null,
+        deleted_was_published: false,
+        updated_at: new Date().toISOString()
       });
-      const { error } = await db.from("products").upsert(payload);
       if (error) throw error;
       return true;
     }
 
     function productSaveErrorMessage(error) {
       const message = authErrorMessage(error);
-      if (/title_en|title_zh|description_en|description_zh|sales_channel|schema cache/i.test(message)) {
+      if (/title_en|title_zh|description_en|description_zh|schema cache/i.test(message)) {
         return state.lang === "zh"
-          ? "数据库尚未完成商品字段升级，商品没有保存。当前输入内容已保留，请先执行数据库迁移。"
-          : "The product database upgrade is not installed yet. Nothing was saved and your edits are still here.";
+          ? "数据库尚未完成中英文字段升级，商品没有保存。当前输入内容已保留，请先执行数据库迁移。"
+          : "The bilingual product fields are not installed yet. Nothing was saved and your edits are still here.";
       }
       if (/administrator session|jwt|not authenticated|permission|row-level security/i.test(message)) {
         return state.lang === "zh"
@@ -14225,7 +13273,7 @@
       const revenue = confirmedOrders.reduce((sum, order) => sum + Math.max(0, Number(order.total) || 0), 0);
       const units = confirmedOrders.reduce((sum, order) => sum + analyticsOrderItemCount(order), 0);
       const views = state.products.reduce((sum, product) => sum + Number(product.views || 0), 0);
-      const live = state.products.filter(isStorefrontProduct).length;
+      const live = state.products.filter((product) => product.published).length;
       return { revenue, units, views, live, orderCount: confirmedOrders.length };
     }
 
@@ -14530,7 +13578,7 @@
 
     function procurementCategoryStats(definition, orders, days, coverWeeks) {
       const products = state.products
-        .filter((product) => isOfflineProduct(product) && phoneProcurementCategory(product) === definition.key)
+        .filter((product) => phoneProcurementCategory(product) === definition.key)
         .map((product) => procurementProductStats(product, orders, days, coverWeeks));
       return products.reduce((totals, item) => {
         totals.stock += item.stock;
@@ -14718,19 +13766,17 @@
 
     function renderInventoryStatus() {
       const isChinese = state.lang === "zh";
-      const offlineProducts = state.products.filter(isOfflineProduct);
-      const onlineProducts = state.products.filter(isOnlineProduct);
       const total = state.products.length;
-      const inStock = offlineProducts.filter((product) => Number(product.stock) > 0).length;
-      const soldOut = offlineProducts.filter((product) => Number(product.stock) <= 0).length;
-      const live = onlineProducts.filter((product) => product.published).length;
+      const inStock = state.products.filter((product) => Number(product.stock) > 0).length;
+      const soldOut = state.products.filter((product) => Number(product.stock) <= 0).length;
+      const live = state.products.filter((product) => product.published).length;
       const width = (value) => total > 0 ? (value / total) * 100 : 0;
       $("#overviewInventoryTitle").textContent = isChinese ? "库存状态" : "Inventory status";
       $("#inventoryStatus").innerHTML = `
         <div class="bar-chart">
           <div class="bar-row"><span>${isChinese ? "已上架" : "Published"}</span><div class="bar-track"><div class="bar-fill" style="width:${width(live)}%;min-width:${live > 0 ? "3px" : "0"}"></div></div><strong>${live}</strong></div>
-          <div class="bar-row"><span>${isChinese ? "线下有库存" : "Offline in stock"}</span><div class="bar-track"><div class="bar-fill" style="width:${width(inStock)}%;min-width:${inStock > 0 ? "3px" : "0"}"></div></div><strong>${inStock}</strong></div>
-          <div class="bar-row"><span>${isChinese ? "线下售罄" : "Offline sold out"}</span><div class="bar-track"><div class="bar-fill" style="width:${width(soldOut)}%;min-width:${soldOut > 0 ? "3px" : "0"}"></div></div><strong>${soldOut}</strong></div>
+          <div class="bar-row"><span>${isChinese ? "有库存商品" : "In stock"}</span><div class="bar-track"><div class="bar-fill" style="width:${width(inStock)}%;min-width:${inStock > 0 ? "3px" : "0"}"></div></div><strong>${inStock}</strong></div>
+          <div class="bar-row"><span>${isChinese ? "售罄商品" : "Sold out"}</span><div class="bar-track"><div class="bar-fill" style="width:${width(soldOut)}%;min-width:${soldOut > 0 ? "3px" : "0"}"></div></div><strong>${soldOut}</strong></div>
         </div>
       `;
     }
@@ -14762,17 +13808,7 @@
     }
 
     function adminProductCategoryOptions() {
-      const activeCategories = new Set(
-        state.products
-          .filter((product) => productSalesChannel(product) === state.adminProductChannel)
-          .map((product) => productCategoryKey(product))
-      );
-      return [
-        "All",
-        ...storefrontCategories
-          .filter((category) => activeCategories.has(category.key))
-          .map((category) => category.key)
-      ];
+      return ["All", ...storefrontCategories.map((category) => category.key)];
     }
 
     function renderAdminProductCategoryFilter() {
@@ -14794,8 +13830,7 @@
         ? state.adminProductCategory
         : "All";
       const categoryProducts = state.products.filter((product) => (
-        productSalesChannel(product) === state.adminProductChannel
-        && (category === "All" || productCategoryKey(product) === category)
+        category === "All" || productCategoryKey(product) === category
       ));
       if (!query) return categoryProducts;
       const terms = query.split(/\s+/).filter(Boolean);
@@ -14837,23 +13872,18 @@
       }, { units: 0, cost: 0, retail: 0 });
     }
 
-    function renderProductInventorySummary(products = state.products) {
+    function renderProductInventorySummary() {
       const summary = $("#adminProductInventorySummary");
       if (!summary) return;
-      const totals = productInventoryValuation(products);
-      const labels = isOnlineManager()
-        ? (state.lang === "zh" ? ["剩余库存", "预计零售价值"] : ["Units in stock", "Retail value"])
-        : (state.lang === "zh" ? ["剩余库存", "库存成本价值", "预计零售价值"] : ["Units in stock", "Inventory cost value", "Retail value"]);
-      const values = isOnlineManager()
-        ? [
-            `${totals.units.toLocaleString(state.lang === "zh" ? "zh-CN" : "en-NZ")} ${state.lang === "zh" ? "件" : "units"}`,
-            formatPrice(totals.retail)
-          ]
-        : [
-            `${totals.units.toLocaleString(state.lang === "zh" ? "zh-CN" : "en-NZ")} ${state.lang === "zh" ? "件" : "units"}`,
-            formatPrice(totals.cost),
-            formatPrice(totals.retail)
-          ];
+      const totals = productInventoryValuation();
+      const labels = state.lang === "zh"
+        ? ["剩余库存", "库存成本价值", "预计零售价值"]
+        : ["Units in stock", "Inventory cost value", "Retail value"];
+      const values = [
+        `${totals.units.toLocaleString(state.lang === "zh" ? "zh-CN" : "en-NZ")} ${state.lang === "zh" ? "件" : "units"}`,
+        formatPrice(totals.cost),
+        formatPrice(totals.retail)
+      ];
       summary.setAttribute("aria-label", state.lang === "zh" ? "库存价值" : "Inventory valuation");
       summary.innerHTML = labels.map((label, index) => `
         <div class="product-inventory-summary-item">
@@ -14864,36 +13894,24 @@
     }
 
     function renderAdminProducts() {
-      if (!canManageProducts()) return;
-      if (isOnlineManager()) state.adminProductChannel = "online";
       const searchInput = $("#adminProductSearch");
       if (searchInput && searchInput.value !== state.adminProductSearch) searchInput.value = state.adminProductSearch;
-      const channel = state.adminProductChannel === "online" ? "online" : "offline";
-      state.adminProductChannel = channel;
-      const channelProducts = state.products.filter((product) => productSalesChannel(product) === channel);
-      $$('[data-admin-product-channel]').forEach((button) => {
-        const active = button.dataset.adminProductChannel === channel;
-        button.classList.toggle("active", active);
-        button.setAttribute("aria-selected", String(active));
-      });
-      const hideAllButton = $("[data-hide-all-products]");
-      if (hideAllButton) hideAllButton.hidden = channel !== "online";
       const query = normalizeAdminProductSearch(state.adminProductSearch);
       const category = renderAdminProductCategoryFilter();
       const categoryActive = category !== "All";
       const products = adminProductSearchResults();
       $("#adminProductCount").textContent = query || categoryActive
-        ? `${products.length} of ${channelProducts.length} ${channel === "offline" ? "offline" : "online"} products`
-        : `${channelProducts.length} ${channel === "offline" ? "offline" : "online"} products`;
+        ? `${products.length} of ${state.products.length} products`
+        : `${state.products.length} products`;
       const searchStatus = $("#adminProductSearchStatus");
       if (searchStatus) searchStatus.textContent = query
         ? `${products.length} matching products`
         : categoryActive
           ? `${products.length} products in ${categoryName(category)}`
-        : `${channelProducts.length} ${channel} products`;
+        : `${state.products.length} products`;
       const clearSearch = $("[data-clear-admin-product-search]");
       if (clearSearch) clearSearch.hidden = !query;
-      renderProductInventorySummary(channelProducts);
+      renderProductInventorySummary();
       $("#adminTrashCount").textContent = String(state.deletedProducts.length);
       const trashToggle = $("[data-toggle-product-trash]");
       const trashPanel = $("[data-product-trash-panel]");
@@ -14903,26 +13921,24 @@
         ? `No products match “${escapeHtml(state.adminProductSearch.trim())}”`
         : categoryActive
           ? `No products in ${escapeHtml(categoryName(category))}`
-          : channel === "offline" ? "No products in Go Go Shop" : "No online store products";
+          : "No active products";
       $("#adminProductRows").innerHTML = products.map((product) => `
-        <article class="admin-product-item ${channel === "online" && !product.published ? "is-offline-only" : ""}" data-edit-product-row="${escapeHtml(product.id)}" role="button" tabindex="0" aria-label="Edit ${escapeHtml(product.title)}">
+        <article class="admin-product-item ${product.published ? "" : "is-offline-only"}" data-edit-product-row="${escapeHtml(product.id)}" role="button" tabindex="0" aria-label="Edit ${escapeHtml(product.title)}">
           <img src="${escapeHtml(imageSource(product.image) || PRODUCT_IMAGE_FALLBACK)}" alt="${escapeHtml(product.title)}" loading="eager" decoding="async">
           <div class="admin-product-summary">
             <strong>${escapeHtml(product.title)}</strong>
-            <span>${product.featured ? "Pinned · " : ""}${escapeHtml((isFullAdmin()
-              ? [categoryName(productCategoryKey(product)), product.vendor, productSourcePriceText(product)]
-              : [categoryName(productCategoryKey(product))]).filter(Boolean).join(" · "))}</span>
+            <span>${product.featured ? "Pinned · " : ""}${escapeHtml([categoryName(productCategoryKey(product)), product.vendor, productSourcePriceText(product)].filter(Boolean).join(" · "))}</span>
             <span>货号 ${escapeHtml(productItemCode(product))}</span>
           </div>
           <div class="admin-product-meta">
             <span>${formatPrice(product.price)}</span>
             <span>Stock ${Number(product.stock) || 0}</span>
-            <span class="status ${product.published ? "live" : "draft"}">${channel === "offline" ? "In-store" : product.published ? "Online" : "Online draft"}</span>
+            <span class="status ${product.published ? "live" : "draft"}">${product.published ? "Live" : "Offline only"}</span>
           </div>
           <div class="row-actions">
             <button class="action-button" type="button" data-open-product-label="${escapeHtml(product.id)}" aria-label="打印 ${escapeHtml(product.title)} Label" title="打印 Label"><i data-lucide="printer"></i></button>
-            ${channel === "online" ? `<button class="action-button ${product.published ? "" : "offline"}" type="button" data-toggle-product-online="${escapeHtml(product.id)}" aria-label="${product.published ? "Hide" : "Show"} ${escapeHtml(product.title)} ${product.published ? "from online store" : "in online store"}" title="${product.published ? "从公开网店下架" : "上架到公开网店"}"><i data-lucide="${product.published ? "eye-off" : "eye"}"></i></button>` : ""}
-            ${channel === "online" ? `<button class="action-button ${product.featured ? "pinned" : ""}" type="button" data-toggle-featured="${escapeHtml(product.id)}" aria-label="${product.featured ? "Unpin" : "Pin"} ${escapeHtml(product.title)}" aria-pressed="${Boolean(product.featured)}" title="${product.featured ? "取消首页置顶" : "置顶到首页"}"><i data-lucide="${product.featured ? "pin-off" : "pin"}"></i></button>` : ""}
+            <button class="action-button ${product.published ? "" : "offline"}" type="button" data-toggle-product-online="${escapeHtml(product.id)}" aria-label="${product.published ? "Hide" : "Show"} ${escapeHtml(product.title)} ${product.published ? "from online store" : "in online store"}" title="${product.published ? "隐藏，仅线下销售" : "重新显示在网店"}"><i data-lucide="${product.published ? "eye-off" : "eye"}"></i></button>
+            <button class="action-button ${product.featured ? "pinned" : ""}" type="button" data-toggle-featured="${escapeHtml(product.id)}" aria-label="${product.featured ? "Unpin" : "Pin"} ${escapeHtml(product.title)}" aria-pressed="${Boolean(product.featured)}" title="${product.featured ? "取消首页置顶" : "置顶到首页"}"><i data-lucide="${product.featured ? "pin-off" : "pin"}"></i></button>
             <button class="action-button" type="button" data-delete-product="${escapeHtml(product.id)}" aria-label="Delete ${escapeHtml(product.title)}"><i data-lucide="trash-2"></i></button>
           </div>
         </article>
@@ -14937,7 +13953,7 @@
           <div class="admin-product-meta">
             <span>${formatPrice(product.price)}</span>
             <span>库存 ${Number(product.stock) || 0}</span>
-            <span class="status ${product.restorePublished ? "live" : "draft"}">${productSalesChannel(product) === "offline" ? "原为线下商品" : product.restorePublished ? "原为网上上架" : "原为网上草稿"}</span>
+            <span class="status ${product.restorePublished ? "live" : "draft"}">${product.restorePublished ? "原为上架" : "原为草稿"}</span>
           </div>
           <div class="row-actions">
             <button class="action-button" type="button" data-restore-product="${escapeHtml(product.id)}" aria-label="恢复 ${escapeHtml(product.title)}" title="恢复商品"><i data-lucide="rotate-ccw"></i></button>
@@ -15019,6 +14035,7 @@
         accentColor: data.accentColor,
         softColor: data.softColor,
         announcement: data.announcement.trim(),
+        announcementZh: data.announcementZh.trim(),
         headerTitle: data.headerTitle.trim(),
         heroTitle: data.heroTitle.trim(),
         heroSubtitle: data.heroSubtitle.trim(),
@@ -15038,10 +14055,10 @@
     function renderDesignPreview() {
       const preview = $("#designPreview");
       if (!preview) return;
-      const design = effectiveDesign();
+      const design = effectiveDesign({ preview: true });
       const heroBackground = design.heroImage ? `url("${escapeHtml(design.heroImage)}")` : "linear-gradient(135deg, #4d9298, #d88a76)";
       const previewProducts = state.products
-        .filter(isStorefrontProduct)
+        .filter((product) => product.published)
         .sort((a, b) => Number(Boolean(b.featured)) - Number(Boolean(a.featured)))
         .slice(0, 4);
       const selectedClass = (section, blockId = null) => (
@@ -15176,6 +14193,7 @@
 
     function renderAdminDesign() {
       if (!$("#designPreview")) return;
+      setDesignRemoteStatus(state.designRemoteStatus, state.designRemoteError);
       syncDesignForm();
       renderDesignBlocks();
       renderDesignInspector();
@@ -15185,18 +14203,13 @@
 
     function renderAdmin() {
       if ($("#adminShell").hidden) return;
-      applyAdminRoleUi();
-      renderAdminProducts();
-      if (!isFullAdmin()) {
-        refreshIcons();
-        return;
-      }
       renderAdminOrderNotificationUi();
       renderMetrics("#metricGrid");
       renderSalesAnalytics();
       renderAdminProcurement();
       renderRevenueChart();
       renderInventoryStatus();
+      renderAdminProducts();
       renderAdminOrders();
       renderCustomers();
       renderAdminVouchers();
@@ -15235,11 +14248,10 @@
       fields.namedItem("sourcePriceCny").value = "0";
       fields.namedItem("sourceCurrency").value = "CNY";
       fields.namedItem("status").value = "active";
-      fields.namedItem("salesChannel").value = isOnlineManager() ? "online" : "offline";
       fields.namedItem("titleZh").value = "";
       fields.namedItem("descriptionZh").value = "";
       fields.namedItem("vendor").value = "Go Go Shop";
-      fields.namedItem("onlineStore").checked = isOnlineManager();
+      fields.namedItem("onlineStore").checked = false;
       fields.namedItem("featured").checked = false;
       fields.namedItem("taxable").checked = true;
       fields.namedItem("trackQuantity").checked = true;
@@ -15252,7 +14264,6 @@
       $("#productFormTitle").textContent = "添加商品";
       resetProductBarcodeScanner();
       setProductEditorLanguage(state.lang);
-      applyAdminRoleUi();
       updateProductEditorPreview();
     }
 
@@ -15371,7 +14382,6 @@
         width: Math.max(0, Number(record?.width) || 0),
         height: Math.max(0, Number(record?.height) || 0),
         source: String(record?.source || "product"),
-        salesChannel: normalizeProductSalesChannel(record?.sales_channel),
         createdAt: record?.created_at || null,
         updatedAt: record?.updated_at || null
       };
@@ -15467,19 +14477,17 @@
     }
 
     async function loadProductMediaLibrary(force = false) {
-      if (!db || !canManageProducts() || state.productMediaLoading || (state.productMediaLoaded && !force)) {
+      if (!db || !state.profile?.is_admin || state.productMediaLoading || (state.productMediaLoaded && !force)) {
         renderProductMediaLibrary();
         return;
       }
       state.productMediaLoading = true;
       state.productMediaError = "";
       renderProductMediaLibrary();
-      let query = db.from("product_media")
-        .select("id,url,storage_path,file_name,alt_text,mime_type,size_bytes,width,height,source,sales_channel,created_at,updated_at")
+      const { data, error } = await db.from("product_media")
+        .select("id,url,storage_path,file_name,alt_text,mime_type,size_bytes,width,height,source,created_at,updated_at")
         .order("created_at", { ascending: false })
         .limit(1000);
-      if (isOnlineManager()) query = query.eq("sales_channel", "online");
-      const { data, error } = await query;
       state.productMediaLoading = false;
       if (error) {
         state.productMediaLoaded = false;
@@ -15551,8 +14559,7 @@
         .slice(0, 48) || "image";
       const id = crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
       const date = new Date();
-      const root = isOnlineManager() ? "online-products" : "products";
-      return `${root}/${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, "0")}/${id}-${baseName}.${extension}`;
+      return `products/${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, "0")}/${id}-${baseName}.${extension}`;
     }
 
     function resizeProductImageBlob(file) {
@@ -15591,7 +14598,7 @@
     async function uploadProductMediaFiles(files, options = {}) {
       const selectedFiles = [...(files || [])].filter((file) => /^image\/(jpeg|png|webp)$/i.test(file.type));
       if (!selectedFiles.length) return [];
-      if (!db || !canManageProducts()) throw new Error(state.lang === "zh" ? "管理员登录已失效" : "Administrator session expired");
+      if (!db || !state.profile?.is_admin) throw new Error(state.lang === "zh" ? "管理员登录已失效" : "Administrator session expired");
       state.productMediaLoading = true;
       state.productMediaError = "";
       renderProductMediaLibrary();
@@ -15617,9 +14624,8 @@
             size_bytes: optimized.blob.size,
             width: optimized.width,
             height: optimized.height,
-            source: "upload",
-            sales_channel: isOnlineManager() ? "online" : state.adminProductChannel
-          }).select("id,url,storage_path,file_name,alt_text,mime_type,size_bytes,width,height,source,sales_channel,created_at,updated_at").single();
+            source: "upload"
+          }).select("id,url,storage_path,file_name,alt_text,mime_type,size_bytes,width,height,source,created_at,updated_at").single();
           if (mediaError) {
             await db.storage.from(PRODUCT_MEDIA_BUCKET).remove([storagePath]);
             throw mediaError;
@@ -15642,14 +14648,12 @@
       }
     }
 
-    async function registerProductMediaUrls(urls, salesChannel = state.adminProductChannel) {
-      if (!db || !canManageProducts()) return;
-      const channel = isOnlineManager() ? "online" : normalizeProductSalesChannel(salesChannel);
+    async function registerProductMediaUrls(urls) {
+      if (!db || !state.profile?.is_admin) return;
       const records = [...new Set((urls || []).map((url) => String(url || "").trim()).filter((url) => url && !url.startsWith("data:")))].map((url) => ({
         url,
         file_name: productMediaFileName(url),
         source: "product",
-        sales_channel: channel,
         updated_at: new Date().toISOString()
       }));
       if (!records.length) return;
@@ -15728,21 +14732,7 @@
       if (!form) return;
       const fields = form.elements;
       const active = fields.namedItem("status").value === "active";
-      const salesChannel = normalizeProductSalesChannel(fields.namedItem("salesChannel").value);
-      const online = salesChannel === "online";
-      const onlineStore = fields.namedItem("onlineStore");
-      const featured = fields.namedItem("featured");
-      if (!online) {
-        onlineStore.checked = false;
-        featured.checked = false;
-      }
-      onlineStore.disabled = !online;
-      featured.disabled = !online;
-      const channelHint = $("[data-product-channel-hint]", form);
-      if (channelHint) channelHint.textContent = online
-        ? "网上商品不会出现在拾光小铺扫码点单中。"
-        : "线下商品会自动从公开网页隐藏，只用于拾光小铺扫码点单。";
-      const published = online && active && onlineStore.checked;
+      const published = active && fields.namedItem("onlineStore").checked;
       const status = $("[data-product-editor-status]");
       const sideStatus = $("[data-product-editor-side-status]");
       const labelButton = $("[data-print-product-label-editor]", form);
@@ -15765,9 +14755,7 @@
         ? fields.namedItem("titleZh").value.trim()
         : fields.namedItem("title").value.trim();
       $("[data-product-editor-title]").textContent = editorTitle || (fields.namedItem("id").value ? "编辑商品" : "添加商品");
-      const statusText = online
-        ? (!active ? "网上草稿" : published ? "网上已上架" : "网上未发布")
-        : "线下销售";
+      const statusText = !active ? "草稿" : published ? "活跃" : fields.namedItem("onlineStore").checked ? "未发布" : "仅线下销售";
       const statusClass = `status ${published ? "live" : "draft"}`;
       status.textContent = statusText;
       status.className = statusClass;
@@ -15785,7 +14773,6 @@
     }
 
     function openNewProductEditor() {
-      if (!canManageProducts()) return;
       setAdminTab("products");
       clearProductForm();
       openProductEditor();
@@ -15990,7 +14977,7 @@
 
     function editProduct(id) {
       const product = state.products.find((item) => item.id === id);
-      if (!product || !canManageProduct(product)) return;
+      if (!product) return;
       clearProductForm();
       const form = $("[data-product-form]");
       const fields = form.elements;
@@ -16005,9 +14992,8 @@
       fields.namedItem("images").value = (product.images || []).filter((image) => image && image !== product.image).join("\n");
       fields.namedItem("description").value = product.descriptionEn || localization?.description || cleanStorefrontDescription(product.description, product) || "";
       fields.namedItem("descriptionZh").value = product.descriptionZh || "";
-      fields.namedItem("status").value = isOfflineProduct(product) || product.published ? "active" : "draft";
-      fields.namedItem("salesChannel").value = productSalesChannel(product);
-      fields.namedItem("onlineStore").checked = isOnlineProduct(product) && Boolean(product.onlineStore ?? product.published);
+      fields.namedItem("status").value = product.published ? "active" : "draft";
+      fields.namedItem("onlineStore").checked = product.onlineStore ?? product.published;
       fields.namedItem("featured").checked = Boolean(product.featured);
       fields.namedItem("compareAtPrice").value = product.compareAtPrice || "";
       fields.namedItem("sku").value = product.sku || "";
@@ -16045,11 +15031,11 @@
 
     async function deleteProduct(id) {
       const product = state.products.find((item) => item.id === id);
-      if (!product || !canManageProduct(product)) return;
+      if (!product) return;
       const confirmed = window.confirm(`确定将“${product.title}”移入回收站吗？\n\n商品会立即从商店隐藏，之后可以恢复。`);
       if (!confirmed) return;
       const deletedAt = new Date().toISOString();
-      if (db && canManageProduct(product)) {
+      if (db && state.profile?.is_admin) {
         const { error } = await db.from("products").update({
           deleted_at: deletedAt,
           deleted_was_published: Boolean(product.published),
@@ -16082,9 +15068,9 @@
 
     async function restoreProduct(id) {
       const product = state.deletedProducts.find((item) => item.id === id);
-      if (!product || !canManageProduct(product)) return;
-      const published = isOnlineProduct(product) && Boolean(product.restorePublished);
-      if (db && canManageProduct(product)) {
+      if (!product) return;
+      const published = Boolean(product.restorePublished);
+      if (db && state.profile?.is_admin) {
         const { error } = await db.from("products").update({
           deleted_at: null,
           deleted_was_published: false,
@@ -16101,10 +15087,10 @@
         deletedAt: null,
         restorePublished: false,
         published,
-        onlineStore: isOnlineProduct(product) && published,
+        onlineStore: published,
         featured: Boolean(product.restoreFeatured),
         restoreFeatured: false,
-        status: isOfflineProduct(product) || published ? "active" : "draft"
+        status: published ? "active" : "draft"
       };
       state.deletedProducts = state.deletedProducts.filter((item) => item.id !== id);
       state.products = state.products.filter((item) => item.id !== id);
@@ -16117,14 +15103,14 @@
 
     async function permanentlyDeleteProduct(id) {
       const product = state.deletedProducts.find((item) => item.id === id);
-      if (!product || !canManageProduct(product)) return;
+      if (!product) return;
       const confirmed = window.confirm(`永久删除“${product.title}”？\n\n此操作无法撤销。`);
       if (!confirmed) return;
       const deleteButton = $$('[data-delete-product-permanently]').find((button) => button.dataset.deleteProductPermanently === id);
       if (deleteButton?.disabled) return;
       if (deleteButton) deleteButton.disabled = true;
       try {
-        if (db && canManageProduct(product)) {
+        if (db && state.profile?.is_admin) {
           const { data, error } = await db.from("products").delete().eq("id", id).select("id");
           if (error) {
             const isOrderReferenceError = /foreign key|constraint|23503/i.test(`${error.code || ""} ${error.message || ""}`);
@@ -16173,7 +15159,7 @@
         persistDeletedProducts();
         renderAdminProducts();
         refreshIcons();
-        if (db && canManageProducts()) await loadStoreInventory();
+        if (db && state.profile?.is_admin) await loadStoreInventory();
         showToast(state.lang === "zh" ? "商品已永久删除" : "Product permanently deleted");
       } finally {
         if (deleteButton?.isConnected) deleteButton.disabled = false;
@@ -16188,7 +15174,7 @@
 
     async function setProductOnlineState(id, online) {
       const product = state.products.find((item) => item.id === id);
-      if (!product || !canManageProduct(product) || !isOnlineProduct(product) || Boolean(product.published) === Boolean(online)) return;
+      if (!product || Boolean(product.published) === Boolean(online)) return;
       const button = $(`[data-toggle-product-online="${CSS.escape(String(id))}"]`);
       if (button) {
         button.disabled = true;
@@ -16197,7 +15183,7 @@
       const published = Boolean(online);
       const updatedAt = new Date().toISOString();
       try {
-        if (db && canManageProduct(product)) {
+        if (db && state.profile?.is_admin) {
           const { error } = await db.from("products").update({
             published,
             updated_at: updatedAt
@@ -16223,14 +15209,13 @@
     }
 
     async function hideAllProductsFromStore() {
-      if (!canManageProducts()) return;
-      const onlineProducts = state.products.filter((product) => isOnlineProduct(product) && product.published);
+      const onlineProducts = state.products.filter((product) => product.published);
       if (!onlineProducts.length) {
         showToast(state.lang === "zh" ? "当前没有网店商品" : "No products are currently visible online");
         return;
       }
       const confirmed = window.confirm(state.lang === "zh"
-        ? `确定下架全部 ${onlineProducts.length} 个网上商品吗？\n\n商品资料、图片、库存和订单不会删除，商品仍保留在“网上商店”列表中。`
+        ? `确定隐藏全部 ${onlineProducts.length} 个网店商品吗？\n\n商品资料、图片、库存和订单不会删除，之后可以逐个重新显示。`
         : `Hide all ${onlineProducts.length} online products?\n\nProduct data, images, inventory and orders will be kept. You can show products again one by one.`);
       if (!confirmed) return;
       const button = $(`[data-hide-all-products]`);
@@ -16240,11 +15225,11 @@
       }
       const updatedAt = new Date().toISOString();
       try {
-        if (db && canManageProducts()) {
+        if (db && state.profile?.is_admin) {
           const { error } = await db.from("products").update({
             published: false,
             updated_at: updatedAt
-          }).eq("sales_channel", "online").eq("published", true);
+          }).eq("published", true);
           if (error) throw error;
         }
         state.products.forEach((product) => {
@@ -16255,7 +15240,7 @@
         });
         persistProducts();
         renderAll();
-        showToast(state.lang === "zh" ? `已下架 ${onlineProducts.length} 个网上商品` : `${onlineProducts.length} online products unpublished`);
+        showToast(state.lang === "zh" ? `已隐藏 ${onlineProducts.length} 个商品，仅支持线下销售` : `${onlineProducts.length} products hidden; offline sales only`);
       } catch (error) {
         showToast(authErrorMessage(error));
       } finally {
@@ -16268,7 +15253,7 @@
 
     function toggleFeaturedProduct(id) {
       const product = state.products.find((item) => item.id === id);
-      if (!product || !canManageProduct(product) || !isOnlineProduct(product)) return;
+      if (!product) return;
       product.featured = !product.featured;
       product.featuredAt = product.featured ? Date.now() : 0;
       persistProducts();
@@ -16293,8 +15278,7 @@
       }
       const id = data.id || `${(titleEn || titleZh).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}-${Date.now().toString(36)}`;
       const existing = state.products.find((product) => product.id === id);
-      const salesChannel = isOnlineManager() ? "online" : normalizeProductSalesChannel(data.salesChannel);
-      const featured = salesChannel === "online" && form.featured.checked;
+      const featured = form.featured.checked;
       const image = data.image.trim();
       const images = [...new Set([image, ...String(data.images || "").split(/\r?\n/).map((value) => value.trim()).filter(Boolean)])];
       const sourcePriceCny = Number(data.sourcePriceCny || 0);
@@ -16343,10 +15327,9 @@
         sourceVariants: existing?.sourceVariants || [],
         sourceAttributes: existing?.sourceAttributes || [],
         stock: Number(data.stock),
-        salesChannel,
-        published: salesChannel === "online" && data.status === "active" && form.onlineStore.checked,
+        published: data.status === "active" && form.onlineStore.checked,
         status: data.status,
-        onlineStore: salesChannel === "online" && form.onlineStore.checked,
+        onlineStore: form.onlineStore.checked,
         featured,
         featuredAt: featured ? (existing?.featured ? Number(existing.featuredAt || Date.now()) : Date.now()) : 0,
         taxable: form.taxable.checked,
@@ -16370,7 +15353,7 @@
       }
       try {
         await syncProductToSupabase(product);
-        await registerProductMediaUrls(images, salesChannel);
+        await registerProductMediaUrls(images);
         if (existing) {
           Object.assign(existing, product);
         } else {
@@ -16398,9 +15381,7 @@
     }
 
     function exportProducts() {
-      const headers = isOnlineManager()
-        ? ["id", "title", "titleEn", "titleZh", "category", "description", "descriptionEn", "descriptionZh", "price", "compareAtPrice", "stock", "salesChannel", "published", "featured", "sku", "barcode", "tags", "image", "images"]
-        : ["id", "title", "titleEn", "titleZh", "category", "description", "descriptionEn", "descriptionZh", "price", "compareAtPrice", "costPerItem", "sourcePriceCny", "sourceCurrency", "stock", "salesChannel", "published", "featured", "sku", "barcode", "vendor", "tags", "image", "images", "sourceUrl"];
+      const headers = ["id", "title", "titleEn", "titleZh", "category", "description", "descriptionEn", "descriptionZh", "price", "compareAtPrice", "costPerItem", "sourcePriceCny", "sourceCurrency", "stock", "published", "featured", "sku", "barcode", "vendor", "tags", "image", "images", "sourceUrl"];
       const rows = state.products.map((product) => headers.map((key) => `"${String(product[key] ?? "").replace(/"/g, '""')}"`).join(","));
       const blob = new Blob([[headers.join(","), ...rows].join("\n")], { type: "text/csv" });
       const url = URL.createObjectURL(blob);
@@ -16418,7 +15399,6 @@
       renderAccount();
       renderVipRules();
       renderCustomerVouchers();
-      if (!$("#paymentModal")?.hidden) renderCheckoutFulfillment();
       applyStoreDesign();
       renderAdmin();
       if (state.activeProductId) renderProductDetail();
@@ -16427,10 +15407,6 @@
     function handleImageLoadError(event) {
       const image = event.target instanceof HTMLImageElement ? event.target : null;
       if (!image) return;
-      if (image.matches("[data-no-image-fallback]")) {
-        image.hidden = true;
-        return;
-      }
       if (image.dataset.imageFallbackApplied === "true") {
         image.hidden = true;
         return;
@@ -16450,14 +15426,6 @@
     document.addEventListener("click", (event) => {
       const clickedElement = event.target instanceof Element ? event.target : event.target.parentElement;
       if (!clickedElement) return;
-
-      const addressSuggestion = clickedElement.closest("[data-address-suggestion]");
-      if (addressSuggestion) {
-        event.preventDefault();
-        selectDeliveryAddressSuggestion(addressSuggestion.dataset.addressSuggestion);
-        return;
-      }
-      if (!clickedElement.closest("[data-address-autocomplete]")) closeAddressSuggestions();
 
       const desktopNavToggle = clickedElement.closest("[data-desktop-nav-toggle]");
       if (desktopNavToggle) {
@@ -16506,6 +15474,11 @@
 
       if (clickedElement.matches("[data-vip-rules-backdrop]") || clickedElement.closest("[data-close-vip-rules]")) {
         closeVipRules();
+        return;
+      }
+
+      if (clickedElement.matches("[data-delivery-notice-backdrop]") || clickedElement.closest("[data-close-delivery-notice]")) {
+        closeDeliveryNotice();
         return;
       }
 
@@ -16659,7 +15632,6 @@
       if (target.matches("[data-open-vip-rules]")) openVipRules();
       if (target.matches("[data-close-panels]")) closePanels();
       if (target.matches("[data-close-payment]")) closePaymentModal();
-      if (target.matches("[data-use-location]")) locateForDelivery();
       if (target.matches("[data-start-payment]")) startStripeCheckout();
       if (target.matches("[data-oauth-provider]")) signInWithProvider(target.dataset.oauthProvider);
       if (target.matches("[data-customer-logout]")) customerSignOut();
@@ -16711,7 +15683,7 @@
       }
       if (target.matches("[data-open-admin]")) {
         event.preventDefault();
-        if (!canManageProducts()) return;
+        if (!state.profile?.is_admin) return;
         closePanels();
         location.hash = "admin";
         showAdmin();
@@ -16742,12 +15714,6 @@
       if (target.matches("[data-toggle-order-trash]")) toggleOrderTrash();
       if (target.matches("[data-close-order-trash]")) toggleOrderTrash(false);
       if (target.matches("[data-refresh-admin-data]")) loadAdminData();
-      if (target.matches("[data-admin-product-channel]")) {
-        state.adminProductChannel = isOnlineManager() || target.dataset.adminProductChannel === "online" ? "online" : "offline";
-        state.adminProductCategory = "All";
-        renderAdminProducts();
-        return;
-      }
       if (target.matches("[data-open-product-tab], [data-new-product]")) openNewProductEditor();
       if (target.matches("[data-close-product-editor]")) closeProductEditor();
       if (target.matches("[data-clear-form]")) clearProductForm();
@@ -16777,20 +15743,6 @@
     });
 
     document.addEventListener("input", (event) => {
-      if (event.target instanceof Element && event.target.matches("#deliveryAddress, #deliveryPhone")) {
-        const key = event.target.matches("#deliveryAddress") ? "address" : "phone";
-        if (key === "address" && state.checkoutFulfillment.addressVerified && event.target.value.trim() !== state.checkoutFulfillment.verifiedAddress) {
-          clearVerifiedDeliveryAddress();
-        }
-        state.checkoutFulfillment[key] = event.target.value;
-        if (key === "address") {
-          queueDeliveryAddressSearch(event.target.value);
-          renderCheckoutFulfillment();
-        }
-        const message = $("#paymentMessage");
-        if (message) message.textContent = "";
-        return;
-      }
       if (event.target instanceof Element && event.target.closest("[data-product-label-controls]")) {
         renderProductLabelPreview();
         return;
@@ -16839,12 +15791,6 @@
     });
 
     document.addEventListener("change", (event) => {
-      if (event.target instanceof Element && event.target.matches("[data-fulfillment-method]")) {
-        setCheckoutFulfillmentMethod(event.target.value);
-        const message = $("#paymentMessage");
-        if (message) message.textContent = "";
-        return;
-      }
       if (event.target instanceof Element && event.target.closest("[data-product-label-controls]")) {
         renderProductLabelPreview();
         return;
@@ -16896,17 +15842,6 @@
         state.selectedCustomerVoucherId = event.target.value || null;
         state.voucherQuote = null;
         refreshVoucherQuote();
-      }
-    });
-
-    document.addEventListener("focusin", (event) => {
-      if (!(event.target instanceof Element) || !event.target.matches("#deliveryAddress")) return;
-      const fulfillment = state.checkoutFulfillment;
-      if (fulfillment.addressSuggestions.length) {
-        fulfillment.addressSuggestionsOpen = true;
-        renderAddressAutocomplete();
-      } else if (!fulfillment.addressVerified && String(event.target.value || "").trim().length >= 3) {
-        queueDeliveryAddressSearch(event.target.value);
       }
     });
 
@@ -17119,27 +16054,10 @@
     });
 
     document.addEventListener("keydown", (event) => {
-      const deliveryAddressInput = event.target instanceof Element && event.target.matches("#deliveryAddress")
-        ? event.target
-        : null;
-      if (deliveryAddressInput) {
-        if (event.key === "ArrowDown" || event.key === "ArrowUp") {
-          if (state.checkoutFulfillment.addressSuggestions.length) {
-            event.preventDefault();
-            moveAddressSuggestionSelection(event.key === "ArrowDown" ? 1 : -1);
-          }
-          return;
-        }
-        if (event.key === "Enter" && state.checkoutFulfillment.addressActiveIndex >= 0) {
-          event.preventDefault();
-          selectDeliveryAddressSuggestion(state.checkoutFulfillment.addressActiveIndex);
-          return;
-        }
-        if (event.key === "Escape" && (state.checkoutFulfillment.addressSuggestionsOpen || state.checkoutFulfillment.addressSearching)) {
-          event.preventDefault();
-          closeAddressSuggestions();
-          return;
-        }
+      if (event.key === "Escape" && !$("#deliveryNoticeModal").hidden) {
+        event.preventDefault();
+        closeDeliveryNotice();
+        return;
       }
       if (event.key === "Escape" && !$("#productLabelModal").hidden) {
         event.preventDefault();
@@ -17238,6 +16156,7 @@
     document.documentElement.lang = state.lang === "zh" ? "zh-CN" : "en";
     applyLanguage();
     renderAll();
+    if (!isAdminRoute()) openDeliveryNotice();
     initNativeOrderNotifications();
     initNativeOAuth();
     initSupabase().then(handlePaymentReturn);
