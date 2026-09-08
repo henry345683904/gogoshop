@@ -2180,6 +2180,8 @@
       width: min(100%, 480px);
       max-height: calc(100vh - 36px);
       max-height: calc(100dvh - 36px);
+      display: flex;
+      flex-direction: column;
       overflow: hidden;
       border: 1px solid var(--line);
       border-radius: 8px;
@@ -2188,6 +2190,7 @@
     }
 
     .payment-body {
+      min-height: 0;
       display: grid;
       gap: 18px;
       max-height: calc(100vh - 98px);
@@ -2195,6 +2198,180 @@
       overflow-y: auto;
       overscroll-behavior: contain;
       padding: 20px 22px 22px;
+    }
+
+    .fulfillment-section {
+      display: grid;
+      gap: 12px;
+    }
+
+    .fulfillment-heading {
+      margin: 0;
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .fulfillment-options {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .fulfillment-option {
+      min-width: 0;
+      min-height: 54px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 10px 12px;
+      background: #fff;
+      color: var(--ink);
+      cursor: pointer;
+    }
+
+    .fulfillment-option.is-selected {
+      border-color: var(--ink);
+      box-shadow: inset 0 0 0 1px var(--ink);
+    }
+
+    .fulfillment-option.is-disabled {
+      opacity: .52;
+      cursor: not-allowed;
+    }
+
+    .fulfillment-option input {
+      width: 16px;
+      height: 16px;
+      flex: 0 0 auto;
+      margin: 0;
+      accent-color: var(--ink);
+    }
+
+    .fulfillment-option svg {
+      width: 19px;
+      height: 19px;
+      flex: 0 0 auto;
+      color: var(--muted);
+    }
+
+    .fulfillment-option span {
+      min-width: 0;
+      font-size: 13px;
+      font-weight: 750;
+      overflow-wrap: anywhere;
+    }
+
+    .fulfillment-panel {
+      display: grid;
+      gap: 11px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 12px;
+      background: var(--soft);
+    }
+
+    .fulfillment-panel[hidden] {
+      display: none;
+    }
+
+    .pickup-location {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      line-height: 1.45;
+    }
+
+    .pickup-location svg {
+      width: 18px;
+      height: 18px;
+      flex: 0 0 auto;
+      margin-top: 1px;
+    }
+
+    .pickup-location strong,
+    .pickup-location span {
+      display: block;
+    }
+
+    .pickup-location span {
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .delivery-rule-note {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .delivery-location-row {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      align-items: center;
+      gap: 10px;
+    }
+
+    .delivery-location-row .button {
+      min-height: 38px;
+      padding: 0 12px;
+      white-space: nowrap;
+    }
+
+    .delivery-location-status {
+      min-width: 0;
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+      overflow-wrap: anywhere;
+    }
+
+    .delivery-location-status.success {
+      color: #24623e;
+      font-weight: 700;
+    }
+
+    .delivery-location-status.error {
+      color: var(--danger);
+      font-weight: 700;
+    }
+
+    .delivery-fields {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(130px, .55fr);
+      gap: 10px;
+    }
+
+    .delivery-fields .field {
+      gap: 5px;
+    }
+
+    .delivery-fields .field > span {
+      color: #303434;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .delivery-fields input,
+    .delivery-fields textarea {
+      width: 100%;
+      min-height: 42px;
+      padding: 9px 11px;
+      background: #fff;
+    }
+
+    .delivery-fields textarea {
+      min-height: 70px;
+      resize: vertical;
+    }
+
+    .payment-total-row.delivery {
+      color: var(--ink);
     }
 
     .guest-checkout-fields { display: grid; gap: 12px; }
@@ -3403,6 +3580,106 @@
       line-height: 1.15;
     }
 
+    .admin-product-channel-tabs {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      padding: 14px 18px 0;
+      background: #fff;
+    }
+
+    .admin-product-channel-tab {
+      display: grid;
+      min-width: 0;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 10px;
+      border: 1px solid #d5d9d8;
+      border-radius: 8px 8px 0 0;
+      padding: 11px 13px;
+      background: #fafbfb;
+      color: var(--muted);
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .admin-product-channel-tab:hover {
+      border-color: #aeb4b4;
+      background: #f5f7f6;
+    }
+
+    .admin-product-channel-tab.is-selected {
+      border-color: #202424;
+      background: #202424;
+      color: #fff;
+    }
+
+    .admin-product-channel-tab-icon {
+      display: grid;
+      width: 30px;
+      height: 30px;
+      place-items: center;
+      border-radius: 6px;
+      background: #e8eceb;
+      color: #252b2b;
+    }
+
+    .admin-product-channel-tab.is-selected .admin-product-channel-tab-icon {
+      background: #fff;
+      color: #202424;
+    }
+
+    .admin-product-channel-tab-icon svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .admin-product-channel-tab-copy {
+      display: grid;
+      min-width: 0;
+      gap: 2px;
+    }
+
+    .admin-product-channel-tab-copy strong,
+    .admin-product-channel-tab-copy small {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .admin-product-channel-tab-copy strong {
+      color: inherit;
+      font-size: 13px;
+      line-height: 1.2;
+    }
+
+    .admin-product-channel-tab-copy small {
+      color: currentColor;
+      font-size: 11px;
+      opacity: .72;
+      line-height: 1.2;
+    }
+
+    .admin-product-channel-tab b {
+      min-width: 28px;
+      padding: 2px 6px;
+      border-radius: 999px;
+      background: #e8eceb;
+      color: #303636;
+      font-size: 12px;
+      font-variant-numeric: tabular-nums;
+      text-align: center;
+    }
+
+    .admin-product-channel-tab.is-selected b {
+      background: #fff;
+      color: #202424;
+    }
+
+    .admin-product-channel-tab[hidden] {
+      display: none;
+    }
+
     .admin-product-search {
       border-top: 0;
       border-bottom: 1px solid #d8dada;
@@ -3811,6 +4088,71 @@
       flex-wrap: wrap;
       justify-content: flex-end;
       gap: 7px;
+    }
+
+    .product-channel-selector {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .product-channel-option {
+      display: flex;
+      min-width: 0;
+      align-items: flex-start;
+      gap: 9px;
+      border: 1px solid #d4d8d7;
+      border-radius: 7px;
+      padding: 10px;
+      background: #fff;
+      cursor: pointer;
+    }
+
+    .product-channel-option:has(input:checked) {
+      border-color: #202424;
+      box-shadow: inset 0 0 0 1px #202424;
+    }
+
+    .product-channel-option:has(input:disabled) {
+      opacity: .55;
+      cursor: not-allowed;
+    }
+
+    .product-channel-option input {
+      flex: 0 0 auto;
+      width: 16px;
+      height: 16px;
+      margin: 1px 0 0;
+      accent-color: #202424;
+    }
+
+    .product-channel-option span {
+      display: grid;
+      min-width: 0;
+      gap: 2px;
+    }
+
+    .product-channel-option strong,
+    .product-channel-option small {
+      overflow-wrap: anywhere;
+    }
+
+    .product-channel-option strong {
+      color: var(--ink);
+      font-size: 12px;
+      line-height: 1.25;
+    }
+
+    .product-channel-option small,
+    .product-channel-help {
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.4;
+    }
+
+    .product-channel-help {
+      display: block;
+      margin-top: 10px;
     }
 
     .product-barcode-scan-control {
@@ -7054,6 +7396,44 @@
         width: 100%;
       }
 
+      .payment-modal {
+        padding: 8px;
+      }
+
+      .payment-dialog {
+        width: 100%;
+        max-height: calc(100vh - 16px);
+        max-height: calc(100dvh - 16px);
+      }
+
+      .payment-dialog .panel-head {
+        min-height: 56px;
+        padding: 0 14px;
+      }
+
+      .payment-body {
+        gap: 14px;
+        padding: 14px;
+      }
+
+      .fulfillment-options {
+        gap: 6px;
+      }
+
+      .fulfillment-option {
+        min-height: 50px;
+        padding: 8px 10px;
+      }
+
+      .delivery-location-row,
+      .delivery-fields {
+        grid-template-columns: 1fr;
+      }
+
+      .delivery-location-row .button {
+        width: 100%;
+      }
+
       .admin-order-note-editor {
         grid-template-columns: 1fr;
       }
@@ -7241,6 +7621,30 @@
         grid-template-columns: repeat(3, minmax(0, 1fr));
       }
 
+      .admin-product-channel-tabs {
+        gap: 6px;
+        padding: 10px 12px 0;
+      }
+
+      .admin-product-channel-tab {
+        gap: 7px;
+        padding: 9px 8px;
+      }
+
+      .admin-product-channel-tab-icon {
+        width: 26px;
+        height: 26px;
+      }
+
+      .admin-product-channel-tab-copy strong {
+        font-size: 11px;
+      }
+
+      .admin-product-channel-tab-copy small,
+      .admin-product-channel-tab b {
+        font-size: 10px;
+      }
+
       .admin-product-search {
         padding: 10px 12px;
       }
@@ -7309,6 +7713,10 @@
 
       .shopify-editor-card {
         padding: 14px;
+      }
+
+      .product-channel-selector {
+        grid-template-columns: 1fr;
       }
 
       .shopify-media-layout {
@@ -7699,7 +8107,7 @@
           <button class="tab-button active" type="button" data-admin-tab="overview" aria-label="Overview" title="Overview"><i data-lucide="layout-dashboard"></i><span>Overview</span></button>
           <button class="tab-button" type="button" data-admin-tab="products" aria-label="Products" title="Products"><i data-lucide="package-plus"></i><span>Products</span></button>
           <button class="tab-button" type="button" data-admin-tab="orders" aria-label="Orders" title="Orders"><i data-lucide="receipt-text"></i><span>Orders</span><span class="admin-order-badge" id="adminOrderBadge" hidden>0</span></button>
-          <a class="tab-button" href="./pos.html?from=admin" target="_blank" rel="noopener" aria-label="扫码收银" title="扫码收银"><i data-lucide="scan-barcode"></i><span>扫码收银</span></a>
+          <a class="tab-button" href="./pos.html?from=admin" target="_blank" rel="noopener" aria-label="扫码收银" title="扫码收银" data-admin-pos-link><i data-lucide="scan-barcode"></i><span>扫码收银</span></a>
           <button class="tab-button" type="button" data-admin-tab="customers" aria-label="Customers" title="Customers"><i data-lucide="users"></i><span>Customers</span></button>
           <button class="tab-button" type="button" data-admin-tab="vouchers" aria-label="Vouchers" title="Vouchers"><i data-lucide="ticket-percent"></i><span>Vouchers</span></button>
           <button class="tab-button" type="button" data-admin-tab="analytics" aria-label="Analytics" title="Analytics"><i data-lucide="chart-column"></i><span>Analytics</span></button>
@@ -7716,7 +8124,7 @@
             <p id="adminPageSub">Products, inventory, orders and storefront signals.</p>
           </div>
           <div class="form-actions">
-            <button class="button ghost admin-notification-button" type="button" data-enable-order-notifications aria-label="Enable order notifications" title="Enable order notifications"><i data-lucide="bell"></i></button>
+            <button class="button ghost admin-notification-button" type="button" data-enable-order-notifications data-full-admin-only aria-label="Enable order notifications" title="Enable order notifications"><i data-lucide="bell"></i></button>
             <button class="button ghost" type="button" data-export-products><i data-lucide="download"></i> Export</button>
             <button class="button ghost" type="button" data-admin-logout><i data-lucide="log-out"></i> 退出</button>
             <button class="button" type="button" data-open-product-tab><i data-lucide="plus"></i> Add product</button>
@@ -7770,6 +8178,18 @@
                 <button class="button ghost" type="button" data-hide-all-products title="将所有当前网店商品设为仅线下销售"><i data-lucide="eye-off"></i> <span>一键隐藏全部</span></button>
                 <button class="button" type="button" data-new-product><i data-lucide="plus"></i> Add product</button>
               </div>
+            </div>
+            <div class="admin-product-channel-tabs" data-admin-product-channel-tabs role="tablist" aria-label="Product sales channel">
+              <button class="admin-product-channel-tab is-selected" type="button" data-admin-product-channel="offline" role="tab" aria-selected="true" aria-controls="adminProductRows">
+                <span class="admin-product-channel-tab-icon"><i data-lucide="store"></i></span>
+                <span class="admin-product-channel-tab-copy"><strong>拾光小铺</strong><small>线下</small></span>
+                <b data-admin-product-channel-count="offline">0</b>
+              </button>
+              <button class="admin-product-channel-tab" type="button" data-admin-product-channel="online" role="tab" aria-selected="false" aria-controls="adminProductRows">
+                <span class="admin-product-channel-tab-icon"><i data-lucide="globe-2"></i></span>
+                <span class="admin-product-channel-tab-copy"><strong>GO GO SHOP</strong><small>线上</small></span>
+                <b data-admin-product-channel-count="online">0</b>
+              </button>
             </div>
             <div class="product-inventory-summary" id="adminProductInventorySummary" aria-label="Inventory valuation"></div>
             <div class="admin-product-search">
@@ -8395,6 +8815,21 @@
 
           <aside class="product-editor-sidebar">
             <section class="shopify-editor-card">
+              <div class="shopify-card-head"><h3>销售渠道</h3></div>
+              <div class="product-channel-selector" data-product-channel-selector role="radiogroup" aria-label="商品销售渠道">
+                <label class="product-channel-option" data-product-channel-option="offline">
+                  <input type="radio" name="salesChannel" value="offline">
+                  <span><strong>拾光小铺</strong><small>线下扫码收银</small></span>
+                </label>
+                <label class="product-channel-option" data-product-channel-option="online">
+                  <input type="radio" name="salesChannel" value="online">
+                  <span><strong>GO GO SHOP</strong><small>线上商城</small></span>
+                </label>
+              </div>
+              <small class="product-channel-help" data-product-channel-help>商品只会出现在所选渠道，两个渠道不会混合。</small>
+            </section>
+
+            <section class="shopify-editor-card">
               <div class="shopify-status-line">
                 <h3>状态</h3>
                 <span class="status live" data-product-editor-side-status>在售</span>
@@ -8411,7 +8846,7 @@
             <section class="shopify-editor-card">
               <div class="shopify-card-head"><h3>发布</h3></div>
               <label class="shopify-check-row">
-                <span>在线商店（取消勾选 = 仅线下销售）</span>
+                <span>GO GO SHOP 网店（仅适用于线上渠道）</span>
                 <input type="checkbox" name="onlineStore" checked>
               </label>
               <label class="shopify-check-row">
@@ -8736,16 +9171,43 @@
         <button class="icon-button" type="button" data-close-payment aria-label="Close"><i data-lucide="x"></i></button>
       </div>
       <div class="payment-body">
+        <section class="fulfillment-section" aria-labelledby="fulfillmentHeading">
+          <p class="fulfillment-heading" id="fulfillmentHeading" data-i18n="fulfillmentHeading">How would you like to receive your order?</p>
+          <div class="fulfillment-options" role="radiogroup" aria-labelledby="fulfillmentHeading">
+            <label class="fulfillment-option is-selected" data-fulfillment-option="pickup">
+              <input type="radio" name="fulfillmentMethod" value="pickup" data-fulfillment-method checked>
+              <i data-lucide="shopping-bag"></i>
+              <span data-i18n="pickup">Pickup</span>
+            </label>
+            <label class="fulfillment-option" data-fulfillment-option="delivery">
+              <input type="radio" name="fulfillmentMethod" value="delivery" data-fulfillment-method>
+              <i data-lucide="truck"></i>
+              <span data-i18n="delivery">Delivery</span>
+            </label>
+          </div>
+          <div class="delivery-location-row" data-delivery-location-row hidden>
+            <button class="button ghost" type="button" data-use-location><i data-lucide="locate-fixed"></i><span data-i18n="checkDeliveryDistance">Check my distance</span></button>
+            <p class="delivery-location-status" id="deliveryLocationStatus" role="status" aria-live="polite" data-i18n="locationRequired">Location is required to check delivery eligibility.</p>
+          </div>
+          <div class="fulfillment-panel" data-pickup-panel>
+            <div class="pickup-location">
+              <i data-lucide="map-pin"></i>
+              <div><strong data-i18n="pickupFlatBush">Pickup in Flat Bush</strong><span data-i18n="pickupDetails">Pickup details will be confirmed after payment.</span></div>
+            </div>
+          </div>
+          <div class="fulfillment-panel" data-delivery-panel hidden>
+            <p class="delivery-rule-note" data-i18n="deliveryRules">Delivery is available within 12 km of Flat Bush. Free on merchandise totals of $80 or more after vouchers; otherwise $5. Your coordinates are used for this estimate and are not saved.</p>
+            <div class="delivery-fields">
+              <label class="field"><span data-i18n="deliveryAddress">Delivery address</span><textarea id="deliveryAddress" maxlength="500" autocomplete="street-address" data-i18n-placeholder="deliveryAddressPlaceholder" placeholder="Enter the full delivery address"></textarea></label>
+              <label class="field"><span data-i18n="deliveryPhone">Phone number</span><input id="deliveryPhone" type="tel" maxlength="80" autocomplete="tel" inputmode="tel" data-i18n-placeholder="deliveryPhonePlaceholder" placeholder="Contact phone"></label>
+            </div>
+          </div>
+        </section>
         <div class="payment-total-breakdown">
           <div class="payment-total-row"><span data-i18n="subtotal">Subtotal</span><strong data-payment-subtotal>$0.00</strong></div>
           <div class="payment-total-row discount" data-payment-discount-row hidden><span data-i18n="voucherDiscount">Voucher discount</span><strong data-payment-discount>-$0.00</strong></div>
+          <div class="payment-total-row delivery" data-payment-delivery-row hidden><span data-i18n="deliveryFee">Delivery fee</span><strong data-payment-delivery>$0.00</strong></div>
           <div class="payment-total-row final"><span data-i18n="total">Total</span><strong data-payment-total>$0.00</strong></div>
-        </div>
-        <div class="guest-checkout-fields" data-guest-checkout-fields hidden>
-          <p class="guest-checkout-heading" data-i18n="guestCheckoutTitle">Contact and delivery details</p>
-          <label class="field"><span data-i18n="fieldName">Name</span><input type="text" id="guestCheckoutName" autocomplete="name" maxlength="120" required data-i18n-placeholder="placeholderName" placeholder="Your name"></label>
-          <label class="field"><span data-i18n="fieldPhone">Phone</span><input type="tel" id="guestCheckoutPhone" autocomplete="tel" maxlength="40" required data-i18n-placeholder="placeholderPhone" placeholder="Your phone number"></label>
-          <label class="field"><span data-i18n="fieldAddress">Delivery address</span><textarea id="guestCheckoutAddress" autocomplete="street-address" maxlength="500" required data-i18n-placeholder="placeholderAddress" placeholder="Your delivery address"></textarea></label>
         </div>
         <div>
           <p class="muted" style="margin: 0 0 8px; font-size: 13px; font-weight: 700;" data-i18n="paymentMethods">Payment methods</p>
@@ -8806,6 +9268,7 @@
     const OAUTH_PENDING_KEY = "gogoshop_oauth_pending_v1";
     const PRODUCT_LABEL_SETTINGS_KEY = "gogoshop_product_label_settings_v1";
     const PROCUREMENT_SETTINGS_KEY = "gogoshop_procurement_settings_v1";
+    const ADMIN_PRODUCT_CHANNEL_KEY = "gogoshop_admin_product_channel_v1";
     const PROCUREMENT_RANGE_OPTIONS = Object.freeze([7, 30, 90]);
     const PROCUREMENT_COVER_OPTIONS = Object.freeze([1, 2, 3, 4, 6]);
     const PURGED_PRODUCT_TAG = "__gogoshop_purged__";
@@ -8817,6 +9280,10 @@
     const STORE_CONFIG = window.GOGO_SHOP_CONFIG || {};
     const SUPABASE_URL = String(STORE_CONFIG.supabaseUrl || "").trim();
     const SUPABASE_PUBLISHABLE_KEY = String(STORE_CONFIG.supabasePublishableKey || "").trim();
+    const FLAT_BUSH_PICKUP = Object.freeze({ name: "Flat Bush", latitude: -36.9661534, longitude: 174.9127100 });
+    const DELIVERY_MAX_DISTANCE_KM = 12;
+    const FREE_DELIVERY_MINIMUM = 80;
+    const DELIVERY_FEE = 5;
     const SOURCE_COST_DIVISOR = 4;
     const SOURCE_TAX_MULTIPLIER = 1.15;
     const SOURCE_PRICE_MULTIPLIER = 1.5 * SOURCE_TAX_MULTIPLIER;
@@ -8943,6 +9410,35 @@
         cartTitle: "Cart",
         total: "Total",
         checkout: "Checkout",
+        fulfillmentHeading: "How would you like to receive your order?",
+        pickup: "Pickup",
+        delivery: "Delivery",
+        pickupFlatBush: "Pickup in Flat Bush",
+        pickupDetails: "Pickup details will be confirmed after payment.",
+        deliveryRules: "Delivery is available within 12 km of Flat Bush. Free on merchandise totals of $80 or more after vouchers; otherwise $5. Your coordinates are used for this estimate and are not saved.",
+        checkDeliveryDistance: "Check my distance",
+        locationRequired: "Location is required to check delivery eligibility.",
+        locatingCustomer: "Checking your location...",
+        deliveryDistance: "Estimated distance: {distance} km",
+        deliveryEligibleFree: "{distance} km away · Free delivery",
+        deliveryEligiblePaid: "{distance} km away · $5 delivery",
+        deliveryTooFar: "{distance} km away · Outside the 12 km delivery area. Pickup only.",
+        geolocationUnsupported: "Location is not supported on this device. Please choose pickup.",
+        geolocationDenied: "Location permission was denied. Allow location access or choose pickup.",
+        geolocationUnavailable: "Your location could not be determined. Try again or choose pickup.",
+        geolocationTimeout: "Location request timed out. Try again or choose pickup.",
+        deliveryAddress: "Delivery address",
+        deliveryAddressPlaceholder: "Enter the full delivery address",
+        deliveryPhone: "Phone number",
+        deliveryPhonePlaceholder: "Contact phone",
+        deliveryFee: "Delivery fee",
+        free: "Free",
+        checkLocationFirst: "Check your location before choosing delivery.",
+        enterDeliveryAddress: "Enter the full delivery address.",
+        enterDeliveryPhone: "Enter a phone number for delivery.",
+        fulfillmentMethod: "Order method",
+        pickupLocation: "Pickup location",
+        estimatedDistance: "Estimated distance",
         paymentTitle: "Secure payment",
         paymentMethods: "Payment methods",
         cardPayment: "Credit or debit card",
@@ -9089,6 +9585,35 @@
         cartTitle: "购物车",
         total: "合计",
         checkout: "结账",
+        fulfillmentHeading: "请选择收货方式",
+        pickup: "到店自取",
+        delivery: "配送",
+        pickupFlatBush: "Flat Bush 自取",
+        pickupDetails: "付款后将确认具体自取安排。",
+        deliveryRules: "Flat Bush 12 公里内可配送。使用代金券后的商品金额满 NZ$80 免费配送，否则收取 NZ$5 配送费。定位坐标只用于本次估算，不会保存。",
+        checkDeliveryDistance: "定位并估算距离",
+        locationRequired: "需要获取定位以判断是否可以配送。",
+        locatingCustomer: "正在获取您的位置...",
+        deliveryDistance: "预估距离：{distance} 公里",
+        deliveryEligibleFree: "距离约 {distance} 公里 · 免费配送",
+        deliveryEligiblePaid: "距离约 {distance} 公里 · 配送费 NZ$5",
+        deliveryTooFar: "距离约 {distance} 公里 · 超出 12 公里配送范围，仅限自取。",
+        geolocationUnsupported: "此设备不支持定位，请选择到店自取。",
+        geolocationDenied: "定位权限被拒绝，请允许定位或选择到店自取。",
+        geolocationUnavailable: "暂时无法获取您的位置，请重试或选择到店自取。",
+        geolocationTimeout: "获取位置超时，请重试或选择到店自取。",
+        deliveryAddress: "配送地址",
+        deliveryAddressPlaceholder: "请输入完整配送地址",
+        deliveryPhone: "联系电话",
+        deliveryPhonePlaceholder: "请输入联系电话",
+        deliveryFee: "配送费",
+        free: "免费",
+        checkLocationFirst: "选择配送前请先完成定位。",
+        enterDeliveryAddress: "请输入完整配送地址。",
+        enterDeliveryPhone: "请输入配送联系电话。",
+        fulfillmentMethod: "收货方式",
+        pickupLocation: "自取地点",
+        estimatedDistance: "预估距离",
         paymentTitle: "安全付款",
         paymentMethods: "付款方式",
         cardPayment: "信用卡或借记卡",
@@ -9285,6 +9810,8 @@
       procurementCoverWeeks: PROCUREMENT_COVER_OPTIONS.includes(Number(savedProcurementSettings.coverWeeks)) ? Number(savedProcurementSettings.coverWeeks) : 3,
       adminProductSearch: "",
       adminProductCategory: "All",
+      adminProductChannel: storageGet(ADMIN_PRODUCT_CHANNEL_KEY) === "online" ? "online" : "offline",
+      adminProductLoadError: "",
       trashOpen: false,
       session: null,
       profile: null,
@@ -9292,6 +9819,16 @@
       customerVouchers: [],
       selectedCustomerVoucherId: null,
       voucherQuote: null,
+      checkoutFulfillment: {
+        method: "pickup",
+        latitude: null,
+        longitude: null,
+        distanceKm: null,
+        locating: false,
+        locationError: "",
+        address: "",
+        phone: ""
+      },
       adminOrders: [],
       adminOrdersLoaded: false,
       adminOrdersLoading: false,
@@ -9339,6 +9876,86 @@
     const money = new Intl.NumberFormat("en-NZ", { style: "currency", currency: "NZD" });
     const $ = (selector, root = document) => root.querySelector(selector);
     const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
+
+    const PRODUCT_SALES_CHANNELS = Object.freeze({
+      offline: Object.freeze({
+        key: "offline",
+        nameZh: "拾光小铺",
+        nameEn: "拾光小铺",
+        detailZh: "线下扫码收银",
+        detailEn: "In-store POS"
+      }),
+      online: Object.freeze({
+        key: "online",
+        nameZh: "GO GO SHOP",
+        nameEn: "GO GO SHOP",
+        detailZh: "线上商城",
+        detailEn: "Online store"
+      })
+    });
+
+    function normalizeSalesChannel(value, fallback = "offline") {
+      const normalized = String(value || "").trim().toLowerCase();
+      if (normalized === "online" || normalized === "offline") return normalized;
+      return fallback === "online" ? "online" : "offline";
+    }
+
+    function productSalesChannel(product, fallback = "offline") {
+      return normalizeSalesChannel(product?.salesChannel ?? product?.sales_channel, fallback);
+    }
+
+    function isOnlineStoreProduct(product) {
+      return productSalesChannel(product, "online") === "online" && Boolean(product?.published);
+    }
+
+    function isFullAdmin() {
+      return state.profile?.is_admin === true;
+    }
+
+    function isOnlineManager() {
+      return !isFullAdmin() && String(state.profile?.admin_role || "").trim().toLowerCase() === "online_manager";
+    }
+
+    function canManageProducts() {
+      return isFullAdmin() || isOnlineManager();
+    }
+
+    function canAccessAdmin() {
+      return Boolean(state.session?.user && canManageProducts());
+    }
+
+    function activeAdminProductChannel() {
+      return isOnlineManager() ? "online" : normalizeSalesChannel(state.adminProductChannel, "offline");
+    }
+
+    function adminProductChannelLabel(channel, language = state.lang) {
+      const key = normalizeSalesChannel(channel);
+      const definition = PRODUCT_SALES_CHANNELS[key];
+      return language === "zh"
+        ? `${definition.nameZh}（${key === "online" ? "线上" : "线下"}）`
+        : `${definition.nameEn} (${definition.detailEn})`;
+    }
+
+    function adminProductChannelProducts(channel = activeAdminProductChannel()) {
+      return state.products.filter((product) => productSalesChannel(product, "offline") === channel);
+    }
+
+    function adminDeletedProductChannelProducts(channel = activeAdminProductChannel()) {
+      return state.deletedProducts.filter((product) => productSalesChannel(product, "offline") === channel);
+    }
+
+    function setAdminProductChannel(channel) {
+      if (isOnlineManager()) channel = "online";
+      const nextChannel = normalizeSalesChannel(channel, activeAdminProductChannel());
+      state.adminProductChannel = nextChannel;
+      storageSet(ADMIN_PRODUCT_CHANNEL_KEY, nextChannel);
+      state.adminProductSearch = "";
+      state.adminProductCategory = "All";
+      const searchInput = $("#adminProductSearch");
+      if (searchInput) searchInput.value = "";
+      renderAdminProducts();
+      refreshIcons();
+    }
 
     function clone(value) {
       return JSON.parse(JSON.stringify(value));
@@ -9740,7 +10357,7 @@
     function phoneFilmStockTotal(products) {
       const aggregateProduct = phoneFilmAggregateProduct(products);
       return (Array.isArray(products) ? products : []).reduce((total, product) => {
-        if (!product || product.deleted_at || product.deletedAt || product === aggregateProduct || !isPhoneFilmProduct(product)) return total;
+        if (!product || product.deleted_at || product.deletedAt || product === aggregateProduct || productSalesChannel(product, "offline") !== "offline" || !isPhoneFilmProduct(product)) return total;
         return total + Math.max(0, Number(product.stock) || 0);
       }, 0);
     }
@@ -10607,8 +11224,8 @@
     function usableProductImage(value) {
       const source = String(value || "").trim();
       if (!source || /^data:/i.test(source)) return false;
-      if (!state.profile?.is_admin && /(^|:\/\/)cdn\.shopify\.com/i.test(source)) return false;
-      if (!state.profile?.is_admin
+      if (!canAccessAdmin() && /(^|:\/\/)cdn\.shopify\.com/i.test(source)) return false;
+      if (!canAccessAdmin()
         && /(^|:\/\/)[^/]+\.supabase\.co\/storage\//i.test(source)
         && !isConfiguredPublicStorageImage(source)) return false;
       return true;
@@ -10697,7 +11314,7 @@
     function renderProductDetail() {
       const detail = $("#productDetail");
       const content = $("#productDetailContent");
-      const product = state.products.find((item) => item.id === state.activeProductId && item.published);
+      const product = state.products.find((item) => item.id === state.activeProductId && isOnlineStoreProduct(item));
       if (!detail || !content || !product) return;
 
       const images = productImages(product);
@@ -10789,8 +11406,8 @@
     }
 
     async function loadStorefrontProductDetail(productId) {
-      if (!db || state.profile?.is_admin || !productId) return;
-      const product = state.products.find((item) => item.id === productId && item.published);
+      if (!db || canManageProducts() || !productId) return;
+      const product = state.products.find((item) => item.id === productId && productSalesChannel(item, "online") === "online" && item.published);
       if (!product || state.detailLoadedProductIds.has(productId)) return;
 
       state.detailLoading = true;
@@ -10825,7 +11442,7 @@
     }
 
     function showProductDetail(id, updateHash = true) {
-      const product = state.products.find((item) => item.id === id && item.published);
+      const product = state.products.find((item) => item.id === id && isOnlineStoreProduct(item));
       if (!product) return false;
 
       const detail = $("#productDetail");
@@ -10934,7 +11551,7 @@
 
     function categories() {
       const activeCategories = new Set(
-        state.products.filter((product) => product.published).map(productCategoryKey)
+        state.products.filter(isOnlineStoreProduct).map(productCategoryKey)
       );
       const ordered = storefrontCategories
         .filter((category) => activeCategories.has(category.key))
@@ -10948,7 +11565,7 @@
 
     function visibleProducts() {
       const filtered = state.products.filter((product) => {
-        if (!product.published) return false;
+        if (!isOnlineStoreProduct(product)) return false;
         return state.category === "All" || productCategoryKey(product) === state.category;
       });
       return filtered.sort((a, b) => {
@@ -10994,7 +11611,7 @@
         const definition = storefrontCategories.find((item) => item.key === category);
         const icon = category === "All" ? "layout-grid" : (definition?.icon || "package");
         const count = state.products.filter((product) => (
-          product.published && (category === "All" || productCategoryKey(product) === category)
+          isOnlineStoreProduct(product) && (category === "All" || productCategoryKey(product) === category)
         )).length;
         const active = category === state.category;
         return `
@@ -11272,7 +11889,7 @@
     }
 
     function updateAdminMenuVisibility() {
-      const showAdminLink = Boolean(state.session?.user && state.profile?.is_admin === true);
+      const showAdminLink = canAccessAdmin();
       $$('[data-admin-menu-link]').forEach((adminMenuLink) => {
         adminMenuLink.hidden = !showAdminLink;
       });
@@ -11362,15 +11979,21 @@
     async function loadStoreInventory() {
       if (!db) return;
       productImageRefreshVersion = Date.now().toString();
-      const isAdmin = state.profile?.is_admin === true;
-      let supportsRecycleBin = isAdmin;
+      const isAdmin = isFullAdmin();
+      const canManage = canManageProducts();
+      let supportsRecycleBin = canManage;
       let data;
       let error;
-      if (isAdmin) {
-        ({ data, error } = await db.from("products").select("id,title,title_en,title_zh,category,description,description_en,description_zh,price,compare_at_price,cost_per_item,stock,sales,published,image,images,vendor,sku,barcode,tags,source_url,source_currency,source_price,source_variants,source_attributes,deleted_at,deleted_was_published"));
+      state.adminProductLoadError = "";
+      if (canManage) {
+        ({ data, error } = await db.from("products").select("id,title,title_en,title_zh,category,description,description_en,description_zh,price,compare_at_price,cost_per_item,stock,sales,published,sales_channel,image,images,vendor,sku,barcode,tags,source_url,source_currency,source_price,source_variants,source_attributes,deleted_at,deleted_was_published"));
         if (error) {
           supportsRecycleBin = false;
-          ({ data, error } = await db.from("products").select("id,title,category,description,price,compare_at_price,cost_per_item,stock,sales,published,image,images,vendor,sku,barcode,tags,source_url,source_currency,source_price,source_variants,source_attributes"));
+          ({ data, error } = await db.from("products").select("id,title,title_en,title_zh,category,description,description_en,description_zh,price,compare_at_price,cost_per_item,stock,sales,published,sales_channel,image,images,vendor,sku,barcode,tags,source_url,source_currency,source_price,source_variants,source_attributes"));
+          if (error && /sales_channel/i.test(error.message || "")) {
+            state.adminProductLoadError = "数据库尚未启用 sales_channel，已暂按线下商品保护性显示。请执行 supabase-product-sales-channels.sql。";
+            ({ data, error } = await db.from("products").select("id,title,title_en,title_zh,category,description,description_en,description_zh,price,compare_at_price,cost_per_item,stock,sales,published,image,images,vendor,sku,barcode,tags,source_url,source_currency,source_price,source_variants,source_attributes"));
+          }
         }
       } else {
         ({ data, error } = await db.rpc("get_storefront_catalog"));
@@ -11379,17 +12002,28 @@
         }
         if (error) {
           ({ data, error } = await db.from("products")
-            .select("id,title,category,description,price,compare_at_price,stock,published,image,images")
+            .select("id,title,title_en,title_zh,category,description,description_en,description_zh,price,compare_at_price,stock,published,sales_channel,image,images")
+            .eq("sales_channel", "online")
             .eq("published", true));
         }
       }
-      if (error || !Array.isArray(data)) return;
-      const remoteProducts = data.filter((product) => String(product.tags || "").trim() !== PURGED_PRODUCT_TAG);
+      if (error || !Array.isArray(data)) {
+        state.adminProductLoadError = error?.message || "Unable to load products";
+        if (canManage) renderAdminProducts();
+        return;
+      }
+      const remoteProducts = data
+        .filter((product) => String(product.tags || "").trim() !== PURGED_PRODUCT_TAG)
+        .filter((product) => canManage || (
+          normalizeSalesChannel(product.sales_channel ?? product.salesChannel, "online") === "online"
+          && Boolean(product.published)
+        ));
       if (!remoteProducts.length && !state.remoteCatalogReady && seedProducts.length) {
         const localProducts = [...state.products, ...state.deletedProducts];
         const localById = new Map(localProducts.map((product) => [String(product.id), product]));
         state.products = seedProducts.map((seed) => ({
           ...publicProductSnapshot(seed),
+          salesChannel: productSalesChannel(seed, canManage ? "offline" : "online"),
           ...(localById.get(String(seed.id)) || {})
         }));
         state.deletedProducts = [];
@@ -11405,7 +12039,7 @@
       }
       if (isAdmin) await syncPhoneFilmAggregateStock(remoteProducts);
       const localProducts = [...state.products, ...state.deletedProducts];
-      const remoteProductIds = new Set(remoteProducts.filter((product) => !isAdmin || !product.deleted_at).map((product) => product.id));
+      const remoteProductIds = new Set(remoteProducts.filter((product) => !canManage || !product.deleted_at).map((product) => product.id));
       state.products = state.products.filter((product) => remoteProductIds.has(product.id));
       const cartSize = state.cart.length;
       state.cart = state.cart.filter((line) => remoteProductIds.has(line.id));
@@ -11413,6 +12047,7 @@
       state.deletedProducts = [];
       remoteProducts.forEach((remote) => {
         const localProduct = localProducts.find((item) => item.id === remote.id);
+        const remoteChannel = normalizeSalesChannel(remote.sales_channel ?? remote.salesChannel, canManage ? "offline" : "online");
         const isCil = isCilProduct(remote) || isCilProduct(localProduct);
         const sourcePrice = Number(remote.source_price ?? localProduct?.sourcePriceCny ?? 0);
         const sourceCurrency = normalizeSourceCurrency(
@@ -11431,46 +12066,47 @@
           experimentalCode: localProduct?.experimentalCode || "",
           handle: remote.id,
           title: remote.title,
-          titleEn: isAdmin ? (remote.title_en ?? localProduct?.titleEn ?? remote.title ?? "") : (remote.title_en ?? remote.title ?? ""),
+          salesChannel: remoteChannel,
+          titleEn: canManage ? (remote.title_en ?? localProduct?.titleEn ?? remote.title ?? "") : (remote.title_en ?? remote.title ?? ""),
           titleZh: remote.title_zh ?? localProduct?.titleZh ?? "",
           category: visibleCategory,
           productType: isCil && /^1688 Imports$/i.test(remote.category || localProduct?.productType || localProduct?.category || "")
             ? ""
             : remote.category || localProduct?.productType || localProduct?.category || "",
-          description: remote.description ?? (isAdmin ? localProduct?.description : "") ?? "",
+          description: remote.description ?? (canManage ? localProduct?.description : "") ?? "",
           descriptionEn: remote.description_en ?? localProduct?.descriptionEn ?? "",
           descriptionZh: remote.description_zh ?? localProduct?.descriptionZh ?? "",
           price: Number(remote.price),
           compareAtPrice: Number(remote.compare_at_price || 0),
-          costPerItem: isAdmin
+          costPerItem: canManage
             ? (sourcePricing?.cost ?? Number(remote.cost_per_item || 0))
             : 0,
           stock: Number(remote.stock),
           sales: Number(remote.sales ?? localProduct?.sales ?? 0),
-          published: Boolean(remote.published),
-          status: remote.published ? "active" : "draft",
-          onlineStore: Boolean(remote.published),
+          published: remoteChannel === "online" && Boolean(remote.published),
+          status: remoteChannel === "online" && remote.published ? "active" : "draft",
+          onlineStore: remoteChannel === "online" && Boolean(remote.published),
           image: remote.image ?? localProduct?.image ?? "",
-          images: isAdmin && Array.isArray(remote.images) ? remote.images : [],
-          vendor: isAdmin ? (remote.vendor || localProduct?.vendor || "Go Go Shop") : "",
-          sku: remote.sku ?? (isAdmin ? localProduct?.sku ?? "" : ""),
-          barcode: remote.barcode ?? (isAdmin ? localProduct?.barcode ?? "" : ""),
-          tags: isAdmin ? (remote.tags ?? localProduct?.tags ?? "") : "",
-          sourceUrl: isAdmin ? (remote.source_url ?? localProduct?.sourceUrl ?? "") : "",
-          sourceCurrency: isAdmin ? sourceCurrency : "",
-          sourcePriceCny: isAdmin ? sourcePrice : 0,
-          sourceVariants: isAdmin && Array.isArray(remote.source_variants) ? remote.source_variants : (isAdmin ? (localProduct?.sourceVariants || []) : []),
-          sourceAttributes: isAdmin && Array.isArray(remote.source_attributes) ? remote.source_attributes : (isAdmin ? (localProduct?.sourceAttributes || []) : []),
-          deletedAt: isAdmin && supportsRecycleBin ? (remote.deleted_at || null) : null,
-          restorePublished: isAdmin && supportsRecycleBin ? Boolean(remote.deleted_was_published) : false,
+          images: canManage && Array.isArray(remote.images) ? remote.images : [],
+          vendor: canManage ? (remote.vendor || localProduct?.vendor || "Go Go Shop") : "",
+          sku: remote.sku ?? (canManage ? localProduct?.sku ?? "" : ""),
+          barcode: remote.barcode ?? (canManage ? localProduct?.barcode ?? "" : ""),
+          tags: canManage ? (remote.tags ?? localProduct?.tags ?? "") : "",
+          sourceUrl: canManage ? (remote.source_url ?? localProduct?.sourceUrl ?? "") : "",
+          sourceCurrency: canManage ? sourceCurrency : "",
+          sourcePriceCny: canManage ? sourcePrice : 0,
+          sourceVariants: canManage && Array.isArray(remote.source_variants) ? remote.source_variants : (canManage ? (localProduct?.sourceVariants || []) : []),
+          sourceAttributes: canManage && Array.isArray(remote.source_attributes) ? remote.source_attributes : (canManage ? (localProduct?.sourceAttributes || []) : []),
+          deletedAt: canManage && supportsRecycleBin ? (remote.deleted_at || null) : null,
+          restorePublished: canManage && supportsRecycleBin ? Boolean(remote.deleted_was_published) : false,
           restoreFeatured: Boolean(localProduct?.restoreFeatured),
           taxable: true,
           trackQuantity: true,
-          featured: Boolean(localProduct?.featured),
+          featured: remoteChannel === "online" && Boolean(localProduct?.featured),
           views: Number(localProduct?.views || 0)
         };
         if (remoteProduct.deletedAt) {
-          if (isAdmin) state.deletedProducts.push(remoteProduct);
+          if (canManage) state.deletedProducts.push(remoteProduct);
           return;
         }
         const product = state.products.find((item) => item.id === remote.id);
@@ -11496,10 +12132,10 @@
         return;
       }
       const userId = state.session.user.id;
-      let profilePromise = db.from("profiles").select("id,email,full_name,points,total_spent,is_admin,customer_barcode,created_at").eq("id", userId).single();
+      let profilePromise = db.from("profiles").select("id,email,full_name,points,total_spent,is_admin,admin_role,customer_barcode,created_at").eq("id", userId).single();
       profilePromise = profilePromise.then((result) => {
-        if (!result.error || !/customer_barcode/i.test(result.error.message || "")) return result;
-        return db.from("profiles").select("id,email,full_name,points,total_spent,is_admin,created_at").eq("id", userId).single();
+        if (!result.error || !/customer_barcode|admin_role/i.test(result.error.message || "")) return result;
+        return db.from("profiles").select("id,email,full_name,points,total_spent,is_admin,customer_barcode,created_at").eq("id", userId).single();
       });
       const voucherPaymentFields = "id,order_number,status,order_note,subtotal,discount_amount,voucher_code,total,item_count,points_awarded,payment_provider,payment_status,paid_at,created_at,confirmed_at,order_items(product_id,product_title,unit_price,quantity,item_note)";
       const paymentFields = "id,order_number,status,total,item_count,points_awarded,payment_provider,payment_status,paid_at,created_at,confirmed_at,order_items(product_id,product_title,unit_price,quantity)";
@@ -11951,10 +12587,14 @@
       }
       await loadCustomerData();
       await loadStorefrontDesign();
-      if (state.profile?.is_admin) {
+      if (canManageProducts()) {
         await loadStoreInventory();
-        await subscribeToAdminOrderRealtime();
-        if (pendingNotificationOrderId && isAdminRoute()) openAdminOrderFromNotification(pendingNotificationOrderId);
+        if (isFullAdmin()) {
+          await subscribeToAdminOrderRealtime();
+          if (pendingNotificationOrderId && isAdminRoute()) openAdminOrderFromNotification(pendingNotificationOrderId);
+        } else {
+          await stopAdminOrderRealtime();
+        }
       } else if (state.deletedProducts.length) {
         await stopAdminOrderRealtime();
         state.deletedProducts = [];
@@ -11975,16 +12615,16 @@
       }
       const { data } = await db.auth.getSession();
       await handleAuthSession(data.session);
-      if (!state.profile?.is_admin) await loadStoreInventory();
+      if (!canManageProducts()) await loadStoreInventory();
       db.auth.onAuthStateChange((_event, session) => {
         window.setTimeout(() => handleAuthSession(session), 0);
       });
-      if (!state.profile?.is_admin) {
+      if (!canManageProducts()) {
         window.setInterval(() => {
-          if (!document.hidden && !state.profile?.is_admin) void loadStoreInventory();
+          if (!document.hidden && !canManageProducts()) void loadStoreInventory();
         }, 30000);
         document.addEventListener("visibilitychange", () => {
-          if (!document.hidden && !state.profile?.is_admin) void loadStoreInventory();
+          if (!document.hidden && !canManageProducts()) void loadStoreInventory();
         });
       }
     }
@@ -12065,6 +12705,209 @@
       }, 0);
     }
 
+    function resetCheckoutFulfillment() {
+      Object.assign(state.checkoutFulfillment, {
+        method: "pickup",
+        latitude: null,
+        longitude: null,
+        distanceKm: null,
+        locating: false,
+        locationError: ""
+      });
+    }
+
+    function distanceKmBetween(latitude, longitude, targetLatitude, targetLongitude) {
+      const radians = (degrees) => Number(degrees) * Math.PI / 180;
+      const latitudeDelta = radians(Number(targetLatitude) - Number(latitude));
+      const longitudeDelta = radians(Number(targetLongitude) - Number(longitude));
+      const startLatitude = radians(latitude);
+      const endLatitude = radians(targetLatitude);
+      const haversine = Math.sin(latitudeDelta / 2) ** 2
+        + Math.cos(startLatitude) * Math.cos(endLatitude) * Math.sin(longitudeDelta / 2) ** 2;
+      return 6371.0088 * 2 * Math.asin(Math.sqrt(Math.min(1, Math.max(0, haversine))));
+    }
+
+    function checkoutDeliveryFee() {
+      const fulfillment = state.checkoutFulfillment;
+      const distance = Number(fulfillment.distanceKm);
+      if (fulfillment.method !== "delivery" || fulfillment.distanceKm == null || !Number.isFinite(distance) || distance > DELIVERY_MAX_DISTANCE_KM) return 0;
+      return cartFinalTotal() + Number.EPSILON >= FREE_DELIVERY_MINIMUM ? 0 : DELIVERY_FEE;
+    }
+
+    function checkoutFinalTotal() {
+      return Math.max(0, cartFinalTotal() + checkoutDeliveryFee());
+    }
+
+    function renderCheckoutFulfillment() {
+      const modal = $("#paymentModal");
+      if (!modal) return;
+      const fulfillment = state.checkoutFulfillment;
+      const distance = Number(fulfillment.distanceKm);
+      const hasDistance = fulfillment.distanceKm != null && Number.isFinite(distance);
+      const tooFar = hasDistance && distance > DELIVERY_MAX_DISTANCE_KM;
+      if (tooFar && fulfillment.method === "delivery") fulfillment.method = "pickup";
+
+      $$('[data-fulfillment-option]').forEach((option) => {
+        const selected = option.dataset.fulfillmentOption === fulfillment.method;
+        const unavailable = option.dataset.fulfillmentOption === "delivery" && tooFar;
+        option.classList.toggle("is-selected", selected);
+        option.classList.toggle("is-disabled", unavailable);
+        const radio = option.querySelector("input");
+        if (radio) {
+          radio.checked = selected;
+          radio.disabled = unavailable;
+        }
+      });
+
+      const pickupPanel = $("[data-pickup-panel]");
+      const deliveryPanel = $("[data-delivery-panel]");
+      const locationRow = $("[data-delivery-location-row]");
+      if (pickupPanel) pickupPanel.hidden = fulfillment.method !== "pickup";
+      if (deliveryPanel) deliveryPanel.hidden = fulfillment.method !== "delivery";
+      if (locationRow) locationRow.hidden = fulfillment.method !== "delivery" && !tooFar;
+
+      const status = $("#deliveryLocationStatus");
+      if (status) {
+        status.className = "delivery-location-status";
+        if (fulfillment.locating) {
+          status.textContent = t("locatingCustomer");
+        } else if (fulfillment.locationError) {
+          status.textContent = t(fulfillment.locationError);
+          status.classList.add("error");
+        } else if (tooFar) {
+          status.textContent = tWithValues("deliveryTooFar", { distance: distance.toFixed(1) });
+          status.classList.add("error");
+        } else if (hasDistance) {
+          const key = checkoutDeliveryFee() > 0 ? "deliveryEligiblePaid" : "deliveryEligibleFree";
+          status.textContent = tWithValues(key, { distance: distance.toFixed(1) });
+          status.classList.add("success");
+        } else {
+          status.textContent = t("locationRequired");
+        }
+      }
+
+      const locationButton = $("[data-use-location]");
+      if (locationButton) locationButton.disabled = fulfillment.locating;
+      const addressInput = $("#deliveryAddress");
+      const phoneInput = $("#deliveryPhone");
+      if (addressInput && document.activeElement !== addressInput && addressInput.value !== fulfillment.address) addressInput.value = fulfillment.address;
+      if (phoneInput && document.activeElement !== phoneInput && phoneInput.value !== fulfillment.phone) phoneInput.value = fulfillment.phone;
+
+      const subtotal = cartTotal();
+      const discount = voucherDiscount();
+      const deliveryFee = checkoutDeliveryFee();
+      const deliveryRow = $("[data-payment-delivery-row]");
+      $("[data-payment-subtotal]").textContent = formatPrice(subtotal);
+      $("[data-payment-discount]").textContent = `-${formatPrice(discount)}`;
+      $("[data-payment-discount-row]").hidden = discount <= 0;
+      if (deliveryRow) deliveryRow.hidden = fulfillment.method !== "delivery" || !hasDistance || tooFar;
+      $("[data-payment-delivery]").textContent = deliveryFee > 0 ? formatPrice(deliveryFee) : t("free");
+      $("[data-payment-total]").textContent = formatPrice(checkoutFinalTotal());
+    }
+
+    function setCheckoutFulfillmentMethod(method) {
+      const fulfillment = state.checkoutFulfillment;
+      if (method === "pickup") {
+        fulfillment.method = "pickup";
+        fulfillment.locationError = "";
+        renderCheckoutFulfillment();
+        return;
+      }
+      if (fulfillment.distanceKm != null && Number(fulfillment.distanceKm) > DELIVERY_MAX_DISTANCE_KM) {
+        fulfillment.method = "pickup";
+        renderCheckoutFulfillment();
+        showToast(tWithValues("deliveryTooFar", { distance: Number(fulfillment.distanceKm).toFixed(1) }));
+        return;
+      }
+      fulfillment.method = "delivery";
+      fulfillment.locationError = "";
+      renderCheckoutFulfillment();
+      if (fulfillment.distanceKm == null || !Number.isFinite(Number(fulfillment.distanceKm))) locateForDelivery();
+    }
+
+    function geolocationErrorKey(error) {
+      if (error?.code === 1) return "geolocationDenied";
+      if (error?.code === 3) return "geolocationTimeout";
+      return "geolocationUnavailable";
+    }
+
+    function locateForDelivery() {
+      const fulfillment = state.checkoutFulfillment;
+      if (!navigator.geolocation) {
+        fulfillment.locationError = "geolocationUnsupported";
+        fulfillment.locating = false;
+        renderCheckoutFulfillment();
+        return;
+      }
+      fulfillment.method = "delivery";
+      fulfillment.latitude = null;
+      fulfillment.longitude = null;
+      fulfillment.distanceKm = null;
+      fulfillment.locating = true;
+      fulfillment.locationError = "";
+      renderCheckoutFulfillment();
+      navigator.geolocation.getCurrentPosition((position) => {
+        const latitude = Number(position.coords.latitude);
+        const longitude = Number(position.coords.longitude);
+        const distance = distanceKmBetween(latitude, longitude, FLAT_BUSH_PICKUP.latitude, FLAT_BUSH_PICKUP.longitude);
+        fulfillment.latitude = latitude;
+        fulfillment.longitude = longitude;
+        fulfillment.distanceKm = distance;
+        fulfillment.locating = false;
+        fulfillment.locationError = "";
+        fulfillment.method = distance <= DELIVERY_MAX_DISTANCE_KM ? "delivery" : "pickup";
+        renderCheckoutFulfillment();
+        if (distance > DELIVERY_MAX_DISTANCE_KM) {
+          showToast(tWithValues("deliveryTooFar", { distance: distance.toFixed(1) }));
+        }
+      }, (error) => {
+        fulfillment.latitude = null;
+        fulfillment.longitude = null;
+        fulfillment.distanceKm = null;
+        fulfillment.locating = false;
+        fulfillment.locationError = geolocationErrorKey(error);
+        renderCheckoutFulfillment();
+      }, {
+        enableHighAccuracy: false,
+        timeout: 12000,
+        maximumAge: 0
+      });
+    }
+
+    function checkoutFulfillmentError() {
+      const fulfillment = state.checkoutFulfillment;
+      if (fulfillment.method === "pickup") return "";
+      if (fulfillment.locationError) return t(fulfillment.locationError);
+      if (fulfillment.locating || fulfillment.distanceKm == null || !Number.isFinite(Number(fulfillment.distanceKm))) return t("checkLocationFirst");
+      if (Number(fulfillment.distanceKm) > DELIVERY_MAX_DISTANCE_KM) {
+        return tWithValues("deliveryTooFar", { distance: Number(fulfillment.distanceKm).toFixed(1) });
+      }
+      if (String(fulfillment.address || "").trim().length < 5) return t("enterDeliveryAddress");
+      if (String(fulfillment.phone || "").trim().length < 5) return t("enterDeliveryPhone");
+      return "";
+    }
+
+    function checkoutFulfillmentPayload() {
+      const fulfillment = state.checkoutFulfillment;
+      if (fulfillment.method === "pickup") return { method: "pickup" };
+      return {
+        method: "delivery",
+        address: String(fulfillment.address || "").trim(),
+        phone: String(fulfillment.phone || "").trim(),
+        latitude: fulfillment.latitude,
+        longitude: fulfillment.longitude
+      };
+    }
+
+    function checkoutServerErrorMessage(message) {
+      const value = String(message || "");
+      if (/within 12 km|delivery area/i.test(value)) return tWithValues("deliveryTooFar", { distance: Number(state.checkoutFulfillment.distanceKm || 0).toFixed(1) });
+      if (/delivery address/i.test(value)) return t("enterDeliveryAddress");
+      if (/phone/i.test(value)) return t("enterDeliveryPhone");
+      if (/location/i.test(value)) return t("checkLocationFirst");
+      return value;
+    }
+
     function renderCart() {
       const count = cartProductCount();
       const subtotal = cartTotal();
@@ -12132,6 +12975,7 @@
         `;
       }).join("");
       refreshIcons();
+      if (!$("#paymentModal")?.hidden) renderCheckoutFulfillment();
     }
 
     function addToCart(id, quantity = 1) {
@@ -12175,8 +13019,9 @@
         showToast(t("cartEmpty"));
         return;
       }
-      if (!db) {
-        showToast(t("backendNotReady"));
+      if (!db || !state.session?.user) {
+        openPanel("account");
+        showToast(t("loginToCheckout"));
         return;
       }
       if (state.selectedCustomerVoucherId && !await refreshVoucherQuote()) {
@@ -12184,31 +13029,11 @@
         return;
       }
       closePanels();
-      const subtotal = cartTotal();
-      const discount = voucherDiscount();
-      $("[data-payment-subtotal]").textContent = formatPrice(subtotal);
-      $("[data-payment-discount]").textContent = `-${formatPrice(discount)}`;
-      $("[data-payment-discount-row]").hidden = discount <= 0;
-      $("[data-payment-total]").textContent = formatPrice(Math.max(0, subtotal - discount));
+      resetCheckoutFulfillment();
       $("#paymentMessage").textContent = "";
-      $("[data-guest-checkout-fields]").hidden = Boolean(state.session?.user);
       $("#paymentModal").hidden = false;
+      renderCheckoutFulfillment();
       refreshIcons();
-    }
-
-    function guestCheckoutDetails() {
-      if (state.session?.user) return null;
-      const fields = [$("#guestCheckoutName"), $("#guestCheckoutPhone"), $("#guestCheckoutAddress")];
-      const invalid = fields.find((field) => !field?.checkValidity());
-      if (invalid) {
-        invalid.reportValidity();
-        return false;
-      }
-      return {
-        name: fields[0].value.trim(),
-        phone: fields[1].value.trim(),
-        address: fields[2].value.trim()
-      };
     }
 
     function closePaymentModal() {
@@ -12222,15 +13047,25 @@
       const button = $("[data-start-payment]");
       const message = $("#paymentMessage");
       if (!button || !message || !state.cart.length || !db) return;
+      const deliveryAddressInput = $("#deliveryAddress");
+      const deliveryPhoneInput = $("#deliveryPhone");
+      if (deliveryAddressInput) state.checkoutFulfillment.address = deliveryAddressInput.value;
+      if (deliveryPhoneInput) state.checkoutFulfillment.phone = deliveryPhoneInput.value;
+      const fulfillmentError = checkoutFulfillmentError();
+      if (fulfillmentError) {
+        message.textContent = fulfillmentError;
+        return;
+      }
       button.disabled = true;
       message.textContent = t("paymentProcessing");
 
       const { data: sessionData } = await db.auth.getSession();
       const accessToken = sessionData.session?.access_token;
-      const guest = guestCheckoutDetails();
-      if (guest === false) {
+      if (!accessToken) {
         button.disabled = false;
-        message.textContent = t("guestDetailsRequired");
+        closePaymentModal();
+        openPanel("account");
+        showToast(t("loginToCheckout"));
         return;
       }
 
@@ -12238,14 +13073,14 @@
         const response = await fetch(SUPABASE_URL + "/functions/v1/create-checkout-session", {
           method: "POST",
           headers: {
-            "Authorization": "Bearer " + (accessToken || SUPABASE_PUBLISHABLE_KEY),
+            "Authorization": "Bearer " + accessToken,
             "apikey": SUPABASE_PUBLISHABLE_KEY,
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
             items: state.cart.map((line) => ({ product_id: line.id, quantity: line.quantity })),
             customer_voucher_id: state.selectedCustomerVoucherId || null,
-            guest,
+            fulfillment: checkoutFulfillmentPayload(),
             locale: state.lang
           })
         });
@@ -12254,7 +13089,7 @@
           const unavailable = response.status === 404
             || response.status === 503
             || /not configured|not found/i.test(result.error || "");
-          throw new Error(unavailable ? t("paymentUnavailable") : (result.error || "Unable to start payment"));
+          throw new Error(unavailable ? t("paymentUnavailable") : checkoutServerErrorMessage(result.error || "Unable to start payment"));
         }
         window.location.assign(result.checkout_url);
       } catch (error) {
@@ -12395,7 +13230,7 @@
     function renderSearch() {
       const query = $("#searchInput").value.trim().toLowerCase();
       const results = state.products
-        .filter((product) => product.published)
+        .filter(isOnlineStoreProduct)
         .filter((product) => !query || [productName(product), categoryName(productCategoryKey(product)), productDescription(product), productItemCode(product), product.sku, product.barcode].join(" ").toLowerCase().includes(query));
       $("#searchResults").innerHTML = results.map((product) => `
         <div class="result-item">
@@ -12441,7 +13276,7 @@
         return;
       }
       await handleAuthSession(data.session);
-      if (!state.profile?.is_admin) {
+      if (!canAccessAdmin()) {
         message.hidden = false;
         message.textContent = "此账户没有管理员权限";
         return;
@@ -12453,16 +13288,40 @@
       showToast("Signed in");
     }
 
+    function renderAdminRoleUi() {
+      const onlineOnly = isOnlineManager();
+      const allowedTabs = new Set(["products"]);
+      $$('[data-admin-tab]').forEach((button) => {
+        button.hidden = onlineOnly && !allowedTabs.has(button.dataset.adminTab);
+      });
+      $("[data-admin-pos-link]")?.toggleAttribute("hidden", onlineOnly);
+      $$('[data-full-admin-only]').forEach((element) => {
+        element.hidden = onlineOnly;
+      });
+      $$('[data-admin-section]').forEach((section) => {
+        section.hidden = onlineOnly && section.dataset.adminSection !== "products";
+      });
+      if (onlineOnly) {
+        state.adminProductChannel = "online";
+        state.adminTab = "products";
+      }
+    }
+
     function showAdmin() {
       $("#storeView").style.display = "none";
       $("#admin").style.display = "";
       $("#admin").classList.add("active");
-      const unlocked = Boolean(state.profile?.is_admin);
+      const unlocked = canManageProducts();
       $("#loginScreen").hidden = unlocked;
       $("#adminShell").hidden = !unlocked;
       if (unlocked) {
-        loadAdminData();
-        subscribeToAdminOrderRealtime();
+        renderAdminRoleUi();
+        if (isFullAdmin()) {
+          loadAdminData();
+          subscribeToAdminOrderRealtime();
+        } else {
+          setAdminTab("products");
+        }
       }
       renderAdmin();
       refreshIcons();
@@ -12520,6 +13379,7 @@
     }
 
     function setAdminTab(tab) {
+      if (isOnlineManager() && tab !== "products") tab = "products";
       state.adminTab = tab;
       if (tab === "orders") clearAdminOrderUnread();
       $$("[data-admin-tab]").forEach((button) => button.classList.toggle("active", button.dataset.adminTab === tab));
@@ -12541,6 +13401,7 @@
       $("#adminPageTitle").textContent = titleMap[tab][0];
       $("#adminPageSub").textContent = titleMap[tab][1];
       renderAdmin();
+      renderAdminRoleUi();
       refreshIcons();
     }
 
@@ -13225,7 +14086,7 @@
 
     async function syncProductToSupabase(product) {
       if (!db) throw new Error("Database connection is unavailable");
-      if (!state.profile?.is_admin) throw new Error("Administrator session has expired");
+      if (!canManageProducts()) throw new Error("Administrator session has expired");
       if (!product) throw new Error("Product data is unavailable");
       const { error } = await db.from("products").upsert({
         id: product.id,
@@ -13241,6 +14102,7 @@
         cost_per_item: Math.max(0, Number(product.costPerItem) || 0),
         stock: Math.max(0, Number(product.stock) || 0),
         sales: Math.max(0, Number(product.sales) || 0),
+        sales_channel: productSalesChannel(product, "offline"),
         published: Boolean(product.published),
         image: product.image || "",
         images: Array.isArray(product.images) ? product.images : [],
@@ -13263,6 +14125,11 @@
 
     function productSaveErrorMessage(error) {
       const message = authErrorMessage(error);
+      if (/sales_channel|products_sales_channel|offline_not_published/i.test(message)) {
+        return state.lang === "zh"
+          ? "数据库尚未完成线上/线下渠道迁移，商品没有保存。当前输入内容已保留，请先执行 supabase-product-sales-channels.sql。"
+          : "The product sales-channel migration is not installed yet. Nothing was saved and your edits are still here.";
+      }
       if (/title_en|title_zh|description_en|description_zh|schema cache/i.test(message)) {
         return state.lang === "zh"
           ? "数据库尚未完成中英文字段升级，商品没有保存。当前输入内容已保留，请先执行数据库迁移。"
@@ -13817,14 +14684,40 @@
       ].map(normalizeAdminProductSearch).filter(Boolean);
     }
 
-    function adminProductCategoryOptions() {
-      return ["All", ...storefrontCategories.map((category) => category.key)];
+    function renderAdminProductChannelTabs() {
+      const activeChannel = activeAdminProductChannel();
+      const onlineOnly = isOnlineManager();
+      if (onlineOnly) state.adminProductChannel = "online";
+      $$('[data-admin-product-channel]').forEach((button) => {
+        const channel = normalizeSalesChannel(button.dataset.adminProductChannel);
+        const selected = channel === activeChannel;
+        button.hidden = onlineOnly && channel !== "online";
+        button.classList.toggle("is-selected", selected);
+        button.setAttribute("aria-selected", String(selected));
+        button.tabIndex = selected ? 0 : -1;
+      });
+      ["offline", "online"].forEach((channel) => {
+        const count = $(`[data-admin-product-channel-count="${channel}"]`);
+        if (count) count.textContent = String(state.products.filter((product) => productSalesChannel(product, "offline") === channel).length);
+      });
     }
 
-    function renderAdminProductCategoryFilter() {
+    function adminProductCategoryOptions(products = adminProductChannelProducts()) {
+      const activeCategories = new Set(products.map(productCategoryKey));
+      const ordered = storefrontCategories
+        .filter((category) => activeCategories.has(category.key))
+        .map((category) => category.key);
+      const dynamic = [...activeCategories]
+        .filter((category) => category !== "other" && !ordered.includes(category))
+        .sort((a, b) => categoryName(a).localeCompare(categoryName(b), state.lang === "zh" ? "zh-CN" : "en-NZ"));
+      if (activeCategories.has("other")) dynamic.push("other");
+      return ["All", ...ordered, ...dynamic];
+    }
+
+    function renderAdminProductCategoryFilter(products = adminProductChannelProducts()) {
       const select = $("#adminProductCategoryFilter");
       if (!select) return "All";
-      const options = adminProductCategoryOptions();
+      const options = adminProductCategoryOptions(products);
       const selected = options.includes(state.adminProductCategory) ? state.adminProductCategory : "All";
       state.adminProductCategory = selected;
       select.innerHTML = options.map((category) => `
@@ -13834,12 +14727,12 @@
       return selected;
     }
 
-    function adminProductSearchResults() {
+    function adminProductSearchResults(products = adminProductChannelProducts()) {
       const query = normalizeAdminProductSearch(state.adminProductSearch);
-      const category = adminProductCategoryOptions().includes(state.adminProductCategory)
+      const category = adminProductCategoryOptions(products).includes(state.adminProductCategory)
         ? state.adminProductCategory
         : "All";
-      const categoryProducts = state.products.filter((product) => (
+      const categoryProducts = products.filter((product) => (
         category === "All" || productCategoryKey(product) === category
       ));
       if (!query) return categoryProducts;
@@ -13882,10 +14775,10 @@
       }, { units: 0, cost: 0, retail: 0 });
     }
 
-    function renderProductInventorySummary() {
+    function renderProductInventorySummary(products = adminProductChannelProducts()) {
       const summary = $("#adminProductInventorySummary");
       if (!summary) return;
-      const totals = productInventoryValuation();
+      const totals = productInventoryValuation(products);
       const labels = state.lang === "zh"
         ? ["剩余库存", "库存成本价值", "预计零售价值"]
         : ["Units in stock", "Inventory cost value", "Retail value"];
@@ -13904,56 +14797,72 @@
     }
 
     function renderAdminProducts() {
+      renderAdminProductChannelTabs();
+      const channel = activeAdminProductChannel();
+      const channelProducts = adminProductChannelProducts(channel);
+      const channelTrashProducts = adminDeletedProductChannelProducts(channel);
       const searchInput = $("#adminProductSearch");
       if (searchInput && searchInput.value !== state.adminProductSearch) searchInput.value = state.adminProductSearch;
       const query = normalizeAdminProductSearch(state.adminProductSearch);
-      const category = renderAdminProductCategoryFilter();
+      const category = renderAdminProductCategoryFilter(channelProducts);
       const categoryActive = category !== "All";
-      const products = adminProductSearchResults();
+      const products = adminProductSearchResults(channelProducts);
       $("#adminProductCount").textContent = query || categoryActive
-        ? `${products.length} of ${state.products.length} products`
-        : `${state.products.length} products`;
+        ? `${products.length} of ${channelProducts.length} products`
+        : `${channelProducts.length} products`;
       const searchStatus = $("#adminProductSearchStatus");
       if (searchStatus) searchStatus.textContent = query
         ? `${products.length} matching products`
         : categoryActive
           ? `${products.length} products in ${categoryName(category)}`
-        : `${state.products.length} products`;
+        : `${channelProducts.length} products`;
       const clearSearch = $("[data-clear-admin-product-search]");
       if (clearSearch) clearSearch.hidden = !query;
-      renderProductInventorySummary();
-      $("#adminTrashCount").textContent = String(state.deletedProducts.length);
+      const hideAllButton = $("[data-hide-all-products]");
+      if (hideAllButton) hideAllButton.hidden = channel !== "online";
+      renderProductInventorySummary(channelProducts);
+      $("#adminTrashCount").textContent = String(channelTrashProducts.length);
       const trashToggle = $("[data-toggle-product-trash]");
       const trashPanel = $("[data-product-trash-panel]");
       trashToggle.setAttribute("aria-expanded", String(state.trashOpen));
       trashPanel.hidden = !state.trashOpen;
+      const channelLabel = adminProductChannelLabel(channel);
       const emptyMessage = query
         ? `No products match “${escapeHtml(state.adminProductSearch.trim())}”`
         : categoryActive
           ? `No products in ${escapeHtml(categoryName(category))}`
-          : "No active products";
-      $("#adminProductRows").innerHTML = products.map((product) => `
+          : `No products in ${escapeHtml(channelLabel)}`;
+      const loadError = state.adminProductLoadError
+        ? `<div class="empty-state">商品渠道数据加载失败：${escapeHtml(state.adminProductLoadError)}</div>`
+        : "";
+      $("#adminProductRows").innerHTML = products.map((product) => {
+        const isOnlineChannel = channel === "online";
+        const onlineActions = isOnlineChannel ? `
+            <button class="action-button ${product.published ? "" : "offline"}" type="button" data-toggle-product-online="${escapeHtml(product.id)}" aria-label="${product.published ? "Hide" : "Show"} ${escapeHtml(product.title)} ${product.published ? "from online store" : "in online store"}" title="${product.published ? "隐藏商品" : "发布到网店"}"><i data-lucide="${product.published ? "eye-off" : "eye"}"></i></button>
+            <button class="action-button ${product.featured ? "pinned" : ""}" type="button" data-toggle-featured="${escapeHtml(product.id)}" aria-label="${product.featured ? "Unpin" : "Pin"} ${escapeHtml(product.title)}" aria-pressed="${Boolean(product.featured)}" title="${product.featured ? "取消首页置顶" : "置顶到首页"}"><i data-lucide="${product.featured ? "pin-off" : "pin"}"></i></button>` : "";
+        const statusLabel = isOnlineChannel ? (product.published ? "Live" : "Draft") : "线下销售";
+        return `
         <article class="admin-product-item ${product.published ? "" : "is-offline-only"}" data-edit-product-row="${escapeHtml(product.id)}" role="button" tabindex="0" aria-label="Edit ${escapeHtml(product.title)}">
           <img src="${escapeHtml(imageSource(product.image) || PRODUCT_IMAGE_FALLBACK)}" alt="${escapeHtml(product.title)}" loading="eager" decoding="async">
           <div class="admin-product-summary">
             <strong>${escapeHtml(product.title)}</strong>
             <span>${product.featured ? "Pinned · " : ""}${escapeHtml([categoryName(productCategoryKey(product)), product.vendor, productSourcePriceText(product)].filter(Boolean).join(" · "))}</span>
-            <span>货号 ${escapeHtml(productItemCode(product))}</span>
+            <span>货号 ${escapeHtml(productItemCode(product))} · ${escapeHtml(channelLabel)}</span>
           </div>
           <div class="admin-product-meta">
             <span>${formatPrice(product.price)}</span>
             <span>Stock ${Number(product.stock) || 0}</span>
-            <span class="status ${product.published ? "live" : "draft"}">${product.published ? "Live" : "Offline only"}</span>
+            <span class="status ${product.published ? "live" : "draft"}">${statusLabel}</span>
           </div>
           <div class="row-actions">
             <button class="action-button" type="button" data-open-product-label="${escapeHtml(product.id)}" aria-label="打印 ${escapeHtml(product.title)} Label" title="打印 Label"><i data-lucide="printer"></i></button>
-            <button class="action-button ${product.published ? "" : "offline"}" type="button" data-toggle-product-online="${escapeHtml(product.id)}" aria-label="${product.published ? "Hide" : "Show"} ${escapeHtml(product.title)} ${product.published ? "from online store" : "in online store"}" title="${product.published ? "隐藏，仅线下销售" : "重新显示在网店"}"><i data-lucide="${product.published ? "eye-off" : "eye"}"></i></button>
-            <button class="action-button ${product.featured ? "pinned" : ""}" type="button" data-toggle-featured="${escapeHtml(product.id)}" aria-label="${product.featured ? "Unpin" : "Pin"} ${escapeHtml(product.title)}" aria-pressed="${Boolean(product.featured)}" title="${product.featured ? "取消首页置顶" : "置顶到首页"}"><i data-lucide="${product.featured ? "pin-off" : "pin"}"></i></button>
+            ${onlineActions}
             <button class="action-button" type="button" data-delete-product="${escapeHtml(product.id)}" aria-label="Delete ${escapeHtml(product.title)}"><i data-lucide="trash-2"></i></button>
           </div>
         </article>
-      `).join("") || `<div class="empty-state">${emptyMessage}</div>`;
-      $("#adminTrashRows").innerHTML = state.deletedProducts.map((product) => `
+      `;
+      }).join("") || loadError || `<div class="empty-state">${emptyMessage}</div>`;
+      $("#adminTrashRows").innerHTML = channelTrashProducts.map((product) => `
         <article class="admin-product-item trashed">
           <img src="${escapeHtml(imageSource(product.image) || PRODUCT_IMAGE_FALLBACK)}" alt="${escapeHtml(product.title)}" loading="eager" decoding="async">
           <div class="admin-product-summary">
@@ -13963,14 +14872,14 @@
           <div class="admin-product-meta">
             <span>${formatPrice(product.price)}</span>
             <span>库存 ${Number(product.stock) || 0}</span>
-            <span class="status ${product.restorePublished ? "live" : "draft"}">${product.restorePublished ? "原为上架" : "原为草稿"}</span>
+            <span class="status ${product.restorePublished ? "live" : "draft"}">${channel === "online" ? (product.restorePublished ? "原为上架" : "原为草稿") : "线下商品"}</span>
           </div>
           <div class="row-actions">
             <button class="action-button" type="button" data-restore-product="${escapeHtml(product.id)}" aria-label="恢复 ${escapeHtml(product.title)}" title="恢复商品"><i data-lucide="rotate-ccw"></i></button>
             <button class="action-button danger" type="button" data-delete-product-permanently="${escapeHtml(product.id)}" aria-label="永久删除 ${escapeHtml(product.title)}" title="永久删除"><i data-lucide="trash-2"></i></button>
           </div>
         </article>
-      `).join("") || `<div class="empty-state">回收站为空</div>`;
+      `).join("") || `<div class="empty-state">${channelTrashProducts.length ? "" : `${escapeHtml(channelLabel)}回收站为空`}</div>`;
       refreshIcons();
     }
 
@@ -14068,7 +14977,7 @@
       const design = effectiveDesign({ preview: true });
       const heroBackground = design.heroImage ? `url("${escapeHtml(design.heroImage)}")` : "linear-gradient(135deg, #4d9298, #d88a76)";
       const previewProducts = state.products
-        .filter((product) => product.published)
+        .filter(isOnlineStoreProduct)
         .sort((a, b) => Number(Boolean(b.featured)) - Number(Boolean(a.featured)))
         .slice(0, 4);
       const selectedClass = (section, blockId = null) => (
@@ -14247,6 +15156,56 @@
       updateProductEditorPreview();
     }
 
+    function productFormSalesChannel(form = $("[data-product-form]")) {
+      const selected = form?.querySelector('[name="salesChannel"]:checked')?.value;
+      return isOnlineManager()
+        ? "online"
+        : normalizeSalesChannel(selected, activeAdminProductChannel());
+    }
+
+    function syncProductChannelControls(form = $("[data-product-form]")) {
+      if (!form) return "offline";
+      const channel = productFormSalesChannel(form);
+      $$('[data-product-channel-option]', form).forEach((option) => {
+        const optionChannel = normalizeSalesChannel(option.dataset.productChannelOption);
+        const radio = option.querySelector('input[name="salesChannel"]');
+        const selected = optionChannel === channel;
+        option.classList.toggle("is-selected", selected);
+        if (radio) {
+          radio.checked = selected;
+          radio.disabled = isOnlineManager() && optionChannel !== "online";
+        }
+      });
+      const onlineStore = form.elements.namedItem("onlineStore");
+      const featured = form.elements.namedItem("featured");
+      const offline = channel === "offline";
+      if (onlineStore) {
+        onlineStore.disabled = offline;
+        if (offline) onlineStore.checked = false;
+      }
+      if (featured) {
+        featured.disabled = offline;
+        if (offline) featured.checked = false;
+      }
+      const help = $("[data-product-channel-help]", form);
+      if (help) {
+        help.textContent = isOnlineManager()
+          ? "当前账户只能管理 GO GO SHOP（线上）商品。"
+          : channel === "online"
+            ? "商品只会出现在 GO GO SHOP 线上商城。"
+            : "商品只会出现在拾光小铺线下扫码收银，不会显示在网上商城。";
+      }
+      return channel;
+    }
+
+    function setProductFormSalesChannel(channel, form = $("[data-product-form]")) {
+      if (!form) return "offline";
+      const nextChannel = isOnlineManager() ? "online" : normalizeSalesChannel(channel, activeAdminProductChannel());
+      const radio = form.querySelector(`[name="salesChannel"][value="${nextChannel}"]`);
+      if (radio) radio.checked = true;
+      return syncProductChannelControls(form);
+    }
+
     function clearProductForm() {
       const form = $("[data-product-form]");
       if (!form) return;
@@ -14261,10 +15220,11 @@
       fields.namedItem("titleZh").value = "";
       fields.namedItem("descriptionZh").value = "";
       fields.namedItem("vendor").value = "Go Go Shop";
-      fields.namedItem("onlineStore").checked = false;
+      fields.namedItem("onlineStore").checked = activeAdminProductChannel() === "online";
       fields.namedItem("featured").checked = false;
       fields.namedItem("taxable").checked = true;
       fields.namedItem("trackQuantity").checked = true;
+      setProductFormSalesChannel(activeAdminProductChannel(), form);
       form.dataset.priceManual = "false";
       form.dataset.skuManual = "false";
       fields.namedItem("sku").dataset.autoGenerated = "false";
@@ -14487,7 +15447,7 @@
     }
 
     async function loadProductMediaLibrary(force = false) {
-      if (!db || !state.profile?.is_admin || state.productMediaLoading || (state.productMediaLoaded && !force)) {
+      if (!db || !canManageProducts() || state.productMediaLoading || (state.productMediaLoaded && !force)) {
         renderProductMediaLibrary();
         return;
       }
@@ -14569,7 +15529,8 @@
         .slice(0, 48) || "image";
       const id = crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
       const date = new Date();
-      return `products/${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, "0")}/${id}-${baseName}.${extension}`;
+      const prefix = isOnlineManager() ? "online-products" : "products";
+      return `${prefix}/${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, "0")}/${id}-${baseName}.${extension}`;
     }
 
     function resizeProductImageBlob(file) {
@@ -14608,7 +15569,7 @@
     async function uploadProductMediaFiles(files, options = {}) {
       const selectedFiles = [...(files || [])].filter((file) => /^image\/(jpeg|png|webp)$/i.test(file.type));
       if (!selectedFiles.length) return [];
-      if (!db || !state.profile?.is_admin) throw new Error(state.lang === "zh" ? "管理员登录已失效" : "Administrator session expired");
+      if (!db || !canManageProducts()) throw new Error(state.lang === "zh" ? "管理员登录已失效" : "Administrator session expired");
       state.productMediaLoading = true;
       state.productMediaError = "";
       renderProductMediaLibrary();
@@ -14634,7 +15595,8 @@
             size_bytes: optimized.blob.size,
             width: optimized.width,
             height: optimized.height,
-            source: "upload"
+            source: "upload",
+            ...(isOnlineManager() ? { sales_channel: "online" } : {})
           }).select("id,url,storage_path,file_name,alt_text,mime_type,size_bytes,width,height,source,created_at,updated_at").single();
           if (mediaError) {
             await db.storage.from(PRODUCT_MEDIA_BUCKET).remove([storagePath]);
@@ -14659,11 +15621,12 @@
     }
 
     async function registerProductMediaUrls(urls) {
-      if (!db || !state.profile?.is_admin) return;
+      if (!db || !canManageProducts()) return;
       const records = [...new Set((urls || []).map((url) => String(url || "").trim()).filter((url) => url && !url.startsWith("data:")))].map((url) => ({
         url,
         file_name: productMediaFileName(url),
         source: "product",
+        ...(isOnlineManager() ? { sales_channel: "online" } : {}),
         updated_at: new Date().toISOString()
       }));
       if (!records.length) return;
@@ -14741,8 +15704,9 @@
       const form = $("[data-product-form]");
       if (!form) return;
       const fields = form.elements;
+      const salesChannel = syncProductChannelControls(form);
       const active = fields.namedItem("status").value === "active";
-      const published = active && fields.namedItem("onlineStore").checked;
+      const published = salesChannel === "online" && active && fields.namedItem("onlineStore").checked;
       const status = $("[data-product-editor-status]");
       const sideStatus = $("[data-product-editor-side-status]");
       const labelButton = $("[data-print-product-label-editor]", form);
@@ -14765,7 +15729,13 @@
         ? fields.namedItem("titleZh").value.trim()
         : fields.namedItem("title").value.trim();
       $("[data-product-editor-title]").textContent = editorTitle || (fields.namedItem("id").value ? "编辑商品" : "添加商品");
-      const statusText = !active ? "草稿" : published ? "活跃" : fields.namedItem("onlineStore").checked ? "未发布" : "仅线下销售";
+      const statusText = salesChannel === "offline"
+        ? "拾光小铺 · 线下"
+        : !active
+          ? "草稿"
+          : published
+            ? "GO GO SHOP · 活跃"
+            : "线上未发布";
       const statusClass = `status ${published ? "live" : "draft"}`;
       status.textContent = statusText;
       status.className = statusClass;
@@ -15002,9 +15972,11 @@
       fields.namedItem("images").value = (product.images || []).filter((image) => image && image !== product.image).join("\n");
       fields.namedItem("description").value = product.descriptionEn || localization?.description || cleanStorefrontDescription(product.description, product) || "";
       fields.namedItem("descriptionZh").value = product.descriptionZh || "";
+      const salesChannel = productSalesChannel(product, "offline");
       fields.namedItem("status").value = product.published ? "active" : "draft";
-      fields.namedItem("onlineStore").checked = product.onlineStore ?? product.published;
+      fields.namedItem("onlineStore").checked = salesChannel === "online" && (product.onlineStore ?? product.published);
       fields.namedItem("featured").checked = Boolean(product.featured);
+      setProductFormSalesChannel(salesChannel, form);
       fields.namedItem("compareAtPrice").value = product.compareAtPrice || "";
       fields.namedItem("sku").value = product.sku || "";
       fields.namedItem("barcode").value = product.barcode || "";
@@ -15045,7 +16017,7 @@
       const confirmed = window.confirm(`确定将“${product.title}”移入回收站吗？\n\n商品会立即从商店隐藏，之后可以恢复。`);
       if (!confirmed) return;
       const deletedAt = new Date().toISOString();
-      if (db && state.profile?.is_admin) {
+      if (db && canManageProducts()) {
         const { error } = await db.from("products").update({
           deleted_at: deletedAt,
           deleted_was_published: Boolean(product.published),
@@ -15080,7 +16052,7 @@
       const product = state.deletedProducts.find((item) => item.id === id);
       if (!product) return;
       const published = Boolean(product.restorePublished);
-      if (db && state.profile?.is_admin) {
+      if (db && canManageProducts()) {
         const { error } = await db.from("products").update({
           deleted_at: null,
           deleted_was_published: false,
@@ -15120,7 +16092,7 @@
       if (deleteButton?.disabled) return;
       if (deleteButton) deleteButton.disabled = true;
       try {
-        if (db && state.profile?.is_admin) {
+        if (db && canManageProducts()) {
           const { data, error } = await db.from("products").delete().eq("id", id).select("id");
           if (error) {
             const isOrderReferenceError = /foreign key|constraint|23503/i.test(`${error.code || ""} ${error.message || ""}`);
@@ -15169,7 +16141,7 @@
         persistDeletedProducts();
         renderAdminProducts();
         refreshIcons();
-        if (db && state.profile?.is_admin) await loadStoreInventory();
+        if (db && canManageProducts()) await loadStoreInventory();
         showToast(state.lang === "zh" ? "商品已永久删除" : "Product permanently deleted");
       } finally {
         if (deleteButton?.isConnected) deleteButton.disabled = false;
@@ -15184,6 +16156,7 @@
 
     async function setProductOnlineState(id, online) {
       const product = state.products.find((item) => item.id === id);
+      if (product && productSalesChannel(product, "offline") !== "online") return;
       if (!product || Boolean(product.published) === Boolean(online)) return;
       const button = $(`[data-toggle-product-online="${CSS.escape(String(id))}"]`);
       if (button) {
@@ -15193,7 +16166,7 @@
       const published = Boolean(online);
       const updatedAt = new Date().toISOString();
       try {
-        if (db && state.profile?.is_admin) {
+        if (db && canManageProducts()) {
           const { error } = await db.from("products").update({
             published,
             updated_at: updatedAt
@@ -15206,8 +16179,8 @@
         persistProducts();
         renderAll();
         showToast(state.lang === "zh"
-          ? (published ? "商品已重新显示在网店" : "商品已隐藏，仅支持线下销售")
-          : (published ? "Product is visible in the online store" : "Product hidden; offline sales only"));
+          ? (published ? "商品已显示在 GO GO SHOP 网店" : "商品已隐藏，仍属于 GO GO SHOP 线上商品")
+          : (published ? "Product is visible in the online store" : "Product hidden; still assigned to the online store"));
       } catch (error) {
         showToast(authErrorMessage(error));
       } finally {
@@ -15219,7 +16192,7 @@
     }
 
     async function hideAllProductsFromStore() {
-      const onlineProducts = state.products.filter((product) => product.published);
+      const onlineProducts = state.products.filter((product) => productSalesChannel(product, "offline") === "online" && product.published);
       if (!onlineProducts.length) {
         showToast(state.lang === "zh" ? "当前没有网店商品" : "No products are currently visible online");
         return;
@@ -15235,22 +16208,22 @@
       }
       const updatedAt = new Date().toISOString();
       try {
-        if (db && state.profile?.is_admin) {
+        if (db && canManageProducts()) {
           const { error } = await db.from("products").update({
             published: false,
             updated_at: updatedAt
-          }).eq("published", true);
+          }).eq("sales_channel", "online").eq("published", true);
           if (error) throw error;
         }
         state.products.forEach((product) => {
-          if (!product.published) return;
+          if (productSalesChannel(product, "offline") !== "online" || !product.published) return;
           product.published = false;
           product.onlineStore = false;
           product.status = "draft";
         });
         persistProducts();
         renderAll();
-        showToast(state.lang === "zh" ? `已隐藏 ${onlineProducts.length} 个商品，仅支持线下销售` : `${onlineProducts.length} products hidden; offline sales only`);
+        showToast(state.lang === "zh" ? `已隐藏 ${onlineProducts.length} 个 GO GO SHOP 商品` : `${onlineProducts.length} GO GO SHOP products hidden`);
       } catch (error) {
         showToast(authErrorMessage(error));
       } finally {
@@ -15263,7 +16236,7 @@
 
     function toggleFeaturedProduct(id) {
       const product = state.products.find((item) => item.id === id);
-      if (!product) return;
+      if (!product || productSalesChannel(product, "offline") !== "online") return;
       product.featured = !product.featured;
       product.featuredAt = product.featured ? Date.now() : 0;
       persistProducts();
@@ -15288,7 +16261,13 @@
       }
       const id = data.id || `${(titleEn || titleZh).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}-${Date.now().toString(36)}`;
       const existing = state.products.find((product) => product.id === id);
-      const featured = form.featured.checked;
+      const selectedChannel = normalizeSalesChannel(data.salesChannel, existing ? productSalesChannel(existing, "offline") : activeAdminProductChannel());
+      if (isOnlineManager() && selectedChannel !== "online") {
+        showToast(state.lang === "zh" ? "线上管理员只能保存 GO GO SHOP 线上商品" : "Online managers can only save GO GO SHOP products");
+        setProductFormSalesChannel("online", form);
+        return;
+      }
+      const featured = selectedChannel === "online" && form.featured.checked;
       const image = data.image.trim();
       const images = [...new Set([image, ...String(data.images || "").split(/\r?\n/).map((value) => value.trim()).filter(Boolean)])];
       const sourcePriceCny = Number(data.sourcePriceCny || 0);
@@ -15337,9 +16316,10 @@
         sourceVariants: existing?.sourceVariants || [],
         sourceAttributes: existing?.sourceAttributes || [],
         stock: Number(data.stock),
-        published: data.status === "active" && form.onlineStore.checked,
+        salesChannel: selectedChannel,
+        published: selectedChannel === "online" && data.status === "active" && form.onlineStore.checked,
         status: data.status,
-        onlineStore: form.onlineStore.checked,
+        onlineStore: selectedChannel === "online" && form.onlineStore.checked,
         featured,
         featuredAt: featured ? (existing?.featured ? Number(existing.featuredAt || Date.now()) : Date.now()) : 0,
         taxable: form.taxable.checked,
@@ -15391,7 +16371,7 @@
     }
 
     function exportProducts() {
-      const headers = ["id", "title", "titleEn", "titleZh", "category", "description", "descriptionEn", "descriptionZh", "price", "compareAtPrice", "costPerItem", "sourcePriceCny", "sourceCurrency", "stock", "published", "featured", "sku", "barcode", "vendor", "tags", "image", "images", "sourceUrl"];
+      const headers = ["id", "title", "titleEn", "titleZh", "category", "description", "descriptionEn", "descriptionZh", "price", "compareAtPrice", "costPerItem", "sourcePriceCny", "sourceCurrency", "stock", "salesChannel", "published", "featured", "sku", "barcode", "vendor", "tags", "image", "images", "sourceUrl"];
       const rows = state.products.map((product) => headers.map((key) => `"${String(product[key] ?? "").replace(/"/g, '""')}"`).join(","));
       const blob = new Blob([[headers.join(","), ...rows].join("\n")], { type: "text/csv" });
       const url = URL.createObjectURL(blob);
@@ -15409,6 +16389,7 @@
       renderAccount();
       renderVipRules();
       renderCustomerVouchers();
+      if (!$("#paymentModal")?.hidden) renderCheckoutFulfillment();
       applyStoreDesign();
       renderAdmin();
       if (state.activeProductId) renderProductDetail();
@@ -15642,6 +16623,7 @@
       if (target.matches("[data-open-vip-rules]")) openVipRules();
       if (target.matches("[data-close-panels]")) closePanels();
       if (target.matches("[data-close-payment]")) closePaymentModal();
+      if (target.matches("[data-use-location]")) locateForDelivery();
       if (target.matches("[data-start-payment]")) startStripeCheckout();
       if (target.matches("[data-oauth-provider]")) signInWithProvider(target.dataset.oauthProvider);
       if (target.matches("[data-customer-logout]")) customerSignOut();
@@ -15687,13 +16669,17 @@
         clearAdminProductSearch();
         return;
       }
+      if (target.matches("[data-admin-product-channel]")) {
+        setAdminProductChannel(target.dataset.adminProductChannel);
+        return;
+      }
       if (target.matches("[data-login-button]")) {
         event.preventDefault();
         attemptLogin(target.closest("form"));
       }
       if (target.matches("[data-open-admin]")) {
         event.preventDefault();
-        if (!state.profile?.is_admin) return;
+        if (!canAccessAdmin()) return;
         closePanels();
         location.hash = "admin";
         showAdmin();
@@ -15753,6 +16739,13 @@
     });
 
     document.addEventListener("input", (event) => {
+      if (event.target instanceof Element && event.target.matches("#deliveryAddress, #deliveryPhone")) {
+        const key = event.target.matches("#deliveryAddress") ? "address" : "phone";
+        state.checkoutFulfillment[key] = event.target.value;
+        const message = $("#paymentMessage");
+        if (message) message.textContent = "";
+        return;
+      }
       if (event.target instanceof Element && event.target.closest("[data-product-label-controls]")) {
         renderProductLabelPreview();
         return;
@@ -15801,6 +16794,12 @@
     });
 
     document.addEventListener("change", (event) => {
+      if (event.target instanceof Element && event.target.matches("[data-fulfillment-method]")) {
+        setCheckoutFulfillmentMethod(event.target.value);
+        const message = $("#paymentMessage");
+        if (message) message.textContent = "";
+        return;
+      }
       if (event.target instanceof Element && event.target.closest("[data-product-label-controls]")) {
         renderProductLabelPreview();
         return;
@@ -15843,6 +16842,11 @@
         updateDesignFromForm();
       }
       if (event.target instanceof Element && event.target.closest("[data-product-form]")) {
+        if (event.target.matches('[name="salesChannel"]')) {
+          setProductFormSalesChannel(event.target.value, event.target.closest("[data-product-form]"));
+          updateProductEditorPreview();
+          return;
+        }
         if (event.target.matches('[name="sourcePriceCny"], [name="sourceCurrency"]')) {
           applySourcePricingToForm(event.target.closest("[data-product-form]"));
         }
