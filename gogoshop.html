@@ -2965,6 +2965,12 @@
       font-size: 13px;
     }
 
+    .admin-order-alert-copy .admin-order-alert-detail {
+      color: #2f4f40;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
     .admin-order-alert-actions {
       display: flex;
       align-items: center;
@@ -8161,9 +8167,11 @@
           <div class="admin-order-alert-copy">
             <strong id="adminOrderAlertTitle">New order</strong>
             <span id="adminOrderAlertMeta"></span>
+            <span id="adminOrderAlertItems" class="admin-order-alert-detail"></span>
+            <span id="adminOrderAlertContext" class="admin-order-alert-detail"></span>
           </div>
           <div class="admin-order-alert-actions">
-            <button class="button" type="button" data-view-new-order>View order</button>
+            <button class="button" type="button" data-view-new-order>View details</button>
             <button class="action-button" type="button" data-dismiss-order-alert aria-label="Dismiss order alert" title="Dismiss"><i data-lucide="x"></i></button>
           </div>
         </div>
@@ -9404,6 +9412,7 @@
     let nativeNotificationPermissionStatus = "prompt";
     let nativeNotificationListenersReady = false;
     let pendingNotificationOrderId = null;
+    const adminOrderNotificationInFlight = new Set();
     let nativeOAuthListenersReady = false;
     let nativeOAuthProcessing = false;
     let nativeOAuthBrowserActive = false;
@@ -10049,26 +10058,42 @@
       return manualProductCode(product?.sku, product?.barcode);
     }
 
+    function productStoredCode(product) {
+      return String(product?.itemCode ?? product?.item_code ?? "").trim();
+    }
+
     function assignExperimentalItemCodes(products = []) {
       const sortedProducts = [...products]
         .filter((product) => product && product.id)
         .sort((a, b) => String(a.id).localeCompare(String(b.id), undefined, { numeric: true, sensitivity: "base" }));
       sortedProducts.forEach((product) => {
-        const generatedCode = String(product.experimentalCode || "").trim();
+        const generatedCode = productStoredCode(product) || String(product.experimentalCode || "").trim();
         const sku = String(product.sku || "").trim();
         const barcode = String(product.barcode || "").trim();
         if (generatedCode && /^\d+$/.test(generatedCode)) {
-          if (sku === generatedCode) product.sku = "";
-          if (barcode === generatedCode) product.barcode = "";
+          if (!productStoredCode(product)) {
+            if (sku === generatedCode) product.sku = "";
+            if (barcode === generatedCode) product.barcode = "";
+          }
         }
       });
       const usedManualCodes = new Set(sortedProducts
-        .map(productManualCode)
+        .flatMap((product) => [productStoredCode(product), productManualCode(product)])
         .filter(Boolean));
       let nextCode = EXPERIMENTAL_ITEM_CODE_START;
       sortedProducts.forEach((product) => {
+        const storedCode = productStoredCode(product);
+        if (storedCode) {
+          product.experimentalCode = storedCode;
+          return;
+        }
         const manualCode = productManualCode(product);
         if (manualCode) return;
+        const savedCode = String(product.experimentalCode || "").trim();
+        if (/^\d+$/.test(savedCode)) {
+          usedManualCodes.add(savedCode);
+          return;
+        }
         while (usedManualCodes.has(String(nextCode))) nextCode += 1;
         product.experimentalCode = String(nextCode);
         usedManualCodes.add(product.experimentalCode);
@@ -10078,7 +10103,16 @@
     }
 
     function productItemCode(product) {
-      return String(productManualCode(product) || product?.experimentalCode || "").trim();
+      return String(productStoredCode(product) || productManualCode(product) || product?.experimentalCode || "").trim();
+    }
+
+    function nextAutomaticProductCode(products = state.products) {
+      const used = new Set((Array.isArray(products) ? products : [])
+        .map((product) => productItemCode(product))
+        .filter((code) => /^\d+$/.test(code)));
+      let nextCode = EXPERIMENTAL_ITEM_CODE_START;
+      while (used.has(String(nextCode))) nextCode += 1;
+      return String(nextCode);
     }
 
     function code39BarcodeSvg(value, options = {}) {
@@ -11939,10 +11973,12 @@
 
     function showOrderDetail(orderId) {
       const normalizedOrderId = String(orderId || "");
-      const order = state.customerOrders.find((item) => String(item.id) === normalizedOrderId);
+      const adminOrder = state.adminOrders.find((item) => String(item.id) === normalizedOrderId);
+      const order = adminOrder || state.customerOrders.find((item) => String(item.id) === normalizedOrderId);
       const modal = $("#orderDetailModal");
       const content = $("#orderDetailContent");
       if (!order || !modal || !content) return;
+      const isAdminOrder = Boolean(adminOrder && state.profile?.is_admin);
       const locale = state.lang === "zh" ? "zh-CN" : "en-NZ";
       const items = order.order_items || [];
       const calculatedSubtotal = items.reduce((sum, item) => (
@@ -11955,6 +11991,37 @@
         || Number(order.item_count || 0);
       const paymentMethod = order.payment_provider === "stripe" ? "Stripe" : t("manualPaymentMethod");
       const formatDate = (value) => value ? new Date(value).toLocaleString(locale) : "-";
+      const isChinese = state.lang === "zh";
+      const customerProfile = order.profiles || {};
+      const customerName = order.guest_name || customerProfile.full_name || customerProfile.email || (isChinese ? "已登录客户" : "Signed-in customer");
+      const customerEmail = customerProfile.email || "-";
+      const customerPhone = order.guest_phone || order.delivery_phone || "-";
+      const fulfillmentMethod = String(order.fulfillment_method || "").trim().toLowerCase();
+      const fulfillmentLabel = fulfillmentMethod === "delivery"
+        ? (isChinese ? "配送" : "Delivery")
+        : fulfillmentMethod === "pickup"
+          ? (isChinese ? "自取" : "Pickup")
+          : (isChinese ? "未指定" : "Not specified");
+      const deliveryDistance = Number(order.delivery_distance_km);
+      const distanceLabel = Number.isFinite(deliveryDistance) ? `${deliveryDistance.toFixed(1)} km` : "";
+      const deliveryFeeLabel = Number(order.delivery_fee || 0) > 0 ? formatPrice(order.delivery_fee) : "";
+      const fulfillmentValue = fulfillmentMethod === "delivery"
+        ? [order.delivery_address, distanceLabel, deliveryFeeLabel].filter(Boolean).join(" · ") || "-"
+        : fulfillmentMethod === "pickup"
+          ? order.pickup_location || "Flat Bush"
+          : "-";
+      const adminOrderDetails = isAdminOrder ? `
+        <section class="order-detail-section">
+          <h3>${isChinese ? "客户与配送" : "Customer and fulfilment"}</h3>
+          <dl class="order-detail-meta-grid">
+            <div><dt>${isChinese ? "客户" : "Customer"}</dt><dd>${escapeHtml(customerName)}</dd></div>
+            <div><dt>${isChinese ? "邮箱" : "Email"}</dt><dd>${escapeHtml(customerEmail)}</dd></div>
+            <div><dt>${isChinese ? "电话" : "Phone"}</dt><dd>${escapeHtml(customerPhone)}</dd></div>
+            <div><dt>${isChinese ? "方式" : "Method"}</dt><dd>${escapeHtml(fulfillmentLabel)}</dd></div>
+            <div><dt>${isChinese ? "地址 / 自取点" : "Address / pickup point"}</dt><dd>${escapeHtml(fulfillmentValue)}</dd></div>
+            <div><dt>${isChinese ? "订单备注" : "Order note"}</dt><dd>${escapeHtml(order.order_note || "-")}</dd></div>
+          </dl>
+        </section>` : "";
       $("#orderDetailTitle").textContent = t("orderDetails");
       content.innerHTML = `
         <div class="order-detail-statuses">
@@ -11967,6 +12034,7 @@
           <div><dt>${t("paymentMethod")}</dt><dd>${escapeHtml(paymentMethod)}</dd></div>
           <div><dt>${order.paid_at ? t("paidAt") : t("confirmedAt")}</dt><dd>${escapeHtml(formatDate(order.paid_at || order.confirmed_at))}</dd></div>
         </dl>
+        ${adminOrderDetails}
         <section class="order-detail-section">
           <h3>${t("orderItems")}</h3>
           <div class="order-detail-items">
@@ -11980,7 +12048,7 @@
                   </div>
                   <div class="order-detail-item-copy">
                     <strong>${escapeHtml(orderItemName(item))}</strong>
-                    <span>${Number(item.quantity)} × ${t("unitPrice")} ${formatPrice(item.unit_price)}</span>
+                    <span>${Number(item.quantity)} × ${t("unitPrice")} ${formatPrice(item.unit_price)}${item.item_note ? ` · ${isChinese ? "备注" : "Note"}: ${escapeHtml(item.item_note)}` : ""}</span>
                   </div>
                   <strong class="order-detail-item-total">${formatPrice(Number(item.unit_price) * Number(item.quantity))}</strong>
                 </div>`;
@@ -12011,7 +12079,7 @@
       let error;
       state.adminProductLoadError = "";
       if (canManage) {
-        ({ data, error } = await db.from("products").select("id,title,title_en,title_zh,category,description,description_en,description_zh,price,compare_at_price,cost_per_item,stock,sales,published,sales_channel,image,images,vendor,sku,barcode,tags,source_url,source_currency,source_price,source_variants,source_attributes,deleted_at,deleted_was_published"));
+        ({ data, error } = await db.from("products").select("id,title,title_en,title_zh,category,description,description_en,description_zh,price,compare_at_price,cost_per_item,stock,sales,published,sales_channel,image,images,vendor,sku,barcode,item_code,tags,source_url,source_currency,source_price,source_variants,source_attributes,deleted_at,deleted_was_published"));
         if (error) {
           supportsRecycleBin = false;
           ({ data, error } = await db.from("products").select("id,title,title_en,title_zh,category,description,description_en,description_zh,price,compare_at_price,cost_per_item,stock,sales,published,sales_channel,image,images,vendor,sku,barcode,tags,source_url,source_currency,source_price,source_variants,source_attributes"));
@@ -12088,6 +12156,7 @@
         const visibleCategory = isCil && /^1688 Imports$/i.test(importedCategory) ? "" : importedCategory;
         const remoteProduct = {
           id: remote.id,
+          itemCode: remote.item_code ?? localProduct?.itemCode ?? localProduct?.item_code ?? "",
           experimentalCode: localProduct?.experimentalCode || "",
           handle: remote.id,
           title: remote.title,
@@ -12224,21 +12293,127 @@
       return 100000 + Math.abs(hash % 2000000000);
     }
 
+    function compactOrderNotificationText(value, maxLength = 160) {
+      const text = String(value || "").replace(/\s+/g, " ").trim();
+      if (text.length <= maxLength) return text;
+      return `${text.slice(0, Math.max(1, maxLength - 3))}...`;
+    }
+
+    function adminOrderNotificationItems(order, maxItems = 4) {
+      const items = Array.isArray(order?.order_items) ? order.order_items : [];
+      if (!items.length) return state.lang === "zh" ? "商品明细加载中" : "Product details loading";
+      const labels = items.slice(0, maxItems).map((item) => {
+        const name = orderItemName(item) || item.product_title || (state.lang === "zh" ? "商品" : "Product");
+        const quantity = Math.max(0, Number(item.quantity) || 0);
+        return `${name} x${quantity}`;
+      });
+      const extra = items.length > maxItems
+        ? (state.lang === "zh" ? ` 等 ${items.length} 款` : ` +${items.length - maxItems} more`)
+        : "";
+      return compactOrderNotificationText(`${labels.join(", ")}${extra}`, 260);
+    }
+
+    function adminOrderNotificationContext(order) {
+      const profile = order?.profiles || {};
+      const customer = order?.guest_name || profile.full_name || profile.email
+        || (state.lang === "zh" ? "已登录客户" : "Signed-in customer");
+      const method = String(order?.fulfillment_method || "").trim().toLowerCase();
+      let fulfillment = "";
+      if (method === "delivery") {
+        const distance = Number(order.delivery_distance_km);
+        const distanceText = Number.isFinite(distance) ? `${distance.toFixed(1)} km` : "";
+        const fee = Number(order.delivery_fee || 0);
+        const address = compactOrderNotificationText(order.delivery_address, 90);
+        fulfillment = `${state.lang === "zh" ? "配送" : "Delivery"}${distanceText ? ` · ${distanceText}` : ""}${fee > 0 ? ` · ${formatPrice(fee)}` : ""}${address ? ` · ${address}` : ""}`;
+      } else if (method === "pickup") {
+        fulfillment = `${state.lang === "zh" ? "自取" : "Pickup"} · ${order.pickup_location || "Flat Bush"}`;
+      }
+      const phone = order?.guest_phone || order?.delivery_phone || "";
+      const note = compactOrderNotificationText(order?.order_note, 90);
+      return compactOrderNotificationText([
+        customer,
+        phone,
+        fulfillment,
+        note ? `${state.lang === "zh" ? "备注" : "Note"}: ${note}` : ""
+      ].filter(Boolean).join(" · "), 260);
+    }
+
+    function adminOrderNotificationBody(order) {
+      return [
+        `${formatPrice(order?.total)} | ${Number(order?.item_count) || 0} ${state.lang === "zh" ? "件" : "items"}`,
+        adminOrderNotificationItems(order),
+        adminOrderNotificationContext(order)
+      ].filter(Boolean).join("\n");
+    }
+
+    function isOnlineOrderForAdminNotification(order) {
+      const source = String(order?.order_source || order?.orderSource || "").trim().toLowerCase();
+      if (source === "pos" || /^pos-/i.test(String(order?.order_number || ""))) return false;
+      if (source === "online") return true;
+      const channels = (Array.isArray(order?.order_items) ? order.order_items : [])
+        .map((item) => {
+          const product = productForOrderItem(item);
+          return product ? productSalesChannel(product, "offline") : "";
+        })
+        .filter(Boolean);
+      if (channels.includes("online")) return true;
+      if (channels.includes("offline")) return false;
+      return true;
+    }
+
+    async function fetchAdminOrderDetails(orderId) {
+      if (!db || !orderId) return null;
+      const fieldSets = [
+        "id,order_number,user_id,status,order_note,subtotal,discount_amount,voucher_code,total,item_count,points_awarded,payment_provider,payment_status,paid_at,created_at,confirmed_at,deleted_at,deleted_by,order_source,fulfillment_method,fulfillment_configured,delivery_fee,delivery_distance_km,delivery_address,delivery_phone,pickup_location,guest_name,guest_phone,guest_address,profiles!orders_user_id_fkey(email,full_name,customer_barcode,is_admin),order_items(product_id,product_title,quantity,unit_price,item_note)",
+        "id,order_number,user_id,status,order_note,subtotal,discount_amount,voucher_code,total,item_count,points_awarded,payment_provider,payment_status,paid_at,created_at,confirmed_at,deleted_at,deleted_by,profiles!orders_user_id_fkey(email,full_name),order_items(product_id,product_title,quantity,unit_price,item_note)",
+        "id,order_number,user_id,status,total,item_count,points_awarded,payment_provider,payment_status,paid_at,created_at,confirmed_at,profiles!orders_user_id_fkey(email,full_name),order_items(product_id,product_title,quantity,unit_price)"
+      ];
+      for (const fields of fieldSets) {
+        const result = await db.from("orders").select(fields).eq("id", orderId).maybeSingle();
+        if (!result.error && result.data) return result.data;
+      }
+      return null;
+    }
+
+    function highlightAdminOrderRow(orderId) {
+      window.setTimeout(() => {
+        const row = orderId ? $(`[data-admin-order-row="${CSS.escape(String(orderId))}"]`) : null;
+        if (!row) return;
+        row.classList.add("admin-order-highlight");
+        row.scrollIntoView({ behavior: "smooth", block: "center" });
+        window.setTimeout(() => row.classList.remove("admin-order-highlight"), 2500);
+      }, 0);
+    }
+
+    async function openAdminOrderDetails(orderId) {
+      const normalizedOrderId = String(orderId || "");
+      if (!normalizedOrderId) return;
+      setAdminTab("orders");
+      let order = state.adminOrders.find((item) => String(item.id) === normalizedOrderId);
+      if (!order) {
+        await loadAdminData();
+        order = state.adminOrders.find((item) => String(item.id) === normalizedOrderId);
+      }
+      if (!order && String(state.latestOrderAlert?.id || "") === normalizedOrderId) {
+        order = state.latestOrderAlert;
+        state.adminOrders = [order, ...state.adminOrders.filter((item) => String(item.id) !== normalizedOrderId)];
+      }
+      if (!order) {
+        showToast(state.lang === "zh" ? "订单详情暂时无法加载" : "Order details are temporarily unavailable");
+        return;
+      }
+      showOrderDetail(normalizedOrderId);
+      highlightAdminOrderRow(normalizedOrderId);
+    }
+
     function openAdminOrderFromNotification(orderId) {
       pendingNotificationOrderId = orderId || null;
       location.hash = "admin";
       if (!state.profile?.is_admin) return;
       showAdmin();
-      setAdminTab("orders");
       const targetOrderId = pendingNotificationOrderId;
       pendingNotificationOrderId = null;
-      window.setTimeout(() => {
-        const row = targetOrderId ? $(`[data-admin-order-row="${CSS.escape(String(targetOrderId))}"]`) : null;
-        if (!row) return;
-        row.classList.add("admin-order-highlight");
-        row.scrollIntoView({ behavior: "smooth", block: "center" });
-        window.setTimeout(() => row.classList.remove("admin-order-highlight"), 2500);
-      }, 250);
+      void openAdminOrderDetails(targetOrderId);
     }
 
     async function initNativeOrderNotifications() {
@@ -12297,9 +12472,19 @@
       if (!alert) return;
       const order = state.latestOrderAlert;
       alert.hidden = !order;
-      if (!order) return;
+      if (!order) {
+        const items = $("#adminOrderAlertItems");
+        const context = $("#adminOrderAlertContext");
+        if (items) items.textContent = "";
+        if (context) context.textContent = "";
+        return;
+      }
       $("#adminOrderAlertTitle").textContent = `New order ${order.order_number || ""}`.trim();
       $("#adminOrderAlertMeta").textContent = `${formatPrice(order.total)} | ${Number(order.item_count) || 0} items`;
+      const items = $("#adminOrderAlertItems");
+      const context = $("#adminOrderAlertContext");
+      if (items) items.textContent = adminOrderNotificationItems(order);
+      if (context) context.textContent = adminOrderNotificationContext(order);
     }
 
     async function showAdminSystemNotification(order, isTest = false) {
@@ -12308,7 +12493,7 @@
       const title = isTest ? "GO GO SHOP notifications are ready" : `New order ${orderNumber}`.trim();
       const body = isTest
         ? "New customer orders will appear here and in the admin dashboard."
-        : `${formatPrice(order.total)} | ${Number(order.item_count) || 0} items`;
+        : adminOrderNotificationBody(order);
       const adminUrl = new URL(location.href);
       adminUrl.hash = "admin";
       const options = {
@@ -12404,15 +12589,22 @@
       if (eventType === "UPDATE" && !isPaid) return;
       const eventKey = `${order.id}:${isPaid ? "paid" : "created"}`;
       const notifiedEvents = Array.isArray(state.notifiedOrderEvents) ? state.notifiedOrderEvents : [];
-      if (notifiedEvents.includes(eventKey)) return;
-      rememberAdminOrderEvent(eventKey);
-      const unreadIds = Array.isArray(state.unreadOrderIds) ? state.unreadOrderIds : [];
-      state.unreadOrderIds = [...unreadIds.filter((id) => id !== order.id), order.id];
-      state.latestOrderAlert = order;
-      save(ORDER_NOTIFICATION_UNREAD_KEY, state.unreadOrderIds);
-      renderAdminOrderNotificationUi();
-      showToast(`New order ${order.order_number || "received"}`);
-      await Promise.all([showAdminSystemNotification(order), loadAdminData(), loadStoreInventory()]);
+      if (notifiedEvents.includes(eventKey) || adminOrderNotificationInFlight.has(eventKey)) return;
+      adminOrderNotificationInFlight.add(eventKey);
+      try {
+        const completeOrder = await fetchAdminOrderDetails(order.id) || order;
+        if (!isOnlineOrderForAdminNotification(completeOrder)) return;
+        rememberAdminOrderEvent(eventKey);
+        const unreadIds = Array.isArray(state.unreadOrderIds) ? state.unreadOrderIds : [];
+        state.unreadOrderIds = [...unreadIds.filter((id) => id !== order.id), order.id];
+        state.latestOrderAlert = completeOrder;
+        save(ORDER_NOTIFICATION_UNREAD_KEY, state.unreadOrderIds);
+        renderAdminOrderNotificationUi();
+        showToast(`New order ${completeOrder.order_number || "received"}`);
+        await Promise.all([showAdminSystemNotification(completeOrder), loadAdminData(), loadStoreInventory()]);
+      } finally {
+        adminOrderNotificationInFlight.delete(eventKey);
+      }
     }
 
     async function stopAdminOrderRealtime() {
@@ -12459,16 +12651,9 @@
 
     function viewLatestAdminOrder() {
       const orderId = state.latestOrderAlert?.id;
-      setAdminTab("orders");
       state.latestOrderAlert = null;
       renderAdminOrderNotificationUi();
-      window.setTimeout(() => {
-        const row = orderId ? $(`[data-admin-order-row="${CSS.escape(String(orderId))}"]`) : null;
-        if (!row) return;
-        row.classList.add("admin-order-highlight");
-        row.scrollIntoView({ behavior: "smooth", block: "center" });
-        window.setTimeout(() => row.classList.remove("admin-order-highlight"), 2500);
-      }, 0);
+      void openAdminOrderDetails(orderId);
     }
 
     function nativeOAuthPlugins() {
@@ -13437,8 +13622,8 @@
       const customerPromise = db.from("profiles").select("id,email,full_name,points,total_spent,created_at,updated_at,is_admin").order("created_at", { ascending: false });
       const voucherPromise = db.from("vouchers").select("*").order("created_at", { ascending: false });
       const voucherAssignmentPromise = db.from("customer_vouchers").select("id,voucher_id,user_id,source,redeemed_at,reserved_at,used_at,order_id,vouchers(code,name,active,starts_at,expires_at),profiles!customer_vouchers_user_id_fkey(email,full_name)").order("redeemed_at", { ascending: false });
-      const voucherPaymentFields = "id,order_number,user_id,status,order_note,subtotal,discount_amount,voucher_code,total,item_count,points_awarded,payment_provider,payment_status,paid_at,created_at,confirmed_at,deleted_at,deleted_by,guest_name,guest_phone,guest_address,profiles!orders_user_id_fkey(email,full_name,customer_barcode,is_admin),order_items(product_id,product_title,quantity,unit_price,item_note)";
-      const voucherPaymentFieldsWithoutRecycle = "id,order_number,user_id,status,order_note,subtotal,discount_amount,voucher_code,total,item_count,points_awarded,payment_provider,payment_status,paid_at,created_at,confirmed_at,guest_name,guest_phone,guest_address,profiles!orders_user_id_fkey(email,full_name,customer_barcode,is_admin),order_items(product_id,product_title,quantity,unit_price,item_note)";
+      const voucherPaymentFields = "id,order_number,user_id,status,order_note,subtotal,discount_amount,voucher_code,total,item_count,points_awarded,payment_provider,payment_status,paid_at,created_at,confirmed_at,deleted_at,deleted_by,order_source,fulfillment_method,fulfillment_configured,delivery_fee,delivery_distance_km,delivery_address,delivery_phone,pickup_location,guest_name,guest_phone,guest_address,profiles!orders_user_id_fkey(email,full_name,customer_barcode,is_admin),order_items(product_id,product_title,quantity,unit_price,item_note)";
+      const voucherPaymentFieldsWithoutRecycle = "id,order_number,user_id,status,order_note,subtotal,discount_amount,voucher_code,total,item_count,points_awarded,payment_provider,payment_status,paid_at,created_at,confirmed_at,order_source,fulfillment_method,fulfillment_configured,delivery_fee,delivery_distance_km,delivery_address,delivery_phone,pickup_location,guest_name,guest_phone,guest_address,profiles!orders_user_id_fkey(email,full_name,customer_barcode,is_admin),order_items(product_id,product_title,quantity,unit_price,item_note)";
       const paymentFields = "id,order_number,user_id,status,total,item_count,points_awarded,payment_provider,payment_status,paid_at,created_at,confirmed_at,deleted_at,deleted_by,profiles!orders_user_id_fkey(email,full_name),order_items(product_id,product_title,quantity,unit_price)";
       const paymentFieldsWithoutRecycle = "id,order_number,user_id,status,total,item_count,points_awarded,payment_provider,payment_status,paid_at,created_at,confirmed_at,profiles!orders_user_id_fkey(email,full_name),order_items(product_id,product_title,quantity,unit_price)";
       const basicFields = "id,order_number,user_id,status,total,item_count,points_awarded,created_at,confirmed_at,deleted_at,deleted_by,profiles!orders_user_id_fkey(email,full_name),order_items(product_id,product_title,quantity,unit_price)";
@@ -13449,7 +13634,7 @@
         state.orderRecycleSupported = false;
         ordersResult = await db.from("orders").select(voucherPaymentFieldsWithoutRecycle).order("created_at", { ascending: false });
       }
-      if (ordersResult.error && /subtotal|discount_amount|voucher_code|order_note|item_note|guest_name|guest_phone|guest_address/i.test(ordersResult.error.message || "")) {
+      if (ordersResult.error && /subtotal|discount_amount|voucher_code|order_note|item_note|guest_name|guest_phone|guest_address|order_source|fulfillment|delivery_|pickup_location/i.test(ordersResult.error.message || "")) {
         const fields = state.orderRecycleSupported ? paymentFields : paymentFieldsWithoutRecycle;
         ordersResult = await db.from("orders").select(fields).order("created_at", { ascending: false });
       }
@@ -13463,6 +13648,9 @@
         state.adminOrders = orders.filter((order) => !order.deleted_at);
         state.deletedOrders = state.orderRecycleSupported ? orders.filter((order) => Boolean(order.deleted_at)) : [];
         state.adminOrdersLoaded = true;
+        const latestId = String(state.latestOrderAlert?.id || "");
+        const refreshedLatest = latestId ? orders.find((order) => String(order.id) === latestId) : null;
+        if (refreshedLatest) state.latestOrderAlert = { ...state.latestOrderAlert, ...refreshedLatest };
       } else {
         state.adminOrdersError = authErrorMessage(ordersResult.error);
       }
@@ -14113,7 +14301,7 @@
       if (!db) throw new Error("Database connection is unavailable");
       if (!canManageProducts()) throw new Error("Administrator session has expired");
       if (!product) throw new Error("Product data is unavailable");
-      const { error } = await db.from("products").upsert({
+      const payload = {
         id: product.id,
         title: product.title,
         category: product.category || "",
@@ -14134,6 +14322,7 @@
         vendor: product.vendor || "",
         sku: product.sku || "",
         barcode: product.barcode || "",
+        item_code: productStoredCode(product) || productItemCode(product),
         tags: product.tags || "",
         source_url: product.sourceUrl || "",
         source_currency: product.sourceCurrency || "",
@@ -14143,8 +14332,13 @@
         deleted_at: null,
         deleted_was_published: false,
         updated_at: new Date().toISOString()
-      });
-      if (error) throw error;
+      };
+      let result = await db.from("products").upsert(payload);
+      if (result.error && /item_code|schema cache/i.test(result.error.message || "")) {
+        delete payload.item_code;
+        result = await db.from("products").upsert(payload);
+      }
+      if (result.error) throw result.error;
       return true;
     }
 
@@ -16324,8 +16518,13 @@
         showToast(message);
         return;
       }
+      const automaticCode = manualProductCode(sku, barcode)
+        || productStoredCode(existing)
+        || String(existing?.experimentalCode || "").trim()
+        || nextAutomaticProductCode();
       const product = {
         id,
+        itemCode: automaticCode,
         title: titleEn || titleZh,
         titleEn,
         titleZh,
