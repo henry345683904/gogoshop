@@ -5976,6 +5976,11 @@
       color: var(--danger);
     }
 
+    .status.offline {
+      background: #eef1f1;
+      color: #3f4949;
+    }
+
     .status.featured {
       gap: 4px;
       background: #eaf4f5;
@@ -14841,8 +14846,10 @@
             <button class="action-button ${product.published ? "" : "offline"}" type="button" data-toggle-product-online="${escapeHtml(product.id)}" aria-label="${product.published ? "Hide" : "Show"} ${escapeHtml(product.title)} ${product.published ? "from online store" : "in online store"}" title="${product.published ? "隐藏商品" : "发布到网店"}"><i data-lucide="${product.published ? "eye-off" : "eye"}"></i></button>
             <button class="action-button ${product.featured ? "pinned" : ""}" type="button" data-toggle-featured="${escapeHtml(product.id)}" aria-label="${product.featured ? "Unpin" : "Pin"} ${escapeHtml(product.title)}" aria-pressed="${Boolean(product.featured)}" title="${product.featured ? "取消首页置顶" : "置顶到首页"}"><i data-lucide="${product.featured ? "pin-off" : "pin"}"></i></button>` : "";
         const statusLabel = isOnlineChannel ? (product.published ? "Live" : "Draft") : "线下销售";
+        const rowClass = isOnlineChannel && !product.published ? "is-offline-only" : "";
+        const statusClass = isOnlineChannel ? (product.published ? "live" : "draft") : "offline";
         return `
-        <article class="admin-product-item ${product.published ? "" : "is-offline-only"}" data-edit-product-row="${escapeHtml(product.id)}" role="button" tabindex="0" aria-label="Edit ${escapeHtml(product.title)}">
+        <article class="admin-product-item ${rowClass}" data-edit-product-row="${escapeHtml(product.id)}" role="button" tabindex="0" aria-label="Edit ${escapeHtml(product.title)}">
           <img src="${escapeHtml(imageSource(product.image) || PRODUCT_IMAGE_FALLBACK)}" alt="${escapeHtml(product.title)}" loading="eager" decoding="async">
           <div class="admin-product-summary">
             <strong>${escapeHtml(product.title)}</strong>
@@ -14852,7 +14859,7 @@
           <div class="admin-product-meta">
             <span>${formatPrice(product.price)}</span>
             <span>Stock ${Number(product.stock) || 0}</span>
-            <span class="status ${product.published ? "live" : "draft"}">${statusLabel}</span>
+            <span class="status ${statusClass}">${statusLabel}</span>
           </div>
           <div class="row-actions">
             <button class="action-button" type="button" data-open-product-label="${escapeHtml(product.id)}" aria-label="打印 ${escapeHtml(product.title)} Label" title="打印 Label"><i data-lucide="printer"></i></button>
@@ -14872,7 +14879,7 @@
           <div class="admin-product-meta">
             <span>${formatPrice(product.price)}</span>
             <span>库存 ${Number(product.stock) || 0}</span>
-            <span class="status ${product.restorePublished ? "live" : "draft"}">${channel === "online" ? (product.restorePublished ? "原为上架" : "原为草稿") : "线下商品"}</span>
+            <span class="status ${channel === "offline" ? "offline" : product.restorePublished ? "live" : "draft"}">${channel === "online" ? (product.restorePublished ? "原为上架" : "原为草稿") : "线下商品"}</span>
           </div>
           <div class="row-actions">
             <button class="action-button" type="button" data-restore-product="${escapeHtml(product.id)}" aria-label="恢复 ${escapeHtml(product.title)}" title="恢复商品"><i data-lucide="rotate-ccw"></i></button>
