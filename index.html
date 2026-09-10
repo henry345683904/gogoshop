@@ -10930,7 +10930,7 @@
           state.design = normalizeDesign(remoteDesign);
           save(DESIGN_KEY, state.design);
           setDesignRemoteStatus("saved");
-        } else if (state.profile?.is_admin && designHasCustomValues(state.design)) {
+        } else if (canManageProducts() && designHasCustomValues(state.design)) {
           // Preserve an existing local draft once, then make it the shared online version.
           persistDesign();
         } else {
@@ -10954,7 +10954,7 @@
     }
 
     function queueDesignRemoteSave() {
-      if (!db || !state.profile?.is_admin) {
+      if (!db || !canManageProducts()) {
         setDesignRemoteStatus("local");
         return;
       }
@@ -10969,7 +10969,7 @@
     }
 
     async function saveStorefrontDesign(version) {
-      if (!db || !state.profile?.is_admin) return;
+      if (!db || !canManageProducts()) return;
       const design = normalizeDesign(state.design);
       try {
         let result = await requestWithTimeout(
@@ -10989,7 +10989,7 @@
             "Save storefront design fallback"
           );
         }
-        if (version !== designSaveVersion || !state.profile?.is_admin) return;
+        if (version !== designSaveVersion || !canManageProducts()) return;
         if (result.error) {
           setDesignRemoteStatus("error", result.error.message || "Unable to save storefront design");
           console.warn("Unable to save online storefront design", result.error);
@@ -10998,7 +10998,7 @@
         state.designRemoteLoaded = true;
         setDesignRemoteStatus("saved");
       } catch (error) {
-        if (version !== designSaveVersion || !state.profile?.is_admin) return;
+        if (version !== designSaveVersion || !canManageProducts()) return;
         setDesignRemoteStatus("error", requestErrorText(error, "Unable to save storefront design"));
         console.warn("Unable to save online storefront design", error);
       }
@@ -12821,7 +12821,7 @@
     function openAdminOrderFromNotification(orderId) {
       pendingNotificationOrderId = orderId || null;
       location.hash = "admin";
-      if (!state.profile?.is_admin) return;
+      if (!canManageProducts()) return;
       showAdmin();
       const targetOrderId = pendingNotificationOrderId;
       pendingNotificationOrderId = null;
@@ -12994,7 +12994,7 @@
     }
 
     async function handleAdminOrderRealtime(order, eventType) {
-      if (!state.profile?.is_admin || !order?.id || order.deleted_at) return;
+      if (!canManageProducts() || !order?.id || order.deleted_at) return;
       const isPaid = order.payment_status === "paid";
       const isStripe = order.payment_provider === "stripe";
       if (eventType === "INSERT" && isStripe && !isPaid) return;
@@ -13031,14 +13031,14 @@
     }
 
     async function subscribeToAdminOrderRealtime() {
-      const userId = state.profile?.is_admin ? state.session?.user?.id : null;
+      const userId = canManageProducts() ? state.session?.user?.id : null;
       if (!db || !userId) {
         await stopAdminOrderRealtime();
         return;
       }
       if (adminOrderChannel && adminOrderChannelUserId === userId) return;
       await stopAdminOrderRealtime();
-      if (!state.profile?.is_admin || state.session?.user?.id !== userId) return;
+      if (!canManageProducts() || state.session?.user?.id !== userId) return;
       adminOrderChannelUserId = userId;
       adminOrderChannel = db.channel(`admin-order-alerts-${userId}`)
         .on("postgres_changes", { event: "INSERT", schema: "public", table: "orders" }, (payload) => {
@@ -13251,7 +13251,7 @@
             state.deletedProducts = [];
             persistDeletedProducts();
           }
-        } else if (isFullAdmin()) {
+        } else if (isFullAdmin() || isOnlineManager()) {
           backgroundTasks.push(subscribeToAdminOrderRealtime());
           if (pendingNotificationOrderId && isAdminRoute()) openAdminOrderFromNotification(pendingNotificationOrderId);
         } else {
@@ -13978,7 +13978,7 @@
 
     function renderAdminRoleUi() {
       const onlineOnly = isOnlineManager();
-      const allowedTabs = new Set(["products"]);
+      const allowedTabs = new Set(["products", "orders", "analytics", "design"]);
       $$('[data-admin-tab]').forEach((button) => {
         button.hidden = onlineOnly && !allowedTabs.has(button.dataset.adminTab);
       });
@@ -13987,9 +13987,9 @@
         element.hidden = onlineOnly;
       });
       $$('[data-admin-section]').forEach((section) => {
-        section.hidden = onlineOnly && section.dataset.adminSection !== "products";
+        section.hidden = onlineOnly && !allowedTabs.has(section.dataset.adminSection);
       });
-      if (onlineOnly) {
+      if (onlineOnly && !allowedTabs.has(state.adminTab)) {
         state.adminProductChannel = "online";
         state.adminTab = "products";
       }
@@ -14004,7 +14004,7 @@
       $("#adminShell").hidden = !unlocked;
       if (unlocked) {
         renderAdminRoleUi();
-        if (isFullAdmin()) {
+        if (isFullAdmin() || isOnlineManager()) {
           loadAdminData();
           subscribeToAdminOrderRealtime();
         } else {
@@ -14067,7 +14067,8 @@
     }
 
     function setAdminTab(tab) {
-      if (isOnlineManager() && tab !== "products") tab = "products";
+      const onlineManagerTabs = new Set(["products", "orders", "analytics", "design"]);
+      if (isOnlineManager() && !onlineManagerTabs.has(tab)) tab = "products";
       state.adminTab = tab;
       if (tab === "orders") clearAdminOrderUnread();
       $$("[data-admin-tab]").forEach((button) => button.classList.toggle("active", button.dataset.adminTab === tab));
@@ -14101,31 +14102,39 @@
       const basicFields = "id,order_number,user_id,status,total,item_count,points_awarded,created_at,confirmed_at,deleted_at,deleted_by,profiles!orders_user_id_fkey(email,full_name),order_items(product_id,product_title,quantity,unit_price)";
       const basicFieldsWithoutRecycle = "id,order_number,user_id,status,total,item_count,points_awarded,created_at,confirmed_at,profiles!orders_user_id_fkey(email,full_name),order_items(product_id,product_title,quantity,unit_price)";
       state.orderRecycleSupported = true;
+      let ordersQuery = db.from("orders").select(voucherPaymentFields);
+      if (isOnlineManager()) ordersQuery = ordersQuery.eq("order_source", "online");
       let ordersResult = await requestWithTimeout(
-        () => db.from("orders").select(voucherPaymentFields).order("created_at", { ascending: false }),
+        () => ordersQuery.order("created_at", { ascending: false }),
         REQUEST_TIMEOUTS.admin,
         "Admin orders"
       );
       if (ordersResult.error && isMissingSchemaError(ordersResult.error)) {
         state.orderRecycleSupported = false;
+        let fallbackQuery = db.from("orders").select(voucherPaymentFieldsWithoutRecycle);
+        if (isOnlineManager()) fallbackQuery = fallbackQuery.eq("order_source", "online");
         ordersResult = await requestWithTimeout(
-          () => db.from("orders").select(voucherPaymentFieldsWithoutRecycle).order("created_at", { ascending: false }),
+          () => fallbackQuery.order("created_at", { ascending: false }),
           REQUEST_TIMEOUTS.admin,
           "Admin orders fallback"
         );
       }
       if (ordersResult.error && isMissingSchemaError(ordersResult.error)) {
         const fields = state.orderRecycleSupported ? paymentFields : paymentFieldsWithoutRecycle;
+        let paymentQuery = db.from("orders").select(fields);
+        if (isOnlineManager()) paymentQuery = paymentQuery.eq("order_source", "online");
         ordersResult = await requestWithTimeout(
-          () => db.from("orders").select(fields).order("created_at", { ascending: false }),
+          () => paymentQuery.order("created_at", { ascending: false }),
           REQUEST_TIMEOUTS.admin,
           "Admin payment orders"
         );
       }
       if (ordersResult.error && isMissingSchemaError(ordersResult.error)) {
         const fields = state.orderRecycleSupported ? basicFields : basicFieldsWithoutRecycle;
+        let basicQuery = db.from("orders").select(fields);
+        if (isOnlineManager()) basicQuery = basicQuery.eq("order_source", "online");
         ordersResult = await requestWithTimeout(
-          () => db.from("orders").select(fields).order("created_at", { ascending: false }),
+          () => basicQuery.order("created_at", { ascending: false }),
           REQUEST_TIMEOUTS.admin,
           "Admin basic orders"
         );
@@ -15902,7 +15911,7 @@
     function renderAdmin() {
       if ($("#adminShell").hidden) return;
       renderAdminOrderNotificationUi();
-      const activeTab = isOnlineManager() ? "products" : (state.adminTab || "overview");
+      const activeTab = state.adminTab || "overview";
       switch (activeTab) {
         case "overview":
           renderMetrics("#metricGrid");
