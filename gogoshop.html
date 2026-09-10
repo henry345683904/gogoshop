@@ -2850,6 +2850,10 @@
       gap: 8px;
     }
 
+    .admin-nav [data-admin-pos-link][hidden] {
+      display: none !important;
+    }
+
     .tab-button {
       position: relative;
       display: flex;
@@ -13982,7 +13986,8 @@
       $$('[data-admin-tab]').forEach((button) => {
         button.hidden = onlineOnly && !allowedTabs.has(button.dataset.adminTab);
       });
-      $("[data-admin-pos-link]")?.toggleAttribute("hidden", onlineOnly);
+      const posLink = $("[data-admin-pos-link]");
+      if (posLink) posLink.hidden = onlineOnly;
       $$('[data-full-admin-only]').forEach((element) => {
         element.hidden = onlineOnly;
       });
