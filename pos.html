@@ -401,7 +401,16 @@
     window.addEventListener("focus",refreshProductsWhenVisible);
     document.addEventListener("visibilitychange",refreshProductsWhenVisible);
     async function loadProductModelOptions(product){if(!product||product.modelOptionsLoaded||!isPhoneModelProduct(product))return;product.modelOptionsLoaded=true;const {data,error}=await db.from("products").select("source_variants,source_attributes").eq("id",product.id).maybeSingle();if(error||!data)return;product.source_variants=data.source_variants;product.source_attributes=data.source_attributes;if(state.cart.has(product.id))render()}
-    async function checkAdmin(user){const {data,error}=await db.from("profiles").select("id,is_admin").eq("id",user.id).single();if(error||!data?.is_admin)throw new Error("此账号没有管理员权限");state.profile=data}
+    async function checkAdmin(user){
+      let result=await db.from("profiles").select("id,is_admin,admin_role").eq("id",user.id).single();
+      if(result.error&&/admin_role/i.test(result.error.message||"")){
+        result=await db.from("profiles").select("id,is_admin").eq("id",user.id).single();
+      }
+      const {data,error}=result;
+      const role=String(data?.admin_role||"").trim().toLowerCase();
+      if(error||!data?.is_admin||role==="online_manager")throw new Error("此账号没有管理员权限");
+      state.profile=data;
+    }
     let authBootSettled=false;
     let authWatchdog=0;
     function setAuthView(view){["authLoading","loginView","recoveryView","appView"].forEach(id=>$("#"+id).classList.toggle("hidden",id!==view))}

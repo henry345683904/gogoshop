@@ -9942,12 +9942,12 @@
       return productSalesChannel(product, "online") === "online" && Boolean(product?.published);
     }
 
-    function isFullAdmin() {
-      return state.profile?.is_admin === true;
+    function isOnlineManager() {
+      return String(state.profile?.admin_role || "").trim().toLowerCase() === "online_manager";
     }
 
-    function isOnlineManager() {
-      return !isFullAdmin() && String(state.profile?.admin_role || "").trim().toLowerCase() === "online_manager";
+    function isFullAdmin() {
+      return state.profile?.is_admin === true && !isOnlineManager();
     }
 
     function canManageProducts() {
