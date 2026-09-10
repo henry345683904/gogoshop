@@ -10,6 +10,8 @@
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
   <link rel="manifest" href="site.webmanifest">
   <link rel="preconnect" href="https://unpkg.com">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="preconnect" href="https://ucnkcddhrptqpdlvcohy.supabase.co" crossorigin>
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
   <script>
     (function prepareNativeOAuthReturn() {
@@ -9308,8 +9310,8 @@
     const PRODUCT_MEDIA_BUCKET = "product-media";
     const PRODUCT_IMAGE_FALLBACK = "./assets/product-image-placeholder.svg?imgv=images-v2";
     const PRODUCT_IMAGE_ASSET_VERSION = "images-v2";
-    // Bump this on every catalog refresh so an updated image at the same URL is fetched.
-    let productImageRefreshVersion = Date.now().toString();
+    // Keep image URLs cacheable; bump only after an image actually changes.
+    let productImageRefreshVersion = PRODUCT_IMAGE_ASSET_VERSION;
     const STORE_CONFIG = window.GOGO_SHOP_CONFIG || {};
     const SUPABASE_URL = String(STORE_CONFIG.supabaseUrl || "").trim();
     const SUPABASE_PUBLISHABLE_KEY = String(STORE_CONFIG.supabasePublishableKey || "").trim();
@@ -9397,14 +9399,43 @@
     ]);
     const SUPABASE_PROJECT_REF = /^https:\/\/([a-z0-9-]+)\.supabase\.co/i.exec(SUPABASE_URL)?.[1] || "unconfigured";
     const REMOTE_CATALOG_STATE_KEY = `gogoshop_remote_catalog_state_v1_${SUPABASE_PROJECT_REF}`;
+    const DESIGN_REMOTE_UNAVAILABLE_KEY = `gogoshop_design_remote_unavailable_until_v1_${SUPABASE_PROJECT_REF}`;
+    const DESIGN_REMOTE_UNAVAILABLE_TTL = 30 * 60 * 1000;
+    const REQUEST_TIMEOUTS = Object.freeze({
+      auth: 8000,
+      profile: 8000,
+      catalog: 12000,
+      design: 8000,
+      customer: 12000,
+      admin: 15000,
+      detail: 10000
+    });
+    const CATALOG_REFRESH_INTERVAL = 5 * 60 * 1000;
+    const CATALOG_RETRY_INTERVAL = 20 * 1000;
     const SUPABASE_AUTH_STORAGE_KEY = `sb-${SUPABASE_PROJECT_REF}-auth-token`;
+    function fetchWithTimeout(input, init = {}) {
+      if (typeof AbortController === "undefined") return window.fetch(input, init);
+      const controller = new AbortController();
+      const timeoutId = window.setTimeout(() => controller.abort(), 20000);
+      const sourceSignal = init.signal;
+      const abortFromSource = () => controller.abort();
+      if (sourceSignal) {
+        if (sourceSignal.aborted) controller.abort();
+        else sourceSignal.addEventListener("abort", abortFromSource, { once: true });
+      }
+      return window.fetch(input, { ...init, signal: controller.signal }).finally(() => {
+        window.clearTimeout(timeoutId);
+        sourceSignal?.removeEventListener("abort", abortFromSource);
+      });
+    }
     const db = SUPABASE_URL && SUPABASE_PUBLISHABLE_KEY && window.supabase?.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
       auth: {
         flowType: "pkce",
         detectSessionInUrl: true,
         persistSession: true,
         storageKey: SUPABASE_AUTH_STORAGE_KEY
-      }
+      },
+      global: { fetch: fetchWithTimeout }
     }) || null;
     let adminOrderChannel = null;
     let adminOrderChannelUserId = null;
@@ -9505,6 +9536,9 @@
         addToCart: "Add to cart",
         productFallback: "Product details will be added soon.",
         pickupNote: "Pickup and delivery options are confirmed at checkout.",
+        productsLoading: "Loading products...",
+        productsLoadFailed: "Products could not be loaded.",
+        retry: "Retry",
         noProducts: "No products",
         emptyCart: "Your cart is empty",
         continueShopping: "Continue shopping",
@@ -9680,6 +9714,9 @@
         addToCart: "加入购物车",
         productFallback: "商品详情即将补充。",
         pickupNote: "取货和配送方式将在结账时确认。",
+        productsLoading: "正在加载商品...",
+        productsLoadFailed: "商品加载失败。",
+        retry: "重试",
         noProducts: "暂无商品",
         emptyCart: "购物车为空",
         continueShopping: "继续购物",
@@ -9834,6 +9871,12 @@
       designRemoteStatus: "local",
       designRemoteError: "",
       remoteCatalogReady: storageGet(REMOTE_CATALOG_STATE_KEY) === "ready",
+      catalogLoading: false,
+      catalogLoaded: false,
+      catalogError: "",
+      catalogLastLoadedAt: 0,
+      catalogLastAttemptAt: 0,
+      catalogLoadedMode: "",
       category: "All",
       sort: "featured",
       lang: storageGet(LANG_KEY) || "en",
@@ -9910,6 +9953,55 @@
     const money = new Intl.NumberFormat("en-NZ", { style: "currency", currency: "NZD" });
     const $ = (selector, root = document) => root.querySelector(selector);
     const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
+    let storeInventoryLoadPromise = null;
+    let storeInventoryLoadKey = "";
+    let customerProfileLoadPromise = null;
+    let customerProfileUserId = "";
+    let customerDataLoadPromise = null;
+    let customerDataUserId = "";
+    let customerVouchersLoadPromise = null;
+    let customerVouchersUserId = "";
+    let adminDataLoadPromise = null;
+    let adminDataUserId = "";
+    let authSessionPromise = null;
+    let authSessionUserId = "";
+    let authStateUserKey = "";
+    let inventoryRefreshTimer = null;
+    let inventoryVisibilityListenerReady = false;
+
+    function requestTimeoutError(label, timeoutMs) {
+      const error = new Error(`${label} timed out after ${timeoutMs}ms`);
+      error.code = "GOGO_REQUEST_TIMEOUT";
+      return error;
+    }
+
+    function requestWithTimeout(request, timeoutMs, label) {
+      const pending = typeof request === "function"
+        ? Promise.resolve().then(request)
+        : Promise.resolve(request);
+      let timer = null;
+      const timeout = new Promise((resolve, reject) => {
+        timer = window.setTimeout(() => reject(requestTimeoutError(label, timeoutMs)), timeoutMs);
+      });
+      return Promise.race([pending, timeout]).finally(() => {
+        if (timer !== null) window.clearTimeout(timer);
+      });
+    }
+
+    function requestErrorText(error, fallback = "Unable to load data") {
+      if (error?.code === "GOGO_REQUEST_TIMEOUT") return `${fallback} (timed out)`;
+      return String(error?.message || error || fallback);
+    }
+
+    function isMissingSchemaError(error) {
+      return /schema cache|could not find the (?:function|relation)|(?:function|relation|column) .* does not exist|PGRST20[245]|42P01|42703/i.test(
+        `${error?.code || ""} ${error?.message || ""}`
+      );
+    }
+
+    function sessionMatches(userId) {
+      return String(state.session?.user?.id || "") === String(userId || "");
+    }
 
     const PRODUCT_SALES_CHANNELS = Object.freeze({
       offline: Object.freeze({
@@ -10771,14 +10863,41 @@
       return {};
     }
 
+    function designRemoteUnavailable() {
+      const until = Number(storageGet(DESIGN_REMOTE_UNAVAILABLE_KEY) || 0);
+      return Number.isFinite(until) && until > Date.now();
+    }
+
+    function markDesignRemoteUnavailable() {
+      storageSet(DESIGN_REMOTE_UNAVAILABLE_KEY, String(Date.now() + DESIGN_REMOTE_UNAVAILABLE_TTL));
+    }
+
+    function clearDesignRemoteUnavailable() {
+      storageSet(DESIGN_REMOTE_UNAVAILABLE_KEY, "0");
+    }
+
     async function fetchRemoteStorefrontDesign() {
-      let result = await db.rpc("get_storefront_design");
-      if (result.error && /function|schema cache|does not exist/i.test(result.error.message || "")) {
-        const fallback = await db.from("storefront_settings")
-          .select("design")
-          .eq("id", DESIGN_REMOTE_ID)
-          .maybeSingle();
+      let result = await requestWithTimeout(
+        () => db.rpc("get_storefront_design"),
+        REQUEST_TIMEOUTS.design,
+        "Storefront design"
+      );
+      if (result.error && isMissingSchemaError(result.error)) {
+        const fallback = await requestWithTimeout(
+          () => db.from("storefront_settings")
+            .select("design")
+            .eq("id", DESIGN_REMOTE_ID)
+            .maybeSingle(),
+          REQUEST_TIMEOUTS.design,
+          "Storefront design fallback"
+        );
         if (!fallback.error) return { data: fallback.data?.design || {}, error: null };
+        if (isMissingSchemaError(fallback.error)) {
+          return {
+            data: null,
+            error: { ...result.error, code: "GOGO_DESIGN_UNAVAILABLE" }
+          };
+        }
       }
       return result;
     }
@@ -10789,17 +10908,23 @@
         return false;
       }
       if (!force && state.designRemoteLoaded) return true;
-      if (designLoadPromise && !force) return designLoadPromise;
+      if (!force && designRemoteUnavailable()) {
+        setDesignRemoteStatus("local");
+        return false;
+      }
+      if (designLoadPromise) return designLoadPromise;
       designLoadPromise = (async () => {
         setDesignRemoteStatus("loading");
         const { data, error } = await fetchRemoteStorefrontDesign();
         if (error) {
           state.designRemoteLoaded = false;
+          if (error.code === "GOGO_DESIGN_UNAVAILABLE") markDesignRemoteUnavailable();
           setDesignRemoteStatus("error", error.message || "Unable to load storefront design");
           console.warn("Unable to load online storefront design", error);
           return false;
         }
 
+        clearDesignRemoteUnavailable();
         const remoteDesign = designObjectFromRemote(data);
         if (Object.keys(remoteDesign).length) {
           state.design = normalizeDesign(remoteDesign);
@@ -10846,23 +10971,37 @@
     async function saveStorefrontDesign(version) {
       if (!db || !state.profile?.is_admin) return;
       const design = normalizeDesign(state.design);
-      let result = await db.rpc("save_storefront_design", { p_design: design });
-      if (result.error && /function|schema cache|does not exist/i.test(result.error.message || "")) {
-        result = await db.from("storefront_settings").upsert({
-          id: DESIGN_REMOTE_ID,
-          design,
-          updated_at: new Date().toISOString(),
-          updated_by: state.session?.user?.id || null
-        }, { onConflict: "id" }).select("design").single();
+      try {
+        let result = await requestWithTimeout(
+          () => db.rpc("save_storefront_design", { p_design: design }),
+          REQUEST_TIMEOUTS.design,
+          "Save storefront design"
+        );
+        if (result.error && isMissingSchemaError(result.error)) {
+          result = await requestWithTimeout(
+            () => db.from("storefront_settings").upsert({
+              id: DESIGN_REMOTE_ID,
+              design,
+              updated_at: new Date().toISOString(),
+              updated_by: state.session?.user?.id || null
+            }, { onConflict: "id" }).select("design").single(),
+            REQUEST_TIMEOUTS.design,
+            "Save storefront design fallback"
+          );
+        }
+        if (version !== designSaveVersion || !state.profile?.is_admin) return;
+        if (result.error) {
+          setDesignRemoteStatus("error", result.error.message || "Unable to save storefront design");
+          console.warn("Unable to save online storefront design", result.error);
+          return;
+        }
+        state.designRemoteLoaded = true;
+        setDesignRemoteStatus("saved");
+      } catch (error) {
+        if (version !== designSaveVersion || !state.profile?.is_admin) return;
+        setDesignRemoteStatus("error", requestErrorText(error, "Unable to save storefront design"));
+        console.warn("Unable to save online storefront design", error);
       }
-      if (version !== designSaveVersion || !state.profile?.is_admin) return;
-      if (result.error) {
-        setDesignRemoteStatus("error", result.error.message || "Unable to save storefront design");
-        console.warn("Unable to save online storefront design", result.error);
-        return;
-      }
-      state.designRemoteLoaded = true;
-      setDesignRemoteStatus("saved");
     }
 
     function cancelDesignRemoteSave() {
@@ -11249,6 +11388,10 @@
       container.innerHTML = blocks.length ? `<div class="custom-block-grid">${blocks.map(renderStoreBlock).join("")}</div>` : "";
     }
 
+    function bumpProductImageRefreshVersion() {
+      productImageRefreshVersion = String(Date.now());
+    }
+
     function imageSource(value) {
       const source = String(value || "").trim();
       if (!source) return "";
@@ -11470,34 +11613,43 @@
       if (!product || state.detailLoadedProductIds.has(productId)) return;
 
       state.detailLoading = true;
-      const { data, error } = await db.rpc("get_storefront_product_detail", { p_product_id: productId });
-      state.detailLoading = false;
-      if (error) {
-        console.warn("Unable to load storefront product detail", error);
-        return;
-      }
-      const detail = Array.isArray(data) ? data[0] : data;
-      if (!detail || detail.id !== productId) return;
+      try {
+        const { data, error } = await requestWithTimeout(
+          () => db.rpc("get_storefront_product_detail", { p_product_id: productId }),
+          REQUEST_TIMEOUTS.detail,
+          "Product details"
+        );
+        if (error) {
+          console.warn("Unable to load storefront product detail", error);
+          return;
+        }
+        const detail = Array.isArray(data) ? data[0] : data;
+        if (!detail || detail.id !== productId) return;
 
-      Object.assign(product, {
-        title: detail.title ?? product.title,
-        titleEn: detail.title_en ?? product.titleEn,
-        titleZh: detail.title_zh ?? product.titleZh,
-        category: detail.category ?? product.category,
-        description: detail.description ?? "",
-        descriptionEn: detail.description_en ?? "",
-        descriptionZh: detail.description_zh ?? "",
-        price: Number(detail.price ?? product.price),
-        compareAtPrice: Number(detail.compare_at_price ?? product.compareAtPrice),
-        stock: Number(detail.stock ?? product.stock),
-        image: detail.image ?? product.image,
+        Object.assign(product, {
+          title: detail.title ?? product.title,
+          titleEn: detail.title_en ?? product.titleEn,
+          titleZh: detail.title_zh ?? product.titleZh,
+          category: detail.category ?? product.category,
+          description: detail.description ?? "",
+          descriptionEn: detail.description_en ?? "",
+          descriptionZh: detail.description_zh ?? "",
+          price: Number(detail.price ?? product.price),
+          compareAtPrice: Number(detail.compare_at_price ?? product.compareAtPrice),
+          stock: Number(detail.stock ?? product.stock),
+          image: detail.image ?? product.image,
           images: Array.isArray(detail.images) ? detail.images.filter(usableProductImage).map(imageSource) : (product.images || []),
-        sku: detail.sku ?? product.sku,
-        barcode: detail.barcode ?? product.barcode
-      });
-      state.detailLoadedProductIds.add(productId);
-      persistProducts();
-      if (state.activeProductId === productId) renderProductDetail();
+          sku: detail.sku ?? product.sku,
+          barcode: detail.barcode ?? product.barcode
+        });
+        state.detailLoadedProductIds.add(productId);
+        persistProducts();
+        if (state.activeProductId === productId) renderProductDetail();
+      } catch (error) {
+        console.warn("Unable to load storefront product detail", error);
+      } finally {
+        state.detailLoading = false;
+      }
     }
 
     function showProductDetail(id, updateHash = true) {
@@ -11689,7 +11841,13 @@
       const grid = $("#productGrid");
       const products = visibleProducts();
       if (!products.length) {
-        grid.innerHTML = `<div class="empty-state" style="grid-column: 1 / -1;">${t("noProducts")}</div>`;
+        const loading = state.catalogLoading && !state.catalogLoaded;
+        const failed = !loading && state.catalogError && !state.catalogLoaded;
+        grid.innerHTML = loading
+          ? `<div class="empty-state catalog-load-state" style="grid-column: 1 / -1;"><i data-lucide="loader-circle"></i><span>${t("productsLoading")}</span></div>`
+          : failed
+            ? `<div class="empty-state catalog-load-state" style="grid-column: 1 / -1;"><i data-lucide="wifi-off"></i><span>${t("productsLoadFailed")}</span><small>${escapeHtml(state.catalogError)}</small><button class="button ghost" type="button" data-retry-catalog><i data-lucide="refresh-cw"></i><span>${t("retry")}</span></button></div>`
+            : `<div class="empty-state" style="grid-column: 1 / -1;">${t("noProducts")}</div>`;
         refreshIcons();
         return;
       }
@@ -11853,6 +12011,25 @@
       await loadCustomerVouchers();
     }
 
+    async function fetchCustomerVouchers(userId) {
+      const result = await requestWithTimeout(
+        () => db.rpc("get_my_vouchers"),
+        REQUEST_TIMEOUTS.customer,
+        "Customer vouchers"
+      );
+      if (sessionMatches(userId)) {
+        state.customerVouchers = result.error ? [] : (result.data || []);
+        const selectedVoucher = state.customerVouchers.find((item) => item.customer_voucher_id === state.selectedCustomerVoucherId);
+        if (state.selectedCustomerVoucherId && (!selectedVoucher || !voucherStatus(selectedVoucher).available)) {
+          state.selectedCustomerVoucherId = null;
+          state.voucherQuote = null;
+        }
+        renderCustomerVouchers();
+        renderCart();
+      }
+      return !result.error;
+    }
+
     async function loadCustomerVouchers() {
       if (!db || !state.session?.user) {
         state.customerVouchers = [];
@@ -11860,17 +12037,29 @@
         state.voucherQuote = null;
         renderCustomerVouchers();
         renderCart();
-        return;
+        return false;
       }
-      const { data, error } = await db.rpc("get_my_vouchers");
-      state.customerVouchers = error ? [] : (data || []);
-      const selectedVoucher = state.customerVouchers.find((item) => item.customer_voucher_id === state.selectedCustomerVoucherId);
-      if (state.selectedCustomerVoucherId && (!selectedVoucher || !voucherStatus(selectedVoucher).available)) {
-        state.selectedCustomerVoucherId = null;
-        state.voucherQuote = null;
-      }
-      renderCustomerVouchers();
-      renderCart();
+      const userId = state.session.user.id;
+      if (customerVouchersLoadPromise && customerVouchersUserId === userId) return customerVouchersLoadPromise;
+      customerVouchersUserId = userId;
+      const promise = fetchCustomerVouchers(userId).catch((error) => {
+        if (customerVouchersUserId === userId && sessionMatches(userId)) {
+          state.customerVouchers = [];
+          state.selectedCustomerVoucherId = null;
+          state.voucherQuote = null;
+          renderCustomerVouchers();
+          renderCart();
+        }
+        console.warn("Unable to load customer vouchers", error);
+        return false;
+      }).finally(() => {
+        if (customerVouchersLoadPromise === promise) {
+          customerVouchersLoadPromise = null;
+          customerVouchersUserId = "";
+        }
+      });
+      customerVouchersLoadPromise = promise;
+      return promise;
     }
 
     async function refreshVoucherQuote() {
@@ -12069,41 +12258,81 @@
       window.requestAnimationFrame(() => modal.querySelector("[data-close-order-detail]")?.focus());
     }
 
-    async function loadStoreInventory() {
-      if (!db) return;
-      productImageRefreshVersion = Date.now().toString();
+    function inventorySessionMatches(loadUserId, loadMode) {
+      if (currentInventoryLoadMode() !== loadMode) return false;
+      return loadMode === "storefront" || sessionMatches(loadUserId);
+    }
+
+    async function fetchStoreInventory() {
+      if (!db) return false;
       const isAdmin = isFullAdmin();
       const canManage = canManageProducts();
+      const onlineManager = isOnlineManager();
+      const loadMode = onlineManager ? "online-manager" : isAdmin ? "full-admin" : "storefront";
+      const loadUserId = loadMode === "storefront" ? "" : (state.session?.user?.id || "");
       let supportsRecycleBin = canManage;
       let data;
       let error;
       state.adminProductLoadError = "";
       if (canManage) {
-        ({ data, error } = await db.from("products").select("id,title,title_en,title_zh,category,description,description_en,description_zh,price,compare_at_price,cost_per_item,stock,sales,published,sales_channel,image,images,vendor,sku,barcode,item_code,tags,source_url,source_currency,source_price,source_variants,source_attributes,deleted_at,deleted_was_published"));
-        if (error) {
+        const fields = onlineManager
+          ? "id,title,title_en,title_zh,category,description,description_en,description_zh,price,compare_at_price,cost_per_item,stock,sales,published,sales_channel,image,images,sku,barcode,item_code,tags,deleted_at,deleted_was_published"
+          : "id,title,title_en,title_zh,category,description,description_en,description_zh,price,compare_at_price,cost_per_item,stock,sales,published,sales_channel,image,images,vendor,sku,barcode,item_code,tags,source_url,source_currency,source_price,deleted_at,deleted_was_published";
+        let productQuery = db.from("products").select(fields);
+        if (onlineManager) productQuery = productQuery.eq("sales_channel", "online");
+        ({ data, error } = await requestWithTimeout(productQuery, REQUEST_TIMEOUTS.catalog, "Admin products"));
+        if (error && isMissingSchemaError(error)) {
           supportsRecycleBin = false;
-          ({ data, error } = await db.from("products").select("id,title,title_en,title_zh,category,description,description_en,description_zh,price,compare_at_price,cost_per_item,stock,sales,published,sales_channel,image,images,vendor,sku,barcode,tags,source_url,source_currency,source_price,source_variants,source_attributes"));
+          let fallbackQuery = db.from("products").select(onlineManager
+            ? "id,title,title_en,title_zh,category,description,description_en,description_zh,price,compare_at_price,cost_per_item,stock,sales,published,sales_channel,image,images,sku,barcode,item_code,tags"
+            : "id,title,title_en,title_zh,category,description,description_en,description_zh,price,compare_at_price,cost_per_item,stock,sales,published,sales_channel,image,images,vendor,sku,barcode,item_code,tags,source_url,source_currency,source_price");
+          if (onlineManager) fallbackQuery = fallbackQuery.eq("sales_channel", "online");
+          ({ data, error } = await requestWithTimeout(fallbackQuery, REQUEST_TIMEOUTS.catalog, "Admin products fallback"));
           if (error && /sales_channel/i.test(error.message || "")) {
             state.adminProductLoadError = "数据库尚未启用 sales_channel，已暂按线下商品保护性显示。请执行 supabase-product-sales-channels.sql。";
-            ({ data, error } = await db.from("products").select("id,title,title_en,title_zh,category,description,description_en,description_zh,price,compare_at_price,cost_per_item,stock,sales,published,image,images,vendor,sku,barcode,tags,source_url,source_currency,source_price,source_variants,source_attributes"));
+            if (onlineManager) {
+              if (!inventorySessionMatches(loadUserId, loadMode)) return false;
+              renderAdminProducts();
+              return false;
+            }
+            ({ data, error } = await requestWithTimeout(
+              () => db.from("products").select("id,title,title_en,title_zh,category,description,description_en,description_zh,price,compare_at_price,cost_per_item,stock,sales,published,image,images,vendor,sku,barcode,tags,source_url,source_currency,source_price"),
+              REQUEST_TIMEOUTS.catalog,
+              "Admin products legacy fallback"
+            ));
           }
         }
       } else {
-        ({ data, error } = await db.rpc("get_storefront_catalog"));
-        if (error) {
-          ({ data, error } = await db.rpc("get_storefront_products"));
+        ({ data, error } = await requestWithTimeout(
+          () => db.rpc("get_storefront_catalog"),
+          REQUEST_TIMEOUTS.catalog,
+          "Storefront catalog"
+        ));
+        if (error && isMissingSchemaError(error)) {
+          ({ data, error } = await requestWithTimeout(
+            () => db.rpc("get_storefront_products"),
+            REQUEST_TIMEOUTS.catalog,
+            "Storefront catalog fallback"
+          ));
         }
-        if (error) {
-          ({ data, error } = await db.from("products")
-            .select("id,title,title_en,title_zh,category,description,description_en,description_zh,price,compare_at_price,stock,published,sales_channel,image,images")
-            .eq("sales_channel", "online")
-            .eq("published", true));
+        if (error && isMissingSchemaError(error)) {
+          ({ data, error } = await requestWithTimeout(
+            () => db.from("products")
+              .select("id,title,title_en,title_zh,category,description,description_en,description_zh,price,compare_at_price,stock,published,sales_channel,image,images")
+              .eq("sales_channel", "online")
+              .eq("published", true),
+            REQUEST_TIMEOUTS.catalog,
+            "Storefront table fallback"
+          ));
         }
       }
+      if (!inventorySessionMatches(loadUserId, loadMode)) return false;
       if (error || !Array.isArray(data)) {
-        state.adminProductLoadError = error?.message || "Unable to load products";
+        const message = requestErrorText(error, "Unable to load products");
+        state.catalogError = message;
+        state.adminProductLoadError = message;
         if (canManage) renderAdminProducts();
-        return;
+        return false;
       }
       const remoteProducts = data
         .filter((product) => String(product.tags || "").trim() !== PURGED_PRODUCT_TAG)
@@ -12122,16 +12351,28 @@
         state.deletedProducts = [];
         persistProducts();
         persistDeletedProducts();
+        state.catalogLoaded = true;
+        state.catalogError = "";
+        state.catalogLastLoadedAt = Date.now();
+        state.catalogLoadedMode = loadMode;
         renderProducts();
         renderCart();
-        return;
+        return true;
       }
       if (remoteProducts.length && !state.remoteCatalogReady) {
         state.remoteCatalogReady = true;
         storageSet(REMOTE_CATALOG_STATE_KEY, "ready");
       }
-      if (isAdmin) await syncPhoneFilmAggregateStock(remoteProducts);
       const localProducts = [...state.products, ...state.deletedProducts];
+      const localById = new Map(localProducts.map((product) => [String(product.id), product]));
+      const imageReferencesChanged = remoteProducts.some((remote) => {
+        const localProduct = localById.get(String(remote.id));
+        if (!localProduct) return false;
+        if (String(remote.image || "") !== String(localProduct.image || "")) return true;
+        if (!Array.isArray(remote.images)) return false;
+        return JSON.stringify(remote.images) !== JSON.stringify(localProduct.images || []);
+      });
+      if (imageReferencesChanged) bumpProductImageRefreshVersion();
       const remoteProductIds = new Set(remoteProducts.filter((product) => !canManage || !product.deleted_at).map((product) => product.id));
       state.products = state.products.filter((product) => remoteProductIds.has(product.id));
       const cartSize = state.cart.length;
@@ -12139,7 +12380,7 @@
       if (state.cart.length !== cartSize) persistCart();
       state.deletedProducts = [];
       remoteProducts.forEach((remote) => {
-        const localProduct = localProducts.find((item) => item.id === remote.id);
+        const localProduct = localById.get(String(remote.id));
         const remoteChannel = normalizeSalesChannel(remote.sales_channel ?? remote.salesChannel, canManage ? "offline" : "online");
         const isCil = isCilProduct(remote) || isCilProduct(localProduct);
         const sourcePrice = Number(remote.source_price ?? localProduct?.sourcePriceCny ?? 0);
@@ -12210,12 +12451,195 @@
       state.deletedProducts.sort((a, b) => new Date(b.deletedAt || 0) - new Date(a.deletedAt || 0));
       persistProducts();
       persistDeletedProducts();
+      state.catalogLoaded = true;
+      state.catalogError = "";
+      state.catalogLastLoadedAt = Date.now();
+      state.catalogLoadedMode = loadMode;
       renderProducts();
       renderCart();
       if (!$("#adminShell")?.hidden) renderAdmin();
+      if (isAdmin) {
+        void syncPhoneFilmAggregateStock(remoteProducts).then(() => {
+          const aggregate = phoneFilmAggregateProduct(remoteProducts);
+          if (!aggregate) return;
+          const localAggregate = state.products.find((product) => product.id === aggregate.id);
+          if (!localAggregate || Number(localAggregate.stock) === Number(aggregate.stock)) return;
+          localAggregate.stock = Number(aggregate.stock) || 0;
+          persistProducts();
+          renderAdminProducts();
+        }).catch((syncError) => {
+          console.warn("Unable to sync phone film aggregate stock", syncError);
+        });
+      }
+      return true;
     }
 
-    async function loadCustomerData() {
+    function currentInventoryLoadMode() {
+      return isOnlineManager() ? "online-manager" : isFullAdmin() ? "full-admin" : "storefront";
+    }
+
+    async function loadStoreInventory(force = false) {
+      if (!db) return false;
+      const loadMode = currentInventoryLoadMode();
+      const loadKey = `${loadMode === "storefront" ? "public" : (state.session?.user?.id || "anonymous")}:${loadMode}`;
+      const now = Date.now();
+      if (storeInventoryLoadPromise && storeInventoryLoadKey === loadKey) return storeInventoryLoadPromise;
+      if (!force && state.catalogLoaded && state.catalogLoadedMode === loadMode
+        && now - state.catalogLastLoadedAt < CATALOG_REFRESH_INTERVAL) return true;
+      if (!force && state.catalogError && state.catalogLoadedMode === loadMode
+        && now - state.catalogLastAttemptAt < CATALOG_RETRY_INTERVAL) return false;
+      storeInventoryLoadKey = loadKey;
+      state.catalogLoading = true;
+      state.catalogError = "";
+      state.catalogLastAttemptAt = now;
+      if (canManageProducts()) {
+        state.adminProductLoadError = "";
+        renderAdminProducts();
+      } else {
+        renderProducts();
+      }
+      const promise = fetchStoreInventory()
+        .catch((error) => {
+          const message = requestErrorText(error, "Unable to load products");
+          console.warn("Unable to load store inventory", error);
+          if (storeInventoryLoadKey === loadKey) {
+            state.catalogError = message;
+            state.adminProductLoadError = message;
+            if (canManageProducts()) renderAdminProducts();
+            else renderProducts();
+          }
+          return false;
+        })
+        .finally(() => {
+          if (storeInventoryLoadPromise === promise) {
+            state.catalogLoading = false;
+            storeInventoryLoadPromise = null;
+            storeInventoryLoadKey = "";
+            if (canManageProducts()) renderAdminProducts();
+            else renderProducts();
+          }
+        });
+      storeInventoryLoadPromise = promise;
+      return promise;
+    }
+
+    async function fetchCustomerProfile(userId) {
+      let result = await requestWithTimeout(
+        () => db.from("profiles")
+          .select("id,email,full_name,points,total_spent,is_admin,admin_role,customer_barcode,created_at")
+          .eq("id", userId)
+          .single(),
+        REQUEST_TIMEOUTS.profile,
+        "Customer profile"
+      );
+      if (result.error && isMissingSchemaError(result.error)) {
+        result = await requestWithTimeout(
+          () => db.from("profiles")
+            .select("id,email,full_name,points,total_spent,is_admin,customer_barcode,created_at")
+            .eq("id", userId)
+            .single(),
+          REQUEST_TIMEOUTS.profile,
+          "Customer profile fallback"
+        );
+      }
+      return result;
+    }
+
+    async function loadCustomerProfile(force = false) {
+      if (!db || !state.session?.user) {
+        state.profile = null;
+        customerProfileUserId = "";
+        return null;
+      }
+      const userId = state.session.user.id;
+      if (!force && customerProfileUserId === userId && state.profile) return state.profile;
+      if (customerProfileLoadPromise && customerProfileUserId === userId) return customerProfileLoadPromise;
+      customerProfileUserId = userId;
+      const promise = fetchCustomerProfile(userId).then((result) => {
+        if (sessionMatches(userId) && !result.error) {
+          state.profile = result.data;
+          renderAccount();
+        }
+        return result.error ? null : result.data;
+      }).catch((error) => {
+        console.warn("Unable to load customer profile", error);
+        return null;
+      }).finally(() => {
+        if (customerProfileLoadPromise === promise) customerProfileLoadPromise = null;
+      });
+      customerProfileLoadPromise = promise;
+      return promise;
+    }
+
+    async function fetchCustomerOrders(userId) {
+      const voucherPaymentFields = "id,order_number,status,order_note,subtotal,discount_amount,voucher_code,total,item_count,points_awarded,payment_provider,payment_status,paid_at,created_at,confirmed_at,order_items(product_id,product_title,unit_price,quantity,item_note)";
+      const paymentFields = "id,order_number,status,total,item_count,points_awarded,payment_provider,payment_status,paid_at,created_at,confirmed_at,order_items(product_id,product_title,unit_price,quantity)";
+      const basicFields = "id,order_number,status,total,item_count,points_awarded,created_at,confirmed_at,order_items(product_id,product_title,unit_price,quantity)";
+      let supportsOrderRecycle = true;
+      let orderResult = await requestWithTimeout(
+        () => db.from("orders")
+          .select(voucherPaymentFields)
+          .eq("user_id", userId)
+          .is("deleted_at", null)
+          .order("created_at", { ascending: false }),
+        REQUEST_TIMEOUTS.customer,
+        "Customer orders"
+      );
+      if (orderResult.error && isMissingSchemaError(orderResult.error)) {
+        supportsOrderRecycle = false;
+        orderResult = await requestWithTimeout(
+          () => db.from("orders")
+            .select(voucherPaymentFields)
+            .eq("user_id", userId)
+            .order("created_at", { ascending: false }),
+          REQUEST_TIMEOUTS.customer,
+          "Customer orders fallback"
+        );
+      }
+      if (orderResult.error && isMissingSchemaError(orderResult.error)) {
+        let paymentQuery = db.from("orders").select(paymentFields).eq("user_id", userId);
+        if (supportsOrderRecycle) paymentQuery = paymentQuery.is("deleted_at", null);
+        orderResult = await requestWithTimeout(
+          () => paymentQuery.order("created_at", { ascending: false }),
+          REQUEST_TIMEOUTS.customer,
+          "Customer payment orders"
+        );
+      }
+      if (orderResult.error && isMissingSchemaError(orderResult.error)) {
+        let basicQuery = db.from("orders").select(basicFields).eq("user_id", userId);
+        if (supportsOrderRecycle) basicQuery = basicQuery.is("deleted_at", null);
+        orderResult = await requestWithTimeout(
+          () => basicQuery.order("created_at", { ascending: false }),
+          REQUEST_TIMEOUTS.customer,
+          "Customer basic orders"
+        );
+      }
+      return { orderResult, supportsOrderRecycle };
+    }
+
+    async function fetchCustomerData(userId, options = {}) {
+      const profilePromise = options.skipProfile ? Promise.resolve(state.profile) : loadCustomerProfile();
+      const ordersPromise = fetchCustomerOrders(userId);
+      const vouchersPromise = loadCustomerVouchers();
+      const [profileResult, ordersResult, vouchersResult] = await Promise.allSettled([
+        profilePromise,
+        ordersPromise,
+        vouchersPromise
+      ]);
+      if (!sessionMatches(userId)) return false;
+      if (profileResult.status === "fulfilled" && profileResult.value) state.profile = profileResult.value;
+      if (ordersResult.status === "fulfilled") {
+        state.customerOrders = ordersResult.value.orderResult.error ? [] : (ordersResult.value.orderResult.data || []);
+      } else {
+        state.customerOrders = [];
+        console.warn("Unable to load customer orders", ordersResult.reason);
+      }
+      if (vouchersResult.status === "rejected") console.warn("Unable to load customer vouchers", vouchersResult.reason);
+      renderAccount();
+      return true;
+    }
+
+    async function loadCustomerData(options = {}) {
       if (!db || !state.session?.user) {
         state.profile = null;
         state.customerOrders = [];
@@ -12223,38 +12647,26 @@
         state.selectedCustomerVoucherId = null;
         state.voucherQuote = null;
         renderAccount();
-        return;
+        return false;
       }
       const userId = state.session.user.id;
-      let profilePromise = db.from("profiles").select("id,email,full_name,points,total_spent,is_admin,admin_role,customer_barcode,created_at").eq("id", userId).single();
-      profilePromise = profilePromise.then((result) => {
-        if (!result.error || !/customer_barcode|admin_role/i.test(result.error.message || "")) return result;
-        return db.from("profiles").select("id,email,full_name,points,total_spent,is_admin,customer_barcode,created_at").eq("id", userId).single();
+      if (customerDataLoadPromise && customerDataUserId === userId) return customerDataLoadPromise;
+      customerDataUserId = userId;
+      const promise = fetchCustomerData(userId, options).catch((error) => {
+        if (customerDataUserId === userId && sessionMatches(userId)) {
+          state.customerOrders = [];
+          renderAccount();
+        }
+        console.warn("Unable to load customer data", error);
+        return false;
+      }).finally(() => {
+        if (customerDataLoadPromise === promise) {
+          customerDataLoadPromise = null;
+          customerDataUserId = "";
+        }
       });
-      const voucherPaymentFields = "id,order_number,status,order_note,subtotal,discount_amount,voucher_code,total,item_count,points_awarded,payment_provider,payment_status,paid_at,created_at,confirmed_at,order_items(product_id,product_title,unit_price,quantity,item_note)";
-      const paymentFields = "id,order_number,status,total,item_count,points_awarded,payment_provider,payment_status,paid_at,created_at,confirmed_at,order_items(product_id,product_title,unit_price,quantity)";
-      const basicFields = "id,order_number,status,total,item_count,points_awarded,created_at,confirmed_at,order_items(product_id,product_title,unit_price,quantity)";
-      let supportsOrderRecycle = true;
-      let orderResult = await db.from("orders").select(voucherPaymentFields).eq("user_id", userId).is("deleted_at", null).order("created_at", { ascending: false });
-      if (orderResult.error && /deleted_at/i.test(orderResult.error.message || "")) {
-        supportsOrderRecycle = false;
-        orderResult = await db.from("orders").select(voucherPaymentFields).eq("user_id", userId).order("created_at", { ascending: false });
-      }
-      if (orderResult.error && /subtotal|discount_amount|voucher_code|order_note|item_note/i.test(orderResult.error.message || "")) {
-        let paymentQuery = db.from("orders").select(paymentFields).eq("user_id", userId);
-        if (supportsOrderRecycle) paymentQuery = paymentQuery.is("deleted_at", null);
-        orderResult = await paymentQuery.order("created_at", { ascending: false });
-      }
-      if (orderResult.error && /payment_provider|payment_status|paid_at/i.test(orderResult.error.message || "")) {
-        let basicQuery = db.from("orders").select(basicFields).eq("user_id", userId);
-        if (supportsOrderRecycle) basicQuery = basicQuery.is("deleted_at", null);
-        orderResult = await basicQuery.order("created_at", { ascending: false });
-      }
-      const profileResult = await profilePromise;
-      if (!profileResult.error) state.profile = profileResult.data;
-      state.customerOrders = orderResult.error ? [] : (orderResult.data || []);
-      await loadCustomerVouchers();
-      renderAccount();
+      customerDataLoadPromise = promise;
+      return promise;
     }
 
     function nativeNotificationPlugin() {
@@ -12787,34 +13199,84 @@
     }
 
     async function handleAuthSession(session) {
-      if (!session?.user) cancelDesignRemoteSave();
-      state.session = session;
-      renderAccount();
-      if (session?.user && hasPendingOAuth()) {
-        clearPendingOAuth();
+      const userId = session?.user?.id || "";
+      const sessionKey = userId || "__signed_out__";
+      if (authSessionPromise && authSessionUserId === sessionKey) return authSessionPromise;
+      authSessionUserId = sessionKey;
+      const promise = (async () => {
+        if (!session?.user) {
+          cancelDesignRemoteSave();
+          state.session = null;
+          state.profile = null;
+          state.customerOrders = [];
+          state.customerVouchers = [];
+          state.selectedCustomerVoucherId = null;
+          state.voucherQuote = null;
+          state.authReady = true;
+          await stopAdminOrderRealtime();
+          if (state.deletedProducts.length) {
+            state.deletedProducts = [];
+            persistDeletedProducts();
+          }
+          renderAccount();
+          if (isAdminRoute()) showAdmin();
+          return true;
+        }
+
+        state.session = session;
+        state.authReady = false;
+        renderAccount();
+        if (hasPendingOAuth()) {
+          clearPendingOAuth();
+          applyStoreDesign();
+          openPanel("account");
+        }
+
+        // The profile decides whether this is a customer, a full admin, or an online-only manager.
+        if (customerProfileUserId !== userId) state.profile = null;
+        await loadCustomerProfile();
+        if (!sessionMatches(userId)) return false;
+        state.authReady = true;
         applyStoreDesign();
-        openPanel("account");
-      }
-      await loadCustomerData();
-      await loadStorefrontDesign();
-      if (canManageProducts()) {
-        await loadStoreInventory();
-        if (isFullAdmin()) {
-          await subscribeToAdminOrderRealtime();
+        if (isAdminRoute()) showAdmin();
+
+        const backgroundTasks = [
+          loadStorefrontDesign(),
+          loadStoreInventory()
+        ];
+        if (!canManageProducts()) {
+          backgroundTasks.push(loadCustomerData({ skipProfile: true }));
+          await stopAdminOrderRealtime();
+          if (state.deletedProducts.length) {
+            state.deletedProducts = [];
+            persistDeletedProducts();
+          }
+        } else if (isFullAdmin()) {
+          backgroundTasks.push(subscribeToAdminOrderRealtime());
           if (pendingNotificationOrderId && isAdminRoute()) openAdminOrderFromNotification(pendingNotificationOrderId);
         } else {
           await stopAdminOrderRealtime();
         }
-      } else if (state.deletedProducts.length) {
-        await stopAdminOrderRealtime();
-        state.deletedProducts = [];
-        persistDeletedProducts();
-      } else {
-        await stopAdminOrderRealtime();
-      }
-      state.authReady = true;
-      applyStoreDesign();
-      if (isAdminRoute()) showAdmin();
+        void Promise.allSettled(backgroundTasks).then(() => {
+          if (sessionMatches(userId)) {
+            applyStoreDesign();
+            if (isAdminRoute()) renderAdmin();
+          }
+        });
+        return true;
+      })().catch((error) => {
+        console.warn("Unable to initialize authenticated session", error);
+        if (sessionMatches(userId) || !userId) {
+          state.authReady = true;
+          renderAccount();
+          if (isAdminRoute()) showAdmin();
+        }
+        return false;
+      }).finally(() => {
+        if (authSessionPromise === promise) authSessionPromise = null;
+      });
+      authSessionPromise = promise;
+      return promise;
     }
 
     async function initSupabase() {
@@ -12823,18 +13285,34 @@
         renderAccount();
         return;
       }
-      const { data } = await db.auth.getSession();
-      await handleAuthSession(data.session);
-      if (!canManageProducts()) await loadStoreInventory();
-      db.auth.onAuthStateChange((_event, session) => {
-        window.setTimeout(() => handleAuthSession(session), 0);
+      let session = null;
+      try {
+        const result = await requestWithTimeout(
+          () => db.auth.getSession(),
+          REQUEST_TIMEOUTS.auth,
+          "Authentication session"
+        );
+        session = result.data?.session || null;
+      } catch (error) {
+        console.warn("Unable to read authentication session", error);
+      }
+      authStateUserKey = session?.user?.id || "__signed_out__";
+      await handleAuthSession(session);
+      db.auth.onAuthStateChange((event, nextSession) => {
+        const nextKey = nextSession?.user?.id || "__signed_out__";
+        if ((event === "INITIAL_SESSION" || event === "TOKEN_REFRESHED") && nextKey === authStateUserKey) return;
+        authStateUserKey = nextKey;
+        window.setTimeout(() => { void handleAuthSession(nextSession); }, 0);
       });
-      if (!canManageProducts()) {
-        window.setInterval(() => {
-          if (!document.hidden && !canManageProducts()) void loadStoreInventory();
-        }, 30000);
+      if (!inventoryRefreshTimer) {
+        inventoryRefreshTimer = window.setInterval(() => {
+          if (!document.hidden) void loadStoreInventory();
+        }, CATALOG_REFRESH_INTERVAL);
+      }
+      if (!inventoryVisibilityListenerReady) {
+        inventoryVisibilityListenerReady = true;
         document.addEventListener("visibilitychange", () => {
-          if (!document.hidden && !canManageProducts()) void loadStoreInventory();
+          if (!document.hidden) void loadStoreInventory();
         });
       }
     }
@@ -13615,13 +14093,7 @@
       refreshIcons();
     }
 
-    async function loadAdminData() {
-      if (!db || !state.profile?.is_admin) return;
-      state.adminOrdersLoading = true;
-      state.adminOrdersError = "";
-      const customerPromise = db.from("profiles").select("id,email,full_name,points,total_spent,created_at,updated_at,is_admin").order("created_at", { ascending: false });
-      const voucherPromise = db.from("vouchers").select("*").order("created_at", { ascending: false });
-      const voucherAssignmentPromise = db.from("customer_vouchers").select("id,voucher_id,user_id,source,redeemed_at,reserved_at,used_at,order_id,vouchers(code,name,active,starts_at,expires_at),profiles!customer_vouchers_user_id_fkey(email,full_name)").order("redeemed_at", { ascending: false });
+    async function fetchAdminOrders() {
       const voucherPaymentFields = "id,order_number,user_id,status,order_note,subtotal,discount_amount,voucher_code,total,item_count,points_awarded,payment_provider,payment_status,paid_at,created_at,confirmed_at,deleted_at,deleted_by,order_source,fulfillment_method,fulfillment_configured,delivery_fee,delivery_distance_km,delivery_address,delivery_phone,pickup_location,guest_name,guest_phone,guest_address,profiles!orders_user_id_fkey(email,full_name,customer_barcode,is_admin),order_items(product_id,product_title,quantity,unit_price,item_note)";
       const voucherPaymentFieldsWithoutRecycle = "id,order_number,user_id,status,order_note,subtotal,discount_amount,voucher_code,total,item_count,points_awarded,payment_provider,payment_status,paid_at,created_at,confirmed_at,order_source,fulfillment_method,fulfillment_configured,delivery_fee,delivery_distance_km,delivery_address,delivery_phone,pickup_location,guest_name,guest_phone,guest_address,profiles!orders_user_id_fkey(email,full_name,customer_barcode,is_admin),order_items(product_id,product_title,quantity,unit_price,item_note)";
       const paymentFields = "id,order_number,user_id,status,total,item_count,points_awarded,payment_provider,payment_status,paid_at,created_at,confirmed_at,deleted_at,deleted_by,profiles!orders_user_id_fkey(email,full_name),order_items(product_id,product_title,quantity,unit_price)";
@@ -13629,36 +14101,118 @@
       const basicFields = "id,order_number,user_id,status,total,item_count,points_awarded,created_at,confirmed_at,deleted_at,deleted_by,profiles!orders_user_id_fkey(email,full_name),order_items(product_id,product_title,quantity,unit_price)";
       const basicFieldsWithoutRecycle = "id,order_number,user_id,status,total,item_count,points_awarded,created_at,confirmed_at,profiles!orders_user_id_fkey(email,full_name),order_items(product_id,product_title,quantity,unit_price)";
       state.orderRecycleSupported = true;
-      let ordersResult = await db.from("orders").select(voucherPaymentFields).order("created_at", { ascending: false });
-      if (ordersResult.error && /deleted_at|deleted_by/i.test(ordersResult.error.message || "")) {
+      let ordersResult = await requestWithTimeout(
+        () => db.from("orders").select(voucherPaymentFields).order("created_at", { ascending: false }),
+        REQUEST_TIMEOUTS.admin,
+        "Admin orders"
+      );
+      if (ordersResult.error && isMissingSchemaError(ordersResult.error)) {
         state.orderRecycleSupported = false;
-        ordersResult = await db.from("orders").select(voucherPaymentFieldsWithoutRecycle).order("created_at", { ascending: false });
+        ordersResult = await requestWithTimeout(
+          () => db.from("orders").select(voucherPaymentFieldsWithoutRecycle).order("created_at", { ascending: false }),
+          REQUEST_TIMEOUTS.admin,
+          "Admin orders fallback"
+        );
       }
-      if (ordersResult.error && /subtotal|discount_amount|voucher_code|order_note|item_note|guest_name|guest_phone|guest_address|order_source|fulfillment|delivery_|pickup_location/i.test(ordersResult.error.message || "")) {
+      if (ordersResult.error && isMissingSchemaError(ordersResult.error)) {
         const fields = state.orderRecycleSupported ? paymentFields : paymentFieldsWithoutRecycle;
-        ordersResult = await db.from("orders").select(fields).order("created_at", { ascending: false });
+        ordersResult = await requestWithTimeout(
+          () => db.from("orders").select(fields).order("created_at", { ascending: false }),
+          REQUEST_TIMEOUTS.admin,
+          "Admin payment orders"
+        );
       }
-      if (ordersResult.error && /payment_provider|payment_status|paid_at/i.test(ordersResult.error.message || "")) {
+      if (ordersResult.error && isMissingSchemaError(ordersResult.error)) {
         const fields = state.orderRecycleSupported ? basicFields : basicFieldsWithoutRecycle;
-        ordersResult = await db.from("orders").select(fields).order("created_at", { ascending: false });
+        ordersResult = await requestWithTimeout(
+          () => db.from("orders").select(fields).order("created_at", { ascending: false }),
+          REQUEST_TIMEOUTS.admin,
+          "Admin basic orders"
+        );
       }
-      const [customersResult, vouchersResult, voucherAssignmentsResult] = await Promise.all([customerPromise, voucherPromise, voucherAssignmentPromise]);
-      if (!ordersResult.error) {
-        const orders = ordersResult.data || [];
-        state.adminOrders = orders.filter((order) => !order.deleted_at);
-        state.deletedOrders = state.orderRecycleSupported ? orders.filter((order) => Boolean(order.deleted_at)) : [];
+      return ordersResult;
+    }
+
+    async function fetchAdminData(userId) {
+      const customerPromise = requestWithTimeout(
+        () => db.from("profiles").select("id,email,full_name,points,total_spent,created_at,updated_at,is_admin").order("created_at", { ascending: false }),
+        REQUEST_TIMEOUTS.admin,
+        "Admin customers"
+      );
+      const voucherPromise = requestWithTimeout(
+        () => db.from("vouchers").select("*").order("created_at", { ascending: false }),
+        REQUEST_TIMEOUTS.admin,
+        "Admin vouchers"
+      );
+      const voucherAssignmentPromise = requestWithTimeout(
+        () => db.from("customer_vouchers").select("id,voucher_id,user_id,source,redeemed_at,reserved_at,used_at,order_id,vouchers(code,name,active,starts_at,expires_at),profiles!customer_vouchers_user_id_fkey(email,full_name)").order("redeemed_at", { ascending: false }),
+        REQUEST_TIMEOUTS.admin,
+        "Admin voucher assignments"
+      );
+      const [ordersResult, customersResult, vouchersResult, voucherAssignmentsResult] = await Promise.allSettled([
+        fetchAdminOrders(),
+        customerPromise,
+        voucherPromise,
+        voucherAssignmentPromise
+      ]);
+      if (!sessionMatches(userId)) return false;
+      const orders = ordersResult.status === "fulfilled" ? ordersResult.value : { error: ordersResult.reason };
+      if (!orders.error) {
+        const rows = orders.data || [];
+        state.adminOrders = rows.filter((order) => !order.deleted_at);
+        state.deletedOrders = state.orderRecycleSupported ? rows.filter((order) => Boolean(order.deleted_at)) : [];
         state.adminOrdersLoaded = true;
         const latestId = String(state.latestOrderAlert?.id || "");
-        const refreshedLatest = latestId ? orders.find((order) => String(order.id) === latestId) : null;
+        const refreshedLatest = latestId ? rows.find((order) => String(order.id) === latestId) : null;
         if (refreshedLatest) state.latestOrderAlert = { ...state.latestOrderAlert, ...refreshedLatest };
       } else {
-        state.adminOrdersError = authErrorMessage(ordersResult.error);
+        state.adminOrdersLoaded = false;
+        state.adminOrdersError = authErrorMessage(orders.error);
       }
-      state.adminOrdersLoading = false;
-      if (!customersResult.error) state.customers = customersResult.data || [];
-      state.vouchers = vouchersResult.error ? [] : (vouchersResult.data || []);
-      state.voucherAssignments = voucherAssignmentsResult.error ? [] : (voucherAssignmentsResult.data || []);
+      if (customersResult.status === "fulfilled" && !customersResult.value.error) {
+        state.customers = customersResult.value.data || [];
+      } else {
+        console.warn("Unable to load admin customers", customersResult.status === "rejected" ? customersResult.reason : customersResult.value.error);
+      }
+      if (vouchersResult.status === "fulfilled" && !vouchersResult.value.error) {
+        state.vouchers = vouchersResult.value.data || [];
+      } else {
+        console.warn("Unable to load admin vouchers", vouchersResult.status === "rejected" ? vouchersResult.reason : vouchersResult.value.error);
+      }
+      if (voucherAssignmentsResult.status === "fulfilled" && !voucherAssignmentsResult.value.error) {
+        state.voucherAssignments = voucherAssignmentsResult.value.data || [];
+      } else {
+        console.warn("Unable to load admin voucher assignments", voucherAssignmentsResult.status === "rejected" ? voucherAssignmentsResult.reason : voucherAssignmentsResult.value.error);
+      }
+      return true;
+    }
+
+    async function loadAdminData() {
+      if (!db || !state.profile?.is_admin) return false;
+      const userId = state.session?.user?.id || "";
+      if (!userId) return false;
+      if (adminDataLoadPromise && adminDataUserId === userId) return adminDataLoadPromise;
+      adminDataUserId = userId;
+      state.adminOrdersLoading = true;
+      state.adminOrdersError = "";
       renderAdmin();
+      const promise = fetchAdminData(userId).catch((error) => {
+        if (adminDataUserId === userId && sessionMatches(userId)) {
+          state.adminOrdersError = requestErrorText(error, "Unable to load admin data");
+          state.adminOrdersLoaded = false;
+        }
+        console.warn("Unable to load admin data", error);
+        return false;
+      }).finally(() => {
+        if (adminDataLoadPromise === promise) {
+          state.adminOrdersLoading = false;
+          adminDataLoadPromise = null;
+          adminDataUserId = "";
+          if (!$("#adminShell")?.hidden) renderAdmin();
+        }
+      });
+      adminDataLoadPromise = promise;
+      return promise;
     }
 
     function adminOrderItemsSummary(order, options = {}) {
@@ -15051,8 +15605,12 @@
         : categoryActive
           ? `No products in ${escapeHtml(categoryName(category))}`
           : `No products in ${escapeHtml(channelLabel)}`;
+      const inventoryLoading = state.catalogLoading && state.catalogLoadedMode !== currentInventoryLoadMode();
       const loadError = state.adminProductLoadError
-        ? `<div class="empty-state">商品渠道数据加载失败：${escapeHtml(state.adminProductLoadError)}</div>`
+        ? `<div class="empty-state catalog-load-state"><i data-lucide="wifi-off"></i><span>商品渠道数据加载失败：${escapeHtml(state.adminProductLoadError)}</span><button class="button ghost" type="button" data-retry-catalog><i data-lucide="refresh-cw"></i><span>${t("retry")}</span></button></div>`
+        : "";
+      const loadState = inventoryLoading && !channelProducts.length
+        ? `<div class="empty-state catalog-load-state"><i data-lucide="loader-circle"></i><span>${t("productsLoading")}</span></div>`
         : "";
       $("#adminProductRows").innerHTML = products.map((product) => {
         const isOnlineChannel = channel === "online";
@@ -15082,7 +15640,7 @@
           </div>
         </article>
       `;
-      }).join("") || loadError || `<div class="empty-state">${emptyMessage}</div>`;
+      }).join("") || loadState || loadError || `<div class="empty-state">${emptyMessage}</div>`;
       $("#adminTrashRows").innerHTML = channelTrashProducts.map((product) => `
         <article class="admin-product-item trashed">
           <img src="${escapeHtml(imageSource(product.image) || PRODUCT_IMAGE_FALLBACK)}" alt="${escapeHtml(product.title)}" loading="eager" decoding="async">
@@ -15344,19 +15902,44 @@
     function renderAdmin() {
       if ($("#adminShell").hidden) return;
       renderAdminOrderNotificationUi();
-      renderMetrics("#metricGrid");
-      renderSalesAnalytics();
-      renderAdminProcurement();
-      renderRevenueChart();
-      renderInventoryStatus();
-      renderAdminProducts();
-      renderAdminOrders();
-      renderCustomers();
-      renderAdminVouchers();
-      renderCustomerDetail();
-      renderTopProducts();
-      renderOrders();
-      renderAdminDesign();
+      const activeTab = isOnlineManager() ? "products" : (state.adminTab || "overview");
+      switch (activeTab) {
+        case "overview":
+          renderMetrics("#metricGrid");
+          renderRevenueChart();
+          renderInventoryStatus();
+          break;
+        case "products":
+          renderAdminProducts();
+          break;
+        case "orders":
+          renderAdminOrders();
+          break;
+        case "customers":
+          renderCustomers();
+          renderCustomerDetail();
+          break;
+        case "vouchers":
+          renderAdminVouchers();
+          break;
+        case "analytics":
+          renderSalesAnalytics();
+          renderTopProducts();
+          renderOrders();
+          break;
+        case "procurement":
+          renderAdminProcurement();
+          break;
+        case "design":
+          renderAdminDesign();
+          break;
+        default:
+          renderMetrics("#metricGrid");
+          renderRevenueChart();
+          renderInventoryStatus();
+      }
+      // A detail modal can remain open while data refreshes or the user switches tabs.
+      if (state.activeCustomerId && activeTab !== "customers") renderCustomerDetail();
       refreshIcons();
     }
 
@@ -15675,23 +16258,33 @@
       state.productMediaLoading = true;
       state.productMediaError = "";
       renderProductMediaLibrary();
-      const { data, error } = await db.from("product_media")
-        .select("id,url,storage_path,file_name,alt_text,mime_type,size_bytes,width,height,source,created_at,updated_at")
-        .order("created_at", { ascending: false })
-        .limit(1000);
-      state.productMediaLoading = false;
-      if (error) {
+      try {
+        const { data, error } = await requestWithTimeout(
+          () => db.from("product_media")
+            .select("id,url,storage_path,file_name,alt_text,mime_type,size_bytes,width,height,source,created_at,updated_at")
+            .order("created_at", { ascending: false })
+            .limit(1000),
+          REQUEST_TIMEOUTS.admin,
+          "Product media library"
+        );
+        if (error) {
+          state.productMediaLoaded = false;
+          state.productMediaError = state.lang === "zh"
+            ? "请先在 Supabase SQL Editor 运行 supabase-product-media.sql"
+            : "Run supabase-product-media.sql in Supabase SQL Editor first";
+          return;
+        }
+        state.productMedia = (data || []).map(normalizeProductMediaRecord).filter((media) => media.id && media.url);
+        state.productMediaLoaded = true;
+        state.productMediaError = "";
+      } catch (error) {
         state.productMediaLoaded = false;
-        state.productMediaError = state.lang === "zh"
-          ? "请先在 Supabase SQL Editor 运行 supabase-product-media.sql"
-          : "Run supabase-product-media.sql in Supabase SQL Editor first";
+        state.productMediaError = requestErrorText(error, state.lang === "zh" ? "媒体库加载超时" : "Media library timed out");
+        console.warn("Unable to load product media library", error);
+      } finally {
+        state.productMediaLoading = false;
         renderProductMediaLibrary();
-        return;
       }
-      state.productMedia = (data || []).map(normalizeProductMediaRecord).filter((media) => media.id && media.url);
-      state.productMediaLoaded = true;
-      state.productMediaError = "";
-      renderProductMediaLibrary();
     }
 
     function openProductMediaLibrary() {
@@ -16866,6 +17459,11 @@
       if (target.matches("[data-toggle-catalog-categories]")) {
         toggleCatalogCategories();
       }
+      if (target.matches("[data-retry-catalog]")) {
+        target.disabled = true;
+        void loadStoreInventory(true);
+        return;
+      }
       if (target.matches("[data-category]")) {
         state.category = target.dataset.category;
         renderProducts();
@@ -17399,7 +17997,16 @@
     if (!isAdminRoute()) openDeliveryNotice();
     initNativeOrderNotifications();
     initNativeOAuth();
-    initSupabase().then(handlePaymentReturn);
+    // Public products do not need an auth round trip. Start them immediately and let auth/design data fill in later.
+    if (!isAdminRoute()) void loadStoreInventory();
+    initSupabase()
+      .catch((error) => {
+        console.warn("GO GO SHOP startup error", error);
+        state.authReady = true;
+        renderAccount();
+        if (isAdminRoute()) showAdmin();
+      })
+      .then(handlePaymentReturn);
     if (isAdminRoute()) {
       showAdmin();
     } else {
