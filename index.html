@@ -13982,7 +13982,7 @@
 
     function renderAdminRoleUi() {
       const onlineOnly = isOnlineManager();
-      const allowedTabs = new Set(["products", "orders", "customers", "vouchers", "analytics", "design"]);
+      const allowedTabs = new Set(["overview", "products", "orders", "customers", "vouchers", "analytics", "design"]);
       $$('[data-admin-tab]').forEach((button) => {
         button.hidden = onlineOnly && !allowedTabs.has(button.dataset.adminTab);
       });
@@ -14072,7 +14072,7 @@
     }
 
     function setAdminTab(tab) {
-      const onlineManagerTabs = new Set(["products", "orders", "customers", "vouchers", "analytics", "design"]);
+      const onlineManagerTabs = new Set(["overview", "products", "orders", "customers", "vouchers", "analytics", "design"]);
       if (isOnlineManager() && !onlineManagerTabs.has(tab)) tab = "products";
       state.adminTab = tab;
       if (tab === "orders") clearAdminOrderUnread();
