@@ -210,6 +210,11 @@
       </section>
       <aside class="summary">
         <h2 id="summaryTitle">Order Summary</h2>
+        <fieldset id="posPaymentMethod" class="manual-discount-panel">
+          <legend id="paymentMethodLabel">Payment Method</legend>
+          <label><input type="radio" name="posPaymentMethod" value="eftpos" checked> EFTPOS</label>
+          <label style="margin-left:24px"><input type="radio" name="posPaymentMethod" value="cash"> CASH</label>
+        </fieldset>
         <div class="manual-discount-panel">
           <div class="manual-discount-head"><label for="manualDiscountValue" id="manualDiscountLabel">Order Discount</label><button class="manual-discount-clear hidden" id="clearManualDiscount" type="button" title="Clear Discount"><i data-lucide="x"></i></button></div>
           <div class="manual-discount-controls"><div class="discount-modes" id="manualDiscountType" role="group" aria-label="Discount Type"><button type="button" data-manual-discount-type="percent" aria-pressed="true">%</button><button type="button" data-manual-discount-type="fixed" aria-pressed="false">NZ$</button></div><input id="manualDiscountValue" type="number" min="0" max="100" step="0.01" inputmode="decimal" placeholder="0" aria-label="Order Discount"></div>
@@ -337,7 +342,7 @@
       const fallbackDiscountLine=receipt.discount>0&&!voucherDiscountLine&&!manualDiscountLine?`<span>${isChinese?"优惠":"Discount"}: -${money.format(receipt.discount)}</span>`:"";
       const totalSavingsLine=receipt.discount>0?`<span><strong>${isChinese?"总优惠":"Total Savings"}</strong>: -${money.format(receipt.discount)}</span>`:"";
       const discountBlock=receipt.discount>0?`<div class="receipt-meta"><span>${isChinese?"原价":"Subtotal"}: ${money.format(receipt.subtotal)}</span>${voucherDiscountLine}${manualDiscountLine}${fallbackDiscountLine}${totalSavingsLine}</div>`:"";
-      const orderNoteBlock=receipt.orderNote?`<div class="receipt-meta"><span>${isChinese?"订单备注":"Order Note"}: ${escapeHtml(receipt.orderNote)}</span></div>`:"";
+      const orderNoteBlock=(receipt.paymentMethod?`<div class="receipt-meta">${isChinese?"付款方式":"Payment"}: ${escapeHtml(receipt.paymentMethod.toUpperCase())}</div>`:"")+(receipt.orderNote?`<div class="receipt-meta"><span>${isChinese?"订单备注":"Order Note"}: ${escapeHtml(receipt.orderNote)}</span></div>`:"");
       $("#receiptPrint").innerHTML=`<div class="receipt-head"><strong>GO GO SHOP</strong><span>${isChinese?"销售小票":"SALES RECEIPT"}</span></div><div class="receipt-meta"><span>${isChinese?"订单号":"Order"}: ${escapeHtml(receipt.orderNumber)}</span><span>${isChinese?"时间":"Date"}: ${escapeHtml(date)}</span></div>${customerBlock}${receipt.lines.map(line=>receiptLineMarkup(line,receipt,isChinese)).join("")}${discountBlock}${orderNoteBlock}<div class="receipt-total"><span>${isChinese?"合计":"TOTAL"}</span><span>${money.format(receipt.total)}</span></div><div class="receipt-footer">${isChinese?"谢谢惠顾":"Thank You"}</div>`;
     }
     const RECEIPT_PAPER_WIDTH_MM=50;
@@ -492,6 +497,8 @@
       $("#manualDiscountRow").classList.toggle("hidden",manualDiscount<=0);
       $("#total").textContent=money.format(total);
       $("#completeBtn").disabled=!lines.length||state.busy;
+      $("#posPaymentMethod").disabled=state.busy;
+      $("#paymentMethodLabel").textContent=state.lang==="zh"?"付款方式":"Payment Method";
       $("#clearBtn").disabled=!lines.length;
       const discountInput=$("#manualDiscountValue");
       discountInput.max=state.manualDiscount.type==="percent"?"100":"999999.99";
@@ -524,15 +531,18 @@
       try{
         const items=[...state.cart].map(([product_id,quantity])=>{const product=state.products.find(entry=>entry.id===product_id);return {product_id,quantity,unit_price:cartUnitPrice(product),note:itemNoteText(product_id)}});
         const rpcArgs={p_items:items,p_customer_barcode:state.customer?.customer_barcode||null,p_customer_voucher_id:chosenVoucher?.id||null,p_order_note:orderNote,p_manual_discount_type:clientManualDiscount>0?state.manualDiscount.type:null,p_manual_discount_value:clientManualDiscount>0?Number(state.manualDiscount.value)||0:0};
-        const {data,error}=await db.rpc("create_pos_order",rpcArgs).single();
+        const paymentMethod=document.querySelector('[name="posPaymentMethod"]:checked')?.value||"eftpos";
+        const {data,error}=await db.rpc("create_pos_order_with_payment",{...rpcArgs,p_payment_method:paymentMethod}).single();
         if(error)throw error;
         const serverDiscount=Number(data.discount_amount||0);
         const receiptVoucherDiscount=Math.min(serverDiscount,clientVoucherDiscount);
         const receiptManualDiscount=Math.max(0,roundMoney(serverDiscount-receiptVoucherDiscount));
         state.lastReceipt={orderNumber:data.order_number,createdAt:data.confirmed_at||new Date().toISOString(),subtotal:Number(data.subtotal??data.total),discount:serverDiscount,voucherDiscount:receiptVoucherDiscount,voucherDiscountType:chosenVoucher?.vouchers?.discount_type||"",voucherDiscountValue:Number(chosenVoucher?.vouchers?.discount_value||0),manualDiscount:receiptManualDiscount,manualDiscountType:clientManualDiscount>0?state.manualDiscount.type:"",manualDiscountValue:clientManualDiscount>0?Number(state.manualDiscount.value)||0:0,voucherCode:data.voucher_code||chosenVoucher?.vouchers?.code||"",total:Number(data.total),lines,orderNote,lang:state.lang};
+        state.lastReceipt.paymentMethod=data.pos_payment_method;
         renderReceipt();
         const awardedPoints=Number(data.points_awarded||0);
         const pointsNote=awardedPoints?" · +"+awardedPoints+" "+t("pointsAwarded"):"";
+        document.querySelector('[name="posPaymentMethod"][value="eftpos"]').checked=true;
         state.cart.clear();
         state.itemNotes.clear();
         state.itemModels.clear();
