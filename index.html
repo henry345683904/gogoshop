@@ -8184,6 +8184,7 @@
 
         <section class="admin-section active" data-admin-section="overview">
           <div class="metric-grid" id="metricGrid"></div>
+          <div id="freightCalculator" hidden data-full-admin-only></div>
           <div class="chart-grid">
             <div class="admin-panel">
               <div class="admin-panel-head">
@@ -9291,6 +9292,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="store-config.js"></script>
+  <script src="freight-calculator.js?v=1"></script>
   <script src="product-localizations.js?v=5"></script>
   <script>
     const STORAGE_KEY = "gogoshop_online_products_v3";
@@ -15929,6 +15931,7 @@
       const activeTab = state.adminTab || "overview";
       switch (activeTab) {
         case "overview":
+          window.renderFreightCalculator?.(isFullAdmin(), state.lang, state.session?.user?.id);
           renderMetrics("#metricGrid");
           renderRevenueChart();
           renderInventoryStatus();
