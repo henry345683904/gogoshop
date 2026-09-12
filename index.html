@@ -10082,12 +10082,21 @@
       { key: "online-phone-cases", zh: "手机壳", en: "Phone Cases", match: /phone case|case for|手机壳|保护壳|手机保护套/i, priority: 100 },
       { key: "online-phone-accessories", zh: "手机配件", en: "Phone Accessories", match: /screen protector|tempered glass|phone film|charger|cable|phone accessory|手机膜|钢化膜|充电|数据线|手机配件|镜头膜/i, priority: 90 },
       { key: "online-keychains", zh: "钥匙链", en: "Keychains", match: /key.?chain|key.?ring|bag charm|钥匙链|钥匙扣|钥匙圈|挂件/i, priority: 80 },
+      { key: "online-stationery", zh: "文具办公", en: "Stationery & Office", match: /stationery|office|scissor|stapler|pen|notebook|文具|办公|剪刀|订书机|笔记本/i, priority: 78 },
+      { key: "online-cleaning", zh: "清洁用品", en: "Cleaning Supplies", match: /cleaning|towel|cloth|brush|sponge|清洁|毛巾|抹布|刷子/i, priority: 77 },
+      { key: "online-home-storage", zh: "家居收纳", en: "Home & Storage", match: /storage|organizer|kitchen|home|收纳|家居|厨房/i, priority: 76 },
+      { key: "online-bags", zh: "包袋用品", en: "Bags & Pouches", match: /bag|pouch|wallet|backpack|handbag|包|袋|钱包|背包/i, priority: 75 },
+      { key: "online-beauty", zh: "美妆护理", en: "Beauty & Care", match: /beauty|cosmetic|makeup|mirror|hair|skin|美妆|化妆|镜子|护肤/i, priority: 74 },
       { key: "online-blind-box-plush", zh: "盲盒与毛绒玩具", en: "Blind Boxes & Plush", match: /blind.?box|plush|soft toy|stuffed|toy|doll|盲盒|毛绒|玩偶|公仔|玩具/i, priority: 70 },
       { key: "online-gifts", zh: "礼品饰品", en: "Gifts & Accessories", match: /gift|jewell?ery|ornament|accessor|礼品|饰品|装饰|纪念品/i, priority: 10 }
     ]);
 
     function adminOnlineCategoryKey(product) {
-      const text = [product?.category, product?.productType, product?.title, product?.titleEn, product?.titleZh, product?.descriptionEn, product?.descriptionZh].filter(Boolean).join(" ");
+      const sourceCategory = String(product?.category || product?.productType || "").trim();
+      if (sourceCategory && !/^(all|other|1688 imports|uncategorized|未分类)$/i.test(sourceCategory)) {
+        return `online-source-${sourceCategory.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`;
+      }
+      const text = [product?.title, product?.titleEn, product?.titleZh, product?.descriptionEn, product?.descriptionZh].filter(Boolean).join(" ");
       const matches = ONLINE_ADMIN_CATEGORIES.filter(definition => definition.match.test(text));
       return (matches.sort((a, b) => b.priority - a.priority)[0] || ONLINE_ADMIN_CATEGORIES.at(-1)).key;
     }
@@ -10100,6 +10109,10 @@
       if (activeAdminProductChannel() === "online") {
         const definition = ONLINE_ADMIN_CATEGORIES.find(item => item.key === category);
         if (definition) return state.lang === "zh" ? definition.zh : definition.en;
+        if (String(category).startsWith("online-source-")) {
+          const raw = String(category).replace(/^online-source-/, "").replace(/-/g, " ");
+          return state.lang === "zh" ? raw : raw.replace(/\b\w/g, letter => letter.toUpperCase());
+        }
       }
       return categoryName(category);
     }
@@ -15595,9 +15608,9 @@
       const channel = activeAdminProductChannel();
       if (channel === "online") {
         const activeCategories = new Set(products.map(product => adminProductCategoryKey(product, channel)));
-        return ONLINE_ADMIN_CATEGORIES.filter(category => activeCategories.has(category.key)).map(category => category.key).length
-          ? ["All", ...ONLINE_ADMIN_CATEGORIES.filter(category => activeCategories.has(category.key)).map(category => category.key)]
-          : ["All"];
+        const known = ONLINE_ADMIN_CATEGORIES.filter(category => activeCategories.has(category.key)).map(category => category.key);
+        const generated = [...activeCategories].filter(category => category.startsWith("online-source-") && !known.includes(category)).sort();
+        return ["All", ...known, ...generated];
       }
       const activeCategories = new Set(products.map(product => adminProductCategoryKey(product, channel)));
       const ordered = storefrontCategories
