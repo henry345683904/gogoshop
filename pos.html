@@ -534,6 +534,7 @@
         const paymentMethod=document.querySelector('[name="posPaymentMethod"]:checked')?.value||"eftpos";
         const {data,error}=await db.rpc("create_pos_order_with_payment",{...rpcArgs,p_payment_method:paymentMethod}).single();
         if(error)throw error;
+        try { localStorage.setItem("gogoshop_pos_order_completed", JSON.stringify({id:data.id,at:Date.now()})); } catch {}
         const serverDiscount=Number(data.discount_amount||0);
         const receiptVoucherDiscount=Math.min(serverDiscount,clientVoucherDiscount);
         const receiptManualDiscount=Math.max(0,roundMoney(serverDiscount-receiptVoucherDiscount));

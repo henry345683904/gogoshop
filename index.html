@@ -13001,6 +13001,10 @@
     }
 
     async function handleAdminOrderRealtime(order, eventType) {
+      if (isFullAdmin() && order?.id && (order.order_source === "pos" || order.pos_payment_method || /^POS-/i.test(order.order_number || ""))) {
+        queuePosAnalyticsRefresh();
+        return;
+      }
       if (!canManageProducts() || !order?.id || order.deleted_at) return;
       const isPaid = order.payment_status === "paid";
       const isStripe = order.payment_provider === "stripe";
@@ -13012,7 +13016,10 @@
       adminOrderNotificationInFlight.add(eventKey);
       try {
         const completeOrder = await fetchAdminOrderDetails(order.id) || order;
-        if (!isOnlineOrderForAdminNotification(completeOrder)) return;
+        if (!isOnlineOrderForAdminNotification(completeOrder)) {
+          if (isFullAdmin()) queuePosAnalyticsRefresh();
+          return;
+        }
         rememberAdminOrderEvent(eventKey);
         const unreadIds = Array.isArray(state.unreadOrderIds) ? state.unreadOrderIds : [];
         state.unreadOrderIds = [...unreadIds.filter((id) => id !== order.id), order.id];
@@ -14078,6 +14085,7 @@
       const onlineManagerTabs = new Set(["overview", "products", "orders", "customers", "vouchers", "analytics", "design"]);
       if (isOnlineManager() && !onlineManagerTabs.has(tab)) tab = "products";
       state.adminTab = tab;
+      if (["overview", "analytics", "orders"].includes(tab)) refreshPosAnalyticsWhenVisible();
       if (tab === "orders") clearAdminOrderUnread();
       $$("[data-admin-tab]").forEach((button) => button.classList.toggle("active", button.dataset.adminTab === tab));
       $$("[data-admin-section]").forEach((section) => section.classList.toggle("active", section.dataset.adminSection === tab));
@@ -14147,8 +14155,62 @@
           "Admin basic orders"
         );
       }
+      if (!ordersResult.error && ordersResult.data?.length && !ordersResult.data.some(order => Object.hasOwn(order, "pos_payment_method"))) {
+        const ids = ordersResult.data.map(order => order.id);
+        for (let offset = 0; offset < ids.length; offset += 100) {
+          let methodQuery = db.from("orders").select("id,pos_payment_method,order_source").in("id", ids.slice(offset, offset + 100));
+          if (isOnlineManager()) methodQuery = methodQuery.eq("order_source", "online");
+          const methods = await requestWithTimeout(() => methodQuery, REQUEST_TIMEOUTS.admin, "Order payment methods");
+          if (methods.error) break;
+          const byId = new Map((methods.data || []).map(order => [order.id, order]));
+          ordersResult.data.forEach(order => { if (byId.has(order.id)) Object.assign(order, byId.get(order.id)); });
+        }
+      }
       return ordersResult;
     }
+
+    let posAnalyticsRefreshTimer = null;
+    let posAnalyticsRefreshRunning = false;
+    let posAnalyticsRefreshPending = false;
+    let posAnalyticsRefreshedAt = 0;
+    function queuePosAnalyticsRefresh() {
+      if (!isFullAdmin()) return;
+      posAnalyticsRefreshPending = true;
+      clearTimeout(posAnalyticsRefreshTimer);
+      posAnalyticsRefreshTimer = setTimeout(refreshPosAnalytics, 300);
+    }
+    async function refreshPosAnalytics() {
+      if (!isFullAdmin() || document.hidden || $("#adminShell")?.hidden || posAnalyticsRefreshRunning) return;
+      const userId = state.session?.user?.id;
+      if (!userId) return;
+      posAnalyticsRefreshPending = false;
+      posAnalyticsRefreshRunning = true;
+      try {
+        const result = await fetchAdminOrders();
+        if (!sessionMatches(userId) || !isFullAdmin()) return;
+        if (result.error) throw result.error;
+        state.adminOrders = (result.data || []).filter(order => !order.deleted_at);
+        state.deletedOrders = state.orderRecycleSupported ? (result.data || []).filter(order => order.deleted_at) : [];
+        state.adminOrdersLoaded = true;
+        state.adminOrdersError = "";
+        posAnalyticsRefreshedAt = Date.now();
+        renderAdmin();
+      } catch (error) {
+        state.adminOrdersError = authErrorMessage(error);
+        console.warn("Unable to refresh POS analytics", error);
+      } finally {
+        posAnalyticsRefreshRunning = false;
+        if (posAnalyticsRefreshPending) queuePosAnalyticsRefresh();
+      }
+    }
+    window.addEventListener("storage", event => {
+      if (event.key === "gogoshop_pos_order_completed") queuePosAnalyticsRefresh();
+    });
+    function refreshPosAnalyticsWhenVisible() {
+      if (!document.hidden && (posAnalyticsRefreshPending || Date.now() - posAnalyticsRefreshedAt > 15000)) queuePosAnalyticsRefresh();
+    }
+    window.addEventListener("focus", refreshPosAnalyticsWhenVisible);
+    document.addEventListener("visibilitychange", refreshPosAnalyticsWhenVisible);
 
     async function fetchAdminData(userId) {
       const customerPromise = requestWithTimeout(
@@ -15126,9 +15188,9 @@
 
       const rows = analyticsDailyRows(orders, validRange);
       if (isFullAdmin()) {
-        const posOrders = rows.flatMap(row => row.orders).filter(order => order.order_source === "pos" || /^POS-/i.test(order.order_number || ""));
+        const posOrders = rows.flatMap(row => row.orders).filter(order => order.order_source === "pos" || order.pos_payment_method || /^POS-/i.test(order.order_number || ""));
         summary.innerHTML += ["eftpos", "cash", "unrecorded"].map(method => {
-          const selected = posOrders.filter(order => (order.pos_payment_method || "unrecorded") === method);
+          const selected = posOrders.filter(order => (String(order.pos_payment_method || "").trim().toLowerCase() || "unrecorded") === method);
           const total = selected.reduce((sum, order) => sum + Number(order.total || 0), 0);
           const label = method === "unrecorded" ? (isChinese ? "未记录付款方式" : "Payment not recorded") : method.toUpperCase();
           return `<div class="metric"><span>${label}</span><strong>${formatPrice(total)}</strong><small>${isChinese ? "所选日期范围 · 线下订单" : "Selected date range · POS orders"}: ${selected.length}</small></div>`;
