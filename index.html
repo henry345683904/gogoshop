@@ -10079,16 +10079,17 @@
 
     // Admin-only taxonomy: online merchandising can evolve without rewriting offline categories.
     const ONLINE_ADMIN_CATEGORIES = Object.freeze([
-      { key: "online-blind-box-plush", zh: "盲盒与毛绒玩具", en: "Blind Boxes & Plush", match: /blind|plush|toy|doll|盲盒|毛绒|玩偶|公仔/i },
-      { key: "online-keychains", zh: "钥匙链", en: "Keychains", match: /key.?chain|key.?ring|bag charm|钥匙链|钥匙扣|挂件/i },
-      { key: "online-phone-cases", zh: "手机壳", en: "Phone Cases", match: /phone case|case for|手机壳|保护壳/i },
-      { key: "online-phone-accessories", zh: "手机配件", en: "Phone Accessories", match: /screen protector|tempered glass|charger|cable|phone accessory|手机膜|钢化膜|充电|数据线|手机配件/i },
-      { key: "online-gifts", zh: "礼品饰品", en: "Gifts & Accessories", match: /gift|jewell?ery|ornament|accessor|礼品|饰品|装饰/i }
+      { key: "online-phone-cases", zh: "手机壳", en: "Phone Cases", match: /phone case|case for|手机壳|保护壳|手机保护套/i, priority: 100 },
+      { key: "online-phone-accessories", zh: "手机配件", en: "Phone Accessories", match: /screen protector|tempered glass|phone film|charger|cable|phone accessory|手机膜|钢化膜|充电|数据线|手机配件|镜头膜/i, priority: 90 },
+      { key: "online-keychains", zh: "钥匙链", en: "Keychains", match: /key.?chain|key.?ring|bag charm|钥匙链|钥匙扣|钥匙圈|挂件/i, priority: 80 },
+      { key: "online-blind-box-plush", zh: "盲盒与毛绒玩具", en: "Blind Boxes & Plush", match: /blind.?box|plush|soft toy|stuffed|toy|doll|盲盒|毛绒|玩偶|公仔|玩具/i, priority: 70 },
+      { key: "online-gifts", zh: "礼品饰品", en: "Gifts & Accessories", match: /gift|jewell?ery|ornament|accessor|礼品|饰品|装饰|纪念品/i, priority: 10 }
     ]);
 
     function adminOnlineCategoryKey(product) {
       const text = [product?.category, product?.productType, product?.title, product?.titleEn, product?.titleZh, product?.descriptionEn, product?.descriptionZh].filter(Boolean).join(" ");
-      return (ONLINE_ADMIN_CATEGORIES.find(definition => definition.match.test(text)) || ONLINE_ADMIN_CATEGORIES.at(-1)).key;
+      const matches = ONLINE_ADMIN_CATEGORIES.filter(definition => definition.match.test(text));
+      return (matches.sort((a, b) => b.priority - a.priority)[0] || ONLINE_ADMIN_CATEGORIES.at(-1)).key;
     }
 
     function adminProductCategoryKey(product, channel = activeAdminProductChannel()) {
