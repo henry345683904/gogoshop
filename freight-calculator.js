@@ -75,7 +75,7 @@
         ${value.cost === null ? '' : `<div>${t('整批真实成本','Total landed cost')}<output>NZ$${number(value.cost+value.freight)}</output></div><div>${t('平均每件真实成本','Average landed unit cost')}<output>NZ$${number((value.cost+value.freight)/value.units,4)}</output></div>`}` : `<span>${t('请输入运费和有效的总件数。','Enter freight and a valid unit count.')}</span>`;
     }
     function history() {
-      root.querySelector('.freight-history').innerHTML = records.length ? `<table><thead><tr>${[t('日期','Date'),t('批次','Batch'),t('总件数','Units'),t('运费 NZD','Freight NZD'),t('每件附加 NZD','Freight/unit NZD'),t('真实总成本 NZD','Landed total NZD')].map(x=>`<th>${x}</th>`).join('')}</tr></thead><tbody>${records.map(r=>`<tr><td>${escape(r.date)}</td><td>${escape(r.batch)}</td><td>${r.units}</td><td>${number(r.freight)}</td><td>${number(r.freight/r.units,4)}</td><td>${r.cost===null?'—':number(r.cost+r.freight)}</td></tr>`).join('')}</tbody></table>` : t('暂无批次','No batches yet');
+      root.querySelector('.freight-history').innerHTML = records.length ? `<table><thead><tr>${[t('日期','Date'),t('批次','Batch'),t('总件数','Units'),t('货品总价 NZD（不含海运费）','Goods total NZD (excluding sea freight)'),t('运费 NZD','Freight NZD'),t('每件附加 NZD','Freight/unit NZD'),t('真实总成本 NZD','Landed total NZD')].map(x=>`<th>${x}</th>`).join('')}</tr></thead><tbody>${records.map(r=>`<tr><td>${escape(r.date)}</td><td>${escape(r.batch)}</td><td>${r.units}</td><td>${r.cost==null?'—':number(r.cost)}</td><td>${number(r.freight)}</td><td>${number(r.freight/r.units,4)}</td><td>${r.cost==null?'—':number(r.cost+r.freight)}</td></tr>`).join('')}</tbody></table>` : t('暂无批次','No batches yet');
     }
     form.addEventListener('input',update);
     form.addEventListener('change',update);
