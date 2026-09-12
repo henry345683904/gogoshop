@@ -1,6 +1,8 @@
 (() => {
   const esc = s => String(s ?? '').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const numeric = s => Number(String(s ?? '').replace(/NZD|NZ\$|RMB|CNY|[$¥￥,\s]/gi,''));
+  const roundedMoney = value => Math.round((value + Number.EPSILON * Math.max(1,Math.abs(value))) * 100) / 100;
+  const money = value => roundedMoney(value).toFixed(2);
   const headers = {
     name:/^(description|product( name)?|item description|品名|商品名称|产品名称|描述)$/i,
     code:/^(m[_ ]?pn#?|sku|item( code| no\.?)?|货号|编码)$/i,
@@ -33,6 +35,49 @@
       return m&&!/total|subtotal|gst|freight|shipping|合计|运费/i.test(m[2])?[{code:m[1],name:m[2],quantity:Number(m[3]),price:Number(m[4])}]:[];
     });
   }
+  const orderColumns = [3,8,18,19,20,31];
+  function parse1688(matrix, merges = [], prefix = '') {
+    const header = matrix.findIndex(r => /实付/.test(String(r[8] || '')) && /标题|名称/.test(String(r[18] || '')) && /单价/.test(String(r[19] || '')) && /数量/.test(String(r[20] || '')));
+    if (header < 0) return null;
+    const cell = (r,c) => {
+      const merge = merges.find(m => m.s.c === c && m.e.c === c && m.s.r <= r && m.e.r >= r);
+      return {value: matrix[merge ? merge.s.r : r]?.[c], anchor: merge ? merge.s.r : r, merged: !!merge};
+    };
+    const results = []; let previous = null;
+    for (let i = header + 1; i < matrix.length; i++) {
+      const r = matrix[i], name = String(r[18] ?? '').trim();
+      // Footer totals have no product title; merged payments belong to one order only.
+      if (!name || /^(合计|总计|实付合计|货品标题|total|grand total)$/i.test(name)) continue;
+      const payment = cell(i,8), hasPayment = String(payment.value ?? '').trim() !== '';
+      let group;
+      if (hasPayment) group = {id: `${prefix}:${payment.anchor}`, paid: numeric(payment.value), supplier: String(cell(i,3).value ?? '')};
+      else if (!merges.length && previous) group = previous;
+      else group = {id: `${prefix}:missing:${i}`, paid: NaN, supplier: String(cell(i,3).value ?? '')};
+      previous = group;
+      results.push({code:'', name, supplier: group.supplier, tracking: String(cell(i,31).value ?? ''),
+        quantity: String(r[20] ?? '').trim() ? numeric(r[20]) : NaN,
+        price: String(r[19] ?? '').trim() ? numeric(r[19]) : NaN,
+        groupId: group.id, paid: group.paid});
+    }
+    return results;
+  }
+  function allocatePaid(rows) {
+    const groups = new Map(), amounts = new Map();
+    rows.forEach(r => {if (!groups.has(r.groupId)) groups.set(r.groupId,[]);groups.get(r.groupId).push(r)});
+    for (const items of groups.values()) {
+      const paid = items[0].paid, cents = Math.round(paid * 100);
+      if (!Number.isFinite(paid) || paid < 0 || !Number.isSafeInteger(cents) || items.some(r => r.paid !== paid || !Number.isFinite(r.quantity) || r.quantity <= 0 || !Number.isFinite(r.price) || r.price < 0)) throw Error('Invalid order amounts');
+      const base = items.reduce((s,r) => s + r.price*r.quantity,0);
+      if (!Number.isFinite(base) || (base === 0 && cents > 0)) throw Error('Missing allocation prices');
+      const portions = items.map((r,i) => {const exact = base ? cents*r.price*r.quantity/base : 0;return {r,i,cents:Math.floor(exact),fraction:exact-Math.floor(exact)}});
+      // Allocate whole cents so every order reconciles to its actual payment.
+      const remainder = cents - portions.reduce((s,p) => s+p.cents,0);
+      portions.sort((a,b) => b.fraction-a.fraction || a.i-b.i);
+      for (let i=0;i<remainder;i++) portions[i % portions.length].cents++;
+      portions.forEach(p => amounts.set(p.r,p.cents/100));
+    }
+    return rows.map(r => ({...r, allocated:amounts.get(r), price:amounts.get(r)/r.quantity}));
+  }
   const libraries = new Map();
   function loadScript(url) {
     if(!libraries.has(url))libraries.set(url,new Promise((resolve,reject)=>{
@@ -45,11 +90,11 @@
     const units=rows.reduce((s,r)=>s+r.quantity,0);
     return rows.map(r=>{const unitCost=r.price/divisor*(1+tax/100);const landed=unitCost+freight/units;return {...r,unitCost,landed,suggested:landed/(1-margin/100)}});
   }
-  window.InvoiceAdvisor={parseRows,parseText,costs};
+  window.InvoiceAdvisor={parseRows,parseText,parse1688,allocatePaid,costs};
   window.mountInvoiceAdvisor=(root,zh,apply)=>{
     const t=(a,b)=>zh?a:b;
     const host=document.createElement('section');host.style.cssText='border-top:1px solid #ddd;margin-top:24px;padding-top:20px';root.append(host);
-    let rows=[],fileName='',busy=false;
+    let rows=[],fileName='',busy=false,orderMode=false;
     host.innerHTML=`<h2>${t('发票识别与价格建议','Invoice analysis & pricing')}</h2>
       <p class="muted">${t('文件在浏览器内解析，不上传发票。识别后请核对单价、数量及税费；仅用于成本分析，不修改商品。','Files are processed in your browser without uploading invoices. Review quantities, unit prices and tax. Analysis only; products are not modified.')}</p>
       <label>${t('上传发票 / 订单表（单个文件，最大 20MB）','Invoice / purchase sheet (one file, up to 20MB)')}<input data-file type="file" accept=".pdf,.xlsx,.xls,.csv,.txt,.png,.jpg,.jpeg,.webp"></label>
@@ -57,44 +102,67 @@
         <label>${t('成本来源','Cost basis')}<select data-basis><option value="cil">CIL · NZD · +15% GST</option><option value="1688">1688 · CNY ÷ 4</option><option value="nzd">NZD · ${t('已含税','tax included')}</option></select></label>
         <label>${t('人民币 / 1 NZD','CNY per NZD')}<input data-rate type="number" min="0.01" step="0.01" value="4"></label>
         <label>${t('额外税率 %','Additional tax %')}<input data-tax type="number" min="0" max="100" step="0.01" value="15"></label>
-        <label>${t('整批运费 NZD','Shipment freight NZD')}<input data-freight type="number" min="0" step="0.01" value="0"></label>
+        <label><span data-freight-label>${t('整批运费','Shipment freight')}</span><input data-freight type="number" min="0" step="0.01" value="0"></label>
+        <label>${t('运费币种','Freight currency')}<select data-freight-currency><option value="NZD">NZD</option><option value="CNY">CNY</option></select></label>
         <label>${t('目标毛利率 %','Target gross margin %')}<input data-margin type="number" min="0" max="95" step="1" value="40"></label>
       </div>
       <p class="muted">${t('建议价 = 含运费成本 ÷ (1 − 毛利率)。默认 40%，可调整；未计支付手续费、租金或其他运营费用。','Suggested price = landed cost / (1 − margin). Default 40%, adjustable; payment fees, rent and other operating expenses excluded.')}</p>
+      <p data-order-note class="muted" hidden>${t('1688 总表：D 卖家、I 订单实付款、S 标题、T 单价、U 数量、AF 运单号。实付款按各行单价 × 数量的比例分摊，同一订单只计一次，表尾合计不重复计入。海运费按总件数分摊。','1688 sheet: D supplier, I order payment, S title, T unit price, U quantity, AF tracking. Allocate each payment by line value (price × quantity); count each order once and exclude footer totals. Sea freight is allocated by unit count.')}</p>
       <p data-status role="status" aria-live="polite"></p>
-      <details><summary>${t('识别原文 / 手动粘贴','Extracted text / paste text')}</summary><textarea data-text rows="8" style="width:100%;max-width:100%"></textarea><button type="button" class="button" data-reparse>${t('重新识别原文','Reparse text')}</button></details>
-      <div class="freight-history"><table><thead><tr>${[t('货号','Code'),t('品名','Name'),t('数量','Qty'),t('采购单价（原币）','Unit price (source currency)'),t('含运费成本 NZD','Landed/unit NZD'),t('建议售价 NZD','Suggested price NZD'),''].map(v=>`<th>${v}</th>`).join('')}</tr></thead><tbody></tbody></table></div>
-      <button class="button ghost" type="button" data-add>+ ${t('添加一行','Add row')}</button>
-      <p data-total></p><button class="button" type="button" data-apply disabled>${t('将核对后的数量和成本填入上方计算器','Use reviewed quantities and costs in calculator')}</button>`;
+      <details><summary data-text-title>${t('识别原文 / 手动粘贴','Extracted text / paste text')}</summary><textarea data-text rows="8" style="width:100%;max-width:100%"></textarea><button type="button" class="button" data-reparse>${t('重新识别原文','Reparse text')}</button></details>
+      <p data-total></p><button class="button" type="button" data-apply disabled>${t('将核对后的数量和成本填入上方计算器','Use reviewed quantities and costs in calculator')}</button>
+      <div class="freight-history" tabindex="0" role="region" aria-label="${t('采购明细','Purchase items')}" style="max-height:560px"><table><thead style="position:sticky;top:0;background:#fff;z-index:1"><tr></tr></thead><tbody></tbody></table></div>
+      <button class="button ghost" type="button" data-add>+ ${t('添加一行','Add row')}</button>`;
     const q=s=>host.querySelector(s),status=s=>{q('[data-status]').textContent=s};
-    function configuration(){const freight=numeric(q('[data-freight]').value),tax=numeric(q('[data-tax]').value),margin=numeric(q('[data-margin]').value),divisor=q('[data-basis]').value==='1688'?numeric(q('[data-rate]').value):1;return {freight,tax,margin,divisor};}
-    function valid(){const c=configuration();return rows.length&&rows.every(r=>r.name.trim()&&Number.isFinite(r.quantity)&&r.quantity>0&&Number.isFinite(r.price)&&r.price>=0)&&Object.values(c).every(Number.isFinite)&&c.freight>=0&&c.divisor>0&&c.tax>=0&&c.tax<=100&&c.margin>=0&&c.margin<=95;}
+    function configuration(){const rate=Number(q('[data-rate]').value),freight=numeric(q('[data-freight]').value)/(q('[data-freight-currency]').value==='CNY'?rate:1),tax=numeric(q('[data-tax]').value),margin=numeric(q('[data-margin]').value),divisor=q('[data-basis]').value==='1688'?rate:1;return {freight,tax,margin,divisor};}
+    function analysisRows(){return orderMode?allocatePaid(rows):rows;}
+    function purchaseTotal(values,c){return orderMode?values.reduce((s,r)=>s+Math.round(r.allocated*100),0)/100/c.divisor*(1+c.tax/100):values.reduce((s,r)=>s+r.unitCost*r.quantity,0);}
+    function valid(){const c=configuration();if(!rows.length||!rows.every(r=>r.name.trim()&&Number.isFinite(r.quantity)&&r.quantity>0&&Number.isFinite(r.price)&&r.price>=0)||!Object.values(c).every(Number.isFinite)||c.freight<0||c.divisor<=0||c.tax<0||c.tax>100||c.margin<0||c.margin>95)return false;try{analysisRows();return true}catch{return false}}
     function calculate(){
       const ok=valid();q('[data-apply]').disabled=!ok||busy;
-      if(!ok){host.querySelectorAll('[data-landed],[data-suggested]').forEach(el=>{el.textContent='—'});q('[data-total]').textContent=t('请补全并核对明细，数量必须大于 0。','Complete and review the rows; quantity must exceed zero.');return;}
-      const c=configuration(),values=costs(rows,c.freight,c.divisor,c.tax,c.margin);
-      values.forEach((r,i)=>{const tr=q('tbody').children[i];tr.querySelector('[data-landed]').textContent=r.landed.toFixed(4);tr.querySelector('[data-suggested]').textContent=r.suggested.toFixed(2)});
-      const total=values.reduce((s,r)=>s+r.unitCost*r.quantity,0),units=rows.reduce((s,r)=>s+r.quantity,0);
-      q('[data-total]').textContent=`${t('总件数','Units')}: ${units} · ${t('采购成本','Purchase cost')}: NZ$${total.toFixed(2)} · ${t('含运费总成本','Landed total')}: NZ$${(total+c.freight).toFixed(2)}`;
+      if(!ok){host.querySelectorAll('[data-landed],[data-suggested],[data-allocated]').forEach(el=>{el.textContent='—'});q('[data-total]').textContent=t('请核对数量、单价、实付款及汇率；数量必须大于 0。','Review quantities, prices, payments and exchange rate; quantities must exceed zero.');return;}
+      const c=configuration(),values=costs(analysisRows(),c.freight,c.divisor,c.tax,c.margin);
+      values.forEach((r,i)=>{const tr=q('tbody').children[i];tr.querySelector('[data-landed]').textContent=r.landed.toFixed(4);tr.querySelector('[data-suggested]').textContent=money(r.suggested);if(orderMode)tr.querySelector('[data-allocated]').textContent=money(r.allocated)});
+      const total=purchaseTotal(values,c),units=rows.reduce((s,r)=>s+r.quantity,0);
+      const paidText=orderMode?`${t('订单数','Orders')}: ${new Set(rows.map(r=>r.groupId)).size} · ${t('实付合计 CNY','Total paid CNY')}: ${values.reduce((s,r)=>s+r.allocated,0).toFixed(2)} · `:'';
+      q('[data-total]').textContent=`${paidText}${t('总件数','Units')}: ${units} · ${t('采购成本','Purchase cost')}: NZ$${money(total)} · ${t('运费 NZD','Freight NZD')}: ${money(c.freight)} · ${t('每件运费 NZD','Freight/unit NZD')}: ${(c.freight/units).toFixed(4)} · ${t('含运费总成本','Landed total')}: NZ$${money(total+c.freight)}`;
     }
-    function render(){q('tbody').innerHTML=rows.map((r,i)=>`<tr data-row="${i}"><td><input data-key="code" value="${esc(r.code)}" aria-label="Code" style="min-width:90px"></td><td><input data-key="name" value="${esc(r.name)}" aria-label="Name" style="min-width:220px"></td><td><input data-key="quantity" type="number" min="0.001" step="any" value="${r.quantity}" aria-label="Quantity" style="min-width:80px"></td><td><input data-key="price" type="number" min="0" step="any" value="${r.price}" aria-label="Unit price" style="min-width:100px"></td><td data-landed>—</td><td data-suggested>—</td><td><button type="button" data-remove="${i}" title="${t('移除此行','Remove row')}" aria-label="${t('移除此行','Remove row')}">×</button></td></tr>`).join('');calculate();}
-    host.addEventListener('input',e=>{const k=e.target.dataset.key;if(k){const i=Number(e.target.closest('[data-row]').dataset.row);rows[i][k]=['quantity','price'].includes(k)?(e.target.value===''?NaN:Number(e.target.value)):e.target.value;}calculate();});
+    function render(){
+      q('[data-order-note]').hidden=!orderMode;q('[data-basis]').disabled=orderMode;q('[data-tax]').disabled=orderMode;
+      q('[data-freight-label]').textContent=orderMode?t('整批海运费','Shipment sea freight'):t('整批运费','Shipment freight');
+      q('[data-reparse]').disabled=orderMode||busy;q('[data-text]').readOnly=orderMode;
+      q('[data-reparse]').hidden=orderMode;q('[data-add]').disabled=busy;
+      q('[data-text-title]').textContent=orderMode?t('原表指定的六列','Six selected source columns'):t('识别原文 / 手动粘贴','Extracted text / paste text');
+      const headings=orderMode?[t('D · 卖家公司','D · Supplier'),t('I · 订单实付 CNY','I · Order paid CNY'),t('S · 货品标题','S · Product title'),t('T · 单价 CNY','T · Unit price CNY'),t('U · 数量','U · Qty'),t('AF · 运单号','AF · Tracking'),t('分摊实付款 CNY','Allocated payment CNY')]:[t('货号','Code'),t('品名','Name'),t('数量','Qty'),t('采购单价（原币）','Unit price (source currency)')];
+      q('thead tr').innerHTML=[...headings,t('含运费成本 NZD','Landed/unit NZD'),t('建议售价 NZD','Suggested price NZD'),''].map(v=>`<th>${v}</th>`).join('');
+      const input=(r,key,width)=>{const isNumber=['quantity','price','paid'].includes(key);return `<td><input data-key="${key}" ${isNumber?'type="number" min="0" step="any"':''} value="${esc(isNumber&&!Number.isFinite(r[key])?'':r[key])}" aria-label="${key}" style="min-width:${width}px"></td>`};
+      const seen=new Set();
+      q('tbody').innerHTML=rows.map((r,i)=>{
+        const first=!seen.has(r.groupId);seen.add(r.groupId);
+        const cells=orderMode?input(r,'supplier',160)+(first?input(r,'paid',120):`<td>${t('计入同一订单','Same order')}</td>`)+input(r,'name',240)+input(r,'price',100)+input(r,'quantity',80)+input(r,'tracking',160)+'<td data-allocated>—</td>':input(r,'code',90)+input(r,'name',220)+input(r,'quantity',80)+input(r,'price',100);
+        return `<tr data-row="${i}">${cells}<td data-landed>—</td><td data-suggested>—</td><td><button type="button" data-remove="${i}" title="${t('移除此行','Remove row')}" aria-label="${t('移除此行','Remove row')}">×</button></td></tr>`;
+      }).join('');calculate();
+    }
+    host.addEventListener('input',e=>{const k=e.target.dataset.key;if(k){const i=Number(e.target.closest('[data-row]').dataset.row);rows[i][k]=['quantity','price','paid'].includes(k)?(e.target.value===''?NaN:Number(e.target.value)):e.target.value;if(k==='paid')rows.forEach(r=>{if(r.groupId===rows[i].groupId)r.paid=rows[i].paid})}calculate();});
     q('[data-basis]').onchange=()=>{q('[data-tax]').value=q('[data-basis]').value==='cil'?'15':'0';calculate()};
     host.addEventListener('click',e=>{if(e.target.hasAttribute('data-remove')){rows.splice(Number(e.target.dataset.remove),1);render()}});
-    q('[data-add]').onclick=()=>{rows.push({code:'',name:'',quantity:1,price:0});render()};
+    q('[data-add]').onclick=()=>{rows.push({code:'',name:'',quantity:1,price:0,...(orderMode?{supplier:'',tracking:'',groupId:crypto.randomUUID(),paid:0}:{})});render()};
     q('[data-reparse]').onclick=()=>{rows=parseText(q('[data-text]').value);render();status(t(`识别到 ${rows.length} 行，请逐项核对。`,`Found ${rows.length} rows; review each row.`))};
-    q('[data-apply]').onclick=()=>{if(!valid()||busy)return;const c=configuration();apply({batch:fileName||'Invoice',units:rows.reduce((s,r)=>s+r.quantity,0),cost:costs(rows,0,c.divisor,c.tax,c.margin).reduce((s,r)=>s+r.unitCost*r.quantity,0),freight:c.freight});status(t('已填入成本计算器，商品数据未修改。','Calculator updated. Product data was not changed.'))};
+    q('[data-apply]').onclick=()=>{if(!valid()||busy)return;const c=configuration();apply({batch:fileName||'Invoice',units:rows.reduce((s,r)=>s+r.quantity,0),cost:roundedMoney(purchaseTotal(costs(analysisRows(),0,c.divisor,c.tax,c.margin),c)),freight:roundedMoney(c.freight)});status(t('已填入成本计算器，商品数据未修改。','Calculator updated. Product data was not changed.'))};
     async function ocr(image){await loadScript('https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js');const worker=await Tesseract.createWorker('eng+chi_sim');let timer;try{return (await Promise.race([worker.recognize(image),new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('OCR timed out; try a clearer image')),120000)})])).data.text}finally{clearTimeout(timer);await worker.terminate()}}
     q('[data-file]').onchange=async()=>{
       const file=q('[data-file]').files[0];if(!file)return;
       if(file.size>20*1024*1024){status(t('文件超过 20MB。','File exceeds 20MB.'));return;}
-      busy=true;q('[data-file]').disabled=true;q('[data-apply]').disabled=true;q('[data-text]').value='';rows=[];render();status(t('正在识别，扫描件首次需下载 OCR 语言包…','Reading invoice; scanned pages require an OCR language download on first use…'));
+      busy=true;q('[data-file]').disabled=true;q('[data-apply]').disabled=true;q('[data-text]').value='';rows=[];orderMode=false;render();status(t('正在识别，扫描件首次需下载 OCR 语言包…','Reading invoice; scanned pages require an OCR language download on first use…'));
       try{
         fileName=file.name;let text='';
         if(/\.(xlsx?|csv)$/i.test(file.name)){
           await loadScript('https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js');
           const wb=XLSX.read(await file.arrayBuffer(),{type:'array'});
-          for(const name of wb.SheetNames){const matrix=XLSX.utils.sheet_to_json(wb.Sheets[name],{header:1,defval:''});rows.push(...parseRows(matrix));text+=matrix.map(r=>r.join('\t')).join('\n')+'\n';}
+          const sheets=wb.SheetNames.map(name=>{const sheet=wb.Sheets[name],matrix=XLSX.utils.sheet_to_json(sheet,{header:1,defval:'',range:0,blankrows:true});return {matrix,orders:parse1688(matrix,sheet['!merges']||[],name)}});
+          orderMode=sheets.some(s=>s.orders!==null);
+          for(const s of sheets){if(orderMode){if(s.orders!==null){rows.push(...s.orders);text+=s.matrix.map(r=>orderColumns.map(c=>r[c]??'').join('\t')).join('\n')+'\n'}}else{rows.push(...parseRows(s.matrix));text+=s.matrix.map(r=>r.join('\t')).join('\n')+'\n'}}
+          if(orderMode){q('[data-basis]').value='1688';q('[data-tax]').value='0'}
         }else if(/\.pdf$/i.test(file.name)){
           await loadScript('https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js');pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
           const pdf=await pdfjsLib.getDocument({data:await file.arrayBuffer(),isEvalSupported:false}).promise;
