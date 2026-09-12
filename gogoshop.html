@@ -10077,6 +10077,32 @@
       return state.deletedProducts.filter((product) => productSalesChannel(product, "offline") === channel);
     }
 
+    // Admin-only taxonomy: online merchandising can evolve without rewriting offline categories.
+    const ONLINE_ADMIN_CATEGORIES = Object.freeze([
+      { key: "online-blind-box-plush", zh: "盲盒与毛绒玩具", en: "Blind Boxes & Plush", match: /blind|plush|toy|doll|盲盒|毛绒|玩偶|公仔/i },
+      { key: "online-keychains", zh: "钥匙链", en: "Keychains", match: /key.?chain|key.?ring|bag charm|钥匙链|钥匙扣|挂件/i },
+      { key: "online-phone-cases", zh: "手机壳", en: "Phone Cases", match: /phone case|case for|手机壳|保护壳/i },
+      { key: "online-phone-accessories", zh: "手机配件", en: "Phone Accessories", match: /screen protector|tempered glass|charger|cable|phone accessory|手机膜|钢化膜|充电|数据线|手机配件/i },
+      { key: "online-gifts", zh: "礼品饰品", en: "Gifts & Accessories", match: /gift|jewell?ery|ornament|accessor|礼品|饰品|装饰/i }
+    ]);
+
+    function adminOnlineCategoryKey(product) {
+      const text = [product?.category, product?.productType, product?.title, product?.titleEn, product?.titleZh, product?.descriptionEn, product?.descriptionZh].filter(Boolean).join(" ");
+      return (ONLINE_ADMIN_CATEGORIES.find(definition => definition.match.test(text)) || ONLINE_ADMIN_CATEGORIES.at(-1)).key;
+    }
+
+    function adminProductCategoryKey(product, channel = activeAdminProductChannel()) {
+      return channel === "online" ? adminOnlineCategoryKey(product) : productCategoryKey(product);
+    }
+
+    function adminCategoryName(category) {
+      if (activeAdminProductChannel() === "online") {
+        const definition = ONLINE_ADMIN_CATEGORIES.find(item => item.key === category);
+        if (definition) return state.lang === "zh" ? definition.zh : definition.en;
+      }
+      return categoryName(category);
+    }
+
     function setAdminProductChannel(channel) {
       if (isOnlineManager()) channel = "online";
       const nextChannel = normalizeSalesChannel(channel, activeAdminProductChannel());
@@ -15565,7 +15591,14 @@
     }
 
     function adminProductCategoryOptions(products = adminProductChannelProducts()) {
-      const activeCategories = new Set(products.map(productCategoryKey));
+      const channel = activeAdminProductChannel();
+      if (channel === "online") {
+        const activeCategories = new Set(products.map(product => adminProductCategoryKey(product, channel)));
+        return ONLINE_ADMIN_CATEGORIES.filter(category => activeCategories.has(category.key)).map(category => category.key).length
+          ? ["All", ...ONLINE_ADMIN_CATEGORIES.filter(category => activeCategories.has(category.key)).map(category => category.key)]
+          : ["All"];
+      }
+      const activeCategories = new Set(products.map(product => adminProductCategoryKey(product, channel)));
       const ordered = storefrontCategories
         .filter((category) => activeCategories.has(category.key))
         .map((category) => category.key);
@@ -15583,7 +15616,7 @@
       const selected = options.includes(state.adminProductCategory) ? state.adminProductCategory : "All";
       state.adminProductCategory = selected;
       select.innerHTML = options.map((category) => `
-        <option value="${escapeHtml(category)}">${escapeHtml(categoryName(category))}</option>
+        <option value="${escapeHtml(category)}">${escapeHtml(adminCategoryName(category))}</option>
       `).join("");
       select.value = selected;
       return selected;
@@ -15595,7 +15628,7 @@
         ? state.adminProductCategory
         : "All";
       const categoryProducts = products.filter((product) => (
-        category === "All" || productCategoryKey(product) === category
+        category === "All" || adminProductCategoryKey(product) === category
       ));
       if (!query) return categoryProducts;
       const terms = query.split(/\s+/).filter(Boolean);
