@@ -92,5 +92,13 @@
       catch {root.querySelector('.freight-status').textContent=t('保存失败，请检查浏览器存储空间。','Could not save. Check browser storage.');}
     });
     update();history();
+    window.mountInvoiceAdvisor?.(root, zh, values => {
+      field('mode').value = 'total';
+      field('units').value = values.units;
+      field('cost').value = values.cost.toFixed(2);
+      field('freight').value = values.freight;
+      field('batch').value = values.batch.slice(0,100);
+      update();
+    });
   };
 })();
