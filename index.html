@@ -10110,7 +10110,7 @@
         const definition = ONLINE_ADMIN_CATEGORIES.find(item => item.key === category);
         if (definition) return state.lang === "zh" ? definition.zh : definition.en;
         if (String(category).startsWith("online-source-")) {
-          const raw = String(category).replace(/^online-source-/, "").replace(/-/g, " ");
+          const raw = String(category).replace(/^online-source-/, "").replace(/\bonline\b[-_ ]*/ig, "").replace(/-/g, " ").replace(/\s+/g, " ").trim();
           return state.lang === "zh" ? raw : raw.replace(/\b\w/g, letter => letter.toUpperCase());
         }
       }
