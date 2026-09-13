@@ -9330,6 +9330,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="store-config.js"></script>
   <script src="invoice-advisor.js?v=3"></script>
+  <script src="pos-order-editor.js?v=1"></script>
   <script src="freight-calculator.js?v=3"></script>
   <script src="product-localizations.js?v=5"></script>
   <script>
@@ -14407,7 +14408,7 @@
       }).join("");
       const more = extraCount ? `<span class="admin-order-item-thumb-more">+${extraCount}</span>` : "";
       const itemText = items.length
-        ? items.map((item) => `${escapeHtml(orderItemName(item))} × ${Math.max(0, Number(item.quantity) || 0)}${includeNotes && item.item_note ? ` · ${state.lang === "zh" ? "备注" : "Note"}: ${escapeHtml(item.item_note)}` : ""}`).join("<br>")
+        ? items.map((item) => `${escapeHtml(orderItemName(item))} · ${state.lang === "zh" ? "货号" : "Item code"}: ${escapeHtml(productForOrderItem(item) ? productItemCode(productForOrderItem(item)) : "-")} × ${Math.max(0, Number(item.quantity) || 0)}${includeNotes && item.item_note ? ` · ${state.lang === "zh" ? "备注" : "Note"}: ${escapeHtml(item.item_note)}` : ""}`).join("<br>")
         : (state.lang === "zh" ? "暂无商品明细" : "No product details");
       const orderNote = includeNotes && order?.order_note && !includeAdminEditor
         ? `<div><strong>${state.lang === "zh" ? "订单备注" : "Order note"}:</strong> ${escapeHtml(order.order_note)}</div>`
@@ -14447,7 +14448,7 @@
           : (order.order_number?.startsWith("POS-") && order.user_id === state.session?.user?.id
               ? '<strong>到店顾客</strong><div class="muted">线下扫码</div>'
               : `${escapeHtml(customer.full_name || customer.email || "Customer")}<div class="muted">${escapeHtml(customer.email || "")}</div>`);
-        const canEdit = order.status === "pending" && order.payment_provider !== "stripe";
+        const canEdit = (order.status === "pending" || (isFullAdmin() && order.order_source === "pos" && order.status === "confirmed" && order.payment_status !== "refunded" && !order.deleted_at)) && order.payment_provider !== "stripe";
         const canConfirm = order.status === "pending"
           && (order.payment_provider !== "stripe" || order.payment_status === "paid");
         const actions = [
@@ -14935,6 +14936,20 @@
 
     async function editSupabaseOrder(orderId) {
       const order = state.adminOrders.find((item) => item.id === orderId);
+      if (order?.order_source === "pos" && order.status === "confirmed" && isFullAdmin()) {
+        const fresh = await db.from("orders").select("*,order_items(*)").eq("id",order.id).single();
+        if (fresh.error) return showToast(authErrorMessage(fresh.error));
+        return window.openPosOrderEditor({
+          order: fresh.data, products: state.products.filter(p => productSalesChannel(p, "offline") === "offline"),
+          code: productItemCode, name: productName, escape: escapeHtml, money: formatPrice, zh: state.lang === "zh",
+          save: async (items, discount) => {
+            const {error} = await db.rpc("edit_pos_order", {p_order_id:order.id,p_items:items,p_discount:discount,p_expected_version:fresh.data.edit_version || 0});
+            if(error) throw new Error(authErrorMessage(error));
+            await Promise.all([loadAdminData(),loadStoreInventory(true),loadCustomerData()]);
+            renderAll();showToast(state.lang === "zh" ? "订单已更新" : "Order updated");
+          }
+        });
+      }
       if (!order || order.status !== "pending") return showToast("Only pending orders can be edited");
       if (order.payment_provider === "stripe") return showToast("Online payment orders cannot be edited");
       const items = (order.order_items || []).map((item) => {
