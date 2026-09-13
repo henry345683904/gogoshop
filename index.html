@@ -6432,6 +6432,11 @@
       overscroll-behavior: contain;
     }
 
+    .daily-sales-entry { --daily-entry-background:#fff; background:var(--daily-entry-background); border-bottom:1px solid #dedede; }
+    .daily-sales-entry:nth-child(even) { --daily-entry-background:#f1f2f3; }
+    .daily-sales-entry .daily-sales-day,
+    .daily-sales-entry .daily-reconcile-panel,
+    .daily-sales-entry .daily-reconcile-row { background:var(--daily-entry-background); }
     .daily-reconcile-panel > summary { cursor:pointer; padding:8px; font-size:13px; font-weight:600; }
     .daily-reconcile-panel > summary:focus-visible { outline:2px solid var(--teal); outline-offset:-2px; }
     .daily-reconcile-row { display:flex; flex-wrap:wrap; gap:10px 16px; padding:0 8px 14px; border-bottom:1px solid #ddd; }
@@ -6464,8 +6469,10 @@
 
     .daily-sales-day summary:hover,
     .daily-sales-day summary:focus-visible {
-      background: #f7f9f8;
+      background: var(--daily-entry-background, #f7f9f8);
     }
+
+    .daily-sales-day summary:focus-visible { outline:2px solid var(--teal); outline-offset:-2px; }
 
     .daily-sales-date,
     .daily-sales-date strong,
