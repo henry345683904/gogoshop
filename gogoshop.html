@@ -6442,7 +6442,7 @@
 
     .daily-sales-day summary {
       display: grid;
-      grid-template-columns: minmax(160px, .8fr) minmax(160px, 1fr) auto 20px;
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) 20px;
       gap: 14px;
       align-items: center;
       min-height: 64px;
@@ -6468,6 +6468,11 @@
       min-width: 0;
     }
 
+    .daily-sales-date { grid-column: 1; grid-row: 1; }
+    .daily-sales-total { grid-column: 2; grid-row: 1; }
+    .daily-sales-payment-totals { grid-column: 3; grid-row: 1; }
+    .daily-sales-chevron { grid-column: 4; grid-row: 1; }
+
     .daily-sales-date strong {
       font-size: 14px;
       line-height: 1.25;
@@ -6484,8 +6489,9 @@
       overflow: hidden;
       border-radius: 999px;
       background: #edf0f0;
-      grid-column: 1 / 4;
-      width: 100%;
+      grid-column: 1;
+      grid-row: 2;
+      width: min(100%, 140px);
     }
 
     .daily-sales-bar span {
@@ -6502,7 +6508,7 @@
       white-space: nowrap;
     }
 
-    .daily-sales-payment-totals { display:flex; flex-wrap:wrap; gap:8px 14px; min-width:150px; font-size:11px; line-height:1.15; white-space:nowrap; color:var(--muted); }
+    .daily-sales-payment-totals { display:flex; flex-wrap:wrap; gap:8px 14px; min-width:0; font-size:11px; line-height:1.15; color:var(--muted); }
     .daily-sales-payment-totals span { display:inline-flex; gap:4px; }
     .daily-sales-payment-totals strong { color:var(--ink); font-variant-numeric:tabular-nums; }
 
@@ -7215,6 +7221,8 @@
         grid-row: 3;
         height: 6px;
       }
+
+      .daily-sales-chevron { grid-column: 3; }
 
       .daily-sales-date strong {
         font-size: 12px;
