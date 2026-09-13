@@ -95,7 +95,7 @@
     const t=(a,b)=>zh?a:b;
     const host=document.createElement('section');host.style.cssText='border-top:1px solid #ddd;margin-top:24px;padding-top:20px';root.append(host);
     let rows=[],fileName='',busy=false,orderMode=false;
-    host.innerHTML=`<h2>${t('发票识别与价格建议','Invoice analysis & pricing')}</h2>
+    host.innerHTML=`<details class="invoice-analysis-panel"><summary style="cursor:pointer;padding:8px 0;font-size:18px;font-weight:600">${t('发票识别与价格建议','Invoice analysis & pricing')}</summary>
       <p class="muted">${t('文件在浏览器内解析，不上传发票。识别后请核对单价、数量及税费；仅用于成本分析，不修改商品。','Files are processed in your browser without uploading invoices. Review quantities, unit prices and tax. Analysis only; products are not modified.')}</p>
       <label>${t('上传发票 / 订单表（单个文件，最大 20MB）','Invoice / purchase sheet (one file, up to 20MB)')}<input data-file type="file" accept=".pdf,.xlsx,.xls,.csv,.txt,.png,.jpg,.jpeg,.webp"></label>
       <div class="freight-fields">
@@ -112,7 +112,7 @@
       <details><summary data-text-title>${t('识别原文 / 手动粘贴','Extracted text / paste text')}</summary><textarea data-text rows="8" style="width:100%;max-width:100%"></textarea><button type="button" class="button" data-reparse>${t('重新识别原文','Reparse text')}</button></details>
       <p data-total></p><button class="button" type="button" data-apply disabled>${t('将核对后的数量和成本填入上方计算器','Use reviewed quantities and costs in calculator')}</button>
       <div class="freight-history" tabindex="0" role="region" aria-label="${t('采购明细','Purchase items')}" style="max-height:560px"><table><thead style="position:sticky;top:0;background:#fff;z-index:1"><tr></tr></thead><tbody></tbody></table></div>
-      <button class="button ghost" type="button" data-add>+ ${t('添加一行','Add row')}</button>`;
+      <button class="button ghost" type="button" data-add>+ ${t('添加一行','Add row')}</button></details>`;
     const q=s=>host.querySelector(s),status=s=>{q('[data-status]').textContent=s};
     function configuration(){const rate=Number(q('[data-rate]').value),freight=numeric(q('[data-freight]').value)/(q('[data-freight-currency]').value==='CNY'?rate:1),tax=numeric(q('[data-tax]').value),margin=numeric(q('[data-margin]').value),divisor=q('[data-basis]').value==='1688'?rate:1;return {freight,tax,margin,divisor};}
     function analysisRows(){return orderMode?allocatePaid(rows):rows;}
