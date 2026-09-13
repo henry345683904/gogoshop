@@ -6432,6 +6432,8 @@
       overscroll-behavior: contain;
     }
 
+    .daily-reconcile-panel > summary { cursor:pointer; padding:8px; font-size:13px; font-weight:600; }
+    .daily-reconcile-panel > summary:focus-visible { outline:2px solid var(--teal); outline-offset:-2px; }
     .daily-reconcile-row { display:flex; flex-wrap:wrap; gap:10px 16px; padding:0 8px 14px; border-bottom:1px solid #ddd; }
     .daily-reconcile-row label { display:grid; gap:4px; font-size:12px; flex:1 1 130px; max-width:200px; }
     .daily-reconcile-row input { width:100%; min-width:0; box-sizing:border-box; padding:8px; border:1px solid #bbb; border-radius:4px; font:inherit; font-size:14px; }
@@ -15335,7 +15337,7 @@
               <i class="daily-sales-chevron" data-lucide="chevron-down"></i>
             </summary>
             <div class="daily-sales-orders">${orderRows}</div>
-          </details>${isFullAdmin() ? `<div class="daily-reconcile-row" data-reconcile-date="${row.key}" data-cash="${cashRevenue}" data-eftpos="${eftposRevenue}"></div>` : ""}</div>
+          </details>${isFullAdmin() ? `<details class="daily-reconcile-panel"><summary>${isChinese ? "每日对账" : "Daily reconciliation"}</summary><div class="daily-reconcile-row" data-reconcile-date="${row.key}" data-cash="${cashRevenue}" data-eftpos="${eftposRevenue}"></div></details>` : ""}</div>
         `;
       }).join("");
       mountDailySalesReconciliation(dailyList, isChinese);
