@@ -2,7 +2,8 @@ const { app, BrowserWindow, Menu, shell, session, ipcMain } = require("electron"
 const path = require("node:path");
 
 const SITE_ORIGIN = "https://gogoshop.nz";
-const SITE_URL = `${SITE_ORIGIN}/?app=windows-admin`;
+// Force a fresh HTML shell on each app launch; the app intentionally uses the live website.
+const SITE_URL = `${SITE_ORIGIN}/?app=windows-admin&v=${Date.now()}`;
 const ALLOWED_SITE_HOSTS = new Set(["gogoshop.nz", "www.gogoshop.nz"]);
 const AUTH_HOSTS = new Set([
   "accounts.google.com",
@@ -91,7 +92,7 @@ function createWindow() {
     }
   });
 
-  mainWindow.loadURL(`${SITE_URL}#admin`);
+  mainWindow.loadURL(`${SITE_URL}#admin`, { extraHeaders: "Cache-Control: no-cache\n" });
 }
 
 async function refreshFromServer() {
