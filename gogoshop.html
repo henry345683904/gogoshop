@@ -6500,6 +6500,9 @@
       white-space: nowrap;
     }
 
+    .daily-sales-payment-totals { display:grid; gap:2px; font-size:11px; line-height:1.15; white-space:nowrap; color:var(--muted); }
+    .daily-sales-payment-totals strong { color:var(--ink); font-variant-numeric:tabular-nums; }
+
     .daily-sales-chevron {
       width: 18px;
       height: 18px;
@@ -15257,9 +15260,14 @@
       const newest = rows[0]?.date || today;
       $("#analyticsDailyMeta").textContent = `${dateLabel(oldest, { day: "numeric", month: "short", year: "numeric" })} – ${dateLabel(newest, { day: "numeric", month: "short", year: "numeric" })} · ${isChinese ? "仅统计已确认且未退款订单" : "Confirmed, non-refunded sales"}`;
       const dailyRevenue = rows.map((row) => row.orders.reduce((sum, order) => sum + Math.max(0, Number(order.total) || 0), 0));
+      const posPaymentTotals = (row) => ["cash", "eftpos"].map((method) => row.orders
+        .filter((order) => (order.order_source === "pos" || order.pos_payment_method || /^POS-/i.test(order.order_number || ""))
+          && String(order.pos_payment_method || "").trim().toLowerCase() === method)
+        .reduce((sum, order) => sum + Math.max(0, Number(order.total) || 0), 0));
       const maxRevenue = Math.max(...dailyRevenue, 1);
       dailyList.innerHTML = rows.map((row, rowIndex) => {
         const revenue = dailyRevenue[rowIndex];
+        const [cashRevenue, eftposRevenue] = posPaymentTotals(row);
         const itemCount = row.orders.reduce((sum, order) => sum + analyticsOrderItemCount(order), 0);
         const orderCountText = isChinese
           ? `${row.orders.length} 笔订单 · ${itemCount} 件`
@@ -15293,6 +15301,10 @@
                 <span>${orderCountText}</span>
               </div>
               <div class="daily-sales-bar" aria-hidden="true"><span style="width:${revenue > 0 ? Math.max(3, (revenue / maxRevenue) * 100) : 0}%"></span></div>
+              <div class="daily-sales-payment-totals" aria-label="${isChinese ? "线下付款方式收入" : "POS payment revenue"}">
+                <span>${isChinese ? "Cash" : "Cash"} <strong>${formatPrice(cashRevenue)}</strong></span>
+                <span>${isChinese ? "Eftpos" : "Eftpos"} <strong>${formatPrice(eftposRevenue)}</strong></span>
+              </div>
               <strong class="daily-sales-total">${formatPrice(revenue)}</strong>
               <i class="daily-sales-chevron" data-lucide="chevron-down"></i>
             </summary>
