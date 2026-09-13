@@ -10042,7 +10042,9 @@
     }
 
     function isOnlineManager() {
-      return String(state.profile?.admin_role || "").trim().toLowerCase() === "online_manager";
+      const role = String(state.profile?.admin_role || "").trim().toLowerCase();
+      const email = String(state.session?.user?.email || state.profile?.email || "").trim().toLowerCase();
+      return role === "online_manager" || email === "sales@gogoshop.co.nz";
     }
 
     function isFullAdmin() {
