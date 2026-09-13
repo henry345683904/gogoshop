@@ -31,7 +31,7 @@
         #freightCalculator [hidden]{display:none!important}
         @media(max-width:650px){#freightCalculator .freight-fields{grid-template-columns:repeat(2,minmax(0,1fr))}}
       </style>
-      <h2>${t('进货运费与真实成本','Freight & landed cost')}</h2>
+      <details class="freight-panel-details"><summary><strong>${t('进货运费与真实成本','Freight & landed cost')}</strong><span class="muted">${t('点击展开计算','Click to expand')}</span></summary><div class="freight-panel-content">
       <div class="muted">${t('运费附加值 = 整批运费 ÷ 总件数。不同款数量不同时，请填写各款数量之和。','Freight per item = shipment freight / total units. For mixed quantities, enter the sum of all units.')}</div>
       <form>
         <div class="freight-fields">
@@ -49,7 +49,7 @@
         <span role="status" class="freight-status"></span>
       </form>
       <p class="muted">${t('单件真实成本 = 原单件成本 + 运费附加值。记录仅保存在本设备当前浏览器，不会自动修改商品成本或售价。','Landed unit cost = original unit cost + freight per item. Records stay in this browser on this device; product costs and prices are not changed automatically.')}</p>
-      <details><summary>${t('历史批次（本设备）','Batch history (this device)')}</summary><div class="freight-history"></div></details>`;
+      <details><summary>${t('历史批次（本设备）','Batch history (this device)')}</summary><div class="freight-history"></div></details></div></details>`;
     const form = root.querySelector('form');
     const field = name => form.elements.namedItem(name);
     const today = new Date();
