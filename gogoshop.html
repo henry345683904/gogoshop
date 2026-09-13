@@ -6432,6 +6432,10 @@
       overscroll-behavior: contain;
     }
 
+    .daily-reconcile-row { display:flex; flex-wrap:wrap; gap:10px 16px; padding:0 8px 14px; border-bottom:1px solid #ddd; }
+    .daily-reconcile-row label { display:grid; gap:4px; font-size:12px; flex:1 1 130px; max-width:200px; }
+    .daily-reconcile-row input { width:100%; min-width:0; box-sizing:border-box; padding:8px; border:1px solid #bbb; border-radius:4px; font:inherit; font-size:14px; }
+    .daily-reconcile-result { flex:1 1 100%; font-size:12px; overflow-wrap:anywhere; }
     .daily-sales-day {
       border-bottom: 1px solid #e3e4e4;
     }
@@ -8210,7 +8214,6 @@
         <section class="admin-section active" data-admin-section="overview">
           <div class="metric-grid" id="metricGrid"></div>
           <div id="freightCalculator" hidden data-full-admin-only></div>
-          <div id="dailyReconciliation" class="admin-panel daily-reconciliation" data-full-admin-only></div>
           <div class="chart-grid">
             <div class="admin-panel">
               <div class="admin-panel-head">
@@ -15317,7 +15320,7 @@
           `;
         }).join("") : `<div class="daily-sales-empty">${isChinese ? "当天没有已确认销售" : "No confirmed sales for this day"}</div>`;
         return `
-          <details class="daily-sales-day" data-analytics-day="${row.key}">
+          <div class="daily-sales-entry"><details class="daily-sales-day" data-analytics-day="${row.key}">
             <summary>
               <div class="daily-sales-date">
                 <strong>${escapeHtml(dateLabel(row.date, { weekday: "short", day: "numeric", month: "short", year: "numeric" }))}</strong>
@@ -15332,10 +15335,50 @@
               <i class="daily-sales-chevron" data-lucide="chevron-down"></i>
             </summary>
             <div class="daily-sales-orders">${orderRows}</div>
-          </details>
+          </details>${isFullAdmin() ? `<div class="daily-reconcile-row" data-reconcile-date="${row.key}" data-cash="${cashRevenue}" data-eftpos="${eftposRevenue}"></div>` : ""}</div>
         `;
       }).join("");
+      mountDailySalesReconciliation(dailyList, isChinese);
       refreshIcons();
+    }
+
+    function mountDailySalesReconciliation(list, zh) {
+      if (!isFullAdmin()) return;
+      const key = `gogoshop_daily_reconciliation_v2_${state.session?.user?.id}`;
+      let records = {};
+      try {
+        const parsed = JSON.parse(localStorage.getItem(key) || "{}");
+        if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) records = parsed;
+        const old = JSON.parse(localStorage.getItem(`gogoshop_daily_reconciliation_v1_${state.session?.user?.id}`) || "null");
+        if (old?.date && !records[old.date]) records[old.date] = old;
+      } catch {}
+      list.querySelectorAll('[data-reconcile-date]').forEach(root => {
+        const date = root.dataset.reconcileDate;
+        const record = records[date] || {};
+        root.innerHTML = `${[['actualCash', zh ? '实收纸币' : 'Actual notes'], ['actualCoin', zh ? '实收硬币' : 'Actual coins'], ['actualEftpos', zh ? '实收 EFTPOS' : 'Actual EFTPOS']].map(([name, label]) => `<label>${label}<input type="number" min="0" step="0.01" inputmode="decimal" data-actual="${name}" aria-label="${date} ${label}" placeholder="0.00"></label>`).join('')}<div class="daily-reconcile-result" aria-live="polite"></div>`;
+        const inputs = [...root.querySelectorAll('input')];
+        inputs.forEach(input => { input.value = record[input.dataset.actual] ?? ''; });
+        const result = root.querySelector('.daily-reconcile-result');
+        function update(persist) {
+          if (inputs.some(input => !input.validity.valid)) { result.textContent = zh ? '请输入有效的非负金额' : 'Enter valid non-negative amounts'; return; }
+          const entry = Object.fromEntries(inputs.map(input => [input.dataset.actual, input.value]));
+          const cents = value => Math.round(Number(value || 0) * 100);
+          const cash = cents(entry.actualCash) + cents(entry.actualCoin) - cents(root.dataset.cash);
+          const eftpos = cents(entry.actualEftpos) - cents(root.dataset.eftpos);
+          const show = value => `${value > 0 ? '+' : ''}${formatPrice(value / 100)}`;
+          const cashReady = entry.actualCash !== '' && entry.actualCoin !== '';
+          const eftposReady = entry.actualEftpos !== '';
+          result.textContent = `Cash ${zh ? '差额' : 'difference'}: ${cashReady ? show(cash) : '—'} · EFTPOS: ${eftposReady ? show(eftpos) : '—'} · ${zh ? '总差额' : 'Total difference'}: ${cashReady && eftposReady ? show(cash + eftpos) : '—'}`;
+          result.style.color = cashReady && eftposReady && (cash || eftpos) ? '#a33b20' : '';
+          if (persist) {
+            records[date] = { ...entry, date, updatedAt: new Date().toISOString() };
+            try { localStorage.setItem(key, JSON.stringify(records)); result.textContent += zh ? ' · 已保存（本设备）' : ' · Saved on this device'; }
+            catch { result.textContent += zh ? ' · 保存失败' : ' · Save failed'; }
+          }
+        }
+        inputs.forEach(input => input.addEventListener('input', () => update(true)));
+        update(false);
+      });
     }
 
     function procurementPeriodDays(range = state.procurementRange) {
@@ -16120,7 +16163,6 @@
       switch (activeTab) {
         case "overview":
           window.renderFreightCalculator?.(isFullAdmin(), state.lang, state.session?.user?.id);
-          renderDailyReconciliation(isFullAdmin(), state.lang, state.session?.user?.id);
           renderMetrics("#metricGrid");
           renderRevenueChart();
           renderInventoryStatus();
