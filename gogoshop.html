@@ -9137,7 +9137,7 @@
         <form class="auth-view" data-customer-auth-form>
           <label class="field"><span data-i18n="fieldName">Name</span><input type="text" name="fullName" autocomplete="name"></label>
           <label class="field"><span data-i18n="fieldEmail">Email</span><input type="email" name="email" autocomplete="email" required></label>
-          <label class="field"><span data-i18n="password">Password</span><input type="password" name="password" autocomplete="current-password" minlength="6" required></label>
+          <label class="field"><span data-i18n="password">Password</span><input type="password" name="password" autocomplete="new-password" minlength="6" required></label>
           <div class="form-row">
             <button class="button" type="submit" data-auth-action="signin" data-i18n="signIn">Sign in</button>
             <button class="button ghost" type="submit" data-auth-action="signup" data-i18n="createAccount">Create account</button>
@@ -13377,20 +13377,35 @@
       if (!db || !form) return;
       const values = Object.fromEntries(new FormData(form).entries());
       const message = $("#customerAuthMessage");
-      message.textContent = state.lang === "zh" ? "处理中..." : "Working...";
-      const result = action === "signup"
-        ? await db.auth.signUp({ email: values.email.trim(), password: values.password, options: { data: { full_name: values.fullName.trim() } } })
-        : await db.auth.signInWithPassword({ email: values.email.trim(), password: values.password });
-      if (result.error) {
-        message.textContent = authErrorMessage(result.error);
+      const email = String(values.email || "").trim().toLowerCase();
+      const password = String(values.password || "");
+      const fullName = String(values.fullName || "").trim();
+      if (!email || !password || password.length < 6) {
+        message.textContent = state.lang === "zh" ? "请输入有效邮箱和至少 6 位密码" : "Enter a valid email and a password with at least 6 characters";
         return;
       }
-      form.reset();
-      if (!result.data.session) {
-        message.textContent = state.lang === "zh" ? "账户已创建，请检查邮箱完成验证" : "Account created. Check your email to confirm it.";
-      } else {
-        message.textContent = "";
-        await handleAuthSession(result.data.session);
+      const buttons = [...form.querySelectorAll("button")];
+      buttons.forEach(button => { button.disabled = true; });
+      message.textContent = state.lang === "zh" ? "处理中..." : "Working...";
+      try {
+        const result = action === "signup"
+          ? await db.auth.signUp({ email, password, options: { data: { full_name: fullName } } })
+          : await db.auth.signInWithPassword({ email, password });
+        if (result.error) {
+          message.textContent = authErrorMessage(result.error);
+          return;
+        }
+        form.reset();
+        if (!result.data.session) {
+          message.textContent = state.lang === "zh" ? "账户已创建，请检查邮箱完成验证后再登录" : "Account created. Check your email to confirm it, then sign in.";
+        } else {
+          message.textContent = "";
+          await handleAuthSession(result.data.session);
+        }
+      } catch (error) {
+        message.textContent = authErrorMessage(error) || (state.lang === "zh" ? "操作失败，请稍后重试" : "Unable to complete this request. Try again.");
+      } finally {
+        buttons.forEach(button => { button.disabled = false; });
       }
     }
 
