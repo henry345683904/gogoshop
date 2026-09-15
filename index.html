@@ -8444,6 +8444,7 @@
                 <div class="theme-sidebar-head"><strong>Home page</strong><i data-lucide="chevron-down"></i></div>
                 <div class="theme-section-list">
                   <div class="theme-section-group-label">Theme</div>
+                  <button class="theme-section-item" type="button" data-design-section="delivery-settings"><span class="theme-section-icon"><i data-lucide="truck"></i></span><span class="theme-section-copy"><strong>Delivery settings</strong><span>Pickup point and delivery rules</span></span><i data-lucide="chevron-right"></i></button>
                   <button class="theme-section-item" type="button" data-design-section="theme">
                     <span class="theme-section-icon"><i data-lucide="settings-2"></i></span>
                     <span class="theme-section-copy"><strong>Theme settings</strong><span>Typography and colors</span></span>
@@ -8488,6 +8489,14 @@
                   <form class="design-form" data-design-form>
                     <section class="theme-inspector-panel" data-design-panel="theme" hidden>
                       <h3>Typography</h3>
+                      <section class="theme-inspector-panel" data-design-panel="delivery-settings" hidden>
+                        <h3>Delivery settings</h3>
+                        <label class="field"><span>Pickup point address</span><input type="text" name="deliveryPickupAddress" maxlength="200"></label>
+                        <label class="field"><span>Free delivery distance (km)</span><input type="number" name="deliveryMaxDistanceKm" min="0" max="500" step="0.1"></label>
+                        <label class="field"><span>Free delivery minimum (NZD)</span><input type="number" name="freeDeliveryMinimum" min="0" step="0.01"></label>
+                        <label class="field"><span>Delivery fee (NZD)</span><input type="number" name="deliveryFee" min="0" step="0.01"></label>
+                        <p class="muted">Use the customer's location permission to calculate distance from the pickup point. The address is shown to customers; coordinates remain in this browser.</p>
+                      </section>
                       <label class="field">
                         <span>Store font</span>
                         <select name="fontFamily">
@@ -9362,10 +9371,11 @@
     const STORE_CONFIG = window.GOGO_SHOP_CONFIG || {};
     const SUPABASE_URL = String(STORE_CONFIG.supabaseUrl || "").trim();
     const SUPABASE_PUBLISHABLE_KEY = String(STORE_CONFIG.supabasePublishableKey || "").trim();
-    const FLAT_BUSH_PICKUP = Object.freeze({ name: "Flat Bush", latitude: -36.9661534, longitude: 174.9127100 });
-    const DELIVERY_MAX_DISTANCE_KM = 12;
-    const FREE_DELIVERY_MINIMUM = 80;
-    const DELIVERY_FEE = 5;
+    const DEFAULT_DELIVERY_SETTINGS = Object.freeze({ pickupAddress: "16 Bishop Dunn Place, Flat Bush", latitude: -36.9661534, longitude: 174.9127100, maxDistanceKm: 12, freeMinimum: 80, fee: 5 });
+    function deliverySettings() {
+      const settings = state.design?.deliverySettings || {};
+      return { ...DEFAULT_DELIVERY_SETTINGS, pickupAddress: String(settings.pickupAddress || DEFAULT_DELIVERY_SETTINGS.pickupAddress), latitude: Number(settings.latitude) || DEFAULT_DELIVERY_SETTINGS.latitude, longitude: Number(settings.longitude) || DEFAULT_DELIVERY_SETTINGS.longitude, maxDistanceKm: Math.max(0, Number(settings.maxDistanceKm) || DEFAULT_DELIVERY_SETTINGS.maxDistanceKm), freeMinimum: Math.max(0, Number(settings.freeMinimum) || DEFAULT_DELIVERY_SETTINGS.freeMinimum), fee: Math.max(0, Number(settings.fee) || DEFAULT_DELIVERY_SETTINGS.fee) };
+    }
     const SOURCE_COST_DIVISOR = 4;
     const SOURCE_TAX_MULTIPLIER = 1.15;
     const SOURCE_PRICE_MULTIPLIER = 1.5 * SOURCE_TAX_MULTIPLIER;
@@ -13563,8 +13573,9 @@
     function checkoutDeliveryFee() {
       const fulfillment = state.checkoutFulfillment;
       const distance = Number(fulfillment.distanceKm);
-      if (fulfillment.method !== "delivery" || fulfillment.distanceKm == null || !Number.isFinite(distance) || distance > DELIVERY_MAX_DISTANCE_KM) return 0;
-      return cartFinalTotal() + Number.EPSILON >= FREE_DELIVERY_MINIMUM ? 0 : DELIVERY_FEE;
+      const settings = deliverySettings();
+      if (fulfillment.method !== "delivery" || fulfillment.distanceKm == null || !Number.isFinite(distance) || distance > settings.maxDistanceKm) return 0;
+      return cartFinalTotal() + Number.EPSILON >= settings.freeMinimum ? 0 : settings.fee;
     }
 
     function checkoutFinalTotal() {
@@ -13577,7 +13588,7 @@
       const fulfillment = state.checkoutFulfillment;
       const distance = Number(fulfillment.distanceKm);
       const hasDistance = fulfillment.distanceKm != null && Number.isFinite(distance);
-      const tooFar = hasDistance && distance > DELIVERY_MAX_DISTANCE_KM;
+      const tooFar = hasDistance && distance > deliverySettings().maxDistanceKm;
       if (tooFar && fulfillment.method === "delivery") fulfillment.method = "pickup";
 
       $$('[data-fulfillment-option]').forEach((option) => {
@@ -13646,7 +13657,7 @@
         renderCheckoutFulfillment();
         return;
       }
-      if (fulfillment.distanceKm != null && Number(fulfillment.distanceKm) > DELIVERY_MAX_DISTANCE_KM) {
+      if (fulfillment.distanceKm != null && Number(fulfillment.distanceKm) > deliverySettings().maxDistanceKm) {
         fulfillment.method = "pickup";
         renderCheckoutFulfillment();
         showToast(tWithValues("deliveryTooFar", { distance: Number(fulfillment.distanceKm).toFixed(1) }));
@@ -13682,15 +13693,16 @@
       navigator.geolocation.getCurrentPosition((position) => {
         const latitude = Number(position.coords.latitude);
         const longitude = Number(position.coords.longitude);
-        const distance = distanceKmBetween(latitude, longitude, FLAT_BUSH_PICKUP.latitude, FLAT_BUSH_PICKUP.longitude);
+        const pickup = deliverySettings();
+        const distance = distanceKmBetween(latitude, longitude, pickup.latitude, pickup.longitude);
         fulfillment.latitude = latitude;
         fulfillment.longitude = longitude;
         fulfillment.distanceKm = distance;
         fulfillment.locating = false;
         fulfillment.locationError = "";
-        fulfillment.method = distance <= DELIVERY_MAX_DISTANCE_KM ? "delivery" : "pickup";
+        fulfillment.method = distance <= deliverySettings().maxDistanceKm ? "delivery" : "pickup";
         renderCheckoutFulfillment();
-        if (distance > DELIVERY_MAX_DISTANCE_KM) {
+        if (distance > deliverySettings().maxDistanceKm) {
           showToast(tWithValues("deliveryTooFar", { distance: distance.toFixed(1) }));
         }
       }, (error) => {
@@ -13712,7 +13724,7 @@
       if (fulfillment.method === "pickup") return "";
       if (fulfillment.locationError) return t(fulfillment.locationError);
       if (fulfillment.locating || fulfillment.distanceKm == null || !Number.isFinite(Number(fulfillment.distanceKm))) return t("checkLocationFirst");
-      if (Number(fulfillment.distanceKm) > DELIVERY_MAX_DISTANCE_KM) {
+      if (Number(fulfillment.distanceKm) > deliverySettings().maxDistanceKm) {
         return tWithValues("deliveryTooFar", { distance: Number(fulfillment.distanceKm).toFixed(1) });
       }
       if (String(fulfillment.address || "").trim().length < 5) return t("enterDeliveryAddress");
@@ -15988,6 +16000,8 @@
         const field = form.elements.namedItem(key);
         if (field && key !== "blocks") field.value = value;
       });
+      const delivery = deliverySettings();
+      for (const [key,value] of Object.entries({deliveryPickupAddress:delivery.pickupAddress,deliveryMaxDistanceKm:delivery.maxDistanceKm,freeDeliveryMinimum:delivery.freeMinimum,deliveryFee:delivery.fee})) { const field=form.elements.namedItem(key); if(field) field.value=value; }
       renderDesignControlValues();
     }
 
@@ -16032,7 +16046,8 @@
         heroAlign: data.heroAlign,
         heroHeight: data.heroHeight,
         heroOverlay: data.heroOverlay,
-        productTitle: data.productTitle.trim()
+        productTitle: data.productTitle.trim(),
+        deliverySettings: { ...deliverySettings(), pickupAddress: String(data.deliveryPickupAddress || DEFAULT_DELIVERY_SETTINGS.pickupAddress).trim(), maxDistanceKm: Number(data.deliveryMaxDistanceKm), freeMinimum: Number(data.freeDeliveryMinimum), fee: Number(data.deliveryFee) }
       });
       persistDesign();
       applyStoreDesign();
