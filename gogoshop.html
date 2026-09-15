@@ -6438,6 +6438,7 @@
     .daily-sales-entry .daily-reconcile-panel,
     .daily-sales-entry .daily-reconcile-row { background:var(--daily-entry-background); }
     .daily-reconcile-panel > summary { cursor:pointer; padding:8px; font-size:13px; font-weight:600; }
+    .product-editor-advanced-pricing > summary { cursor:pointer; padding:8px 0; font-size:13px; font-weight:700; }
     .daily-reconcile-panel > summary:focus-visible { outline:2px solid var(--teal); outline-offset:-2px; }
     .daily-reconcile-row { display:flex; flex-wrap:wrap; gap:10px 16px; padding:0 8px 14px; border-bottom:1px solid #ddd; }
     .daily-reconcile-row label { display:grid; gap:4px; font-size:12px; flex:1 1 130px; max-width:200px; }
@@ -8842,17 +8843,15 @@
 
             <section class="shopify-editor-card">
               <div class="shopify-card-head"><h3>定价</h3></div>
-              <div class="form-row">
-                <label class="field">
-                  <span>售价 NZD（可手动修改；供应价变化时自动计算）</span>
-                  <input class="product-price-input" type="number" name="price" min="0" step="0.01" data-price-mode="manual" required>
-                </label>
+              <label class="field">
+                <span>售价 NZD（可手动修改；供应价变化时自动计算）</span>
+                <input class="product-price-input" type="number" name="price" min="0" step="0.01" data-price-mode="manual" required>
+              </label>
+              <details class="product-editor-advanced-pricing"><summary>高级定价（原价和采购成本）</summary><div class="form-row">
                 <label class="field">
                   <span>原价 NZD</span>
                   <input type="number" name="compareAtPrice" min="0" step="0.01">
                 </label>
-              </div>
-              <div class="form-row">
                 <label class="field">
                   <span>单件成本 NZD（1688：供应价 ÷ 4；CIL：采购价 × 1.15）</span>
                   <input type="number" name="costPerItem" min="0" step="0.01">
@@ -8940,6 +8939,7 @@
                 <span>GO GO SHOP 网店（仅适用于线上渠道）</span>
                 <input type="checkbox" name="onlineStore" checked>
               </label>
+              </details>
               <label class="shopify-check-row">
                 <span>在首页置顶</span>
                 <input type="checkbox" name="featured">
