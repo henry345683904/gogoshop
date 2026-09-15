@@ -10131,23 +10131,23 @@
 
     // Admin-only taxonomy: online merchandising can evolve without rewriting offline categories.
     const ONLINE_ADMIN_CATEGORIES = Object.freeze([
-      { key: "online-phone-cases", zh: "手机壳", en: "Phone Cases", match: /phone case|case for|手机壳|保护壳|手机保护套/i, priority: 100 },
-      { key: "online-phone-accessories", zh: "手机配件", en: "Phone Accessories", match: /screen protector|tempered glass|phone film|charger|cable|phone accessory|手机膜|钢化膜|充电|数据线|手机配件|镜头膜/i, priority: 90 },
-      { key: "online-keychains", zh: "钥匙链", en: "Keychains", match: /key.?chain|key.?ring|bag charm|钥匙链|钥匙扣|钥匙圈|挂件/i, priority: 80 },
-      { key: "online-stationery", zh: "文具办公", en: "Stationery & Office", match: /stationery|office|scissor|stapler|pen|notebook|文具|办公|剪刀|订书机|笔记本/i, priority: 78 },
-      { key: "online-cleaning", zh: "清洁用品", en: "Cleaning Supplies", match: /cleaning|towel|cloth|brush|sponge|清洁|毛巾|抹布|刷子/i, priority: 77 },
-      { key: "online-home-storage", zh: "家居收纳", en: "Home & Storage", match: /storage|organizer|kitchen|home|收纳|家居|厨房/i, priority: 76 },
-      { key: "online-bags", zh: "包袋用品", en: "Bags & Pouches", match: /bag|pouch|wallet|backpack|handbag|包|袋|钱包|背包/i, priority: 75 },
-      { key: "online-beauty", zh: "美妆护理", en: "Beauty & Care", match: /beauty|cosmetic|makeup|mirror|hair|skin|美妆|化妆|镜子|护肤/i, priority: 74 },
-      { key: "online-blind-box-plush", zh: "盲盒与毛绒玩具", en: "Blind Boxes & Plush", match: /blind.?box|plush|soft toy|stuffed|toy|doll|盲盒|毛绒|玩偶|公仔|玩具/i, priority: 70 },
-      { key: "online-gifts", zh: "礼品饰品", en: "Gifts & Accessories", match: /gift|jewell?ery|ornament|accessor|礼品|饰品|装饰|纪念品/i, priority: 10 }
+      { key: "kitchen", zh: "厨房用品", en: "Kitchen", match: /kitchen|cook|bake|utensil|dish|plate|cup|mug|bottle|餐具|厨房|烹饪|烘焙|杯|碗|盘/i, priority: 100 },
+      { key: "bathroom", zh: "卫生间用品", en: "Bathroom", match: /bathroom|toilet|shower|soap|towel|卫生间|厕所|浴室|淋浴|毛巾|肥皂/i, priority: 99 },
+      { key: "festival-decor", zh: "节日装饰", en: "Festival Decor", match: /christmas|halloween|easter|birthday|moon festival|party|festive|holiday|圣诞|万圣|复活|生日|中秋|节日|派对|装饰/i, priority: 98 },
+      { key: "toys", zh: "玩具", en: "Toys", match: /toy|plush|stuffed|doll|puzzle|game|blind.?box|玩具|毛绒|玩偶|拼图|游戏|盲盒/i, priority: 97 },
+      { key: "beauty", zh: "美妆", en: "Beauty", match: /beauty|cosmetic|makeup|mirror|hair|skin|nail|lip|美妆|化妆|镜子|护肤|指甲|口红/i, priority: 96 },
+      { key: "digital", zh: "数码", en: "Digital", match: /digital|electronic|charger|cable|usb|earphone|headphone|computer|phone accessory|数码|电子|充电|数据线|耳机|电脑/i, priority: 95 },
+      { key: "phone-cases", zh: "手机壳", en: "Phone Cases", match: /phone case|case for|手机壳|保护壳|手机保护套/i, priority: 94 },
+      { key: "phone-accessories", zh: "手机配件", en: "Phone Accessories", match: /screen protector|tempered glass|phone film|phone accessory|手机膜|钢化膜|手机配件|镜头膜/i, priority: 93 },
+      { key: "keychains", zh: "钥匙链", en: "Keychains", match: /key.?chain|key.?ring|bag charm|钥匙链|钥匙扣|钥匙圈|挂件/i, priority: 92 },
+      { key: "stationery", zh: "文具办公", en: "Stationery & Office", match: /stationery|office|scissor|stapler|pen|notebook|文具|办公|剪刀|订书机|笔记本/i, priority: 91 },
+      { key: "cleaning", zh: "清洁用品", en: "Cleaning Supplies", match: /cleaning|cloth|brush|sponge|清洁|抹布|刷子/i, priority: 90 },
+      { key: "home-storage", zh: "家居收纳", en: "Home & Storage", match: /storage|organizer|home|收纳|家居/i, priority: 89 },
+      { key: "bags", zh: "包袋用品", en: "Bags & Pouches", match: /bag|pouch|wallet|backpack|handbag|包|袋|钱包|背包/i, priority: 88 },
+      { key: "gifts", zh: "礼品饰品", en: "Gifts & Accessories", match: /gift|jewell?ery|ornament|accessor|礼品|饰品|装饰|纪念品/i, priority: 10 }
     ]);
 
     function adminOnlineCategoryKey(product) {
-      const sourceCategory = String(product?.category || product?.productType || "").split("||")[0].trim();
-      if (sourceCategory && !/^(all|other|1688 imports|uncategorized|未分类)$/i.test(sourceCategory)) {
-        return `online-source-${sourceCategory.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`;
-      }
       const text = [product?.title, product?.titleEn, product?.titleZh, product?.descriptionEn, product?.descriptionZh].filter(Boolean).join(" ");
       const matches = ONLINE_ADMIN_CATEGORIES.filter(definition => definition.match.test(text));
       return (matches.sort((a, b) => b.priority - a.priority)[0] || ONLINE_ADMIN_CATEGORIES.at(-1)).key;
@@ -11337,7 +11337,9 @@
 
     function productCategoryKeys(product) {
       if (productSalesChannel(product, "offline") !== "online") return [productCategoryKey(product)];
-      return [...new Set([productCategoryKey(product), ...String(product.category || "").split("||").slice(1)])].filter(Boolean);
+      const text = [product?.title, product?.titleEn, product?.titleZh, product?.descriptionEn, product?.descriptionZh, product?.productType, product?.tags].filter(Boolean).join(" ");
+      const detected = ONLINE_ADMIN_CATEGORIES.filter(definition => definition.match.test(text)).map(definition => definition.key);
+      return [...new Set([...detected, ...String(product.category || "").split("||").slice(1)])].filter(Boolean);
     }
 
     function renderExtraProductCategories(product = null) {
