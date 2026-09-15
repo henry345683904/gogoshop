@@ -11396,6 +11396,11 @@
     }
 
     function productCategoryKey(product) {
+      if (productSalesChannel(product, "offline") === "online") {
+        const text = [product?.title, product?.titleEn, product?.titleZh, product?.descriptionEn, product?.descriptionZh, product?.productType, product?.tags].filter(Boolean).join(" ");
+        const match = ONLINE_ADMIN_CATEGORIES.slice().sort((a,b)=>b.priority-a.priority).find(definition => definition.match.test(text));
+        return match?.key || "online-gifts";
+      }
       if (String(product?.category || "").includes("||")) return String(product.category).split("||")[0];
       if (String(product?.id || "").startsWith("kdh-")) return String(product.category || "other").trim() || "other";
       return storefrontCategoryByProductId.get(product.id)
@@ -11681,7 +11686,7 @@
             ` : ""}
           </div>
           <div class="product-detail-copy">
-            <p class="product-detail-category">${escapeHtml(categoryName(productCategoryKey(product)))}</p>
+            <p class="product-detail-category">${escapeHtml(productCategoryKeys(product).map(categoryName).join(" · "))}</p>
             <h1>${escapeHtml(productName(product))}</h1>
             <p class="product-detail-price">${formatPrice(product.price)}</p>
             ${itemCode ? `
@@ -14085,7 +14090,7 @@
           <div>
             <a class="result-product-link" href="#product=${encodeURIComponent(product.id)}" data-product-view="${escapeHtml(product.id)}"><strong>${escapeHtml(productName(product))}</strong></a>
             <div class="result-product-code">${state.lang === "zh" ? "货号" : "Item code"} ${escapeHtml(productItemCode(product) || "-")}</div>
-            <div class="muted">${formatPrice(product.price)} · ${categoryName(productCategoryKey(product))}</div>
+            <div class="muted">${formatPrice(product.price)} · ${productCategoryKeys(product).map(categoryName).join(" · ")}</div>
             <div class="result-product-stock"><span class="stock-dot ${available(product) ? "" : "sold-out"}"></span><span>${searchStockText(product)}</span></div>
           </div>
           <button class="button ghost" type="button" data-add-cart="${escapeHtml(product.id)}" ${!available(product) ? "disabled" : ""}>
