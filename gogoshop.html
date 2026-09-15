@@ -10161,7 +10161,7 @@
     }
 
     function adminProductCategoryKey(product, channel = activeAdminProductChannel()) {
-      return channel === "online" ? adminOnlineCategoryKey(product) : productCategoryKey(product);
+      return productCategoryKey(product);
     }
 
     function adminCategoryName(category) {
@@ -11344,6 +11344,8 @@
 
     function productCategoryKeys(product) {
       if (productSalesChannel(product, "offline") !== "online") return [productCategoryKey(product)];
+      const stored = String(product.category || "").split("||").map(value => value.trim()).filter(value => value && !value.startsWith("online-source-"));
+      if (stored.length) return [...new Set(stored)];
       const text = [product?.title, product?.titleEn, product?.titleZh, product?.descriptionEn, product?.descriptionZh, product?.productType, product?.tags].filter(Boolean).join(" ");
       const detected = ONLINE_ADMIN_CATEGORIES.filter(definition => definition.match.test(text)).map(definition => definition.key);
       return [...new Set([...detected, ...String(product.category || "").split("||").slice(1)])].filter(Boolean);
@@ -11354,6 +11356,18 @@
       if (!host) return;
       const form = host.closest('form');
       const channel = product ? productSalesChannel(product, "offline") : activeAdminProductChannel();
+      const categorySelect = form?.elements.namedItem('category');
+      if (channel === "online" && categorySelect) {
+        const primary = product ? productCategoryKey(product) : '';
+        const options = [...new Set([...ONLINE_ADMIN_CATEGORIES.map(item => item.key), primary])].filter(Boolean);
+        categorySelect.innerHTML = `<option value="">${state.lang === 'zh' ? '自动识别' : 'Automatic'}</option>` + options.map(key => `<option value="${escapeHtml(key)}">${escapeHtml(categoryName(key))}</option>`).join('');
+        categorySelect.value = primary;
+      } else if (categorySelect) {
+        const primary = product ? productCategoryKey(product) : 'blind-box-plush';
+        const options = [...new Set(['blind-box-plush', 'keychains-gifts', 'phone-cases', 'phone-accessories', 'office-supplies', primary])];
+        categorySelect.innerHTML = options.map(key => `<option value="${escapeHtml(key)}">${escapeHtml(categoryName(key))}</option>`).join('');
+        categorySelect.value = primary;
+      }
       host.hidden = channel !== "online";
       const selected = product ? productCategoryKeys(product) : [];
       const choices = [...new Set([...ONLINE_ADMIN_CATEGORIES.map(item => item.key), ...state.products.filter(isOnlineStoreProduct).flatMap(productCategoryKeys), ...holidayCategories.map(item => item.key)])].filter(key => key && key !== 'All' && !String(key).startsWith('online-source-'));
@@ -11412,9 +11426,11 @@
 
     function productCategoryKey(product) {
       if (productSalesChannel(product, "offline") === "online") {
+        const stored = String(product?.category || "").split("||")[0].trim();
+        if (stored && !stored.startsWith("online-source-")) return stored;
         const text = [product?.title, product?.titleEn, product?.titleZh, product?.descriptionEn, product?.descriptionZh, product?.productType, product?.tags].filter(Boolean).join(" ");
         const match = ONLINE_ADMIN_CATEGORIES.slice().sort((a,b)=>b.priority-a.priority).find(definition => definition.match.test(text));
-        return match?.key || "online-gifts";
+        return match?.key || "gifts";
       }
       if (String(product?.category || "").includes("||")) return String(product.category).split("||")[0];
       if (String(product?.id || "").startsWith("kdh-")) return String(product.category || "other").trim() || "other";
@@ -17490,7 +17506,7 @@
         titleEn,
         titleZh,
         handle: id,
-        category: selectedChannel === "online" ? [adminOnlineCategoryKey({ ...existing, title: titleEn || titleZh, titleEn, titleZh, descriptionEn, descriptionZh, productType: data.productType, tags: data.tags }), ...Array.from(form.querySelectorAll('[data-extra-category]:checked'), input => input.value).filter(value => value !== data.category)].join("||") : data.category,
+        category: selectedChannel === "online" ? [...new Set([String(data.category || '').trim() || adminOnlineCategoryKey({ ...existing, title: titleEn || titleZh, titleEn, titleZh, descriptionEn, descriptionZh, productType: data.productType, tags: data.tags }), ...Array.from(form.querySelectorAll('[data-extra-category]:checked'), input => input.value)])].filter(Boolean).join("||") : data.category,
         description: existing?.description || descriptionEn || descriptionZh,
         descriptionEn,
         descriptionZh,
