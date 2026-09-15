@@ -8180,11 +8180,11 @@
       <aside class="admin-sidebar">
         <div class="admin-logo">Go Go Shop</div>
         <nav class="admin-nav">
-          <button class="tab-button active" type="button" data-admin-tab="overview" aria-label="Overview" title="Overview"><i data-lucide="layout-dashboard"></i><span>Overview</span></button>
-          <button class="tab-button" type="button" data-admin-tab="products" aria-label="Products" title="Products"><i data-lucide="package-plus"></i><span>Products</span></button>
-          <button class="tab-button" type="button" data-admin-tab="orders" aria-label="Orders" title="Orders"><i data-lucide="receipt-text"></i><span>Orders</span><span class="admin-order-badge" id="adminOrderBadge" hidden>0</span></button>
+          <button class="tab-button active" type="button" data-admin-tab="overview" aria-label="Overview" title="Overview"><i data-lucide="layout-dashboard"></i><span data-i18n="adminOverview">Overview</span></button>
+          <button class="tab-button" type="button" data-admin-tab="products" aria-label="Products" title="Products"><i data-lucide="package-plus"></i><span data-i18n="adminProducts">Products</span></button>
+          <button class="tab-button" type="button" data-admin-tab="orders" aria-label="Orders" title="Orders"><i data-lucide="receipt-text"></i><span data-i18n="adminOrders">Orders</span><span class="admin-order-badge" id="adminOrderBadge" hidden>0</span></button>
           <a class="tab-button" href="./pos.html?from=admin" target="_blank" rel="noopener" aria-label="扫码收银" title="扫码收银" data-admin-pos-link><i data-lucide="scan-barcode"></i><span>扫码收银</span></a>
-          <button class="tab-button" type="button" data-admin-tab="customers" aria-label="Customers" title="Customers"><i data-lucide="users"></i><span>Customers</span></button>
+          <button class="tab-button" type="button" data-admin-tab="customers" aria-label="Customers" title="Customers"><i data-lucide="users"></i><span data-i18n="adminCustomers">Customers</span></button>
           <button class="tab-button" type="button" data-admin-tab="vouchers" aria-label="Vouchers" title="Vouchers"><i data-lucide="ticket-percent"></i><span>Vouchers</span></button>
           <button class="tab-button" type="button" data-admin-tab="analytics" aria-label="Analytics" title="Analytics"><i data-lucide="chart-column"></i><span>Analytics</span></button>
           <button class="tab-button" type="button" data-admin-tab="procurement" data-full-admin-only aria-label="Procurement" title="Procurement"><i data-lucide="clipboard-list"></i><span>Procurement</span></button>
@@ -8196,8 +8196,8 @@
       <main class="admin-main">
         <div class="admin-topbar">
           <div class="admin-title">
-            <h1 id="adminPageTitle">Overview</h1>
-            <p id="adminPageSub">Products, inventory, orders and storefront signals.</p>
+            <h1 id="adminPageTitle" data-i18n="adminOverview">Overview</h1>
+            <p id="adminPageSub" data-i18n="adminOverviewSub">Products, inventory, orders and storefront signals.</p>
           </div>
           <div class="form-actions">
             <button class="button ghost admin-notification-button" type="button" data-enable-order-notifications data-full-admin-only aria-label="Enable order notifications" title="Enable order notifications"><i data-lucide="bell"></i></button>
@@ -9682,6 +9682,8 @@
         aboutCompanyText: "GO GO SHOP is a New Zealand online store for practical phone accessories, small electronics and everyday gifts.",
         contactCompanyText: "Questions about products or an order? Send us a message and we will get back to you.",
         openContactForm: "Open contact form"
+        ,adminOverview: "Overview", adminProducts: "Products", adminOrders: "Orders", adminCustomers: "Customers", adminOverviewSub: "Products, inventory, orders and storefront signals."
+        ,adminProductsSub: "Manage products and stock.", adminOrdersSub: "Manage orders and fulfilment.", adminCustomersSub: "Customer accounts and loyalty.", adminAnalytics: "Analytics", adminAnalyticsSub: "Sales and inventory analytics.", adminDesign: "Store design", adminDesignSub: "Customize your online store.", adminVouchersSub: "Manage vouchers.", adminProcurement: "Procurement", adminProcurementSub: "Purchasing and replenishment."
       },
       zh: {
         announcement: "欢迎来到我们的商店",
@@ -9860,6 +9862,8 @@
         aboutCompanyText: "GO GO SHOP 是一家位于新西兰的网店，提供实用手机配件、小型电子产品和日常礼品。",
         contactCompanyText: "如需咨询商品或订单，请通过联系表单给我们留言。",
         openContactForm: "打开联系表单"
+        ,adminOverview: "概览", adminProducts: "商品", adminOrders: "订单", adminCustomers: "客户", adminOverviewSub: "商品、库存、订单和店铺数据。"
+        ,adminProductsSub: "管理商品和库存。", adminOrdersSub: "管理订单和履约。", adminCustomersSub: "客户账户和积分。", adminAnalytics: "分析", adminAnalyticsSub: "销售和库存分析。", adminDesign: "店铺装修", adminDesignSub: "自定义线上店铺。", adminVouchersSub: "管理代金券。", adminProcurement: "采购", adminProcurementSub: "采购和补货。"
       }
     };
 
@@ -16248,6 +16252,11 @@
       if ($("#adminShell").hidden) return;
       renderAdminOrderNotificationUi();
       const activeTab = state.adminTab || "overview";
+      const adminLabels = {overview:["adminOverview","adminOverviewSub"],products:["adminProducts","adminProductsSub"],orders:["adminOrders","adminOrdersSub"],customers:["adminCustomers","adminCustomersSub"],analytics:["adminAnalytics","adminAnalyticsSub"],design:["adminDesign","adminDesignSub"],vouchers:["vouchersTitle","adminVouchersSub"],procurement:["adminProcurement","adminProcurementSub"]};
+      const labels = adminLabels[activeTab] || adminLabels.overview;
+      const pageTitle = $("#adminPageTitle"), pageSub = $("#adminPageSub");
+      if (pageTitle) pageTitle.textContent = t(labels[0]);
+      if (pageSub) pageSub.textContent = t(labels[1]);
       switch (activeTab) {
         case "overview":
           window.renderFreightCalculator?.(isFullAdmin(), state.lang, state.session?.user?.id);
