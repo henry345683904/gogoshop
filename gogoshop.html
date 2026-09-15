@@ -14375,6 +14375,7 @@
     document.addEventListener("visibilitychange", refreshPosAnalyticsWhenVisible);
 
     async function fetchAdminData(userId) {
+      const onlineOnly = isOnlineManager();
       const customerPromise = requestWithTimeout(
         () => db.from("profiles").select("id,email,full_name,points,total_spent,created_at,updated_at,is_admin").order("created_at", { ascending: false }),
         REQUEST_TIMEOUTS.admin,
@@ -14390,12 +14391,9 @@
         REQUEST_TIMEOUTS.admin,
         "Admin voucher assignments"
       );
-      const [ordersResult, customersResult, vouchersResult, voucherAssignmentsResult] = await Promise.allSettled([
-        fetchAdminOrders(),
-        customerPromise,
-        voucherPromise,
-        voucherAssignmentPromise
-      ]);
+      const [ordersResult, customersResult, vouchersResult, voucherAssignmentsResult] = await Promise.allSettled(onlineOnly
+        ? [fetchAdminOrders(), Promise.resolve({ data: [], error: null }), Promise.resolve({ data: [], error: null }), Promise.resolve({ data: [], error: null })]
+        : [fetchAdminOrders(), customerPromise, voucherPromise, voucherAssignmentPromise]);
       if (!sessionMatches(userId)) return false;
       const orders = ordersResult.status === "fulfilled" ? ordersResult.value : { error: ordersResult.reason };
       if (!orders.error) {
