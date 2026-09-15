@@ -8170,7 +8170,7 @@
             <input type="password" name="password" placeholder="管理员账户密码" autocomplete="current-password" required>
           </label>
           <button class="button" type="submit" data-login-button><i data-lucide="log-in"></i> 登录后台</button>
-          <button class="button ghost" type="button" data-back-store><i data-lucide="store"></i> Storefront</button>
+          <button class="button ghost" type="button" data-back-store><i data-lucide="store"></i> <span data-i18n="backToStore">Storefront</span></button>
           <p class="login-message" id="loginMessage" role="alert" aria-live="polite" hidden></p>
         </form>
       </div>
@@ -8185,10 +8185,10 @@
           <button class="tab-button" type="button" data-admin-tab="orders" aria-label="Orders" title="Orders"><i data-lucide="receipt-text"></i><span data-i18n="adminOrders">Orders</span><span class="admin-order-badge" id="adminOrderBadge" hidden>0</span></button>
           <a class="tab-button" href="./pos.html?from=admin" target="_blank" rel="noopener" aria-label="扫码收银" title="扫码收银" data-admin-pos-link><i data-lucide="scan-barcode"></i><span>扫码收银</span></a>
           <button class="tab-button" type="button" data-admin-tab="customers" aria-label="Customers" title="Customers"><i data-lucide="users"></i><span data-i18n="adminCustomers">Customers</span></button>
-          <button class="tab-button" type="button" data-admin-tab="vouchers" aria-label="Vouchers" title="Vouchers"><i data-lucide="ticket-percent"></i><span>Vouchers</span></button>
-          <button class="tab-button" type="button" data-admin-tab="analytics" aria-label="Analytics" title="Analytics"><i data-lucide="chart-column"></i><span>Analytics</span></button>
+          <button class="tab-button" type="button" data-admin-tab="vouchers" aria-label="Vouchers" title="Vouchers"><i data-lucide="ticket-percent"></i><span data-i18n="vouchersTitle">Vouchers</span></button>
+          <button class="tab-button" type="button" data-admin-tab="analytics" aria-label="Analytics" title="Analytics"><i data-lucide="chart-column"></i><span data-i18n="adminAnalytics">Analytics</span></button>
           <button class="tab-button" type="button" data-admin-tab="procurement" data-full-admin-only aria-label="Procurement" title="Procurement"><i data-lucide="clipboard-list"></i><span>Procurement</span></button>
-          <button class="tab-button" type="button" data-admin-tab="design" aria-label="Design" title="Design"><i data-lucide="paintbrush"></i><span>Design</span></button>
+          <button class="tab-button" type="button" data-admin-tab="design" aria-label="Design" title="Design"><i data-lucide="paintbrush"></i><span data-i18n="adminDesign">Design</span></button>
           <button class="tab-button" type="button" data-back-store aria-label="Storefront" title="Storefront"><i data-lucide="store"></i><span>Store</span></button>
         </nav>
       </aside>
@@ -8401,7 +8401,7 @@
 
             <div class="voucher-admin-column">
               <div class="admin-panel">
-                <div class="admin-panel-head"><div><h2>Vouchers</h2><span class="muted" id="adminVoucherCount"></span></div><button class="button ghost" type="button" data-refresh-admin-data><i data-lucide="refresh-cw"></i> Refresh</button></div>
+                <div class="admin-panel-head"><div><h2 data-i18n="vouchersTitle">Vouchers</h2><span class="muted" id="adminVoucherCount"></span></div><button class="button ghost" type="button" data-refresh-admin-data><i data-lucide="refresh-cw"></i> <span data-i18n="refresh">Refresh</span></button></div>
                 <div class="table-wrap">
                   <table>
                     <thead><tr><th>Voucher</th><th>Discount</th><th>Conditions</th><th>Claims / Used</th><th>Status</th><th>Action</th></tr></thead>
@@ -8435,7 +8435,7 @@
               </div>
               <div class="theme-editor-toolbar-actions">
                 <button class="button ghost" type="button" data-reset-design><i data-lucide="rotate-ccw"></i> Reset</button>
-                <a class="button ghost" href="#home" data-back-store><i data-lucide="external-link"></i> Storefront</a>
+                <a class="button ghost" href="#home" data-back-store><i data-lucide="external-link"></i> <span data-i18n="backToStore">Storefront</span></a>
               </div>
             </div>
 
@@ -9683,7 +9683,7 @@
         contactCompanyText: "Questions about products or an order? Send us a message and we will get back to you.",
         openContactForm: "Open contact form"
         ,adminOverview: "Overview", adminProducts: "Products", adminOrders: "Orders", adminCustomers: "Customers", adminOverviewSub: "Products, inventory, orders and storefront signals."
-        ,adminProductsSub: "Manage products and stock.", adminOrdersSub: "Manage orders and fulfilment.", adminCustomersSub: "Customer accounts and loyalty.", adminAnalytics: "Analytics", adminAnalyticsSub: "Sales and inventory analytics.", adminDesign: "Store design", adminDesignSub: "Customize your online store.", adminVouchersSub: "Manage vouchers.", adminProcurement: "Procurement", adminProcurementSub: "Purchasing and replenishment."
+        ,adminProductsSub: "Manage products and stock.", adminOrdersSub: "Manage orders and fulfilment.", adminCustomersSub: "Customer accounts and loyalty.", adminAnalytics: "Analytics", adminAnalyticsSub: "Sales and inventory analytics.", adminDesign: "Store design", adminDesignSub: "Customize your online store.", adminVouchersSub: "Manage vouchers.", adminProcurement: "Procurement", adminProcurementSub: "Purchasing and replenishment.", backToStore: "Storefront", refresh: "Refresh"
       },
       zh: {
         announcement: "欢迎来到我们的商店",
@@ -9863,7 +9863,7 @@
         contactCompanyText: "如需咨询商品或订单，请通过联系表单给我们留言。",
         openContactForm: "打开联系表单"
         ,adminOverview: "概览", adminProducts: "商品", adminOrders: "订单", adminCustomers: "客户", adminOverviewSub: "商品、库存、订单和店铺数据。"
-        ,adminProductsSub: "管理商品和库存。", adminOrdersSub: "管理订单和履约。", adminCustomersSub: "客户账户和积分。", adminAnalytics: "分析", adminAnalyticsSub: "销售和库存分析。", adminDesign: "店铺装修", adminDesignSub: "自定义线上店铺。", adminVouchersSub: "管理代金券。", adminProcurement: "采购", adminProcurementSub: "采购和补货。"
+        ,adminProductsSub: "管理商品和库存。", adminOrdersSub: "管理订单和履约。", adminCustomersSub: "客户账户和积分。", adminAnalytics: "分析", adminAnalyticsSub: "销售和库存分析。", adminDesign: "店铺装修", adminDesignSub: "自定义线上店铺。", adminVouchersSub: "管理代金券。", adminProcurement: "采购", adminProcurementSub: "采购和补货。", backToStore: "返回商店", refresh: "刷新"
       }
     };
 
