@@ -11344,7 +11344,7 @@
 
     function productCategoryKeys(product) {
       if (productSalesChannel(product, "offline") !== "online") return [productCategoryKey(product)];
-      const stored = String(product.category || "").split("||").map(value => value.trim()).filter(value => value && !value.startsWith("online-source-"));
+      const stored = String(product.category || "").split("||").map(value => value.trim()).filter(value => value && !/^online[-_ ]/i.test(value));
       if (stored.length) return [...new Set(stored)];
       const text = [product?.title, product?.titleEn, product?.titleZh, product?.descriptionEn, product?.descriptionZh, product?.productType, product?.tags].filter(Boolean).join(" ");
       const detected = ONLINE_ADMIN_CATEGORIES.filter(definition => definition.match.test(text)).map(definition => definition.key);
@@ -11370,7 +11370,7 @@
       }
       host.hidden = channel !== "online";
       const selected = product ? productCategoryKeys(product) : [];
-      const choices = [...new Set([...ONLINE_ADMIN_CATEGORIES.map(item => item.key), ...state.products.filter(isOnlineStoreProduct).flatMap(productCategoryKeys), ...holidayCategories.map(item => item.key)])].filter(key => key && key !== 'All' && !String(key).startsWith('online-source-'));
+      const choices = [...new Set([...ONLINE_ADMIN_CATEGORIES.map(item => item.key), ...state.products.filter(isOnlineStoreProduct).flatMap(productCategoryKeys), ...holidayCategories.map(item => item.key)])].filter(key => key && key !== 'All' && !/^online[-_ ]/i.test(String(key)));
       host.innerHTML = `<fieldset style="border:0;padding:8px 0;margin:0"><legend>${state.lang === 'zh' ? '附加分类 / 节日（可多选）' : 'Additional Categories / Occasions'}</legend><div style="display:flex;flex-wrap:wrap;gap:10px">${choices.map(key => `<label style="display:flex;align-items:center;gap:5px"><input style="width:16px;min-height:16px" type="checkbox" data-extra-category value="${escapeHtml(key)}" ${selected.includes(key) ? 'checked' : ''}>${escapeHtml(categoryName(key))}</label>`).join('')}</div></fieldset>`;
     }
 
@@ -15816,7 +15816,7 @@
       if (channel === "online") {
         const activeCategories = new Set(products.flatMap(product => [adminProductCategoryKey(product, channel), ...productCategoryKeys(product).slice(1)]));
         const known = ONLINE_ADMIN_CATEGORIES.filter(category => activeCategories.has(category.key)).map(category => category.key);
-        const generated = [...activeCategories].filter(category => !category.startsWith("online-source-") && !known.includes(category)).sort();
+        const generated = [...activeCategories].filter(category => !/^online[-_ ]/i.test(String(category)) && !known.includes(category)).sort();
         return ["All", ...known, ...generated];
       }
       const activeCategories = new Set(products.map(product => adminProductCategoryKey(product, channel)));
