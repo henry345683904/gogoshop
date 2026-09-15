@@ -14427,7 +14427,7 @@
     }
 
     async function loadAdminData() {
-      if (!db || !state.profile?.is_admin) return false;
+      if (!db || (!state.profile?.is_admin && !isOnlineManager())) return false;
       const userId = state.session?.user?.id || "";
       if (!userId) return false;
       if (adminDataLoadPromise && adminDataUserId === userId) return adminDataLoadPromise;
