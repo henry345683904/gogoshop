@@ -14155,11 +14155,13 @@
       const allowedTabs = new Set(["overview", "products", "orders", "customers", "vouchers", "analytics", "design"]);
       $$('[data-admin-tab]').forEach((button) => {
         button.hidden = onlineOnly && !allowedTabs.has(button.dataset.adminTab);
+        button.style.display = button.hidden ? "none" : "";
       });
       const posLink = $("[data-admin-pos-link]");
       if (posLink) posLink.hidden = onlineOnly;
       $$('[data-full-admin-only]').forEach((element) => {
         element.hidden = onlineOnly;
+        element.style.display = onlineOnly ? "none" : "";
       });
       $$('[data-admin-section]').forEach((section) => {
         section.hidden = onlineOnly && !allowedTabs.has(section.dataset.adminSection);
