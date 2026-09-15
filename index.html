@@ -8326,6 +8326,8 @@
                       <tbody id="adminOrderTrashRows"></tbody>
                     </table>
                   </div>
+                  </div></details>
+                  </div></details>
                 </div>
               </div>
             </section>
@@ -8819,6 +8821,7 @@
                   <span>添加商品图片</span>
                 </div>
                 <div class="shopify-media-controls">
+                  <details class="product-editor-advanced-media"><summary>高级图片设置（URL）</summary><div>
                   <label class="field">
                     <span>图片 URL</span>
                     <input type="text" name="image" inputmode="url" data-product-image-url required>
@@ -12388,7 +12391,7 @@
                   <div class="order-detail-item-copy">
                     <strong>${escapeHtml(orderItemName(item))}</strong>
                     <span>${Number(item.quantity)} × ${t("unitPrice")} ${formatPrice(item.unit_price)}${item.item_note ? ` · ${isChinese ? "备注" : "Note"}: ${escapeHtml(item.item_note)}` : ""}</span>
-                  </div>
+                  </div></div></details>
                   <strong class="order-detail-item-total">${formatPrice(Number(item.unit_price) * Number(item.quantity))}</strong>
                 </div>`;
             }).join("") || `<div class="empty-state">${t("noProducts")}</div>`}
@@ -17487,7 +17490,7 @@
         titleEn,
         titleZh,
         handle: id,
-        category: selectedChannel === "online" ? [data.category, ...Array.from(form.querySelectorAll('[data-extra-category]:checked'), input => input.value).filter(value => value !== data.category)].join("||") : data.category,
+        category: selectedChannel === "online" ? [adminOnlineCategoryKey({ ...existing, title: titleEn || titleZh, titleEn, titleZh, descriptionEn, descriptionZh, productType: data.productType, tags: data.tags }), ...Array.from(form.querySelectorAll('[data-extra-category]:checked'), input => input.value).filter(value => value !== data.category)].join("||") : data.category,
         description: existing?.description || descriptionEn || descriptionZh,
         descriptionEn,
         descriptionZh,
