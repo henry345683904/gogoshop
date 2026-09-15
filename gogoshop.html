@@ -14183,7 +14183,8 @@
         element.style.display = onlineOnly ? "none" : "";
       });
       $$('[data-admin-section]').forEach((section) => {
-        section.hidden = onlineOnly && !allowedTabs.has(section.dataset.adminSection);
+        const tab = section.dataset.adminSection;
+        section.hidden = onlineOnly && (!allowedTabs.has(tab) || tab === "procurement");
       });
       if (onlineOnly && !allowedTabs.has(state.adminTab)) {
         state.adminProductChannel = "online";
