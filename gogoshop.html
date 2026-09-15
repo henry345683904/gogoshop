@@ -11360,6 +11360,12 @@
     function categoryName(category) {
       const occasion = holidayCategories.find(item => item.key === category);
       if (occasion) return state.lang === "zh" ? occasion.zh : occasion.en;
+      const onlineCategory = ONLINE_ADMIN_CATEGORIES.find(item => item.key === category);
+      if (onlineCategory) return state.lang === "zh" ? onlineCategory.zh : onlineCategory.en;
+      if (String(category).startsWith("online-source-")) {
+        const label = String(category).replace(/^online-source-/, "").replace(/-/g, " ").trim();
+        return label.replace(/\b\w/g, letter => letter.toUpperCase());
+      }
       if (category === "All") return t("allCategory");
       if (category === "other") return t("otherCategory");
       const storefrontCategory = storefrontCategories.find((item) => item.key === category);
