@@ -14444,6 +14444,11 @@
         return false;
       }).finally(() => {
         if (adminDataLoadPromise === promise) {
+          if (!state.adminOrdersLoaded && !state.adminOrdersError) {
+            state.adminOrdersLoaded = true;
+            state.adminOrders = [];
+            state.adminOrdersError = "Admin data did not return in time";
+          }
           state.adminOrdersLoading = false;
           adminDataLoadPromise = null;
           adminDataUserId = "";
