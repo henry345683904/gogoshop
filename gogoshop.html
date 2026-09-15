@@ -8102,6 +8102,7 @@
         <div class="catalog-category-panel" id="catalogCategoryPanel" hidden>
           <div class="chips" data-category-tabs></div>
         </div>
+        <section id="holidayShop" style="margin:16px 0 24px;border-block:1px solid #e1e4e3;padding:16px 0"></section>
         <div class="catalog-tools" hidden>
           <select class="sort-select" id="sortProducts" aria-label="Sort products">
             <option value="featured" data-i18n="sortFeatured">Featured</option>
@@ -8945,6 +8946,7 @@
                   <option value="office-supplies">办公用品</option>
                 </select>
               </label>
+              <div id="productExtraCategories"></div>
               <label class="field">
                 <span>商品类型</span>
                 <input type="text" name="productType" autocomplete="off">
@@ -10132,7 +10134,7 @@
     ]);
 
     function adminOnlineCategoryKey(product) {
-      const sourceCategory = String(product?.category || product?.productType || "").trim();
+      const sourceCategory = String(product?.category || product?.productType || "").split("||")[0].trim();
       if (sourceCategory && !/^(all|other|1688 imports|uncategorized|未分类)$/i.test(sourceCategory)) {
         return `online-source-${sourceCategory.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`;
       }
@@ -11315,7 +11317,39 @@
       return product ? productName(product) : item.product_title;
     }
 
+    const holidayCategories = [
+      {key:"festival-moon",zh:"中秋节（月亮节）",en:"Moon Festival"},
+      {key:"festival-halloween",zh:"万圣节",en:"Halloween"},
+      {key:"festival-christmas",zh:"圣诞节",en:"Christmas"},
+      {key:"festival-easter",zh:"复活节",en:"Easter"},
+      {key:"festival-birthday",zh:"生日",en:"Birthday"}
+    ];
+
+    function productCategoryKeys(product) {
+      if (productSalesChannel(product, "offline") !== "online") return [productCategoryKey(product)];
+      return [...new Set([productCategoryKey(product), ...String(product.category || "").split("||").slice(1)])].filter(Boolean);
+    }
+
+    function renderExtraProductCategories(product = null) {
+      const host = $("#productExtraCategories");
+      if (!host) return;
+      const form = host.closest('form');
+      const channel = product ? productSalesChannel(product, "offline") : activeAdminProductChannel();
+      host.hidden = channel !== "online";
+      const selected = product ? productCategoryKeys(product) : [];
+      const choices = [...new Set([...Array.from(form.elements.namedItem('category').options, option => option.value), ...state.products.filter(isOnlineStoreProduct).flatMap(productCategoryKeys), ...holidayCategories.map(item => item.key)])].filter(key => key && key !== 'All');
+      host.innerHTML = `<fieldset style="border:0;padding:8px 0;margin:0"><legend>${state.lang === 'zh' ? '附加分类 / 节日（可多选）' : 'Additional Categories / Occasions'}</legend><div style="display:flex;flex-wrap:wrap;gap:10px">${choices.map(key => `<label style="display:flex;align-items:center;gap:5px"><input style="width:16px;min-height:16px" type="checkbox" data-extra-category value="${escapeHtml(key)}" ${selected.includes(key) ? 'checked' : ''}>${escapeHtml(categoryName(key))}</label>`).join('')}</div></fieldset>`;
+    }
+
+    function renderHolidayShop() {
+      const host = $('#holidayShop');
+      if (!host) return;
+      host.innerHTML = `<h3 style="font-size:18px;margin:0 0 12px">${state.lang === 'zh' ? '节日与庆祝' : 'Holidays & Celebrations'}</h3><div class="chips">${holidayCategories.map(item => `<button type="button" class="chip ${state.category === item.key ? 'active' : ''}" data-category="${item.key}">${escapeHtml(categoryName(item.key))}</button>`).join('')}</div>${holidayCategories.some(item => item.key === state.category) && !state.products.some(p => isOnlineStoreProduct(p) && productCategoryKeys(p).includes(state.category)) ? `<p class="muted">${state.lang === 'zh' ? '该节日商品即将上新' : 'New products coming soon'}</p>` : ''}`;
+    }
+
     function categoryName(category) {
+      const occasion = holidayCategories.find(item => item.key === category);
+      if (occasion) return state.lang === "zh" ? occasion.zh : occasion.en;
       if (category === "All") return t("allCategory");
       if (category === "other") return t("otherCategory");
       const storefrontCategory = storefrontCategories.find((item) => item.key === category);
@@ -11352,6 +11386,7 @@
     }
 
     function productCategoryKey(product) {
+      if (String(product?.category || "").includes("||")) return String(product.category).split("||")[0];
       if (String(product?.id || "").startsWith("kdh-")) return String(product.category || "other").trim() || "other";
       return storefrontCategoryByProductId.get(product.id)
         || (storefrontCategoryKeys.has(product.category) ? product.category : "")
@@ -11849,7 +11884,7 @@
 
     function categories() {
       const activeCategories = new Set(
-        state.products.filter(isOnlineStoreProduct).map(productCategoryKey)
+        state.products.filter(isOnlineStoreProduct).flatMap(productCategoryKeys)
       );
       const ordered = storefrontCategories
         .filter((category) => activeCategories.has(category.key))
@@ -11864,7 +11899,7 @@
     function visibleProducts() {
       const filtered = state.products.filter((product) => {
         if (!isOnlineStoreProduct(product)) return false;
-        return state.category === "All" || productCategoryKey(product) === state.category;
+        return state.category === "All" || productCategoryKeys(product).includes(state.category);
       });
       return filtered.sort((a, b) => {
         if (state.sort === "price-low") return a.price - b.price;
@@ -11909,7 +11944,7 @@
         const definition = storefrontCategories.find((item) => item.key === category);
         const icon = category === "All" ? "layout-grid" : (definition?.icon || "package");
         const count = state.products.filter((product) => (
-          isOnlineStoreProduct(product) && (category === "All" || productCategoryKey(product) === category)
+          isOnlineStoreProduct(product) && (category === "All" || productCategoryKeys(product).includes(category))
         )).length;
         const active = category === state.category;
         return `
@@ -11923,6 +11958,7 @@
     }
 
     function renderProducts() {
+      renderHolidayShop();
       renderCategoryTabs();
       renderMenuCategories();
       const grid = $("#productGrid");
@@ -15725,10 +15761,10 @@
     function adminProductCategoryOptions(products = adminProductChannelProducts()) {
       const channel = activeAdminProductChannel();
       if (channel === "online") {
-        const activeCategories = new Set(products.map(product => adminProductCategoryKey(product, channel)));
+        const activeCategories = new Set(products.flatMap(product => [adminProductCategoryKey(product, channel), ...productCategoryKeys(product).slice(1)]));
         const known = ONLINE_ADMIN_CATEGORIES.filter(category => activeCategories.has(category.key)).map(category => category.key);
         const generated = [...activeCategories].filter(category => category.startsWith("online-source-") && !known.includes(category)).sort();
-        return ["All", ...known, ...generated];
+        return ["All", ...known, ...generated, ...[...activeCategories].filter(key => !known.includes(key) && !generated.includes(key))];
       }
       const activeCategories = new Set(products.map(product => adminProductCategoryKey(product, channel)));
       const ordered = storefrontCategories
@@ -15760,7 +15796,7 @@
         ? state.adminProductCategory
         : "All";
       const categoryProducts = products.filter((product) => (
-        category === "All" || adminProductCategoryKey(product) === category
+        category === "All" || adminProductCategoryKey(product) === category || (activeAdminProductChannel() === "online" && productCategoryKeys(product).includes(category))
       ));
       if (!query) return categoryProducts;
       const terms = query.split(/\s+/).filter(Boolean);
@@ -16297,6 +16333,7 @@
       if (!form) return;
       const fields = form.elements;
       form.reset();
+      renderExtraProductCategories();
       fields.namedItem("id").value = "";
       fields.namedItem("price").value = "0";
       fields.namedItem("stock").value = "0";
@@ -17061,7 +17098,10 @@
       const localization = window.GOGOSHOP_PRODUCT_LOCALIZATIONS?.[product.id];
       fields.namedItem("title").value = product.titleEn || localization?.en || product.title || "";
       fields.namedItem("titleZh").value = product.titleZh || localization?.zh || productLabels[product.title]?.zh || "";
-      fields.namedItem("category").value = productCategoryKey(product);
+      const primaryCategory = productCategoryKey(product);
+      const categorySelect = fields.namedItem("category");
+      if (!Array.from(categorySelect.options).some(option => option.value === primaryCategory)) categorySelect.add(new Option(categoryName(primaryCategory), primaryCategory));
+      categorySelect.value = primaryCategory;
       fields.namedItem("price").value = product.price;
       fields.namedItem("stock").value = product.stock;
       fields.namedItem("image").value = product.image;
@@ -17073,6 +17113,7 @@
       fields.namedItem("onlineStore").checked = salesChannel === "online" && (product.onlineStore ?? product.published);
       fields.namedItem("featured").checked = Boolean(product.featured);
       setProductFormSalesChannel(salesChannel, form);
+      renderExtraProductCategories(product);
       fields.namedItem("compareAtPrice").value = product.compareAtPrice || "";
       fields.namedItem("sku").value = product.sku || "";
       fields.namedItem("barcode").value = product.barcode || "";
@@ -17404,7 +17445,7 @@
         titleEn,
         titleZh,
         handle: id,
-        category: data.category,
+        category: selectedChannel === "online" ? [data.category, ...Array.from(form.querySelectorAll('[data-extra-category]:checked'), input => input.value).filter(value => value !== data.category)].join("||") : data.category,
         description: existing?.description || descriptionEn || descriptionZh,
         descriptionEn,
         descriptionZh,
@@ -17484,6 +17525,7 @@
     }
 
     function renderAll() {
+      renderHolidayShop();
       renderProducts();
       renderCart();
       renderSearch();
