@@ -10628,7 +10628,7 @@
     }
 
     async function syncPhoneFilmAggregateStock(products) {
-      if (!state.profile?.is_admin || !db || !Array.isArray(products)) return;
+      if (!hasAdminPrivilege() || !db || !Array.isArray(products)) return;
       const aggregateProduct = phoneFilmAggregateProduct(products);
       if (!aggregateProduct || aggregateProduct.deleted_at) return;
       const total = phoneFilmStockTotal(products);
@@ -12344,7 +12344,7 @@
       const modal = $("#orderDetailModal");
       const content = $("#orderDetailContent");
       if (!order || !modal || !content) return;
-      const isAdminOrder = Boolean(adminOrder && state.profile?.is_admin);
+      const isAdminOrder = Boolean(adminOrder && hasAdminPrivilege());
       const locale = state.lang === "zh" ? "zh-CN" : "en-NZ";
       const items = order.order_items || [];
       const calculatedSubtotal = items.reduce((sum, item) => (
@@ -14511,7 +14511,7 @@
       const orderNote = includeNotes && order?.order_note && !includeAdminEditor
         ? `<div><strong>${state.lang === "zh" ? "订单备注" : "Order note"}:</strong> ${escapeHtml(order.order_note)}</div>`
         : "";
-      const adminOrderNoteEditor = includeAdminEditor && state.profile?.is_admin
+      const adminOrderNoteEditor = includeAdminEditor && hasAdminPrivilege()
         ? `<div class="admin-order-note-editor" data-admin-order-note-editor="${escapeHtml(order.id)}">
             <label class="admin-order-note-field" for="adminOrderNote-${escapeHtml(order.id)}">
               <span>${state.lang === "zh" ? "订单备注" : "Order note"}</span>
@@ -15001,7 +15001,7 @@
 
     async function toggleVoucher(voucherId) {
       const voucher = state.vouchers.find((item) => item.id === voucherId);
-      if (!voucher || !db || !state.profile?.is_admin) return;
+      if (!voucher || !db || !hasAdminPrivilege()) return;
       const { error } = await db.from("vouchers").update({ active: !voucher.active }).eq("id", voucherId);
       if (error) return showToast(authErrorMessage(error));
       await loadAdminData();
