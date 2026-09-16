@@ -10112,6 +10112,10 @@
       return (String(state.profile?.is_admin).toLowerCase() === "true" || state.profile?.is_admin === 1) && !isOnlineManager();
     }
 
+    function hasAdminPrivilege() {
+      return isFullAdmin();
+    }
+
     function canManageProducts() {
       return isFullAdmin() || isOnlineManager();
     }
@@ -14451,7 +14455,7 @@
     }
 
     async function loadAdminData() {
-      if (!db || (!state.profile?.is_admin && !isOnlineManager())) return false;
+      if (!db || (!hasAdminPrivilege() && !isOnlineManager())) return false;
       const userId = state.session?.user?.id || "";
       if (!userId) return false;
       if (adminDataLoadPromise && adminDataUserId === userId) return adminDataLoadPromise;
@@ -14651,7 +14655,7 @@
     }
 
     async function saveAdminOrderNote(orderId) {
-      if (!db || !state.profile?.is_admin) return;
+      if (!db || !hasAdminPrivilege()) return;
       const order = state.adminOrders.find((item) => item.id === orderId);
       const editor = $$(`[data-admin-order-note-editor]`).find((item) => item.dataset.adminOrderNoteEditor === orderId);
       const input = editor?.querySelector("[data-admin-order-note]");
@@ -14958,7 +14962,7 @@
 
     async function saveVoucher(event) {
       event.preventDefault();
-      if (!db || !state.profile?.is_admin) return;
+      if (!db || !hasAdminPrivilege()) return;
       const form = event.target;
       const values = Object.fromEntries(new FormData(form).entries());
       const startsAt = values.startsAt ? new Date(values.startsAt).toISOString() : null;
@@ -15006,7 +15010,7 @@
 
     async function issueVoucher(event) {
       event.preventDefault();
-      if (!db || !state.profile?.is_admin) return;
+      if (!db || !hasAdminPrivilege()) return;
       const form = event.target;
       const values = Object.fromEntries(new FormData(form).entries());
       const message = form.querySelector("[data-voucher-issue-message]") || $("#voucherIssueMessage");
@@ -15120,7 +15124,7 @@
     }
 
     async function confirmSupabaseOrder(orderId) {
-      if (!db || !state.profile?.is_admin) return;
+      if (!db || !hasAdminPrivilege()) return;
       const button = $(`[data-confirm-order="${CSS.escape(orderId)}"]`);
       if (button) button.disabled = true;
       const { error } = await db.rpc("confirm_order", { p_order_id: orderId });
