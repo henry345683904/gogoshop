@@ -3029,6 +3029,11 @@
     .admin-main > .admin-section.active {
       visibility: visible;
       opacity: 1;
+      position: relative;
+      z-index: 1;
+      min-height: 48px;
+      color: var(--ink);
+      background: transparent;
     }
 
     .metric-grid {
@@ -16334,6 +16339,14 @@
         const target = shell?.querySelector(".admin-main") || shell;
         if (target) target.insertAdjacentHTML("afterbegin", `<div class="empty-state admin-render-error">后台部分内容加载失败，请刷新后重试。</div>`);
       }
+      window.requestAnimationFrame(() => {
+        const shell = $("#adminShell");
+        const active = shell?.querySelector('.admin-section.active:not([hidden])');
+        if (!active) return;
+        active.style.transform = "translateZ(0)";
+        void active.offsetHeight;
+        active.style.transform = "none";
+      });
     }
 
     function renderAdminContent() {
