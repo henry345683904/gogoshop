@@ -3040,6 +3040,15 @@
       background: transparent;
     }
 
+    /* Keep loaded admin module content paintable after switching sections. */
+    .admin-main > .admin-section.active:not([hidden]) > * {
+      visibility: visible !important;
+      opacity: 1 !important;
+      transform: none !important;
+      filter: none !important;
+      clip-path: none !important;
+    }
+
     .metric-grid {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
