@@ -3009,7 +3009,15 @@
     }
 
     .admin-section.active {
-      display: block;
+      display: block !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+    }
+
+    .admin-main,
+    .admin-main > .admin-section.active {
+      visibility: visible;
+      opacity: 1;
     }
 
     .metric-grid {
@@ -14192,7 +14200,11 @@
       });
       $$('[data-admin-section]').forEach((section) => {
         const tab = section.dataset.adminSection;
-        section.hidden = onlineOnly && (!allowedTabs.has(tab) || tab === "procurement");
+        const hidden = onlineOnly && (!allowedTabs.has(tab) || tab === "procurement");
+        section.hidden = hidden;
+        section.style.display = hidden ? "none" : (tab === state.adminTab ? "block" : "none");
+        section.style.visibility = hidden ? "hidden" : (tab === state.adminTab ? "visible" : "hidden");
+        section.style.opacity = tab === state.adminTab && !hidden ? "1" : "0";
       });
       if (onlineOnly && !allowedTabs.has(state.adminTab)) {
         state.adminProductChannel = "online";
