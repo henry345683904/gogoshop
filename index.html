@@ -14205,6 +14205,7 @@
       $("#admin").style.display = "";
       $("#admin").classList.add("active");
       const unlocked = canManageProducts();
+      if (isFullAdmin()) state.adminProductChannel = "offline";
       $("#loginScreen").hidden = unlocked;
       $("#adminShell").hidden = !unlocked;
       if (unlocked) {
