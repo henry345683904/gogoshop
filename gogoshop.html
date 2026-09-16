@@ -17618,6 +17618,12 @@
       image.dataset.imageFallbackApplied = "true";
       image.dataset.imageOriginal = image.currentSrc || image.src || "";
       image.removeAttribute("srcset");
+      const original = image.dataset.imageOriginal;
+      if (original && /[?&]imgv=/i.test(original)) {
+        image.dataset.imageFallbackApplied = "retry-original";
+        image.src = original.replace(/([?&])imgv=[^&]*/i, (_, separator) => separator === "?" ? "?" : "").replace(/[?&]$/, "");
+        return;
+      }
       image.src = PRODUCT_IMAGE_FALLBACK;
       image.classList.add("is-image-fallback");
     }
