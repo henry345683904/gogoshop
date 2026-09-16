@@ -16282,6 +16282,17 @@
     }
 
     function renderAdmin() {
+      try {
+        renderAdminContent();
+      } catch (error) {
+        console.error("Admin render failed", error);
+        const shell = $("#adminShell");
+        const target = shell?.querySelector(".admin-main") || shell;
+        if (target) target.insertAdjacentHTML("afterbegin", `<div class="empty-state admin-render-error">后台部分内容加载失败，请刷新后重试。</div>`);
+      }
+    }
+
+    function renderAdminContent() {
       if ($("#adminShell").hidden) return;
       renderAdminOrderNotificationUi();
       const activeTab = state.adminTab || "overview";
