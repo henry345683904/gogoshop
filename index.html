@@ -10099,6 +10099,10 @@
     }
 
     function isOnlineManager() {
+      // A top-level administrator must retain every admin surface on every device.
+      // Older profile rows may still carry the online_manager role, so is_admin
+      // is authoritative for the highest-level account.
+      if (state.profile?.is_admin === true) return false;
       const role = String(state.profile?.admin_role || "").trim().toLowerCase();
       const email = String(state.session?.user?.email || state.profile?.email || "").trim().toLowerCase();
       return role === "online_manager" || email === "sales@gogoshop.co.nz";

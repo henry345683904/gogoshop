@@ -413,7 +413,9 @@
       }
       const {data,error}=result;
       const role=String(data?.admin_role||"").trim().toLowerCase();
-      if(error||!data?.is_admin||role==="online_manager")throw new Error("此账号没有管理员权限");
+      // is_admin is the authoritative top-level permission. Do not downgrade
+      // a highest-level administrator because of a legacy admin_role value.
+      if(error||!data?.is_admin)throw new Error("此账号没有管理员权限");
       state.profile=data;
     }
     let authBootSettled=false;
