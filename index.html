@@ -3042,6 +3042,9 @@
 
     /* Keep loaded admin module content paintable after switching sections. */
     .admin-main > .admin-section.active:not([hidden]) > * {
+      display: block !important;
+      width: 100% !important;
+      min-height: 48px !important;
       visibility: visible !important;
       opacity: 1 !important;
       transform: none !important;
