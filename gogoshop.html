@@ -3024,7 +3024,7 @@
     }
 
     .admin-section.active:not([hidden]) {
-      display: contents !important;
+      display: block !important;
       visibility: visible !important;
       opacity: 1 !important;
     }
@@ -14243,9 +14243,9 @@
       $$('[data-admin-section]').forEach((section) => {
         const isHidden = onlineOnly && (!allowedTabs.has(section.dataset.adminSection) || section.dataset.adminSection === "procurement");
         const isActive = !isHidden && section.dataset.adminSection === tab;
-        section.hidden = isHidden;
-        section.classList.toggle("active", isActive);
-        section.style.removeProperty("display");
+      section.hidden = isHidden;
+      section.classList.toggle("active", isActive);
+      section.style.display = isActive ? "block" : "none";
         section.style.removeProperty("visibility");
         section.style.removeProperty("opacity");
       });
