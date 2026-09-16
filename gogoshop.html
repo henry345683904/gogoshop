@@ -14218,15 +14218,25 @@
         element.hidden = onlineOnly;
         element.style.display = onlineOnly ? "none" : "";
       });
-      $$('[data-admin-section]').forEach((section) => {
-        const tab = section.dataset.adminSection;
-        const hidden = onlineOnly && (!allowedTabs.has(tab) || tab === "procurement");
-        section.hidden = hidden;
-      });
+      syncAdminSectionVisibility();
       if (onlineOnly && !allowedTabs.has(state.adminTab)) {
         state.adminProductChannel = "online";
         state.adminTab = "products";
       }
+    }
+
+    function syncAdminSectionVisibility(tab = state.adminTab || "overview") {
+      const onlineOnly = isOnlineManager();
+      const allowedTabs = new Set(["overview", "products", "orders", "customers", "vouchers", "analytics", "design"]);
+      $$('[data-admin-section]').forEach((section) => {
+        const isHidden = onlineOnly && (!allowedTabs.has(section.dataset.adminSection) || section.dataset.adminSection === "procurement");
+        const isActive = !isHidden && section.dataset.adminSection === tab;
+        section.hidden = isHidden;
+        section.classList.toggle("active", isActive);
+        section.style.removeProperty("display");
+        section.style.removeProperty("visibility");
+        section.style.removeProperty("opacity");
+      });
     }
 
     function showAdmin() {
@@ -14308,7 +14318,7 @@
       if (["overview", "analytics", "orders"].includes(tab)) refreshPosAnalyticsWhenVisible();
       if (tab === "orders") clearAdminOrderUnread();
       $$("[data-admin-tab]").forEach((button) => button.classList.toggle("active", button.dataset.adminTab === tab));
-      $$("[data-admin-section]").forEach((section) => section.classList.toggle("active", section.dataset.adminSection === tab));
+      syncAdminSectionVisibility(tab);
       const titleMap = {
         overview: ["Overview", "Products, inventory, orders and storefront signals."],
         products: ["Products", "Add, edit and publish items."],
