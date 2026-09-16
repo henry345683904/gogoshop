@@ -14405,21 +14405,41 @@
 
     async function fetchAdminData(userId) {
       const onlineOnly = isOnlineManager();
-      const customerPromise = requestWithTimeout(
-        () => db.from("profiles").select("id,email,full_name,points,total_spent,created_at,updated_at,is_admin").order("created_at", { ascending: false }),
-        REQUEST_TIMEOUTS.admin,
-        "Admin customers"
-      );
+      const customerPromise = (async () => {
+        let result = await requestWithTimeout(
+          () => db.from("profiles").select("id,email,full_name,points,total_spent,created_at,updated_at,is_admin").order("created_at", { ascending: false }),
+          REQUEST_TIMEOUTS.admin,
+          "Admin customers"
+        );
+        if (result.error && isMissingSchemaError(result.error)) {
+          result = await requestWithTimeout(
+            () => db.from("profiles").select("id,email,full_name,points,total_spent,created_at,is_admin").order("created_at", { ascending: false }),
+            REQUEST_TIMEOUTS.admin,
+            "Admin customers fallback"
+          );
+        }
+        return result;
+      })();
       const voucherPromise = requestWithTimeout(
         () => db.from("vouchers").select("*").order("created_at", { ascending: false }),
         REQUEST_TIMEOUTS.admin,
         "Admin vouchers"
       );
-      const voucherAssignmentPromise = requestWithTimeout(
-        () => db.from("customer_vouchers").select("id,voucher_id,user_id,source,redeemed_at,reserved_at,used_at,order_id,vouchers(code,name,active,starts_at,expires_at),profiles!customer_vouchers_user_id_fkey(email,full_name)").order("redeemed_at", { ascending: false }),
-        REQUEST_TIMEOUTS.admin,
-        "Admin voucher assignments"
-      );
+      const voucherAssignmentPromise = (async () => {
+        let result = await requestWithTimeout(
+          () => db.from("customer_vouchers").select("id,voucher_id,user_id,source,redeemed_at,reserved_at,used_at,order_id,vouchers(code,name,active,starts_at,expires_at),profiles!customer_vouchers_user_id_fkey(email,full_name)").order("redeemed_at", { ascending: false }),
+          REQUEST_TIMEOUTS.admin,
+          "Admin voucher assignments"
+        );
+        if (result.error && isMissingSchemaError(result.error)) {
+          result = await requestWithTimeout(
+            () => db.from("customer_vouchers").select("id,voucher_id,user_id,source,redeemed_at,reserved_at,used_at,order_id").order("redeemed_at", { ascending: false }),
+            REQUEST_TIMEOUTS.admin,
+            "Admin voucher assignments fallback"
+          );
+        }
+        return result;
+      })();
       const [ordersResult, customersResult, vouchersResult, voucherAssignmentsResult] = await Promise.allSettled(onlineOnly
         ? [fetchAdminOrders(), Promise.resolve({ data: [], error: null }), Promise.resolve({ data: [], error: null }), Promise.resolve({ data: [], error: null })]
         : [fetchAdminOrders(), customerPromise, voucherPromise, voucherAssignmentPromise]);
