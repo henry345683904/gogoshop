@@ -12,6 +12,17 @@
   <link rel="preconnect" href="https://unpkg.com">
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <link rel="preconnect" href="https://ucnkcddhrptqpdlvcohy.supabase.co" crossorigin>
+  <script>
+    (function refreshAdminWithoutStaleCache() {
+      try {
+        if (location.hash === "#admin" && !new URLSearchParams(location.search).has("v")) {
+          var next = new URL(location.href);
+          next.searchParams.set("v", "5059371");
+          location.replace(next.href);
+        }
+      } catch (error) {}
+    })();
+  </script>
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
   <script>
     (function prepareNativeOAuthReturn() {
