@@ -12453,16 +12453,16 @@
       state.adminProductLoadError = "";
       if (canManage) {
         const fields = onlineManager
-          ? "id,title,title_en,title_zh,category,description,description_en,description_zh,price,compare_at_price,cost_per_item,stock,sales,published,sales_channel,image,images,sku,barcode,item_code,tags,deleted_at,deleted_was_published"
-          : "id,title,title_en,title_zh,category,description,description_en,description_zh,price,compare_at_price,cost_per_item,stock,sales,published,sales_channel,image,images,vendor,sku,barcode,item_code,tags,source_url,source_currency,source_price,deleted_at,deleted_was_published";
+          ? "id,title,title_en,title_zh,category,description,description_en,description_zh,price,compare_at_price,cost_per_item,stock,sales,published,sales_channel,image,images,sku,barcode,tags,deleted_at,deleted_was_published"
+          : "id,title,title_en,title_zh,category,description,description_en,description_zh,price,compare_at_price,cost_per_item,stock,sales,published,sales_channel,image,images,vendor,sku,barcode,tags,source_url,source_currency,source_price,deleted_at,deleted_was_published";
         let productQuery = db.from("products").select(fields);
         if (onlineManager) productQuery = productQuery.eq("sales_channel", "online");
         ({ data, error } = await requestWithTimeout(productQuery, REQUEST_TIMEOUTS.catalog, "Admin products"));
         if (error && isMissingSchemaError(error)) {
           supportsRecycleBin = false;
           let fallbackQuery = db.from("products").select(onlineManager
-            ? "id,title,title_en,title_zh,category,description,description_en,description_zh,price,compare_at_price,cost_per_item,stock,sales,published,sales_channel,image,images,sku,barcode,item_code,tags"
-            : "id,title,title_en,title_zh,category,description,description_en,description_zh,price,compare_at_price,cost_per_item,stock,sales,published,sales_channel,image,images,vendor,sku,barcode,item_code,tags,source_url,source_currency,source_price");
+            ? "id,title,title_en,title_zh,category,description,description_en,description_zh,price,compare_at_price,cost_per_item,stock,sales,published,sales_channel,image,images,sku,barcode,tags"
+            : "id,title,title_en,title_zh,category,description,description_en,description_zh,price,compare_at_price,cost_per_item,stock,sales,published,sales_channel,image,images,vendor,sku,barcode,tags,source_url,source_currency,source_price");
           if (onlineManager) fallbackQuery = fallbackQuery.eq("sales_channel", "online");
           ({ data, error } = await requestWithTimeout(fallbackQuery, REQUEST_TIMEOUTS.catalog, "Admin products fallback"));
           if (error && /sales_channel/i.test(error.message || "")) {
