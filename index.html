@@ -3019,14 +3019,18 @@
       display: none;
     }
 
-    .admin-section.active {
+    .admin-section[hidden] {
+      display: none !important;
+    }
+
+    .admin-section.active:not([hidden]) {
       display: block !important;
       visibility: visible !important;
       opacity: 1 !important;
     }
 
     .admin-main,
-    .admin-main > .admin-section.active {
+    .admin-main > .admin-section.active:not([hidden]) {
       visibility: visible;
       opacity: 1;
       position: relative;
@@ -14218,9 +14222,6 @@
         const tab = section.dataset.adminSection;
         const hidden = onlineOnly && (!allowedTabs.has(tab) || tab === "procurement");
         section.hidden = hidden;
-        section.style.display = hidden ? "none" : (tab === state.adminTab ? "block" : "none");
-        section.style.visibility = hidden ? "hidden" : (tab === state.adminTab ? "visible" : "hidden");
-        section.style.opacity = tab === state.adminTab && !hidden ? "1" : "0";
       });
       if (onlineOnly && !allowedTabs.has(state.adminTab)) {
         state.adminProductChannel = "online";
