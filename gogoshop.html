@@ -6107,6 +6107,27 @@
       min-width: 0;
     }
 
+    #analyticsSalesSummary {
+      display: grid !important;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    #analyticsSalesSummary .metric {
+      padding: 12px 8px;
+    }
+
+    #analyticsSalesSummary .metric strong {
+      font-size: 18px;
+      letter-spacing: 0;
+    }
+
+    @media (max-width: 400px) {
+      #analyticsSalesSummary .metric strong {
+        font-size: 14px;
+      }
+    }
+
     .sales-summary-grid .metric strong,
     .sales-summary-grid .metric small {
       display: block;
