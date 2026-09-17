@@ -8738,6 +8738,26 @@
           </div>
         </section>
 
+        <section class="admin-section" data-admin-section="delivery">
+          <div class="admin-panel delivery-settings-panel">
+            <div class="admin-panel-head">
+              <div><h2 data-delivery-title>Delivery settings</h2><span class="muted" data-delivery-subtitle>Set the pickup point and delivery rules used at checkout.</span></div>
+            </div>
+            <div class="admin-panel-body">
+              <form data-delivery-settings-form class="delivery-settings-form">
+                <label class="field"><span data-delivery-address-label>Pickup point address</span><input type="text" name="pickupAddress" maxlength="200" required></label>
+                <div class="form-row">
+                  <label class="field"><span data-delivery-distance-label>Free delivery distance (km)</span><input type="number" name="maxDistanceKm" min="0" max="500" step="0.1" required></label>
+                  <label class="field"><span data-delivery-minimum-label>Free delivery minimum (NZD)</span><input type="number" name="freeMinimum" min="0" step="0.01" required></label>
+                </div>
+                <label class="field"><span data-delivery-fee-label>Delivery fee (NZD)</span><input type="number" name="fee" min="0" step="0.01" required></label>
+                <p class="muted" data-delivery-help>Customers within the free delivery distance qualify for free delivery when their order reaches the minimum. Orders below the minimum use the delivery fee. Orders beyond the distance are pickup only.</p>
+                <div class="form-actions"><button class="button" type="submit"><i data-lucide="save"></i> <span data-delivery-save-label>Save delivery settings</span></button><span class="muted" data-delivery-save-status></span></div>
+              </form>
+            </div>
+          </div>
+        </section>
+
         <section class="admin-section" data-admin-section="analytics">
           <div class="sales-summary-grid" id="analyticsSalesSummary"></div>
           <div class="admin-panel analytics-daily-panel">
@@ -9388,25 +9408,6 @@
           </div>
         </section>
 
-        <section class="admin-section" data-admin-section="delivery">
-          <div class="admin-panel delivery-settings-panel">
-            <div class="admin-panel-head">
-              <div><h2 data-delivery-title>Delivery settings</h2><span class="muted" data-delivery-subtitle>Set the pickup point and delivery rules used at checkout.</span></div>
-            </div>
-            <div class="admin-panel-body">
-              <form data-delivery-settings-form class="delivery-settings-form">
-                <label class="field"><span data-delivery-address-label>Pickup point address</span><input type="text" name="pickupAddress" maxlength="200" required></label>
-                <div class="form-row">
-                  <label class="field"><span data-delivery-distance-label>Free delivery distance (km)</span><input type="number" name="maxDistanceKm" min="0" max="500" step="0.1" required></label>
-                  <label class="field"><span data-delivery-minimum-label>Free delivery minimum (NZD)</span><input type="number" name="freeMinimum" min="0" step="0.01" required></label>
-                </div>
-                <label class="field"><span data-delivery-fee-label>Delivery fee (NZD)</span><input type="number" name="fee" min="0" step="0.01" required></label>
-                <p class="muted" data-delivery-help>Customers within the free delivery distance qualify for free delivery when their order reaches the minimum. Orders below the minimum use the delivery fee. Orders beyond the distance are pickup only.</p>
-                <div class="form-actions"><button class="button" type="submit"><i data-lucide="save"></i> <span data-delivery-save-label>Save delivery settings</span></button><span class="muted" data-delivery-save-status></span></div>
-              </form>
-            </div>
-          </div>
-        </section>
         <div class="payment-total-breakdown">
           <div class="payment-total-row"><span data-i18n="subtotal">Subtotal</span><strong data-payment-subtotal>$0.00</strong></div>
           <div class="payment-total-row discount" data-payment-discount-row hidden><span data-i18n="voucherDiscount">Voucher discount</span><strong data-payment-discount>-$0.00</strong></div>
