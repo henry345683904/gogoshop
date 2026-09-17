@@ -8537,6 +8537,7 @@
                 <button class="theme-device-button" type="button" data-design-device="mobile" aria-label="Mobile preview" title="Mobile preview"><i data-lucide="smartphone"></i></button>
               </div>
               <div class="theme-editor-toolbar-actions">
+                <button class="button" type="button" data-publish-design><i data-lucide="upload-cloud"></i> Publish to storefront</button>
                 <button class="button ghost" type="button" data-reset-design><i data-lucide="rotate-ccw"></i> Reset</button>
                 <a class="button ghost" href="#home" data-back-store><i data-lucide="external-link"></i> <span data-i18n="backToStore">Storefront</span></a>
               </div>
@@ -11215,6 +11216,34 @@
         if (version !== designSaveVersion || !canManageProducts()) return;
         setDesignRemoteStatus("error", requestErrorText(error, "Unable to save storefront design"));
         console.warn("Unable to save online storefront design", error);
+      }
+    }
+
+    async function publishStorefrontDesign() {
+      if (!db || !canManageProducts()) {
+        setDesignRemoteStatus("error", "Online publishing requires an administrator account");
+        showToast(state.lang === "zh" ? "当前账户没有发布权限" : "This account cannot publish the storefront");
+        return;
+      }
+      updateDesignFromForm();
+      window.clearTimeout(designSaveTimer);
+      designSaveTimer = null;
+      designSaveVersion += 1;
+      const version = designSaveVersion;
+      const button = $("[data-publish-design]");
+      if (button) {
+        button.disabled = true;
+        button.setAttribute("aria-busy", "true");
+      }
+      setDesignRemoteStatus("saving");
+      await saveStorefrontDesign(version);
+      if (button?.isConnected) {
+        button.disabled = false;
+        button.removeAttribute("aria-busy");
+      }
+      if (state.designRemoteStatus === "saved") {
+        applyStoreDesign();
+        showToast(state.lang === "zh" ? "店铺装修已发布到网页" : "Storefront design published");
       }
     }
 
@@ -18101,6 +18130,7 @@
       if (target.matches("[data-delete-product-permanently]")) permanentlyDeleteProduct(target.dataset.deleteProductPermanently);
       if (target.matches("[data-export-products]")) exportProducts();
       if (target.matches("[data-reset-design]")) resetDesign();
+      if (target.matches("[data-publish-design]")) publishStorefrontDesign();
       if (target.matches("[data-clear-design-block]")) clearDesignBlockForm();
       if (target.matches("[data-edit-design-block]")) editDesignBlock(target.dataset.editDesignBlock);
       if (target.matches("[data-delete-design-block]")) deleteDesignBlock(target.dataset.deleteDesignBlock);
