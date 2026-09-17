@@ -8530,31 +8530,31 @@
             <div class="theme-editor-toolbar">
               <div class="theme-editor-title">
                 <span class="theme-editor-title-icon"><i data-lucide="paintbrush"></i></span>
-                <div><strong>GO GO SHOP</strong><span>Home page · <em class="theme-save-status" id="designSaveStatus" data-state="local">Saved in this browser</em></span></div>
+                <div><strong>GO GO SHOP</strong><span><span data-design-home-label>Home page</span> · <em class="theme-save-status" id="designSaveStatus" data-state="local">Saved in this browser</em></span></div>
               </div>
               <div class="theme-editor-devices" aria-label="Preview device">
                 <button class="theme-device-button active" type="button" data-design-device="desktop" aria-label="Desktop preview" title="Desktop preview"><i data-lucide="monitor"></i></button>
                 <button class="theme-device-button" type="button" data-design-device="mobile" aria-label="Mobile preview" title="Mobile preview"><i data-lucide="smartphone"></i></button>
               </div>
               <div class="theme-editor-toolbar-actions">
-                <button class="button" type="button" data-publish-design><i data-lucide="upload-cloud"></i> Publish to storefront</button>
-                <button class="button ghost" type="button" data-reset-design><i data-lucide="rotate-ccw"></i> Reset</button>
+                <button class="button" type="button" data-publish-design><i data-lucide="upload-cloud"></i> <span data-design-publish-label>Publish to storefront</span></button>
+                <button class="button ghost" type="button" data-reset-design><i data-lucide="rotate-ccw"></i> <span data-design-reset-label>Reset</span></button>
                 <a class="button ghost" href="#home" data-back-store><i data-lucide="external-link"></i> <span data-i18n="backToStore">Storefront</span></a>
               </div>
             </div>
 
             <div class="theme-editor-workspace">
               <aside class="theme-editor-sections" aria-label="Page sections">
-                <div class="theme-sidebar-head"><strong>Home page</strong><i data-lucide="chevron-down"></i></div>
+                <div class="theme-sidebar-head"><strong data-design-home-label>Home page</strong><i data-lucide="chevron-down"></i></div>
                 <div class="theme-section-list">
-                  <div class="theme-section-group-label">Theme</div>
+                  <div class="theme-section-group-label" data-design-theme-group>Theme</div>
                   <button class="theme-section-item" type="button" data-design-section="delivery-settings"><span class="theme-section-icon"><i data-lucide="truck"></i></span><span class="theme-section-copy"><strong>Delivery settings</strong><span>Pickup point and delivery rules</span></span><i data-lucide="chevron-right"></i></button>
                   <button class="theme-section-item" type="button" data-design-section="theme">
                     <span class="theme-section-icon"><i data-lucide="settings-2"></i></span>
                     <span class="theme-section-copy"><strong>Theme settings</strong><span>Typography and colors</span></span>
                     <i data-lucide="chevron-right"></i>
                   </button>
-                  <div class="theme-section-group-label">Page sections</div>
+                  <div class="theme-section-group-label" data-design-page-group>Page sections</div>
                   <button class="theme-section-item" type="button" data-design-section="announcement">
                     <span class="theme-section-icon"><i data-lucide="megaphone"></i></span>
                     <span class="theme-section-copy"><strong>Announcement bar</strong><span>Customer greeting</span></span>
@@ -8577,7 +8577,7 @@
                   </button>
                   <div class="block-list" id="designBlockList"></div>
                 </div>
-                <button class="theme-add-section" type="button" data-add-design-block><i data-lucide="plus"></i> Add section</button>
+                <button class="theme-add-section" type="button" data-add-design-block><i data-lucide="plus"></i> <span data-design-add-label>Add section</span></button>
               </aside>
 
               <main class="theme-editor-preview-pane" aria-label="Store preview">
@@ -16351,13 +16351,10 @@
     function renderDesignInspector() {
       const validSections = new Set(["theme", "announcement", "header", "hero", "products", "block"]);
       if (!validSections.has(state.designEditorSection)) state.designEditorSection = "hero";
-      const meta = {
-        theme: ["Theme settings", "Typography and colors"],
-        announcement: ["Announcement bar", "Home page section"],
-        header: ["Header", "Home page section"],
-        hero: ["Image banner", "Home page section"],
-        products: ["Featured products", "Home page section"],
-        block: [state.designEditorBlockId ? "Custom section" : "Add section", "Home page section"]
+      const meta = state.lang === "zh" ? {
+        theme: ["主题设置", "字体和颜色"], announcement: ["公告栏", "首页区块"], header: ["页头", "首页区块"], hero: ["图片横幅", "首页区块"], products: ["精选商品", "首页区块"], block: [state.designEditorBlockId ? "自定义区块" : "添加区块", "首页区块"]
+      } : {
+        theme: ["Theme settings", "Typography and colors"], announcement: ["Announcement bar", "Home page section"], header: ["Header", "Home page section"], hero: ["Image banner", "Home page section"], products: ["Featured products", "Home page section"], block: [state.designEditorBlockId ? "Custom section" : "Add section", "Home page section"]
       };
       $("#designInspectorTitle").textContent = meta[state.designEditorSection][0];
       $("#designInspectorSubtitle").textContent = meta[state.designEditorSection][1];
@@ -16403,8 +16400,37 @@
       renderDesignPreview();
     }
 
+    function translateDesignEditor() {
+      const zh = state.lang === "zh";
+      const set = (selector, value) => { const node = $(selector); if (node) node.textContent = value; };
+      set("[data-design-publish-label]", zh ? "发布到网页" : "Publish to storefront");
+      set("[data-design-reset-label]", zh ? "重置" : "Reset");
+      set("[data-design-home-label]", zh ? "首页" : "Home page");
+      set("[data-design-theme-group]", zh ? "主题" : "Theme");
+      set("[data-design-page-group]", zh ? "页面区块" : "Page sections");
+      set("[data-design-add-label]", zh ? "添加区块" : "Add section");
+      set("[data-design-preview-label]", zh ? "店铺预览" : "Store preview");
+      set("[data-design-settings-label]", zh ? "区块设置" : "Section settings");
+      const groups = zh ? {
+        "delivery-settings": ["配送设置", "自取点和配送规则"], theme: ["主题设置", "字体和颜色"], announcement: ["公告栏", "客户问候语"], header: ["页头", "店铺名称和导航"], hero: ["图片横幅", "标题、图片和按钮"], products: ["精选商品", "商品区块标题"]
+      } : {
+        "delivery-settings": ["Delivery settings", "Pickup point and delivery rules"], theme: ["Theme settings", "Typography and colors"], announcement: ["Announcement bar", "Customer greeting"], header: ["Header", "Store name and navigation"], hero: ["Image banner", "Title, image and button"], products: ["Featured products", "Product grid heading"]
+      };
+      $$('[data-design-section]').forEach((button) => { const item = groups[button.dataset.designSection]; if (!item) return; const strong = button.querySelector("strong"); const small = button.querySelector("small"); if (strong) strong.textContent = item[0]; if (small) small.textContent = item[1]; });
+      {
+        const fields = { "Typography": "字体", "Delivery settings": "配送设置", "Pickup point address": "自取点地址", "Free delivery distance (km)": "免费配送距离（公里）", "Free delivery minimum (NZD)": "免费配送最低金额（NZD）", "Delivery fee (NZD)": "配送费（NZD）", "Store font": "店铺字体", "Base font size": "基础字体大小", "Heading scale": "标题比例", "Colors": "颜色", "Text": "文字", "Accent": "强调色", "Background": "背景", "Soft surface": "柔和背景", "English announcement": "英文公告", "Chinese announcement": "中文公告", "Store name": "店铺名称", "Menu": "菜单", "Actions": "操作", "Heading": "标题", "Button label": "按钮文字", "Content alignment": "内容对齐", "Image": "图片", "Upload image": "上传图片", "Image URL": "图片地址", "Banner height": "横幅高度", "Image overlay": "图片遮罩", "Section heading": "区块标题", "Desktop columns": "桌面列数", "Mobile columns": "手机列数", "Manage products": "管理商品", "Section type": "区块类型", "Button link": "按钮链接", "Font size": "字体大小", "Save section": "保存区块" };
+        const reverse = { "字体": "Typography", "配送设置": "Delivery settings", "自取点地址": "Pickup point address", "免费配送距离（公里）": "Free delivery distance (km)", "免费配送最低金额（NZD）": "Free delivery minimum (NZD)", "配送费（NZD）": "Delivery fee (NZD)", "店铺字体": "Store font", "基础字体大小": "Base font size", "标题比例": "Heading scale", "颜色": "Colors", "文字": "Text", "强调色": "Accent", "背景": "Background", "柔和背景": "Soft surface", "英文公告": "English announcement", "中文公告": "Chinese announcement", "店铺名称": "Store name", "菜单": "Menu", "操作": "Actions", "标题": "Heading", "按钮文字": "Button label", "内容对齐": "Content alignment", "图片": "Image", "上传图片": "Upload image", "图片地址": "Image URL", "横幅高度": "Banner height", "图片遮罩": "Image overlay", "区块标题": "Section heading", "桌面列数": "Desktop columns", "手机列数": "Mobile columns", "管理商品": "Manage products", "区块类型": "Section type", "按钮链接": "Button link", "字体大小": "Font size", "保存区块": "Save section" };
+        $$('[data-design-form] label, [data-design-form] h3, [data-design-block-form] label').forEach((node) => { const first = node.childNodes[0]; const value = first?.textContent?.trim(); const translated = zh ? fields[value] : reverse[value]; if (first && translated) first.textContent = translated; });
+        const values = { Center: "居中", Left: "左对齐", Right: "右对齐", "Modern sans": "现代无衬线", "Editorial serif": "编辑衬线", "Rounded casual": "圆润随性", Mono: "等宽字体", Text: "文字", Image: "图片", Banner: "横幅", "Button CTA": "按钮 CTA" };
+        const reverseValues = Object.fromEntries(Object.entries(values).map(([key, value]) => [value, key]));
+        $$('[data-design-form] select option, [data-design-block-form] select option').forEach((option) => { const translated = zh ? values[option.textContent] : reverseValues[option.textContent]; if (translated) option.textContent = translated; });
+        const manage = $('[data-admin-tab="products"]', $(`[data-design-panel="products"]`)); if (manage) manage.innerHTML = `<i data-lucide="package-plus"></i> ${zh ? "管理商品" : "Manage products"}`;
+      }
+    }
+
     function renderAdminDesign() {
       if (!$("#designPreview")) return;
+      translateDesignEditor();
       setDesignRemoteStatus(state.designRemoteStatus, state.designRemoteError);
       syncDesignForm();
       renderDesignBlocks();
