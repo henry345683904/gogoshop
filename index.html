@@ -6184,6 +6184,14 @@
       line-height: 1.35;
     }
 
+    .sales-summary-grid .metric .analytics-payment-breakdown {
+      margin-top: 5px;
+      color: #176b5d;
+      font-size: 11px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
     .procurement-control-panel {
       margin-bottom: 16px;
     }
@@ -15493,6 +15501,22 @@
       }, { revenue: 0, orders: 0, items: 0 });
     }
 
+    function analyticsPeriodPaymentStats(orders, startDate = null, endDate = new Date()) {
+      const startTime = startDate ? startDate.getTime() : -Infinity;
+      const endTime = endDate.getTime();
+      return orders.reduce((stats, order) => {
+        const date = analyticsOrderDate(order);
+        if (!date || date.getTime() < startTime || date.getTime() > endTime) return stats;
+        const isPos = order.order_source === "pos" || order.pos_payment_method || /^POS-/i.test(order.order_number || "");
+        if (!isPos) return stats;
+        const amount = Math.max(0, Number(order.total) || 0);
+        const method = String(order.pos_payment_method || "").trim().toLowerCase();
+        if (method === "cash") stats.cash += amount;
+        if (method === "eftpos") stats.eftpos += amount;
+        return stats;
+      }, { cash: 0, eftpos: 0 });
+    }
+
     function analyticsDailyRows(orders, range = state.analyticsRange) {
       const today = analyticsStartOfDay(new Date());
       const groups = new Map();
@@ -15541,15 +15565,16 @@
       weekStart.setDate(today.getDate() - ((today.getDay() + 6) % 7));
       const orders = analyticsSalesOrders();
       const metrics = [
-        { label: isChinese ? "总销售额" : "Total sales", ...analyticsPeriodStats(orders, null, now) },
-        { label: isChinese ? "本月销售额" : "This month", ...analyticsPeriodStats(orders, monthStart, now) },
-        { label: isChinese ? "本周销售额" : "This week", ...analyticsPeriodStats(orders, weekStart, now) }
+        { label: isChinese ? "总销售额" : "Total sales", start: null, ...analyticsPeriodStats(orders, null, now) },
+        { label: isChinese ? "本月销售额" : "This month", start: monthStart, ...analyticsPeriodStats(orders, monthStart, now) },
+        { label: isChinese ? "本周销售额" : "This week", start: weekStart, ...analyticsPeriodStats(orders, weekStart, now) }
       ];
       summary.innerHTML = metrics.map((metric) => `
         <div class="metric">
           <span>${metric.label}</span>
           <strong>${formatPrice(metric.revenue)}</strong>
           <small>NZD · ${metric.orders.toLocaleString(locale)} ${isChinese ? "笔订单" : metric.orders === 1 ? "order" : "orders"} · ${metric.items.toLocaleString(locale)} ${isChinese ? "件" : metric.items === 1 ? "item" : "items"}</small>
+          <small class="analytics-payment-breakdown">${isChinese ? "EFTPOS" : "EFTPOS"} ${formatPrice(analyticsPeriodPaymentStats(orders, metric.start, now).eftpos)} · ${isChinese ? "现金" : "CASH"} ${formatPrice(analyticsPeriodPaymentStats(orders, metric.start, now).cash)}</small>
         </div>
       `).join("");
 
