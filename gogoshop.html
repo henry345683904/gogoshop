@@ -8293,6 +8293,7 @@
           <button class="tab-button" type="button" data-admin-tab="analytics" aria-label="Analytics" title="Analytics"><i data-lucide="chart-column"></i><span data-i18n="adminAnalytics">Analytics</span></button>
           <button class="tab-button" type="button" data-admin-tab="procurement" data-full-admin-only aria-label="Procurement" title="Procurement"><i data-lucide="clipboard-list"></i><span>Procurement</span></button>
           <button class="tab-button" type="button" data-admin-tab="design" aria-label="Design" title="Design"><i data-lucide="paintbrush"></i><span data-i18n="adminDesign">Design</span></button>
+          <button class="tab-button" type="button" data-admin-tab="delivery" aria-label="Delivery settings" title="Delivery settings"><i data-lucide="truck"></i><span data-delivery-tab-label>Delivery settings</span></button>
           <button class="tab-button" type="button" data-back-store aria-label="Storefront" title="Storefront"><i data-lucide="store"></i><span>Store</span></button>
         </nav>
       </aside>
@@ -8548,7 +8549,6 @@
                 <div class="theme-sidebar-head"><strong data-design-home-label>Home page</strong><i data-lucide="chevron-down"></i></div>
                 <div class="theme-section-list">
                   <div class="theme-section-group-label" data-design-theme-group>Theme</div>
-                  <button class="theme-section-item" type="button" data-design-section="delivery-settings"><span class="theme-section-icon"><i data-lucide="truck"></i></span><span class="theme-section-copy"><strong>Delivery settings</strong><span>Pickup point and delivery rules</span></span><i data-lucide="chevron-right"></i></button>
                   <button class="theme-section-item" type="button" data-design-section="theme">
                     <span class="theme-section-icon"><i data-lucide="settings-2"></i></span>
                     <span class="theme-section-copy"><strong>Theme settings</strong><span>Typography and colors</span></span>
@@ -8593,14 +8593,6 @@
                   <form class="design-form" data-design-form>
                     <section class="theme-inspector-panel" data-design-panel="theme" hidden>
                       <h3>Typography</h3>
-                      <section class="theme-inspector-panel" data-design-panel="delivery-settings" hidden>
-                        <h3>Delivery settings</h3>
-                        <label class="field"><span>Pickup point address</span><input type="text" name="deliveryPickupAddress" maxlength="200"></label>
-                        <label class="field"><span>Free delivery distance (km)</span><input type="number" name="deliveryMaxDistanceKm" min="0" max="500" step="0.1"></label>
-                        <label class="field"><span>Free delivery minimum (NZD)</span><input type="number" name="freeDeliveryMinimum" min="0" step="0.01"></label>
-                        <label class="field"><span>Delivery fee (NZD)</span><input type="number" name="deliveryFee" min="0" step="0.01"></label>
-                        <p class="muted">Use the customer's location permission to calculate distance from the pickup point. The address is shown to customers; coordinates remain in this browser.</p>
-                      </section>
                       <label class="field">
                         <span>Store font</span>
                         <select name="fontFamily">
@@ -9395,6 +9387,26 @@
             </div>
           </div>
         </section>
+
+        <section class="admin-section" data-admin-section="delivery">
+          <div class="admin-panel delivery-settings-panel">
+            <div class="admin-panel-head">
+              <div><h2 data-delivery-title>Delivery settings</h2><span class="muted" data-delivery-subtitle>Set the pickup point and delivery rules used at checkout.</span></div>
+            </div>
+            <div class="admin-panel-body">
+              <form data-delivery-settings-form class="delivery-settings-form">
+                <label class="field"><span data-delivery-address-label>Pickup point address</span><input type="text" name="pickupAddress" maxlength="200" required></label>
+                <div class="form-row">
+                  <label class="field"><span data-delivery-distance-label>Free delivery distance (km)</span><input type="number" name="maxDistanceKm" min="0" max="500" step="0.1" required></label>
+                  <label class="field"><span data-delivery-minimum-label>Free delivery minimum (NZD)</span><input type="number" name="freeMinimum" min="0" step="0.01" required></label>
+                </div>
+                <label class="field"><span data-delivery-fee-label>Delivery fee (NZD)</span><input type="number" name="fee" min="0" step="0.01" required></label>
+                <p class="muted" data-delivery-help>Customers within the free delivery distance qualify for free delivery when their order reaches the minimum. Orders below the minimum use the delivery fee. Orders beyond the distance are pickup only.</p>
+                <div class="form-actions"><button class="button" type="submit"><i data-lucide="save"></i> <span data-delivery-save-label>Save delivery settings</span></button><span class="muted" data-delivery-save-status></span></div>
+              </form>
+            </div>
+          </div>
+        </section>
         <div class="payment-total-breakdown">
           <div class="payment-total-row"><span data-i18n="subtotal">Subtotal</span><strong data-payment-subtotal>$0.00</strong></div>
           <div class="payment-total-row discount" data-payment-discount-row hidden><span data-i18n="voucherDiscount">Voucher discount</span><strong data-payment-discount>-$0.00</strong></div>
@@ -9787,7 +9799,7 @@
         contactCompanyText: "Questions about products or an order? Send us a message and we will get back to you.",
         openContactForm: "Open contact form"
         ,adminOverview: "Overview", adminProducts: "Products", adminOrders: "Orders", adminCustomers: "Customers", adminOverviewSub: "Products, inventory, orders and storefront signals."
-        ,adminProductsSub: "Manage products and stock.", adminOrdersSub: "Manage orders and fulfilment.", adminCustomersSub: "Customer accounts and loyalty.", adminAnalytics: "Analytics", adminAnalyticsSub: "Sales and inventory analytics.", adminDesign: "Store design", adminDesignSub: "Customize your online store.", adminVouchersSub: "Manage vouchers.", adminProcurement: "Procurement", adminProcurementSub: "Purchasing and replenishment.", backToStore: "Storefront", refresh: "Refresh"
+        ,adminProductsSub: "Manage products and stock.", adminOrdersSub: "Manage orders and fulfilment.", adminCustomersSub: "Customer accounts and loyalty.", adminAnalytics: "Analytics", adminAnalyticsSub: "Sales and inventory analytics.", adminDesign: "Store design", adminDesignSub: "Customize your online store.", adminDelivery: "Delivery settings", adminDeliverySub: "Set pickup and delivery rules.", adminVouchersSub: "Manage vouchers.", adminProcurement: "Procurement", adminProcurementSub: "Purchasing and replenishment.", backToStore: "Storefront", refresh: "Refresh"
       },
       zh: {
         announcement: "欢迎来到我们的商店",
@@ -9967,7 +9979,7 @@
         contactCompanyText: "如需咨询商品或订单，请通过联系表单给我们留言。",
         openContactForm: "打开联系表单"
         ,adminOverview: "概览", adminProducts: "商品", adminOrders: "订单", adminCustomers: "客户", adminOverviewSub: "商品、库存、订单和店铺数据。"
-        ,adminProductsSub: "管理商品和库存。", adminOrdersSub: "管理订单和履约。", adminCustomersSub: "客户账户和积分。", adminAnalytics: "分析", adminAnalyticsSub: "销售和库存分析。", adminDesign: "店铺装修", adminDesignSub: "自定义线上店铺。", adminVouchersSub: "管理代金券。", adminProcurement: "采购", adminProcurementSub: "采购和补货。", backToStore: "返回商店", refresh: "刷新"
+        ,adminProductsSub: "管理商品和库存。", adminOrdersSub: "管理订单和履约。", adminCustomersSub: "客户账户和积分。", adminAnalytics: "分析", adminAnalyticsSub: "销售和库存分析。", adminDesign: "店铺装修", adminDesignSub: "自定义线上店铺。", adminDelivery: "配送设置", adminDeliverySub: "设置自取点和配送规则。", adminVouchersSub: "管理代金券。", adminProcurement: "采购", adminProcurementSub: "采购和补货。", backToStore: "返回商店", refresh: "刷新"
       }
     };
 
@@ -14308,7 +14320,7 @@
 
     function renderAdminRoleUi() {
       const onlineOnly = isOnlineManager();
-      const allowedTabs = new Set(["overview", "products", "orders", "customers", "vouchers", "analytics", "design"]);
+      const allowedTabs = new Set(["overview", "products", "orders", "customers", "vouchers", "analytics", "design", "delivery"]);
       $$('[data-admin-tab]').forEach((button) => {
         button.hidden = onlineOnly && !allowedTabs.has(button.dataset.adminTab);
         button.style.display = button.hidden ? "none" : "";
@@ -14328,7 +14340,7 @@
 
     function syncAdminSectionVisibility(tab = state.adminTab || "overview") {
       const onlineOnly = isOnlineManager();
-      const allowedTabs = new Set(["overview", "products", "orders", "customers", "vouchers", "analytics", "design"]);
+      const allowedTabs = new Set(["overview", "products", "orders", "customers", "vouchers", "analytics", "design", "delivery"]);
       $$('[data-admin-section]').forEach((section) => {
         const isHidden = onlineOnly && (!allowedTabs.has(section.dataset.adminSection) || section.dataset.adminSection === "procurement");
         const isActive = !isHidden && section.dataset.adminSection === tab;
@@ -14413,7 +14425,7 @@
     }
 
     function setAdminTab(tab) {
-      const onlineManagerTabs = new Set(["overview", "products", "orders", "customers", "vouchers", "analytics", "design"]);
+      const onlineManagerTabs = new Set(["overview", "products", "orders", "customers", "vouchers", "analytics", "design", "delivery"]);
       if (isOnlineManager() && !onlineManagerTabs.has(tab)) tab = "products";
       state.adminTab = tab;
       if (["overview", "analytics", "orders"].includes(tab)) refreshPosAnalyticsWhenVisible();
@@ -14432,7 +14444,10 @@
         procurement: state.lang === "zh"
           ? ["采购建议", "查看手机壳和手机膜库存、销量和补货建议。"]
           : ["Procurement", "Phone case and screen protector stock, sales and replenishment suggestions."],
-        design: ["Store design", "Build the home page with live section editing and responsive previews."]
+        design: ["Store design", "Build the home page with live section editing and responsive previews."],
+        delivery: state.lang === "zh"
+          ? ["配送设置", "设置自取点、免费配送距离和配送费。"]
+          : ["Delivery settings", "Set the pickup point, free delivery distance and delivery fee."]
       };
       $("#adminPageTitle").textContent = titleMap[tab][0];
       $("#adminPageSub").textContent = titleMap[tab][1];
@@ -16209,8 +16224,6 @@
         const field = form.elements.namedItem(key);
         if (field && key !== "blocks") field.value = value;
       });
-      const delivery = deliverySettings();
-      for (const [key,value] of Object.entries({deliveryPickupAddress:delivery.pickupAddress,deliveryMaxDistanceKm:delivery.maxDistanceKm,freeDeliveryMinimum:delivery.freeMinimum,deliveryFee:delivery.fee})) { const field=form.elements.namedItem(key); if(field) field.value=value; }
       renderDesignControlValues();
     }
 
@@ -16255,8 +16268,7 @@
         heroAlign: data.heroAlign,
         heroHeight: data.heroHeight,
         heroOverlay: data.heroOverlay,
-        productTitle: data.productTitle.trim(),
-        deliverySettings: { ...deliverySettings(), pickupAddress: String(data.deliveryPickupAddress || DEFAULT_DELIVERY_SETTINGS.pickupAddress).trim(), maxDistanceKm: Number(data.deliveryMaxDistanceKm), freeMinimum: Number(data.freeDeliveryMinimum), fee: Number(data.deliveryFee) }
+        productTitle: data.productTitle.trim()
       });
       persistDesign();
       applyStoreDesign();
@@ -16489,7 +16501,7 @@
       if ($("#adminShell").hidden) return;
       renderAdminOrderNotificationUi();
       const activeTab = state.adminTab || "overview";
-      const adminLabels = {overview:["adminOverview","adminOverviewSub"],products:["adminProducts","adminProductsSub"],orders:["adminOrders","adminOrdersSub"],customers:["adminCustomers","adminCustomersSub"],analytics:["adminAnalytics","adminAnalyticsSub"],design:["adminDesign","adminDesignSub"],vouchers:["vouchersTitle","adminVouchersSub"],procurement:["adminProcurement","adminProcurementSub"]};
+      const adminLabels = {overview:["adminOverview","adminOverviewSub"],products:["adminProducts","adminProductsSub"],orders:["adminOrders","adminOrdersSub"],customers:["adminCustomers","adminCustomersSub"],analytics:["adminAnalytics","adminAnalyticsSub"],design:["adminDesign","adminDesignSub"],delivery:["adminDelivery","adminDeliverySub"],vouchers:["vouchersTitle","adminVouchersSub"],procurement:["adminProcurement","adminProcurementSub"]};
       const labels = adminLabels[activeTab] || adminLabels.overview;
       const pageTitle = $("#adminPageTitle"), pageSub = $("#adminPageSub");
       if (pageTitle) pageTitle.textContent = t(labels[0]);
@@ -16525,6 +16537,9 @@
         case "design":
           renderAdminDesign();
           break;
+        case "delivery":
+          renderAdminDeliverySettings();
+          break;
         default:
           renderMetrics("#metricGrid");
           renderRevenueChart();
@@ -16533,6 +16548,39 @@
       // A detail modal can remain open while data refreshes or the user switches tabs.
       if (state.activeCustomerId && activeTab !== "customers") renderCustomerDetail();
       refreshIcons();
+    }
+
+    function renderAdminDeliverySettings() {
+      const form = $("[data-delivery-settings-form]");
+      if (!form) return;
+      const zh = state.lang === "zh";
+      const settings = deliverySettings();
+      if (document.activeElement && form.contains(document.activeElement)) return;
+      form.elements.pickupAddress.value = settings.pickupAddress;
+      form.elements.maxDistanceKm.value = settings.maxDistanceKm;
+      form.elements.freeMinimum.value = settings.freeMinimum;
+      form.elements.fee.value = settings.fee;
+      $("[data-delivery-title]").textContent = zh ? "配送设置" : "Delivery settings";
+      $("[data-delivery-subtitle]").textContent = zh ? "设置结算时使用的自取点和配送规则。" : "Set the pickup point and delivery rules used at checkout.";
+      $("[data-delivery-address-label]").textContent = zh ? "自取点地址" : "Pickup point address";
+      $("[data-delivery-distance-label]").textContent = zh ? "免费配送距离（公里）" : "Free delivery distance (km)";
+      $("[data-delivery-minimum-label]").textContent = zh ? "免费配送最低金额（NZD）" : "Free delivery minimum (NZD)";
+      $("[data-delivery-fee-label]").textContent = zh ? "配送费（NZD）" : "Delivery fee (NZD)";
+      $("[data-delivery-help]").textContent = zh ? "客户在免费配送距离内且订单达到最低金额时免配送费；未达到最低金额时收取配送费；超过距离只能选择自取。" : "Customers within the free delivery distance qualify for free delivery when their order reaches the minimum. Orders below the minimum use the delivery fee. Orders beyond the distance are pickup only.";
+      $("[data-delivery-save-label]").textContent = zh ? "保存配送设置" : "Save delivery settings";
+      $("[data-delivery-tab-label]").textContent = zh ? "配送设置" : "Delivery settings";
+      refreshIcons();
+    }
+
+    function saveAdminDeliverySettings(event) {
+      event.preventDefault();
+      const form = event.currentTarget;
+      const settings = deliverySettings();
+      state.design = normalizeDesign({ ...state.design, deliverySettings: { ...settings, pickupAddress: String(form.elements.pickupAddress.value || "").trim() || DEFAULT_DELIVERY_SETTINGS.pickupAddress, maxDistanceKm: Number(form.elements.maxDistanceKm.value), freeMinimum: Number(form.elements.freeMinimum.value), fee: Number(form.elements.fee.value) } });
+      persistDesign();
+      const status = $("[data-delivery-save-status]");
+      if (status) status.textContent = state.lang === "zh" ? "已保存并同步到线上结算" : "Saved and synced to online checkout";
+      showToast(state.lang === "zh" ? "配送设置已保存" : "Delivery settings saved");
     }
 
     function setProductEditorLanguage(language, form = $("[data-product-form]")) {
@@ -18469,6 +18517,7 @@
       if (event.target.matches("[data-voucher-issue-form]")) issueVoucher(event);
       if (event.target.matches("[data-product-form]")) saveProduct(event);
       if (event.target.matches("[data-design-block-form]")) saveDesignBlock(event);
+      if (event.target.matches("[data-delivery-settings-form]")) saveAdminDeliverySettings(event);
     });
 
     $("#sortProducts")?.addEventListener("change", (event) => {
