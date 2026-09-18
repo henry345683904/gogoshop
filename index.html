@@ -12447,6 +12447,7 @@
     }
 
     function renderAccount() {
+      window.syncSupportChat?.();
       const signedIn = Boolean(state.session?.user);
       updateAdminMenuVisibility();
       renderCustomerVouchers();
@@ -14369,7 +14370,7 @@
 
     function renderAdminRoleUi() {
       const onlineOnly = isOnlineManager();
-      const allowedTabs = new Set(["overview", "products", "orders", "customers", "vouchers", "analytics", "design", "delivery"]);
+      const allowedTabs = new Set(["overview", "products", "orders", "customers", "vouchers", "analytics", "design", "delivery", "support"]);
       $$('[data-admin-tab]').forEach((button) => {
         button.hidden = onlineOnly && !allowedTabs.has(button.dataset.adminTab);
         button.style.display = button.hidden ? "none" : "";
@@ -14389,7 +14390,7 @@
 
     function syncAdminSectionVisibility(tab = state.adminTab || "overview") {
       const onlineOnly = isOnlineManager();
-      const allowedTabs = new Set(["overview", "products", "orders", "customers", "vouchers", "analytics", "design", "delivery"]);
+      const allowedTabs = new Set(["overview", "products", "orders", "customers", "vouchers", "analytics", "design", "delivery", "support"]);
       $$('[data-admin-section]').forEach((section) => {
         const isHidden = onlineOnly && (!allowedTabs.has(section.dataset.adminSection) || section.dataset.adminSection === "procurement");
         const isActive = !isHidden && section.dataset.adminSection === tab;
@@ -14405,6 +14406,7 @@
       $("#storeView").style.display = "none";
       $("#admin").style.display = "";
       $("#admin").classList.add("active");
+      window.syncSupportChat?.();
       const unlocked = canManageProducts();
       if (isFullAdmin()) state.adminProductChannel = "offline";
       $("#loginScreen").hidden = unlocked;
@@ -14427,6 +14429,7 @@
       $("#storeView").style.display = "";
       $("#admin").classList.remove("active");
       $("#admin").style.display = "none";
+      window.syncSupportChat?.();
       if (isAdminRoute()) {
         history.replaceState(null, "", "#home");
       }
@@ -14474,7 +14477,7 @@
     }
 
     function setAdminTab(tab) {
-      const onlineManagerTabs = new Set(["overview", "products", "orders", "customers", "vouchers", "analytics", "design", "delivery"]);
+      const onlineManagerTabs = new Set(["overview", "products", "orders", "customers", "vouchers", "analytics", "design", "delivery", "support"]);
       if (isOnlineManager() && !onlineManagerTabs.has(tab)) tab = "products";
       state.adminTab = tab;
       if (["overview", "analytics", "orders"].includes(tab)) refreshPosAnalyticsWhenVisible();
@@ -14482,6 +14485,7 @@
       $$("[data-admin-tab]").forEach((button) => button.classList.toggle("active", button.dataset.adminTab === tab));
       syncAdminSectionVisibility(tab);
       const titleMap = {
+        support: state.lang === 'zh' ? ['客服消息', '查看并回复客户消息'] : ['Customer support', 'Read and reply to customer messages'],
         overview: ["Overview", "Products, inventory, orders and storefront signals."],
         products: ["Products", "Add, edit and publish items."],
         orders: ["Orders", "Confirm orders before inventory and points are updated."],
@@ -16564,6 +16568,7 @@
     }
 
     function renderAdminContent() {
+      window.syncSupportChat?.();
       if ($("#adminShell").hidden) return;
       renderAdminOrderNotificationUi();
       const activeTab = state.adminTab || "overview";
@@ -16572,6 +16577,10 @@
       const pageTitle = $("#adminPageTitle"), pageSub = $("#adminPageSub");
       if (pageTitle) pageTitle.textContent = t(labels[0]);
       if (pageSub) pageSub.textContent = t(labels[1]);
+      if (activeTab === 'support') {
+        pageTitle.textContent = state.lang === 'zh' ? '客服消息' : 'Customer support';
+        pageSub.textContent = state.lang === 'zh' ? '查看并回复客户消息' : 'Read and reply to customer messages';
+      }
       switch (activeTab) {
         case "overview":
           window.renderBankDepositTracker?.(isFullAdmin(), state.lang, state.session?.user?.id);
@@ -17914,7 +17923,28 @@
       URL.revokeObjectURL(url);
     }
 
+    window.syncSupportChat = () => {
+      let nav = document.querySelector('[data-admin-tab="support"]');
+      if (!nav) {
+        nav = document.createElement('button');
+        nav.type = 'button'; nav.className = 'tab-button'; nav.dataset.adminTab = 'support';
+        document.querySelector('[data-admin-tab="delivery"]')?.after(nav);
+        const section = document.createElement('section');
+        section.className = 'admin-section'; section.dataset.adminSection = 'support';
+        section.innerHTML = '<div id="supportInbox"></div>';
+        document.querySelector('[data-admin-section="delivery"]')?.after(section);
+      }
+      nav.innerHTML = `<i data-lucide="messages-square"></i><span>${state.lang === 'zh' ? '客服消息' : 'Customer support'}</span>`;
+      window.renderSupportChat?.({db, user: state.session?.user?.id, lang:state.lang,
+        staff:canManageProducts(), tab:state.adminTab, admin:document.getElementById('admin')?.classList.contains('active')});
+    };
+    const supportStyles = document.createElement('link');
+    supportStyles.rel = 'stylesheet'; supportStyles.href = 'support-chat.css?v=1'; document.head.append(supportStyles);
+    const supportScript = document.createElement('script');
+    supportScript.src = 'support-chat.js?v=1'; supportScript.onload = window.syncSupportChat; document.head.append(supportScript);
+
     function renderAll() {
+      window.syncSupportChat?.();
       renderHolidayShop();
       renderProducts();
       renderCart();
@@ -18735,4 +18765,3 @@
   </script>
 </body>
 </html>
-
