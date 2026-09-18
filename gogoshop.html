@@ -604,10 +604,10 @@
     .hero {
       position: relative;
       overflow: hidden;
-      min-height: var(--store-hero-height, 344px);
+      min-height: min(var(--store-hero-height, 344px), 210px);
       display: grid;
       place-items: center;
-      padding: 92px 24px 78px;
+      padding: 32px 24px;
       isolation: isolate;
       background: #d9b197;
     }
@@ -658,7 +658,7 @@
       position: relative;
       z-index: 1;
       display: grid;
-      gap: 25px;
+      gap: 16px;
       justify-items: center;
       max-width: min(92vw, 920px);
       text-align: center;
@@ -676,7 +676,7 @@
     }
 
     .main-view .hero h1 {
-      font-size: calc(46px * var(--store-heading-scale));
+      font-size: calc(34px * var(--store-heading-scale));
     }
 
     .hero-subtitle {
@@ -6988,8 +6988,8 @@
       }
 
       .hero {
-        min-height: min(var(--store-hero-height, 344px), 240px);
-        padding: 68px 18px 46px;
+        min-height: min(var(--store-hero-height, 344px), 170px);
+        padding: 24px 18px;
         place-items: center start;
       }
 
