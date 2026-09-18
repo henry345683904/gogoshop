@@ -960,7 +960,10 @@
       min-width: 0;
     }
 
-    .catalog-group-heading { grid-column: 1 / -1; padding-top: 20px; border-top: 1px solid var(--line); }
+    #catalog.section { padding-top: 18px; }
+    #catalog > .section-heading { margin-bottom: 12px; }
+    #catalog .product-grid { row-gap: 16px; }
+    .catalog-group-heading { grid-column: 1 / -1; padding-top: 12px; border-top: 1px solid var(--line); }
     .catalog-group-heading h3 { margin: 0; font-size: 20px; }
     .catalog-arrivals { grid-column: 1 / -1; display: grid; grid-auto-flow: column; grid-auto-columns: calc((100% - 30px) / 4); gap: 10px; overflow-x: auto; padding-bottom: 12px; scroll-snap-type: x mandatory; }
     .catalog-arrivals .product-card { scroll-snap-align: start; }
@@ -6856,7 +6859,7 @@
 
       #catalog > .section-heading {
         min-height: 42px;
-        margin-bottom: 28px;
+        margin-bottom: 12px;
         align-items: center;
       }
 
