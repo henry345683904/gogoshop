@@ -56,6 +56,11 @@
     void loadConversation(host,customer,staff);
   }
   function fillPanel() {
+    if (context.staff) {
+      panel.querySelector('.support-body').innerHTML = `<button type="button" class="button" data-support-inbox>${tr('打开客服收件箱','Open support inbox')}</button>`;
+      panel.querySelector('[data-support-inbox]').onclick = () => {setOpen(false); context.openInbox?.();};
+      return;
+    }
     panel.querySelector('.support-body').innerHTML = context.user
       ? conversation(false)
       : `<p>${tr('登录账户后，与客服沟通并查看回复。','Sign in to contact support and view replies.')}</p><button type="button" class="button" data-support-login>${tr('登录','Sign in')}</button>`;
@@ -100,7 +105,7 @@
       panel.onkeydown = event => {if(event.key === 'Escape') setOpen(false);};
       if (opened) setOpen(true); icons();
     }
-    root.hidden = next.admin || next.staff;
+    root.hidden = next.admin;
     const target = document.getElementById('supportInbox');
     if (next.staff && next.admin && next.tab === 'support' && target && target !== inbox) {
       inbox = target;
@@ -110,7 +115,7 @@
   };
   setInterval(() => {
     if (!context?.db || document.hidden) return;
-    if (opened && !root.hidden && context.user) void loadConversation(panel,context.user,false);
+    if (opened && !root.hidden && context.user && !context.staff) void loadConversation(panel,context.user,false);
     if (context.staff && context.admin && context.tab === 'support') {
       void loadInbox();
       if(selected && inbox?.querySelector('.support-history')) void loadConversation(inbox.querySelector('.support-thread'),selected,true);

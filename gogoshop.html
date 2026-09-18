@@ -17936,12 +17936,13 @@
       }
       nav.innerHTML = `<i data-lucide="messages-square"></i><span>${state.lang === 'zh' ? '客服消息' : 'Customer support'}</span>`;
       window.renderSupportChat?.({db, user: state.session?.user?.id, lang:state.lang,
-        staff:canManageProducts(), tab:state.adminTab, admin:document.getElementById('admin')?.classList.contains('active')});
+        staff:canManageProducts(), tab:state.adminTab, admin:document.getElementById('admin')?.classList.contains('active'),
+        openInbox: () => { showAdmin(); setAdminTab('support'); }});
     };
     const supportStyles = document.createElement('link');
     supportStyles.rel = 'stylesheet'; supportStyles.href = 'support-chat.css?v=1'; document.head.append(supportStyles);
     const supportScript = document.createElement('script');
-    supportScript.src = 'support-chat.js?v=1'; supportScript.onload = window.syncSupportChat; document.head.append(supportScript);
+    supportScript.src = 'support-chat.js?v=2'; supportScript.onload = window.syncSupportChat; document.head.append(supportScript);
 
     function renderAll() {
       window.syncSupportChat?.();
