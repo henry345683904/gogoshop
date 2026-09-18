@@ -17940,9 +17940,13 @@
         openInbox: () => { showAdmin(); setAdminTab('support'); }});
     };
     const supportStyles = document.createElement('link');
-    supportStyles.rel = 'stylesheet'; supportStyles.href = 'support-chat.css?v=1'; document.head.append(supportStyles);
+    supportStyles.rel = 'stylesheet'; supportStyles.href = 'support-chat.css?v=2'; document.head.append(supportStyles);
     const supportScript = document.createElement('script');
-    supportScript.src = 'support-chat.js?v=4'; supportScript.onload = window.syncSupportChat; document.head.append(supportScript);
+    supportScript.src = 'support-chat.js?v=5'; supportScript.onload = window.syncSupportChat;
+    const supportSettingsScript = document.createElement('script');
+    supportSettingsScript.src = 'support-settings.js?v=1';
+    supportSettingsScript.onload = supportSettingsScript.onerror = () => document.head.append(supportScript);
+    document.head.append(supportSettingsScript);
 
     function renderAll() {
       window.syncSupportChat?.();

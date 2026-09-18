@@ -9,6 +9,7 @@
   const errorText = () => tr('消息暂时无法加载或发送，请稍后重试。', 'Messages are unavailable. Please try again shortly.');
   function icons() { window.lucide?.createIcons(); }
   function greeting() {
+    if (window.SupportSettings) return window.SupportSettings.greeting(context?.lang);
     return `<div class="support-message support-greeting"><strong>${tr('客服 · 自动问候','Support · Automatic greeting')}</strong><div>${tr('您好，欢迎来到 GO GO SHOP！有什么可以帮到您？','Hello, welcome to GO GO SHOP! How can we help you?')}</div><div>${tr('您可以在这个对话框中留言，客服看到后会回复您。也可以添加客服微信（WeChat）或通过 WhatsApp 联系我们。','Leave a message in this chat and our team will reply when available. You can also contact our team through WeChat or WhatsApp.')}</div><div>${tr('客服微信号','WeChat ID')}: <b>GoGoShop_NZ</b></div><button class="support-older" type="button" data-copy-support-wechat>${tr('复制微信号','Copy WeChat ID')}</button><span data-support-copy-status role="status"></span><div>${tr('如需 WhatsApp 联系方式，请在这里向客服索取。','Ask us here for our WhatsApp contact details.')}</div></div>`;
   }
   function conversation(staff) {
@@ -17,7 +18,7 @@
   function renderMessages(host, rows, customer, staff) {
     const log = host.querySelector('.support-history');
     const nearBottom = log.scrollHeight - log.scrollTop - log.clientHeight < 60;
-    const html = rows.map(m => `<div class="support-message ${m.from_staff === staff ? 'mine' : ''}"><strong>${m.from_staff ? tr('客服','Support') : tr('客户','Customer')}</strong><div>${esc(m.body)}</div><time>${esc(date(m.created_at))}</time></div>`).join('') || `<p>${tr('还没有消息。','No messages yet.')}</p>`;
+    const html = rows.map(m => `<div class="support-message ${m.from_staff === staff ? 'mine' : ''}"><strong>${m.is_auto ? tr('客服 · 自动回复','Support · Automatic reply') : m.from_staff ? tr('客服','Support') : tr('客户','Customer')}</strong><div>${esc(m.body)}</div><time>${esc(date(m.created_at))}</time></div>`).join('') || `<p>${tr('还没有消息。','No messages yet.')}</p>`;
     const content = (staff ? '' : greeting()) + (rows.length || staff ? html : '');
     if (log.innerHTML !== content) {
       log.innerHTML = content;
@@ -31,7 +32,7 @@
     const token = revision;
     const status = host.querySelector('.support-status');
     try {
-      const { data, error } = await context.db.from('support_messages').select('id,body,from_staff,created_at').eq('customer_id', customer).order('id', { ascending:false }).limit(limit);
+      const { data, error } = await context.db.from('support_messages').select('id,body,from_staff,is_auto,created_at').eq('customer_id', customer).order('id', { ascending:false }).limit(limit);
       if (token !== revision || !host.isConnected || (staff && selected !== customer)) return;
       if (error) throw error;
       renderMessages(host, [...data].reverse(), customer, staff);
@@ -53,7 +54,7 @@
       busy = true; button.disabled = true; input.disabled = true;
       if (!pending || pending.customer !== customer || pending.text !== text) pending = {customer,text,id:crypto.randomUUID()};
       try {
-        const { error } = await context.db.rpc('support_send', {p_customer:customer,p_body:text,p_request:pending.id});
+        const { error } = await context.db.rpc('support_send', {p_customer:customer,p_body:text,p_request:pending.id,p_language:context.lang});
         if (error) throw error;
         if (token !== revision) return;
         pending = null; drafts.delete(customer); input.value = '';
@@ -80,7 +81,15 @@
   function setOpen(value) {
     opened = value; panel.hidden = !value;
     root.querySelector('.support-launcher').setAttribute('aria-expanded', String(value));
-    if (value) { fillPanel(); panel.querySelector('textarea,button')?.focus(); }
+    if (value) {
+      fillPanel(); panel.querySelector('textarea,button')?.focus();
+      const token=revision;
+      window.SupportSettings?.refresh(context.db).then(()=>{
+        if(token!==revision || !opened || context.staff) return;
+        const log=panel.querySelector('.support-history');
+        if(log){log.querySelector('.support-greeting')?.remove();log.insertAdjacentHTML('afterbegin',greeting());}
+      }).catch(()=>{});
+    }
     else root.querySelector('.support-launcher').focus();
   }
   async function loadInbox() {
@@ -112,7 +121,7 @@
         if (!button) return;
         const status = button.parentElement.querySelector('[data-support-copy-status]');
         try {
-          await navigator.clipboard.writeText('GoGoShop_NZ');
+          await navigator.clipboard.writeText(window.SupportSettings?.current.wechat || 'GoGoShop_NZ');
           status.textContent = tr('已复制','Copied');
         } catch (_) {
           status.textContent = tr('请长按或选中微信号复制','Select the WeChat ID above to copy it');
@@ -129,7 +138,8 @@
     const target = document.getElementById('supportInbox');
     if (next.staff && next.admin && next.tab === 'support' && target && target !== inbox) {
       inbox = target;
-      inbox.innerHTML = `<p class="support-inbox-status" role="status"></p><div class="support-inbox-layout"><div class="support-conversations"></div><div class="support-thread"><p>${tr('选择客户对话','Select a conversation')}</p></div></div>`;
+      inbox.innerHTML = `<div class="support-settings-host"></div><p class="support-inbox-status" role="status"></p><div class="support-inbox-layout"><div class="support-conversations"></div><div class="support-thread"><p>${tr('选择客户对话','Select a conversation')}</p></div></div>`;
+      window.SupportSettings?.mount(inbox.querySelector('.support-settings-host'),context);
     }
     void loadInbox();
   };
