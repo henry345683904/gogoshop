@@ -1,6 +1,7 @@
 (() => {
   let context, owner = '', selected = '', opened = false, busy = false, revision = 0;
   let root, panel, inbox, pending = null;
+  let inboxRequest = false;
   const drafts = new Map();
   const tr = (zh, en) => context?.lang === 'zh' ? zh : en;
   const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -67,8 +68,9 @@
   }
   function fillPanel() {
     if (context.staff) {
-      panel.querySelector('.support-body').innerHTML = `<button type="button" class="button" data-support-inbox>${tr('打开客服收件箱','Open support inbox')}</button>`;
+      panel.querySelector('.support-body').innerHTML = `<div class="support-preview-summary" role="status">${tr('正在加载客户会话…','Loading conversations…')}</div><div class="support-conversations support-preview-list"></div><p class="support-preview-status" role="status"></p><button type="button" class="button" data-support-inbox>${tr('打开客服收件箱','Open support inbox')}</button>`;
       panel.querySelector('[data-support-inbox]').onclick = () => {setOpen(false); context.openInbox?.();};
+      void loadInbox();
       return;
     }
     panel.querySelector('.support-body').innerHTML = context.user
@@ -93,21 +95,43 @@
     else root.querySelector('.support-launcher').focus();
   }
   async function loadInbox() {
-    if (!context.staff || !inbox || context.tab !== 'support' || !context.admin) return;
+    const preview = context.staff && opened && !context.admin;
+    const admin = context.staff && inbox && context.tab === 'support' && context.admin;
+    if ((!preview && !admin) || inboxRequest) return;
+    inboxRequest = true;
     const token = revision;
     try {
       const {data,error} = await context.db.rpc('support_inbox');
       if (token !== revision) return;
       if (error) throw error;
-      inbox.querySelector('.support-inbox-status').textContent = '';
-      const list = inbox.querySelector('.support-conversations');
-      list.innerHTML = data.map(c => `<button type="button" data-customer="${esc(c.customer_id)}" class="${selected === c.customer_id ? 'selected' : ''}"><strong>${esc(c.customer_name)} ${c.unread ? `(${Number(c.unread)})` : ''}</strong><span>${esc(c.last_body)}</span><time>${esc(date(c.last_at))}</time></button>`).join('') || `<p>${tr('暂无客户消息','No customer messages')}</p>`;
+      const host = preview ? panel : inbox;
+      const status = host?.querySelector(preview ? '.support-preview-status' : '.support-inbox-status');
+      const list = host?.querySelector(preview ? '.support-preview-list' : '.support-conversations');
+      if (!status || !list) return;
+      status.textContent = '';
+      const unread = data.reduce((sum,c)=>sum+Number(c.unread || 0),0);
+      if(preview) host.querySelector('.support-preview-summary').textContent = tr(`${data.length} 位客户 · ${unread} 条未读消息`,`${data.length} customers · ${unread} unread messages`);
+      const markup = data.map(c => `<button type="button" data-customer="${esc(c.customer_id)}" class="${!preview && selected === c.customer_id ? 'selected' : ''}"><strong class="support-conversation-name"><span>${esc(c.customer_name)}</span>${c.unread ? `<b class="support-unread" aria-label="${Number(c.unread)} ${tr('条未读消息','unread messages')}">${Number(c.unread)}</b>` : ''}</strong><span>${esc(c.last_body)}</span><time>${esc(date(c.last_at))}</time></button>`).join('') || `<p>${tr('暂无客户消息','No customer messages')}</p>`;
+      if (list.innerHTML === markup) return;
+      list.innerHTML = markup;
       list.querySelectorAll('button').forEach(button => button.onclick = () => {
-        selected = button.dataset.customer;
-        const host = inbox.querySelector('.support-thread'); host.innerHTML = conversation(true); wire(host,selected,true); icons(); void loadInbox();
+        if(preview) {setOpen(false);context.openInbox?.(button.dataset.customer);}
+        else window.openSupportConversation(button.dataset.customer);
       });
-    } catch (_) { if (token === revision) inbox.querySelector('.support-inbox-status').textContent = errorText(); }
+    } catch (_) {
+      if (token === revision) {
+        const status=(preview?panel:inbox)?.querySelector(preview?'.support-preview-status':'.support-inbox-status');
+        if(status) status.textContent=errorText();
+        if(preview && panel.querySelector('.support-preview-summary')) panel.querySelector('.support-preview-summary').textContent=tr('客户会话','Customer conversations');
+      }
+    } finally {inboxRequest=false;}
   }
+  window.openSupportConversation = customer => {
+    if(!context?.staff || !context.admin || !inbox || !customer) return;
+    selected=customer;
+    const host=inbox.querySelector('.support-thread');
+    host.innerHTML=conversation(true);wire(host,selected,true);icons();void loadInbox();
+  };
   window.renderSupportChat = next => {
     context = next;
     const key = `${next.user || ''}:${next.lang}:${next.staff}`;
@@ -146,6 +170,7 @@
   setInterval(() => {
     if (!context?.db || document.hidden) return;
     if (opened && !root.hidden && context.user && !context.staff) void loadConversation(panel,context.user,false);
+    if (opened && !root.hidden && context.staff) void loadInbox();
     if (context.staff && context.admin && context.tab === 'support') {
       void loadInbox();
       if(selected && inbox?.querySelector('.support-history')) void loadConversation(inbox.querySelector('.support-thread'),selected,true);

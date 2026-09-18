@@ -24,6 +24,13 @@
 .support-conversations button.selected{background:#e0f0e9}
 .support-conversations span{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 .support-conversations time{font-size:11px;color:#666}
+.support-preview-summary{font-size:13px;color:#555;padding:4px 0}
+.support-preview-list{flex:1;min-height:0;border-right:0}
+.support-preview-list>p{padding:12px;color:#666}
+.support-conversation-name{display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0}
+.support-conversation-name>span{min-width:0}
+.support-unread{display:inline-grid;place-items:center;min-width:22px;height:22px;padding:0 5px;border-radius:11px;background:#b12d38;color:white;font-size:12px;flex-shrink:0}
+.support-preview-status{margin:0;font-size:12px;color:#a33131}
 .support-thread{display:flex;flex-direction:column;min-height:0;min-width:0;padding:12px;gap:8px}
 .support-settings{border-block:1px solid #ddd;padding:14px 0;margin-bottom:16px}
 .support-settings summary{cursor:pointer;font-size:16px;font-weight:600;padding:4px 0}

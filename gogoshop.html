@@ -17937,12 +17937,12 @@
       nav.innerHTML = `<i data-lucide="messages-square"></i><span>${state.lang === 'zh' ? '客服消息' : 'Customer support'}</span>`;
       window.renderSupportChat?.({db, user: state.session?.user?.id, lang:state.lang,
         staff:canManageProducts(), tab:state.adminTab, admin:document.getElementById('admin')?.classList.contains('active'),
-        openInbox: () => { showAdmin(); setAdminTab('support'); }});
+        openInbox: customer => { showAdmin(); setAdminTab('support'); if(customer) window.openSupportConversation?.(customer); }});
     };
     const supportStyles = document.createElement('link');
-    supportStyles.rel = 'stylesheet'; supportStyles.href = 'support-chat.css?v=2'; document.head.append(supportStyles);
+    supportStyles.rel = 'stylesheet'; supportStyles.href = 'support-chat.css?v=3'; document.head.append(supportStyles);
     const supportScript = document.createElement('script');
-    supportScript.src = 'support-chat.js?v=6'; supportScript.onload = window.syncSupportChat;
+    supportScript.src = 'support-chat.js?v=7'; supportScript.onload = window.syncSupportChat;
     const supportSettingsScript = document.createElement('script');
     supportSettingsScript.src = 'support-settings.js?v=1';
     supportSettingsScript.onload = supportSettingsScript.onerror = () => document.head.append(supportScript);
