@@ -9,7 +9,7 @@
   const errorText = () => tr('消息暂时无法加载或发送，请稍后重试。', 'Messages are unavailable. Please try again shortly.');
   function icons() { window.lucide?.createIcons(); }
   function greeting() {
-    return `<div class="support-message support-greeting"><strong>${tr('客服 · 自动问候','Support · Automatic greeting')}</strong><div>${tr('您好，欢迎来到 GO GO SHOP！有什么可以帮到您？','Hello, welcome to GO GO SHOP! How can we help you?')}</div><div>${tr('您可以在这个对话框中留言，客服看到后会回复您。也可以添加客服微信（WeChat）或通过 WhatsApp 联系我们。','Leave a message in this chat and our team will reply when available. You can also contact our team through WeChat or WhatsApp.')}</div><div>${tr('如需微信号或 WhatsApp 联系方式，请在这里向客服索取。','Ask us here for our WeChat ID or WhatsApp contact details.')}</div></div>`;
+    return `<div class="support-message support-greeting"><strong>${tr('客服 · 自动问候','Support · Automatic greeting')}</strong><div>${tr('您好，欢迎来到 GO GO SHOP！有什么可以帮到您？','Hello, welcome to GO GO SHOP! How can we help you?')}</div><div>${tr('您可以在这个对话框中留言，客服看到后会回复您。也可以添加客服微信（WeChat）或通过 WhatsApp 联系我们。','Leave a message in this chat and our team will reply when available. You can also contact our team through WeChat or WhatsApp.')}</div><div>${tr('客服微信号','WeChat ID')}: <b>GoGoShop_NZ</b></div><button class="support-older" type="button" data-copy-support-wechat>${tr('复制微信号','Copy WeChat ID')}</button><span data-support-copy-status role="status"></span><div>${tr('如需 WhatsApp 联系方式，请在这里向客服索取。','Ask us here for our WhatsApp contact details.')}</div></div>`;
   }
   function conversation(staff) {
     return `<div class="support-history" role="log" aria-live="polite">${staff ? '' : greeting()}</div><button class="support-older" type="button" hidden>${tr('更早的消息','Earlier messages')}</button><p class="support-status" role="status"></p><form class="support-compose"><textarea maxlength="2000" rows="2" required aria-label="${tr('消息','Message')}" placeholder="${tr('输入消息…','Type a message…')}"></textarea><button type="submit" class="button" title="${tr('发送','Send')}" aria-label="${tr('发送','Send')}">${icon('send')}</button></form>`;
@@ -107,6 +107,17 @@
       root = document.createElement('div'); root.id = 'supportChat';
       root.innerHTML = `<button class="support-launcher" type="button" aria-label="${tr('联系客服','Contact support')}" title="${tr('联系客服','Contact support')}" aria-expanded="false" aria-controls="supportChatPanel">${icon('message-circle')}</button><section id="supportChatPanel" role="dialog" aria-label="${tr('客服对话','Customer support')}" hidden><header><strong>${tr('客服','Customer support')}</strong><button type="button" data-support-expand title="${tr('放大或还原','Expand or restore')}" aria-label="${tr('放大或还原','Expand or restore')}" aria-pressed="false">${icon('maximize-2')}</button><button type="button" data-support-min title="${tr('缩小','Minimize')}" aria-label="${tr('缩小','Minimize')}">${icon('minus')}</button><button type="button" data-support-close title="${tr('关闭','Close')}" aria-label="${tr('关闭','Close')}">${icon('x')}</button></header><div class="support-body"></div></section>`;
       document.body.append(root); panel = root.querySelector('section');
+      root.addEventListener('click', async event => {
+        const button = event.target.closest('[data-copy-support-wechat]');
+        if (!button) return;
+        const status = button.parentElement.querySelector('[data-support-copy-status]');
+        try {
+          await navigator.clipboard.writeText('GoGoShop_NZ');
+          status.textContent = tr('已复制','Copied');
+        } catch (_) {
+          status.textContent = tr('请长按或选中微信号复制','Select the WeChat ID above to copy it');
+        }
+      });
       root.querySelector('.support-launcher').onclick = () => setOpen(!opened);
       panel.querySelector('[data-support-min]').onclick = () => setOpen(false);
       panel.querySelector('[data-support-close]').onclick = () => {panel.classList.remove('expanded'); panel.querySelector('[data-support-expand]').setAttribute('aria-pressed','false'); setOpen(false);};
