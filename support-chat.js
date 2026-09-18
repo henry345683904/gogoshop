@@ -84,7 +84,7 @@
     if (value) {
       fillPanel(); panel.querySelector('textarea,button')?.focus();
       const token=revision;
-      window.SupportSettings?.refresh(context.db).then(()=>{
+      window.SupportSettings?.refresh(context.db,true).then(()=>{
         if(token!==revision || !opened || context.staff) return;
         const log=panel.querySelector('.support-history');
         if(log){log.querySelector('.support-greeting')?.remove();log.insertAdjacentHTML('afterbegin',greeting());}
