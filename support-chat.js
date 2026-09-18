@@ -8,14 +8,23 @@
   const date = value => new Date(value).toLocaleString(context?.lang === 'zh' ? 'zh-CN' : 'en-NZ');
   const errorText = () => tr('消息暂时无法加载或发送，请稍后重试。', 'Messages are unavailable. Please try again shortly.');
   function icons() { window.lucide?.createIcons(); }
+  function greeting() {
+    return `<div class="support-message support-greeting"><strong>${tr('客服 · 自动问候','Support · Automatic greeting')}</strong><div>${tr('您好，欢迎来到 GO GO SHOP！有什么可以帮到您？','Hello, welcome to GO GO SHOP! How can we help you?')}</div><div>${tr('您可以在这个对话框中留言，客服看到后会回复您。也可以添加客服微信（WeChat）或通过 WhatsApp 联系我们。','Leave a message in this chat and our team will reply when available. You can also contact our team through WeChat or WhatsApp.')}</div><div>${tr('如需微信号或 WhatsApp 联系方式，请在这里向客服索取。','Ask us here for our WeChat ID or WhatsApp contact details.')}</div></div>`;
+  }
   function conversation(staff) {
-    return `<div class="support-history" role="log" aria-live="polite"></div><button class="support-older" type="button" hidden>${tr('更早的消息','Earlier messages')}</button><p class="support-status" role="status"></p><form class="support-compose"><textarea maxlength="2000" rows="2" required aria-label="${tr('消息','Message')}" placeholder="${tr('输入消息…','Type a message…')}"></textarea><button type="submit" class="button" title="${tr('发送','Send')}" aria-label="${tr('发送','Send')}">${icon('send')}</button></form>`;
+    return `<div class="support-history" role="log" aria-live="polite">${staff ? '' : greeting()}</div><button class="support-older" type="button" hidden>${tr('更早的消息','Earlier messages')}</button><p class="support-status" role="status"></p><form class="support-compose"><textarea maxlength="2000" rows="2" required aria-label="${tr('消息','Message')}" placeholder="${tr('输入消息…','Type a message…')}"></textarea><button type="submit" class="button" title="${tr('发送','Send')}" aria-label="${tr('发送','Send')}">${icon('send')}</button></form>`;
   }
   function renderMessages(host, rows, customer, staff) {
     const log = host.querySelector('.support-history');
     const nearBottom = log.scrollHeight - log.scrollTop - log.clientHeight < 60;
     const html = rows.map(m => `<div class="support-message ${m.from_staff === staff ? 'mine' : ''}"><strong>${m.from_staff ? tr('客服','Support') : tr('客户','Customer')}</strong><div>${esc(m.body)}</div><time>${esc(date(m.created_at))}</time></div>`).join('') || `<p>${tr('还没有消息。','No messages yet.')}</p>`;
-    if (log.innerHTML !== html) { log.innerHTML = html; if (nearBottom) log.scrollTop = log.scrollHeight; }
+    const content = (staff ? '' : greeting()) + (rows.length || staff ? html : '');
+    if (log.innerHTML !== content) {
+      log.innerHTML = content;
+      if (!staff && !log.dataset.loaded) log.scrollTop = 0;
+      else if (nearBottom) log.scrollTop = log.scrollHeight;
+    }
+    log.dataset.loaded = 'true';
   }
   async function loadConversation(host, customer, staff, limit = Number(host.dataset.limit) || 100) {
     host.dataset.limit = limit;
@@ -63,7 +72,7 @@
     }
     panel.querySelector('.support-body').innerHTML = context.user
       ? conversation(false)
-      : `<p>${tr('登录账户后，与客服沟通并查看回复。','Sign in to contact support and view replies.')}</p><button type="button" class="button" data-support-login>${tr('登录','Sign in')}</button>`;
+      : `<div class="support-history">${greeting()}</div><p>${tr('登录账户后，与客服沟通并查看回复。','Sign in to contact support and view replies.')}</p><button type="button" class="button" data-support-login>${tr('登录','Sign in')}</button>`;
     if (context.user) wire(panel, context.user, false);
     else panel.querySelector('[data-support-login]').onclick = () => { setOpen(false); document.querySelector('[data-open-account]')?.click(); };
     icons();
