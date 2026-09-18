@@ -960,6 +960,13 @@
       min-width: 0;
     }
 
+    .catalog-group-heading { grid-column: 1 / -1; padding-top: 20px; border-top: 1px solid var(--line); }
+    .catalog-group-heading h3 { margin: 0; font-size: 20px; }
+    .catalog-arrivals { grid-column: 1 / -1; display: grid; grid-auto-flow: column; grid-auto-columns: calc((100% - 30px) / 4); gap: 10px; overflow-x: auto; padding-bottom: 12px; scroll-snap-type: x mandatory; }
+    .catalog-arrivals .product-card { scroll-snap-align: start; }
+    @media(min-width:1400px) { .catalog-arrivals { grid-auto-columns: calc((100% - 40px) / 5); } }
+    @media(max-width:760px) { .catalog-arrivals { grid-auto-columns: calc((100% - 10px) / 2); } }
+
     .product-media {
       display: block;
       position: relative;
@@ -12186,7 +12193,7 @@
         refreshIcons();
         return;
       }
-      grid.innerHTML = products.map((product, index) => `
+      const productCard = (product, index) => `
         <article class="product-card">
           <div class="product-media" role="group" aria-label="${escapeHtml(productName(product))}">
             ${renderProductGallery(product, index < 8)}
@@ -12201,7 +12208,27 @@
             </a>
           </div>
         </article>
-      `).join("");
+      `;
+      if (state.category === "All" && state.sort === "featured") {
+        const newest = [...products].sort((a, b) => {
+          const isNew = p => /(^|[,;|\s])(new|new-arrival|新品|新到)([,;|\s]|$)/i.test(String(p.tags || ""));
+          return Number(isNew(b)) - Number(isNew(a))
+            || (Date.parse(b.createdAt || b.updatedAt || "") || 0) - (Date.parse(a.createdAt || a.updatedAt || "") || 0);
+        }).slice(0, 8);
+        const selected = new Set(newest.map(p => p.id));
+        const groups = new Map();
+        products.filter(p => !selected.has(p.id)).sort((a, b) => Number(available(b)) - Number(available(a))).forEach(product => {
+          const category = productCategoryKeys(product)[0] || "other";
+          if (!groups.has(category)) groups.set(category, []);
+          groups.get(category).push(product);
+        });
+        const heading = label => `<div class="catalog-group-heading"><h3>${escapeHtml(label)}</h3></div>`;
+        grid.innerHTML = heading(state.lang === "zh" ? "新到产品" : "New arrivals")
+          + `<div class="catalog-arrivals">${newest.map(productCard).join("")}</div>`
+          + [...groups].map(([category, items]) => heading(categoryName(category)) + items.map(p => productCard(p, 8)).join("")).join("");
+      } else {
+        grid.innerHTML = products.map(productCard).join("");
+      }
       refreshIcons();
     }
 
@@ -12736,6 +12763,8 @@
           experimentalCode: localProduct?.experimentalCode || "",
           handle: remote.id,
           title: remote.title,
+          createdAt: remote.created_at || localProduct?.createdAt || null,
+          updatedAt: remote.updated_at || localProduct?.updatedAt || null,
           salesChannel: remoteChannel,
           titleEn: canManage ? (remote.title_en ?? localProduct?.titleEn ?? remote.title ?? "") : (remote.title_en ?? remote.title ?? ""),
           titleZh: remote.title_zh ?? localProduct?.titleZh ?? "",
