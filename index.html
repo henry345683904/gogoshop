@@ -822,6 +822,7 @@
 
     .catalog-heading-actions {
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
       gap: 18px;
       margin-left: auto;
@@ -8235,6 +8236,7 @@
         <div class="section-heading">
           <h2 data-i18n="productsTitle" data-design-product-title>Products</h2>
           <div class="catalog-heading-actions">
+            <button class="catalog-category-toggle" type="button" data-new-arrivals aria-pressed="false"><i data-lucide="sparkles"></i><span data-i18n="newArrivalsButton">New arrivals</span></button>
             <button class="catalog-category-toggle" type="button" data-toggle-catalog-categories aria-expanded="false" aria-controls="catalogCategoryPanel">
               <i data-lucide="layout-grid"></i>
               <span data-i18n="categoriesButton">Categories</span>
@@ -9673,6 +9675,7 @@
         heroTitle: "Browse our latest products",
         shopAll: "Shop all",
         productsTitle: "Products",
+        newArrivalsButton: "New arrivals",
         categoriesButton: "Categories",
         viewAll: "View all",
         sortFeatured: "Featured",
@@ -9853,6 +9856,7 @@
         heroTitle: "浏览我们的最新商品",
         shopAll: "查看全部",
         productsTitle: "商品",
+        newArrivalsButton: "新到产品",
         categoriesButton: "分类",
         viewAll: "全部",
         sortFeatured: "推荐排序",
@@ -12134,12 +12138,20 @@
       return ["All", ...ordered, ...dynamic];
     }
 
+    function isNewArrival(product) {
+      const created = Date.parse(product.createdAt || "");
+      return /(^|[,;|\s])(new|new-arrival|新品|新到)([,;|\s]|$)/i.test(String(product.tags || ""))
+        || (Number.isFinite(created) && created >= Date.now() - 30 * 86400000);
+    }
+
     function visibleProducts() {
       const filtered = state.products.filter((product) => {
         if (!isOnlineStoreProduct(product)) return false;
+        if (state.category === "__new_arrivals") return isNewArrival(product);
         return state.category === "All" || productCategoryKeys(product).includes(state.category);
       });
       return filtered.sort((a, b) => {
+        if (state.category === "__new_arrivals") return (Date.parse(b.createdAt || "") || 0) - (Date.parse(a.createdAt || "") || 0);
         if (state.sort === "price-low") return a.price - b.price;
         if (state.sort === "price-high") return b.price - a.price;
         if (state.sort === "stock") return Number(available(b)) - Number(available(a));
@@ -12196,6 +12208,9 @@
     }
 
     function renderProducts() {
+      const arrivalsButton = $("[data-new-arrivals]");
+      arrivalsButton?.setAttribute("aria-pressed", String(state.category === "__new_arrivals"));
+      arrivalsButton?.classList.toggle("active", state.category === "__new_arrivals");
       renderHolidayShop();
       renderCategoryTabs();
       renderMenuCategories();
@@ -18225,6 +18240,10 @@
       }
       if (target.matches("[data-view-all]")) {
         state.category = "All";
+        renderProducts();
+      }
+      if (target.matches("[data-new-arrivals]")) {
+        state.category = "__new_arrivals";
         renderProducts();
       }
       if (target.matches("[data-toggle-catalog-categories]")) {
