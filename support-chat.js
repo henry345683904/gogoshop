@@ -51,7 +51,8 @@
     const orders = document.createElement('details');
     orders.className = 'support-orders';
     orders.innerHTML = `<summary>${tr(staff ? '客户订单与历史订单' : '发送订单', staff ? 'Customer orders & history' : 'Send an order')}</summary><div class="support-order-list"></div><button type="button" class="support-order-more" hidden>${tr('更多订单','More orders')}</button>`;
-    form.before(orders);
+    if (staff) host.prepend(orders);
+    else form.before(orders);
     const list = orders.querySelector('.support-order-list');
     const more = orders.querySelector('.support-order-more');
     let offset = 0, loading = false, loaded = false;
@@ -100,6 +101,7 @@
     }
     orders.ontoggle = () => {if (orders.open && !loaded) void loadOrders();};
     more.onclick = () => void loadOrders();
+    if (staff) { orders.open = true; void loadOrders(); }
     form.onsubmit = async event => {
       event.preventDefault();
       if (busy || !input.value.trim()) return;
@@ -214,7 +216,7 @@
     const target = document.getElementById('supportInbox');
     if (next.staff && next.admin && next.tab === 'support' && target && target !== inbox) {
       inbox = target;
-      inbox.innerHTML = `<div class="support-settings-host"></div><p class="support-inbox-status" role="status"></p><div class="support-inbox-layout"><div class="support-conversations"></div><div class="support-thread"><p>${tr('选择客户对话','Select a conversation')}</p></div></div>`;
+      inbox.innerHTML = `<div class="support-settings-host"></div><p class="support-inbox-status" role="status"></p><div class="support-inbox-layout"><div class="support-conversations"></div><div class="support-thread"><div class="support-orders"><strong>${tr('客户订单与历史订单','Customer orders & history')}</strong><p>${tr('选择左侧客户会话后查看订单','Select a customer conversation to view orders')}</p></div></div></div>`;
       window.SupportSettings?.mount(inbox.querySelector('.support-settings-host'),context);
     }
     void loadInbox();

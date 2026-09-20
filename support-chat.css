@@ -1,6 +1,9 @@
 #supportChat[hidden],#supportChat [hidden]{display:none!important}
 .support-orders{border-top:1px solid #ddd;padding:8px 0;flex-shrink:0;font-size:13px}
 .support-orders summary{cursor:pointer;overflow-wrap:anywhere;padding:4px 0}
+.support-thread>.support-orders{border:0;border-bottom:1px solid #d6dfda;background:#f4f7f5;padding:10px 12px;color:#243b30}
+.support-thread>.support-orders>summary{font-weight:700;list-style:disclosure-closed}
+.support-thread>.support-orders[open]>summary{list-style:disclosure-open}
 .support-order-list{max-height:190px;overflow:auto;overscroll-behavior:contain}
 .support-order-list>details{border-bottom:1px solid #ddd;padding:6px 0}
 .support-order-list p{margin:5px 0}.support-order-list ul{padding-left:18px;margin:6px 0}
