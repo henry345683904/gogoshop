@@ -48,6 +48,58 @@
     const form = host.querySelector('form'), input = form.querySelector('textarea'), button = form.querySelector('button');
     input.value = drafts.get(customer) || '';
     input.oninput = () => drafts.set(customer, input.value);
+    const orders = document.createElement('details');
+    orders.className = 'support-orders';
+    orders.innerHTML = `<summary>${tr(staff ? '客户订单与历史订单' : '发送订单', staff ? 'Customer orders & history' : 'Send an order')}</summary><div class="support-order-list"></div><button type="button" class="support-order-more" hidden>${tr('更多订单','More orders')}</button>`;
+    form.before(orders);
+    const list = orders.querySelector('.support-order-list');
+    const more = orders.querySelector('.support-order-more');
+    let offset = 0, loading = false, loaded = false;
+    async function loadOrders() {
+      if (loading) return;
+      loading = true; more.disabled = true;
+      const token = revision;
+      if (!loaded) list.textContent = tr('正在加载订单…','Loading orders…');
+      try {
+        const {data, error} = await context.db.from('orders')
+          .select('id,order_number,created_at,status,payment_status,total,order_items(product_title,quantity,unit_price)')
+          .eq('user_id',customer).eq('order_source','online').is('deleted_at',null)
+          .order('created_at',{ascending:false}).order('id',{ascending:false}).range(offset,offset+19);
+        if (token !== revision || !host.isConnected || (staff && selected !== customer)) return;
+        if (error) throw error;
+        if (!loaded) list.replaceChildren();
+        for (const order of data || []) {
+          const row = document.createElement('details');
+          const amount = new Intl.NumberFormat('en-NZ',{style:'currency',currency:'NZD'}).format(Number(order.total)||0);
+          const items = (order.order_items || []).map(i => `${i.product_title} × ${i.quantity}`);
+          row.innerHTML = `<summary>${esc(order.order_number)} · ${esc(amount)}</summary><time>${esc(date(order.created_at))}</time><p>${esc(tr('订单状态','Order status'))}: ${esc(order.status)} · ${esc(tr('付款状态','Payment status'))}: ${esc(order.payment_status || '-')}</p><ul>${items.map(i=>`<li>${esc(i)}</li>`).join('')}</ul>${staff ? '' : `<button type="button">${tr('发送此订单','Send this order')}</button>`}`;
+          if (!staff) row.querySelector('button').onclick = async () => {
+            if (busy) return;
+            const button = row.querySelector('button');
+            busy = true; button.disabled = true;
+            const body = `${tr('咨询订单','Order enquiry')}: ${order.order_number}\n${date(order.created_at)} · ${amount}\n${items.join('\n')}`.slice(0,2000);
+            row.dataset.request ||= crypto.randomUUID();
+            try {
+              const {error} = await context.db.rpc('support_send',{p_customer:customer,p_body:body,p_request:row.dataset.request,p_language:context.lang});
+              if (error) throw error;
+              if (token !== revision || !host.isConnected) return;
+              delete row.dataset.request;
+              orders.open = false;
+              await loadConversation(host,customer,staff);
+              const log = host.querySelector('.support-history'); log.scrollTop = log.scrollHeight;
+            } catch (_) { host.querySelector('.support-status').textContent = errorText(); }
+            finally { busy = false; button.disabled = false; }
+          };
+          list.append(row);
+        }
+        offset += (data || []).length; loaded = true;
+        if (!offset) list.textContent = tr('暂无线上订单','No online orders yet');
+        more.hidden = (data || []).length < 20;
+      } catch (_) { if (!loaded) list.textContent = tr('订单加载失败，请收起后重新打开。','Orders could not load. Close and reopen to retry.'); }
+      finally {loading = false; more.disabled = false;}
+    }
+    orders.ontoggle = () => {if (orders.open && !loaded) void loadOrders();};
+    more.onclick = () => void loadOrders();
     form.onsubmit = async event => {
       event.preventDefault();
       if (busy || !input.value.trim()) return;
