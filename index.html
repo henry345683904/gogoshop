@@ -12954,6 +12954,7 @@
       state.catalogLastLoadedAt = Date.now();
       state.catalogLoadedMode = loadMode;
       renderProducts();
+      if (state.activeProductId) renderProductDetail();
       renderCart();
       if (!$("#adminShell")?.hidden) renderAdmin();
       if (isAdmin) {
