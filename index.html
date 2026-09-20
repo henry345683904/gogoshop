@@ -11481,6 +11481,12 @@
       return translations[state.lang]?.[key] || translations.en[key] || key;
     }
 
+    function tWithValues(key, values = {}) {
+      return t(key).replace(/\{(\w+)\}/g, (placeholder, name) =>
+        Object.prototype.hasOwnProperty.call(values, name) ? String(values[name]) : placeholder
+      );
+    }
+
     function cleanStorefrontDescription(value, product = null) {
       const hiddenValues = [product?.vendor, product?.sourceUrl]
         .map((entry) => String(entry || "").trim().toLowerCase())
