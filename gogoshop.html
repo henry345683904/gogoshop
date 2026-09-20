@@ -12223,6 +12223,7 @@
     }
 
     function isNewArrival(product) {
+      if (typeof product.isNewArrival === "boolean") return product.isNewArrival;
       const created = Date.parse(product.createdAt || "");
       return /(^|[,;|\s])(new|new-arrival|新品|新到)([,;|\s]|$)/i.test(String(product.tags || ""))
         || (Number.isFinite(created) && created >= Date.now() - 30 * 86400000);
@@ -12329,8 +12330,7 @@
       `;
       if (state.category === "All" && state.sort === "featured") {
         const newest = [...products].sort((a, b) => {
-          const isNew = p => /(^|[,;|\s])(new|new-arrival|新品|新到)([,;|\s]|$)/i.test(String(p.tags || ""));
-          return Number(isNew(b)) - Number(isNew(a))
+          return Number(isNewArrival(b)) - Number(isNewArrival(a))
             || (Date.parse(b.createdAt || b.updatedAt || "") || 0) - (Date.parse(a.createdAt || a.updatedAt || "") || 0);
         }).slice(0, 8);
         const selected = new Set(newest.map(p => p.id));
@@ -12785,10 +12785,17 @@
         }
       } else {
         ({ data, error } = await requestWithTimeout(
-          () => db.rpc("get_storefront_catalog"),
+          () => db.rpc("get_storefront_catalog_v2"),
           REQUEST_TIMEOUTS.catalog,
           "Storefront catalog"
         ));
+        if (error && isMissingSchemaError(error)) {
+          ({ data, error } = await requestWithTimeout(
+            () => db.rpc("get_storefront_catalog"),
+            REQUEST_TIMEOUTS.catalog,
+            "Storefront catalog compatibility"
+          ));
+        }
         if (error && isMissingSchemaError(error)) {
           ({ data, error } = await requestWithTimeout(
             () => db.rpc("get_storefront_products"),
@@ -12883,6 +12890,7 @@
           handle: remote.id,
           title: remote.title,
           createdAt: remote.created_at || localProduct?.createdAt || null,
+          isNewArrival: typeof remote.is_new_arrival === "boolean" ? remote.is_new_arrival : undefined,
           updatedAt: remote.updated_at || localProduct?.updatedAt || null,
           salesChannel: remoteChannel,
           titleEn: canManage ? (remote.title_en ?? localProduct?.titleEn ?? remote.title ?? "") : (remote.title_en ?? remote.title ?? ""),
