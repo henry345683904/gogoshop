@@ -8494,6 +8494,7 @@
                   <span class="sr-only">Filter products by category</span>
                   <select id="adminProductCategoryFilter" data-admin-product-category aria-label="Filter products by category"></select>
                 </label>
+                <button class="button ghost" type="button" data-edit-online-categories hidden><i data-lucide="folder-pen"></i><span>编辑分类</span></button>
               </div>
               <span class="sr-only" id="adminProductSearchStatus" role="status" aria-live="polite"></span>
             </div>
@@ -9562,6 +9563,8 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="store-config.js"></script>
+  <link rel="stylesheet" href="online-category-editor.css?v=1">
+  <script src="online-category-editor.js?v=1"></script>
   <script src="invoice-advisor.js?v=3"></script>
   <script src="pos-order-editor.js?v=1"></script>
   <script src="bank-deposit-tracker.js?v=1"></script>
@@ -11618,8 +11621,8 @@
     function productCategoryKeys(product) {
       if (productSalesChannel(product, "offline") !== "online") return [productCategoryKey(product)];
       const stored = String(product.category || "").split("||").map(value => value.trim()).filter(value => value && !/^online[-_ ]/i.test(value));
-      if (isOnlineFurniture(product)) return [...new Set(['furniture', ...stored])];
       if (stored.length) return [...new Set(stored)];
+      if (isOnlineFurniture(product)) return ['furniture'];
       const text = [product?.title, product?.titleEn, product?.titleZh, product?.descriptionEn, product?.descriptionZh, product?.productType, product?.tags].filter(Boolean).join(" ");
       const detected = ONLINE_ADMIN_CATEGORIES.filter(definition => definition.match.test(text)).map(definition => definition.key);
       return [...new Set([...detected, ...String(product.category || "").split("||").slice(1)])].filter(Boolean);
@@ -11633,7 +11636,7 @@
       const categorySelect = form?.elements.namedItem('category');
       if (channel === "online" && categorySelect) {
         const primary = product ? productCategoryKey(product) : '';
-        const options = [...new Set([...ONLINE_ADMIN_CATEGORIES.map(item => item.key), primary])].filter(Boolean);
+        const options = window.GOGO_CATEGORY_EDITOR.options([...ONLINE_ADMIN_CATEGORIES.map(item => item.key), ...state.products.filter(p => productSalesChannel(p, "offline") === "online").flatMap(productCategoryKeys), primary]);
         categorySelect.innerHTML = `<option value="">${state.lang === 'zh' ? '自动识别' : 'Automatic'}</option>` + options.map(key => `<option value="${escapeHtml(key)}">${escapeHtml(categoryName(key))}</option>`).join('');
         categorySelect.value = primary;
       } else if (categorySelect) {
@@ -11644,7 +11647,7 @@
       }
       host.hidden = channel !== "online";
       const selected = product ? productCategoryKeys(product) : [];
-      const choices = [...new Set([...ONLINE_ADMIN_CATEGORIES.map(item => item.key), ...state.products.filter(isOnlineStoreProduct).flatMap(productCategoryKeys), ...holidayCategories.map(item => item.key)])].filter(key => key && key !== 'All' && !/^online[-_ ]/i.test(String(key)));
+      const choices = window.GOGO_CATEGORY_EDITOR.options([...ONLINE_ADMIN_CATEGORIES.map(item => item.key), ...state.products.filter(p => productSalesChannel(p, "offline") === "online").flatMap(productCategoryKeys), ...holidayCategories.map(item => item.key)]);
       host.innerHTML = `<fieldset style="border:0;padding:8px 0;margin:0"><legend>${state.lang === 'zh' ? '附加分类 / 节日（可多选）' : 'Additional Categories / Occasions'}</legend><div style="display:flex;flex-wrap:wrap;gap:10px">${choices.map(key => `<label style="display:flex;align-items:center;gap:5px"><input style="width:16px;min-height:16px" type="checkbox" data-extra-category value="${escapeHtml(key)}" ${selected.includes(key) ? 'checked' : ''}>${escapeHtml(categoryName(key))}</label>`).join('')}</div></fieldset>`;
     }
 
@@ -11705,9 +11708,9 @@
 
     function productCategoryKey(product) {
       if (productSalesChannel(product, "offline") === "online") {
-        if (isOnlineFurniture(product)) return 'furniture';
         const stored = String(product?.category || "").split("||")[0].trim();
         if (stored && !stored.startsWith("online-source-")) return stored;
+        if (isOnlineFurniture(product)) return 'furniture';
         const text = [product?.title, product?.titleEn, product?.titleZh, product?.descriptionEn, product?.descriptionZh, product?.productType, product?.tags].filter(Boolean).join(" ");
         const match = ONLINE_ADMIN_CATEGORIES.slice().sort((a,b)=>b.priority-a.priority).find(definition => definition.match.test(text));
         return match?.key || "gifts";
@@ -12828,6 +12831,10 @@
         state.adminProductLoadError = message;
         if (canManage) renderAdminProducts();
         return false;
+      }
+      if (canManage && !window.GOGO_CATEGORY_EDITOR.loaded) {
+        try { await window.GOGO_CATEGORY_EDITOR.load(db); }
+        catch (categoryError) { console.warn("Category settings unavailable", categoryError.message); }
       }
       const remoteProducts = data
         .filter((product) => String(product.tags || "").trim() !== PURGED_PRODUCT_TAG)
@@ -16319,6 +16326,11 @@
     }
 
     function renderAdminProductCategoryFilter(products = adminProductChannelProducts()) {
+      const editorButton = $("[data-edit-online-categories]");
+      if (editorButton) {
+        editorButton.hidden = !canAccessAdmin() || activeAdminProductChannel() !== "online";
+        editorButton.querySelector("span").textContent = state.lang === "zh" ? "编辑分类" : "Edit categories";
+      }
       const select = $("#adminProductCategoryFilter");
       if (!select) return "All";
       const options = adminProductCategoryOptions(products);
@@ -18531,6 +18543,14 @@
       if (target.matches("[data-open-product-tab], [data-new-product]")) openNewProductEditor();
       if (target.matches("[data-close-product-editor]")) closeProductEditor();
       if (target.matches("[data-clear-form]")) clearProductForm();
+      if (target.matches("[data-edit-online-categories]") && canAccessAdmin() && activeAdminProductChannel() === "online") {
+        void window.GOGO_CATEGORY_EDITOR.open({
+          db, lang: () => state.lang, allowed: () => canAccessAdmin() && activeAdminProductChannel() === "online",
+          products: () => state.products, channel: p => productSalesChannel(p, "offline"),
+          keys: productCategoryKeys, name: categoryName, productName,
+          refresh: () => loadStoreInventory(true)
+        });
+      }
       if (target.matches("[data-edit-product]")) editProduct(target.dataset.editProduct);
       if (target.matches("[data-toggle-featured]")) toggleFeaturedProduct(target.dataset.toggleFeatured);
       if (target.matches("[data-toggle-product-online]")) {
