@@ -13966,14 +13966,18 @@
 
     async function deliveryAddressRequest(body) {
       const { data } = await db.auth.getSession();
-      if (!data.session?.access_token) throw new Error('Sign in required');
+      if (!data.session?.access_token) throw new Error(state.lang === 'zh' ? '登录已过期，请重新登录后查询地址。' : 'Please sign in again to look up your address.');
       const response = await fetch(SUPABASE_URL + '/functions/v1/create-checkout-session', {
         method: 'POST', signal: AbortSignal.timeout(15000),
         headers: { Authorization: 'Bearer ' + data.session.access_token, apikey: SUPABASE_PUBLISHABLE_KEY, 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...body, locale: state.lang, session_token: deliveryPlacesSession })
       });
       const result = await response.json();
-      if (!response.ok) throw new Error(result.error || 'Address lookup failed');
+      if (!response.ok) {
+        if (response.status === 401) throw new Error(state.lang === 'zh' ? '登录已过期，请重新登录后查询地址。' : 'Please sign in again to look up your address.');
+        if (result.code === 'address_search_unavailable') throw new Error(state.lang === 'zh' ? '地址服务暂不可用，请联系商店检查 Google 地址服务配置。' : 'Address service is unavailable. Please contact the store.');
+        throw new Error(`${response.status}: ${String(result.error || 'Address lookup failed').slice(0,180)}`);
+      }
       return result;
     }
 
@@ -13995,12 +13999,12 @@
         try {
           const result = await deliveryAddressRequest({ action: 'address-search', query });
           if (revision !== deliveryAddressRevision) return;
-          if (!Array.isArray(result.suggestions)) throw new Error('Address search unavailable');
+          if (!Array.isArray(result.suggestions)) throw new Error(state.lang === 'zh' ? '地址服务版本未同步，请联系商店。' : 'Address service needs an update. Please contact the store.');
           status.textContent = t(result.suggestions.length ? 'addressSelect' : 'addressNoResults');
           list.innerHTML = result.suggestions.map(s => `<button type="button" class="button ghost" style="text-align:left;white-space:normal;justify-content:flex-start" data-address-place="${escapeHtml(s.place_resource)}">${escapeHtml(s.full_text)}</button>`).join('');
           list.querySelectorAll('button').forEach(button => button.onclick = () => selectDeliveryAddress(button.dataset.addressPlace));
-        } catch (_) {
-          if (revision === deliveryAddressRevision) status.textContent = t('addressFailed');
+        } catch (error) {
+          if (revision === deliveryAddressRevision) status.textContent = error?.name === 'TimeoutError' || error instanceof TypeError ? t('addressFailed') : String(error.message || t('addressFailed'));
         }
       }, 400);
     }
@@ -14023,8 +14027,8 @@
         status.textContent = '';
         deliveryPlacesSession = '';
         renderCheckoutFulfillment();
-      } catch (_) {
-        if (revision === deliveryAddressRevision) status.textContent = t('addressFailed');
+      } catch (error) {
+        if (revision === deliveryAddressRevision) status.textContent = error?.name === 'TimeoutError' || error instanceof TypeError ? t('addressFailed') : String(error.message || t('addressFailed'));
       }
     }
 
