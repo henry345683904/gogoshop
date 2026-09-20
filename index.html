@@ -2374,14 +2374,18 @@
     .delivery-fields {
       display: grid;
       grid-template-columns: minmax(0, 1fr) minmax(130px, .55fr);
-      gap: 6px 10px;
+      gap: 8px 10px;
+      align-items: start;
     }
 
     .delivery-fields .field {
-      gap: 5px;
+      gap: 4px;
+      min-width: 0;
+      margin: 0;
     }
 
-    .delivery-fields .field > span {
+    .delivery-fields .field > span,
+    .delivery-fields .field > label {
       color: #303434;
       font-size: 12px;
       font-weight: 700;
@@ -2390,14 +2394,35 @@
     .delivery-fields input,
     .delivery-fields textarea {
       width: 100%;
-      min-height: 38px;
-      padding: 7px 10px;
+      min-height: 40px;
+      height: 40px;
+      padding: 8px 10px;
+      font-size: 16px;
+      line-height: 22px;
       background: #fff;
     }
 
-    .delivery-fields textarea {
-      min-height: 52px;
-      resize: vertical;
+    #deliveryAddressStatus {
+      font-size: 12px;
+      line-height: 1.4;
+      overflow-wrap: anywhere;
+    }
+
+    #deliveryAddressStatus:empty,
+    #deliveryAddressSuggestions:empty {
+      display: none;
+    }
+
+    #deliveryAddressSuggestions {
+      max-height: 180px;
+      overflow-y: auto;
+    }
+
+    #deliveryAddressSuggestions .button {
+      min-height: 40px;
+      padding: 7px 10px;
+      font-size: 13px;
+      line-height: 1.4;
     }
 
     .payment-total-row.delivery {
@@ -9444,7 +9469,7 @@
           <div class="fulfillment-panel" data-delivery-panel hidden>
             <p class="delivery-rule-note" data-i18n="deliveryRules">Delivery is available within 12 km of Flat Bush. Free on merchandise totals of $80 or more after vouchers; otherwise $5. Your coordinates are used for this estimate and are not saved.</p>
             <div class="delivery-fields">
-              <div class="field"><label for="deliveryAddress" data-i18n="deliveryAddress">Delivery address</label><textarea id="deliveryAddress" maxlength="160" autocomplete="street-address" data-i18n-placeholder="deliveryAddressPlaceholder" placeholder="Enter the full delivery address" aria-describedby="deliveryAddressStatus"></textarea><div id="deliveryAddressSuggestions" style="display:grid;gap:4px"></div><small id="deliveryAddressStatus" role="status"></small></div>
+              <div class="field"><label for="deliveryAddress" data-i18n="deliveryAddress">Delivery address</label><input id="deliveryAddress" type="text" maxlength="160" autocomplete="street-address" data-i18n-placeholder="deliveryAddressPlaceholder" placeholder="Enter the full delivery address" aria-describedby="deliveryAddressStatus"><div id="deliveryAddressSuggestions" style="display:grid;gap:4px"></div><small id="deliveryAddressStatus" role="status"></small></div>
               <label class="field"><span data-i18n="deliveryPhone">Phone number</span><input id="deliveryPhone" type="tel" maxlength="80" autocomplete="tel" inputmode="tel" data-i18n-placeholder="deliveryPhonePlaceholder" placeholder="Contact phone"></label>
             </div>
           </div>
