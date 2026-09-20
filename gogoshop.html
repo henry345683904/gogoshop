@@ -11973,7 +11973,6 @@
       const currentImage = images[state.detailImageIndex] || "";
       const soldOut = !available(product);
       const description = productDescription(product);
-      const itemCode = productItemCode(product);
       const eagerThumbnailLimit = images.length <= 25 ? images.length : 8;
 
       content.innerHTML = `
@@ -12000,12 +11999,6 @@
             <p class="product-detail-category">${escapeHtml(productCategoryKeys(product).map(categoryName).join(" · "))}</p>
             <h1>${escapeHtml(productName(product))}</h1>
             <p class="product-detail-price">${formatPrice(product.price)}</p>
-            ${itemCode ? `
-              <div class="product-detail-code">
-                <p class="product-detail-code-title">${state.lang === "zh" ? "扫码点单实验码" : "Scan-to-order trial code"}</p>
-                ${renderProductBarcode(product)}
-              </div>
-            ` : ""}
             ${description ? `<p class="product-detail-description">${escapeHtml(description)}</p>` : ""}
             <p class="product-detail-stock">
               <span class="stock-dot ${soldOut ? "sold-out" : ""}"></span>
