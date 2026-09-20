@@ -9433,7 +9433,6 @@
             </label>
           </div>
           <div class="delivery-location-row" data-delivery-location-row hidden>
-            <button class="button ghost" type="button" data-use-location><i data-lucide="locate-fixed"></i><span data-i18n="checkDeliveryDistance">Check my distance</span></button>
             <p class="delivery-location-status" id="deliveryLocationStatus" role="status" aria-live="polite" data-i18n="locationRequired">Location is required to check delivery eligibility.</p>
           </div>
           <div class="fulfillment-panel" data-pickup-panel>
@@ -9445,7 +9444,7 @@
           <div class="fulfillment-panel" data-delivery-panel hidden>
             <p class="delivery-rule-note" data-i18n="deliveryRules">Delivery is available within 12 km of Flat Bush. Free on merchandise totals of $80 or more after vouchers; otherwise $5. Your coordinates are used for this estimate and are not saved.</p>
             <div class="delivery-fields">
-              <label class="field"><span data-i18n="deliveryAddress">Delivery address</span><textarea id="deliveryAddress" maxlength="500" autocomplete="street-address" data-i18n-placeholder="deliveryAddressPlaceholder" placeholder="Enter the full delivery address"></textarea></label>
+              <div class="field"><label for="deliveryAddress" data-i18n="deliveryAddress">Delivery address</label><textarea id="deliveryAddress" maxlength="160" autocomplete="street-address" data-i18n-placeholder="deliveryAddressPlaceholder" placeholder="Enter the full delivery address" aria-describedby="deliveryAddressStatus"></textarea><div id="deliveryAddressSuggestions" style="display:grid;gap:4px"></div><small id="deliveryAddressStatus" role="status"></small></div>
               <label class="field"><span data-i18n="deliveryPhone">Phone number</span><input id="deliveryPhone" type="tel" maxlength="80" autocomplete="tel" inputmode="tel" data-i18n-placeholder="deliveryPhonePlaceholder" placeholder="Contact phone"></label>
             </div>
           </div>
@@ -9712,12 +9711,16 @@
         geolocationUnavailable: "Your location could not be determined. Try again or choose pickup.",
         geolocationTimeout: "Location request timed out. Try again or choose pickup.",
         deliveryAddress: "Delivery address",
+        addressSelect: "Select your delivery address from the suggestions to calculate delivery.",
+        addressSearching: "Looking up address…",
+        addressFailed: "Address lookup failed. Please try again or choose pickup.",
+        addressNoResults: "No matching address. Enter the street number, street and suburb.",
         deliveryAddressPlaceholder: "Enter the full delivery address",
         deliveryPhone: "Phone number",
         deliveryPhonePlaceholder: "Contact phone",
         deliveryFee: "Delivery fee",
         free: "Free",
-        checkLocationFirst: "Check your location before choosing delivery.",
+        checkLocationFirst: "Select a verified delivery address first.",
         enterDeliveryAddress: "Enter the full delivery address.",
         enterDeliveryPhone: "Enter a phone number for delivery.",
         fulfillmentMethod: "Order method",
@@ -9893,12 +9896,16 @@
         geolocationUnavailable: "暂时无法获取您的位置，请重试或选择到店自取。",
         geolocationTimeout: "获取位置超时，请重试或选择到店自取。",
         deliveryAddress: "配送地址",
+        addressSelect: "请选择匹配的配送地址，系统将自动计算距离和运费。",
+        addressSearching: "正在查询地址…",
+        addressFailed: "地址查询失败，请重试或选择自取。",
+        addressNoResults: "未找到匹配地址，请输入门牌号、街道和地区。",
         deliveryAddressPlaceholder: "请输入完整配送地址",
         deliveryPhone: "联系电话",
         deliveryPhonePlaceholder: "请输入联系电话",
         deliveryFee: "配送费",
         free: "免费",
-        checkLocationFirst: "选择配送前请先完成定位。",
+        checkLocationFirst: "请先选择匹配的配送地址。",
         enterDeliveryAddress: "请输入完整配送地址。",
         enterDeliveryPhone: "请输入配送联系电话。",
         fulfillmentMethod: "收货方式",
@@ -13823,7 +13830,13 @@
     }
 
     function resetCheckoutFulfillment() {
+      deliveryAddressRevision++;
+      clearTimeout(deliveryAddressTimer);
+      $('#deliveryAddressSuggestions')?.replaceChildren();
+      if ($('#deliveryAddressStatus')) $('#deliveryAddressStatus').textContent = '';
       Object.assign(state.checkoutFulfillment, {
+        placeResource: "",
+        verifiedAddress: "",
         method: "pickup",
         latitude: null,
         longitude: null,
@@ -13862,8 +13875,12 @@
       const fulfillment = state.checkoutFulfillment;
       const distance = Number(fulfillment.distanceKm);
       const hasDistance = fulfillment.distanceKm != null && Number.isFinite(distance);
+      const rules = modal.querySelector('[data-i18n="deliveryRules"]');
+      const settings = deliverySettings();
+      if (rules) rules.textContent = state.lang === 'zh'
+        ? `配送地址距自取点 ${settings.maxDistanceKm} 公里内可配送。优惠后商品金额满 ${formatPrice(settings.freeMinimum)} 免运费，否则运费 ${formatPrice(settings.fee)}。`
+        : `Delivery within ${settings.maxDistanceKm} km of pickup. Free for merchandise totals of ${formatPrice(settings.freeMinimum)} after discounts; otherwise ${formatPrice(settings.fee)}.`;
       const tooFar = hasDistance && distance > deliverySettings().maxDistanceKm;
-      if (tooFar && fulfillment.method === "delivery") fulfillment.method = "pickup";
 
       $$('[data-fulfillment-option]').forEach((option) => {
         const selected = option.dataset.fulfillmentOption === fulfillment.method;
@@ -13900,7 +13917,7 @@
           status.textContent = tWithValues(key, { distance: distance.toFixed(1) });
           status.classList.add("success");
         } else {
-          status.textContent = t("locationRequired");
+          status.textContent = t("addressSelect");
         }
       }
 
@@ -13940,7 +13957,75 @@
       fulfillment.method = "delivery";
       fulfillment.locationError = "";
       renderCheckoutFulfillment();
-      if (fulfillment.distanceKm == null || !Number.isFinite(Number(fulfillment.distanceKm))) locateForDelivery();
+      if (!fulfillment.placeResource && fulfillment.address?.trim()) scheduleDeliveryAddressSearch();
+    }
+
+    let deliveryAddressRevision = 0;
+    let deliveryAddressTimer;
+    let deliveryPlacesSession = "";
+
+    async function deliveryAddressRequest(body) {
+      const { data } = await db.auth.getSession();
+      if (!data.session?.access_token) throw new Error('Sign in required');
+      const response = await fetch(SUPABASE_URL + '/functions/v1/create-checkout-session', {
+        method: 'POST', signal: AbortSignal.timeout(15000),
+        headers: { Authorization: 'Bearer ' + data.session.access_token, apikey: SUPABASE_PUBLISHABLE_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...body, locale: state.lang, session_token: deliveryPlacesSession })
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Address lookup failed');
+      return result;
+    }
+
+    function scheduleDeliveryAddressSearch() {
+      const revision = ++deliveryAddressRevision;
+      clearTimeout(deliveryAddressTimer);
+      const f = state.checkoutFulfillment;
+      Object.assign(f, { latitude: null, longitude: null, distanceKm: null, placeResource: '', verifiedAddress: '', locating: false, locationError: '' });
+      const list = $('#deliveryAddressSuggestions');
+      const status = $('#deliveryAddressStatus');
+      list.replaceChildren();
+      status.textContent = t('addressSelect');
+      renderCheckoutFulfillment();
+      const query = String(f.address || '').trim();
+      if (query.length < 3) return;
+      deliveryPlacesSession ||= crypto.randomUUID();
+      deliveryAddressTimer = setTimeout(async () => {
+        status.textContent = t('addressSearching');
+        try {
+          const result = await deliveryAddressRequest({ action: 'address-search', query });
+          if (revision !== deliveryAddressRevision) return;
+          if (!Array.isArray(result.suggestions)) throw new Error('Address search unavailable');
+          status.textContent = t(result.suggestions.length ? 'addressSelect' : 'addressNoResults');
+          list.innerHTML = result.suggestions.map(s => `<button type="button" class="button ghost" style="text-align:left;white-space:normal;justify-content:flex-start" data-address-place="${escapeHtml(s.place_resource)}">${escapeHtml(s.full_text)}</button>`).join('');
+          list.querySelectorAll('button').forEach(button => button.onclick = () => selectDeliveryAddress(button.dataset.addressPlace));
+        } catch (_) {
+          if (revision === deliveryAddressRevision) status.textContent = t('addressFailed');
+        }
+      }, 400);
+    }
+
+    async function selectDeliveryAddress(placeResource) {
+      const revision = ++deliveryAddressRevision;
+      clearTimeout(deliveryAddressTimer);
+      const f = state.checkoutFulfillment;
+      const status = $('#deliveryAddressStatus');
+      $('#deliveryAddressSuggestions').replaceChildren();
+      status.textContent = t('addressSearching');
+      try {
+        const result = await deliveryAddressRequest({ action: 'address-details', place_resource: placeResource });
+        if (revision !== deliveryAddressRevision) return;
+        if (!result.formatted_address || !result.place_resource || typeof result.latitude !== 'number' || typeof result.longitude !== 'number' || !Number.isFinite(result.latitude) || !Number.isFinite(result.longitude)) throw new Error('Invalid address coordinates');
+        const settings = deliverySettings();
+        Object.assign(f, { address: result.formatted_address, verifiedAddress: result.formatted_address, placeResource: result.place_resource, latitude: result.latitude, longitude: result.longitude,
+          distanceKm: distanceKmBetween(result.latitude, result.longitude, settings.latitude, settings.longitude), locationError: '' });
+        $('#deliveryAddress').value = f.address;
+        status.textContent = '';
+        deliveryPlacesSession = '';
+        renderCheckoutFulfillment();
+      } catch (_) {
+        if (revision === deliveryAddressRevision) status.textContent = t('addressFailed');
+      }
     }
 
     function geolocationErrorKey(error) {
@@ -13996,6 +14081,7 @@
     function checkoutFulfillmentError() {
       const fulfillment = state.checkoutFulfillment;
       if (fulfillment.method === "pickup") return "";
+      if (!fulfillment.placeResource || fulfillment.address !== fulfillment.verifiedAddress) return t('addressSelect');
       if (fulfillment.locationError) return t(fulfillment.locationError);
       if (fulfillment.locating || fulfillment.distanceKm == null || !Number.isFinite(Number(fulfillment.distanceKm))) return t("checkLocationFirst");
       if (Number(fulfillment.distanceKm) > deliverySettings().maxDistanceKm) {
@@ -14013,6 +14099,7 @@
         method: "delivery",
         address: String(fulfillment.address || "").trim(),
         phone: String(fulfillment.phone || "").trim(),
+        place_resource: fulfillment.placeResource,
         latitude: fulfillment.latitude,
         longitude: fulfillment.longitude
       };
@@ -18361,6 +18448,7 @@
       if (event.target instanceof Element && event.target.matches("#deliveryAddress, #deliveryPhone")) {
         const key = event.target.matches("#deliveryAddress") ? "address" : "phone";
         state.checkoutFulfillment[key] = event.target.value;
+        if (key === 'address') scheduleDeliveryAddressSearch();
         const message = $("#paymentMessage");
         if (message) message.textContent = "";
         return;
