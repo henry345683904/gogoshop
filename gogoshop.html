@@ -10306,6 +10306,7 @@
 
     // Admin-only taxonomy: online merchandising can evolve without rewriting offline categories.
     const ONLINE_ADMIN_CATEGORIES = Object.freeze([
+      { key: "furniture", zh: "家具", en: "Furniture", match: /^(?!.*(?:\b(?:toy|doll|tableware|tablecloth|table tennis|table cloth|cover|cloth|miniature)\b|玩具|桌布))(?=.*(?:\b(?:desk|desks|bookshelf|bookshelves|cabinet|cabinets|wardrobe|sofa|chair|chairs|stool|stools|shelf|shelves|side table|dining table|coffee table|laptop table|shoe rack|garment rack|clothing rack|kitchen rack)\b|家具|书桌|餐桌|茶几|椅子|凳子|衣柜|鞋柜|书架|沙发|置物架))/i, priority: 110 },
       { key: "kitchen", zh: "厨房用品", en: "Kitchen", match: /kitchen|cook|bake|utensil|dish|plate|cup|mug|bottle|餐具|厨房|烹饪|烘焙|杯|碗|盘/i, priority: 100 },
       { key: "bathroom", zh: "卫生间用品", en: "Bathroom", match: /bathroom|toilet|shower|soap|towel|卫生间|厕所|浴室|淋浴|毛巾|肥皂/i, priority: 99 },
       { key: "festival-decor", zh: "节日装饰", en: "Festival Decor", match: /christmas|halloween|easter|birthday|moon festival|party|festive|holiday|圣诞|万圣|复活|生日|中秋|节日|派对|装饰/i, priority: 98 },
@@ -11541,6 +11542,7 @@
     function productCategoryKeys(product) {
       if (productSalesChannel(product, "offline") !== "online") return [productCategoryKey(product)];
       const stored = String(product.category || "").split("||").map(value => value.trim()).filter(value => value && !/^online[-_ ]/i.test(value));
+      if (isOnlineFurniture(product)) return [...new Set(['furniture', ...stored])];
       if (stored.length) return [...new Set(stored)];
       const text = [product?.title, product?.titleEn, product?.titleZh, product?.descriptionEn, product?.descriptionZh, product?.productType, product?.tags].filter(Boolean).join(" ");
       const detected = ONLINE_ADMIN_CATEGORIES.filter(definition => definition.match.test(text)).map(definition => definition.key);
@@ -11620,8 +11622,14 @@
       return /\b(?:staplers?|scissors?|mechanical pencils?|calculators?|ballpoint pens?|pencils?|erasers?|rulers?|markers?|highlighters?|notebooks?|notepads?|sticky notes?|memo pads?|paper clips?|binder clips?|hole punches?|tape dispensers?|glue sticks?|wireless (?:computer )?(?:mouse|mice)|computer (?:mouse|mice)|stationery)\b|订书机|剪刀|自动铅笔|计算器|圆珠笔|铅笔|橡皮|直尺|尺子|记号笔|荧光笔|笔记本|便签|便利贴|回形针|长尾夹|打孔器|胶带座|胶棒|无线鼠标|办公用品|文具/.test(text);
     }
 
+    function isOnlineFurniture(product) {
+      return productSalesChannel(product, "offline") === "online"
+        && ONLINE_ADMIN_CATEGORIES.find(item => item.key === 'furniture').match.test([product.title, product.titleEn, product.titleZh].filter(Boolean).join(' '));
+    }
+
     function productCategoryKey(product) {
       if (productSalesChannel(product, "offline") === "online") {
+        if (isOnlineFurniture(product)) return 'furniture';
         const stored = String(product?.category || "").split("||")[0].trim();
         if (stored && !stored.startsWith("online-source-")) return stored;
         const text = [product?.title, product?.titleEn, product?.titleZh, product?.descriptionEn, product?.descriptionZh, product?.productType, product?.tags].filter(Boolean).join(" ");
