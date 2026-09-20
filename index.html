@@ -14255,6 +14255,17 @@
       if (state.selectedCustomerVoucherId) refreshVoucherQuote();
     }
 
+    function resetPaymentAttempt() {
+      const button = $("[data-start-payment]");
+      if (button) button.disabled = false;
+      const message = $("#paymentMessage");
+      if (message) message.textContent = "";
+    }
+
+    window.addEventListener("pageshow", (event) => {
+      if (event.persisted) resetPaymentAttempt();
+    });
+
     async function checkout() {
       if (!state.cart.length) {
         showToast(t("cartEmpty"));
@@ -14271,6 +14282,7 @@
       }
       closePanels();
       resetCheckoutFulfillment();
+      resetPaymentAttempt();
       $("#paymentMessage").textContent = "";
       $("#paymentModal").hidden = false;
       renderCheckoutFulfillment();
@@ -14287,7 +14299,7 @@
     async function startStripeCheckout() {
       const button = $("[data-start-payment]");
       const message = $("#paymentMessage");
-      if (!button || !message || !state.cart.length || !db) return;
+      if (!button || button.disabled || !message || !state.cart.length || !db) return;
       const deliveryAddressInput = $("#deliveryAddress");
       const deliveryPhoneInput = $("#deliveryPhone");
       if (deliveryAddressInput) state.checkoutFulfillment.address = deliveryAddressInput.value;
@@ -14340,6 +14352,8 @@
         message.textContent = error.name === "TimeoutError"
           ? (state.lang === "zh" ? "支付服务响应超时，请稍后重试。" : "Payment service timed out. Please try again shortly.")
           : error.message || t("paymentUnavailable");
+      } finally {
+        button.disabled = false;
       }
     }
 
