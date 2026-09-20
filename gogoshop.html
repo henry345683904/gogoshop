@@ -12755,20 +12755,29 @@
       let data;
       let error;
       state.adminProductLoadError = "";
+      async function loadAdminPages(fields, label) {
+        const rows = [];
+        const pageSize = 500;
+        for (let offset = 0; ; offset += pageSize) {
+          let query = db.from("products").select(fields).order("id").range(offset, offset + pageSize - 1);
+          if (onlineManager) query = query.eq("sales_channel", "online");
+          const result = await requestWithTimeout(query, REQUEST_TIMEOUTS.catalog, label);
+          if (result.error || !Array.isArray(result.data)) return result;
+          rows.push(...result.data);
+          if (result.data.length < pageSize) return { data: rows, error: null };
+        }
+      }
       if (canManage) {
         const fields = onlineManager
           ? "id,title,title_en,title_zh,category,description,description_en,description_zh,price,compare_at_price,cost_per_item,stock,sales,published,sales_channel,image,images,sku,barcode,tags,deleted_at,deleted_was_published"
           : "id,title,title_en,title_zh,category,description,description_en,description_zh,price,compare_at_price,cost_per_item,stock,sales,published,sales_channel,image,images,vendor,sku,barcode,tags,source_url,source_currency,source_price,deleted_at,deleted_was_published";
-        let productQuery = db.from("products").select(fields);
-        if (onlineManager) productQuery = productQuery.eq("sales_channel", "online");
-        ({ data, error } = await requestWithTimeout(productQuery, REQUEST_TIMEOUTS.catalog, "Admin products"));
+        ({ data, error } = await loadAdminPages(fields, "Admin products"));
         if (error && isMissingSchemaError(error)) {
           supportsRecycleBin = false;
-          let fallbackQuery = db.from("products").select(onlineManager
+          const fallbackFields = onlineManager
             ? "id,title,title_en,title_zh,category,description,description_en,description_zh,price,compare_at_price,cost_per_item,stock,sales,published,sales_channel,image,images,sku,barcode,tags"
-            : "id,title,title_en,title_zh,category,description,description_en,description_zh,price,compare_at_price,cost_per_item,stock,sales,published,sales_channel,image,images,vendor,sku,barcode,tags,source_url,source_currency,source_price");
-          if (onlineManager) fallbackQuery = fallbackQuery.eq("sales_channel", "online");
-          ({ data, error } = await requestWithTimeout(fallbackQuery, REQUEST_TIMEOUTS.catalog, "Admin products fallback"));
+            : "id,title,title_en,title_zh,category,description,description_en,description_zh,price,compare_at_price,cost_per_item,stock,sales,published,sales_channel,image,images,vendor,sku,barcode,tags,source_url,source_currency,source_price";
+          ({ data, error } = await loadAdminPages(fallbackFields, "Admin products fallback"));
           if (error && /sales_channel/i.test(error.message || "")) {
             state.adminProductLoadError = "数据库尚未启用 sales_channel，已暂按线下商品保护性显示。请执行 supabase-product-sales-channels.sql。";
             if (onlineManager) {
