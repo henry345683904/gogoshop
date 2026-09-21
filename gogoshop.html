@@ -9563,8 +9563,8 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="store-config.js"></script>
-  <link rel="stylesheet" href="online-category-editor.css?v=1">
-  <script src="online-category-editor.js?v=1"></script>
+  <link rel="stylesheet" href="online-category-editor.css?v=2">
+  <script src="online-category-editor.js?v=2"></script>
   <script src="invoice-advisor.js?v=3"></script>
   <script src="pos-order-editor.js?v=1"></script>
   <script src="bank-deposit-tracker.js?v=1"></script>
@@ -10408,6 +10408,8 @@
 
     function adminCategoryName(category) {
       if (activeAdminProductChannel() === "online") {
+        const customName = window.GOGO_CATEGORY_EDITOR.label(category, state.lang);
+        if (customName) return customName;
         const definition = ONLINE_ADMIN_CATEGORIES.find(item => item.key === category);
         if (definition) return state.lang === "zh" ? definition.zh : definition.en;
         if (String(category).startsWith("online-source-")) {
@@ -10415,7 +10417,7 @@
           return state.lang === "zh" ? raw : raw.replace(/\b\w/g, letter => letter.toUpperCase());
         }
       }
-      return categoryName(category);
+      return baseCategoryName(category);
     }
 
     function setAdminProductChannel(channel) {
@@ -11642,7 +11644,7 @@
       } else if (categorySelect) {
         const primary = product ? productCategoryKey(product) : 'blind-box-plush';
         const options = [...new Set(['blind-box-plush', 'keychains-gifts', 'phone-cases', 'phone-accessories', 'office-supplies', primary])];
-        categorySelect.innerHTML = options.map(key => `<option value="${escapeHtml(key)}">${escapeHtml(categoryName(key))}</option>`).join('');
+        categorySelect.innerHTML = options.map(key => `<option value="${escapeHtml(key)}">${escapeHtml(baseCategoryName(key))}</option>`).join('');
         categorySelect.value = primary;
       }
       host.hidden = channel !== "online";
@@ -11658,22 +11660,26 @@
     }
 
     function categoryName(category) {
+      return window.GOGO_CATEGORY_EDITOR.label(category, state.lang) || baseCategoryName(category);
+    }
+
+    function baseCategoryName(category, language = state.lang) {
       const occasion = holidayCategories.find(item => item.key === category);
-      if (occasion) return state.lang === "zh" ? occasion.zh : occasion.en;
+      if (occasion) return language === "zh" ? occasion.zh : occasion.en;
       const onlineCategory = ONLINE_ADMIN_CATEGORIES.find(item => item.key === category);
-      if (onlineCategory) return state.lang === "zh" ? onlineCategory.zh : onlineCategory.en;
+      if (onlineCategory) return language === "zh" ? onlineCategory.zh : onlineCategory.en;
       if (String(category).startsWith("online-source-")) {
         const label = String(category).replace(/^online-source-/, "").replace(/-/g, " ").trim();
         return label.replace(/\b\w/g, letter => letter.toUpperCase());
       }
-      if (category === "All") return t("allCategory");
-      if (category === "other") return t("otherCategory");
+      if (category === "All") return language === "zh" ? "全部" : "All";
+      if (category === "other") return language === "zh" ? "其他" : "Other";
       const storefrontCategory = storefrontCategories.find((item) => item.key === category);
-      if (storefrontCategory) return state.lang === "zh" ? storefrontCategory.zh : storefrontCategory.en;
-      if (state.lang !== "zh" && window.GOGO_SHOP_CATEGORY_TRANSLATIONS?.[category]) {
+      if (storefrontCategory) return language === "zh" ? storefrontCategory.zh : storefrontCategory.en;
+      if (language !== "zh" && window.GOGO_SHOP_CATEGORY_TRANSLATIONS?.[category]) {
         return window.GOGO_SHOP_CATEGORY_TRANSLATIONS[category];
       }
-      return state.lang === "zh" ? productLabels[category]?.zh || category : category;
+      return language === "zh" ? productLabels[category]?.zh || category : category;
     }
 
     function menuCategoryName(category) {
@@ -12832,7 +12838,7 @@
         if (canManage) renderAdminProducts();
         return false;
       }
-      if (canManage && !window.GOGO_CATEGORY_EDITOR.loaded) {
+      if (!window.GOGO_CATEGORY_EDITOR.loaded) {
         try { await window.GOGO_CATEGORY_EDITOR.load(db); }
         catch (categoryError) { console.warn("Category settings unavailable", categoryError.message); }
       }
@@ -18547,7 +18553,7 @@
         void window.GOGO_CATEGORY_EDITOR.open({
           db, lang: () => state.lang, allowed: () => canAccessAdmin() && activeAdminProductChannel() === "online",
           products: () => state.products, channel: p => productSalesChannel(p, "offline"),
-          keys: productCategoryKeys, name: categoryName, productName,
+          keys: productCategoryKeys, name: categoryName, defaultName: baseCategoryName, productName,
           refresh: () => loadStoreInventory(true)
         });
       }
