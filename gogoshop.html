@@ -10232,6 +10232,7 @@
       orderTrashOpen: false,
       orderRecycleSupported: true,
       customers: [],
+      customersError: "",
       activeCustomerId: null,
       vouchers: [],
       voucherAssignments: [],
@@ -14881,19 +14882,16 @@
     async function fetchAdminData(userId) {
       const onlineOnly = isOnlineManager();
       const customerPromise = (async () => {
-        let result = await requestWithTimeout(
-          () => db.from("profiles").select("id,email,full_name,points,total_spent,created_at,updated_at,is_admin").order("created_at", { ascending: false }),
-          REQUEST_TIMEOUTS.admin,
-          "Admin customers"
-        );
-        if (result.error && isMissingSchemaError(result.error)) {
-          result = await requestWithTimeout(
-            () => db.from("profiles").select("id,email,full_name,points,total_spent,created_at,is_admin").order("created_at", { ascending: false }),
-            REQUEST_TIMEOUTS.admin,
-            "Admin customers fallback"
+        const accounts = [];
+        for (let offset = 0; ; offset += 500) {
+          const page = await requestWithTimeout(
+            () => db.rpc('admin_customer_accounts', { p_offset: offset }),
+            REQUEST_TIMEOUTS.admin, 'Admin customer accounts'
           );
+          if (page.error) return page;
+          accounts.push(...(page.data || []));
+          if ((page.data || []).length < 500) return { data: accounts, error: null };
         }
-        return result;
       })();
       const voucherPromise = requestWithTimeout(
         () => db.from("vouchers").select("*").order("created_at", { ascending: false }),
@@ -14916,7 +14914,7 @@
         return result;
       })();
       const [ordersResult, customersResult, vouchersResult, voucherAssignmentsResult] = await Promise.allSettled(onlineOnly
-        ? [fetchAdminOrders(), Promise.resolve({ data: [], error: null }), Promise.resolve({ data: [], error: null }), Promise.resolve({ data: [], error: null })]
+        ? [fetchAdminOrders(), customerPromise, Promise.resolve({ data: [], error: null }), Promise.resolve({ data: [], error: null })]
         : [fetchAdminOrders(), customerPromise, voucherPromise, voucherAssignmentPromise]);
       if (!sessionMatches(userId)) return false;
       const orders = ordersResult.status === "fulfilled" ? ordersResult.value : { error: ordersResult.reason };
@@ -14934,7 +14932,9 @@
       }
       if (customersResult.status === "fulfilled" && !customersResult.value.error) {
         state.customers = customersResult.value.data || [];
+        state.customersError = "";
       } else {
+        state.customersError = requestErrorText(customersResult.status === 'rejected' ? customersResult.reason : customersResult.value.error, 'Unable to load customers');
         console.warn("Unable to load admin customers", customersResult.status === "rejected" ? customersResult.reason : customersResult.value.error);
       }
       if (vouchersResult.status === "fulfilled" && !vouchersResult.value.error) {
@@ -15227,8 +15227,12 @@
     function renderCustomers() {
       const target = $("#customerRows");
       if (!target) return;
-      $("#adminCustomerCount").textContent = `${state.customers.filter((customer) => !customer.is_admin).length} customer accounts`;
+      $("#adminCustomerCount").textContent = state.lang === 'zh' ? `${state.customers.length} 个账号` : `${state.customers.length} accounts`;
       renderVipTierLegend();
+      if (state.customersError) {
+        target.innerHTML = `<tr><td colspan="8"><div class="empty-state" role="alert">${escapeHtml(state.customersError)}</div></td></tr>`;
+        return;
+      }
       target.innerHTML = state.customers.length ? state.customers.map((customer) => {
         const stats = customerStats(customer);
         const vip = vipStatus(customer.total_spent);
