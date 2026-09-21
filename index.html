@@ -3113,6 +3113,27 @@
       padding: 12px 10px;
     }
 
+    .admin-main > [data-admin-section="overview"].active > [hidden] {
+      display: none !important;
+    }
+
+    .admin-main > [data-admin-section="overview"].active > #metricGrid[data-online="true"] {
+      display: grid !important;
+      margin-bottom: 10px;
+      gap: 12px;
+    }
+
+    #metricGrid[data-online="true"] .metric {
+      min-height: 112px;
+      padding: 20px 16px;
+    }
+
+    #metricGrid[data-online="true"] .metric strong {
+      margin-top: 12px;
+      font-size: 26px;
+      line-height: 1.2;
+    }
+
     #metricGrid .metric strong,
     #metricGrid .metric small {
       display: block;
@@ -15691,6 +15712,7 @@
     }
 
     function renderMetrics(target, extended = false) {
+      if (target === '#metricGrid') $(target).dataset.online = String(isOnlineManager());
       const isChinese = state.lang === "zh";
       const labels = extended
         ? [isChinese ? "销售额" : "Revenue", isChinese ? "订单" : "Orders", isChinese ? "已售件数" : "Units sold", isChinese ? "转化率" : "Conversion", isChinese ? "库存件数" : "Inventory"]
