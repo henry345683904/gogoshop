@@ -19,6 +19,8 @@
 .category-editor-body nav button span{overflow-wrap:anywhere;min-width:0}
 .category-editor-body nav button[aria-pressed=true]{background:#e8f3ed;color:#165b3a}
 .category-editor-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:12px 0;font-size:13px}
+.category-editor-unclassified{display:flex;align-items:center;gap:8px;margin-top:10px;cursor:pointer}
+.category-editor-unclassified input{width:18px;height:18px;min-height:18px;flex:none}
 .category-editor-products{overflow:auto;min-height:0;flex:1}
 .category-editor-product{display:flex;align-items:center;gap:10px;padding:10px 2px;border-bottom:1px solid #eee;cursor:pointer}
 .category-editor-product input{width:18px;height:18px;min-height:18px;flex:none}

@@ -8,6 +8,7 @@
   let original = new Set();
   let busy = false;
   let query = '';
+  let unclassifiedOnly = false;
   const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const text = (zh, en) => context.lang() === 'zh' ? zh : en;
   const products = () => context.products().filter(p => context.channel(p) === 'online');
@@ -32,6 +33,7 @@
     original = new Set(products().filter(p => context.keys(p).includes(key)).map(p => p.id));
     selected = new Set(original);
     query = '';
+    unclassifiedOnly = false;
     render();
   }
   function render() {
@@ -41,6 +43,7 @@
       <nav aria-label="${text('分类','Categories')}">${keys.map(k => `<button type="button" data-cat-key="${esc(k)}" aria-pressed="${current===k}"><span>${esc(context.name(k))}</span><small>${products().filter(p=>context.keys(p).includes(k)).length}</small></button>`).join('')}</nav></aside>
       <section>${current ? `<form data-cat-rename class="category-editor-rename">${nameInputs(current)}<button class="button ghost">${text('保存名称','Save names')}</button><button type="button" data-cat-delete class="action-button" ${current==='other'?'disabled':''} title="${text('删除分类','Delete category')}" aria-label="${text('删除分类','Delete category')}"><i data-lucide="trash-2"></i></button></form>
       <label class="category-editor-search">${text('搜索商品名称或货号','Search product name or item code')}<input type="search" data-cat-search value="${esc(query)}" autocomplete="off"></label>
+      <label class="category-editor-unclassified"><input type="checkbox" data-cat-unclassified ${unclassifiedOnly?'checked':''}>${text('仅显示未分类商品','Unclassified products only')}</label>
       <div class="category-editor-tools"><button type="button" class="button ghost" data-cat-select>${text('选择搜索结果','Select results')}</button><button type="button" class="button ghost" data-cat-clear>${text('取消选择搜索结果','Deselect results')}</button><output data-cat-count></output></div><div class="category-editor-products"></div>` : `<p>${text('请新增或选择分类','Add or select a category')}</p>`}</section></div>
       <footer><p role="status" data-cat-status></p><button type="button" data-cat-save class="button" ${!current?'disabled':''}>${text('保存商品分类','Save product selection')}</button></footer>`;
     renderProducts();
@@ -48,7 +51,11 @@
   }
   function matches() {
     const needle = query.trim().toLocaleLowerCase();
-    return products().filter(p => !needle || [context.productName(p),p.sku,p.barcode].join(' ').toLocaleLowerCase().includes(needle));
+    const removed = new Set(registry.filter(c=>c.deleted).map(c=>c.key));
+    return products().filter(p => {
+      if (unclassifiedOnly && context.keys(p).some(k=>k && k!=='other' && !removed.has(k))) return false;
+      return !needle || [context.productName(p),p.sku,p.barcode].join(' ').toLocaleLowerCase().includes(needle);
+    }).sort((a,b)=>Number(selected.has(b.id))-Number(selected.has(a.id)));
   }
   function renderProducts() {
     const list = dialog.querySelector('.category-editor-products');
@@ -104,7 +111,15 @@
       document.body.append(dialog);
       dialog.addEventListener('cancel',e=>{if(busy || (dirty() && !confirm(text('放弃未保存的商品选择？','Discard unsaved product selection?'))))e.preventDefault();});
       dialog.addEventListener('input',e=>{if(e.target.matches('[data-cat-search]')){query=e.target.value;renderProducts();}});
-      dialog.addEventListener('change',e=>{const id=e.target.dataset.catProduct;if(id){if(e.target.checked)selected.add(id);else selected.delete(id);dialog.querySelector('[data-cat-count]').textContent=text(`已选择 ${selected.size} 件商品`,`${selected.size} products selected`);}});
+      dialog.addEventListener('change',e=>{
+        if(e.target.matches('[data-cat-unclassified]')){unclassifiedOnly=e.target.checked;renderProducts();return;}
+        const id=e.target.dataset.catProduct;
+        if(id){
+          if(e.target.checked)selected.add(id);else selected.delete(id);
+          renderProducts();
+          [...dialog.querySelectorAll('[data-cat-product]')].find(input=>input.dataset.catProduct===id)?.focus({preventScroll:true});
+        }
+      });
       dialog.addEventListener('click',e=>{
         const button=e.target.closest('button'); if(!button || busy)return;
         if(button.hasAttribute('data-cat-close')){if(!dirty() || confirm(text('放弃未保存的商品选择？','Discard unsaved product selection?')))dialog.close();}
