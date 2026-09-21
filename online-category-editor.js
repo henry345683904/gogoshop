@@ -59,7 +59,8 @@
   }
   function status(message) { dialog.querySelector('[data-cat-status]').textContent = message; }
   async function execute(action, name, translations) {
-    if (busy || !context.allowed()) return;
+    if (busy) return;
+    if (!context.allowed()) { status(text('管理员登录已失效，请重新登录','Administrator session expired. Please sign in again.')); return; }
     busy = true;
     dialog.querySelectorAll('button,input').forEach(el=>el.disabled=true);
     status(text('正在保存…','Saving…'));
