@@ -53,7 +53,7 @@
     const needle = query.trim().toLocaleLowerCase();
     const removed = new Set(registry.filter(c=>c.deleted).map(c=>c.key));
     return products().filter(p => {
-      if (unclassifiedOnly && context.keys(p).some(k=>k && k!=='other' && !removed.has(k))) return false;
+      if (unclassifiedOnly && context.keys(p).some(k=>k && k!=='other' && k!=='uncategorized' && !removed.has(k))) return false;
       return !needle || [context.productName(p),p.sku,p.barcode].join(' ').toLocaleLowerCase().includes(needle);
     }).sort((a,b)=>Number(selected.has(b.id))-Number(selected.has(a.id)));
   }
@@ -78,18 +78,18 @@
         if (action === 'rename' && keys.includes(current)) next = keys.map(k => k === current ? name : k);
         if (action === 'delete' && keys.includes(current)) next = keys.filter(k => k !== current);
         if (action === 'assign' && selected.has(p.id) !== original.has(p.id)) {
-          next = selected.has(p.id) ? [...keys,current] : keys.filter(k => k !== current);
+          next = selected.has(p.id) ? [...keys.filter(k => k !== 'uncategorized'),current] : keys.filter(k => k !== current);
         }
         if (next === keys) return [];
-        return [{id:p.id,expected:p.category || '',category:[...new Set(next)].join('||') || 'other'}];
+        return [{id:p.id,expected:p.category || '',category:[...new Set(next)].join('||') || 'uncategorized'}];
       });
       const result = translations ? await context.db.rpc('save_online_category_names', {
         p_key:action==='create'?name:current,p_name_zh:translations.zh,p_name_en:translations.en,p_create:action==='create'
       }) : await context.db.rpc('edit_online_category', {
         p_action:action, p_key:current || name, p_name:name || null,
         p_changes:changes,
-        p_add:action==='assign'?[...selected].filter(id=>!original.has(id)):[],
-        p_remove:action==='assign'?[...original].filter(id=>!selected.has(id)):[]
+        p_add:[],
+        p_remove:[]
       });
       if (result.error) throw result.error;
       await load(context.db);

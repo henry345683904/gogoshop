@@ -9564,7 +9564,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="store-config.js"></script>
   <link rel="stylesheet" href="online-category-editor.css?v=4">
-  <script src="online-category-editor.js?v=4"></script>
+  <script src="online-category-editor.js?v=5"></script>
   <script src="invoice-advisor.js?v=3"></script>
   <script src="pos-order-editor.js?v=1"></script>
   <script src="bank-deposit-tracker.js?v=1"></script>
@@ -11674,6 +11674,7 @@
       }
       if (category === "All") return language === "zh" ? "全部" : "All";
       if (category === "other") return language === "zh" ? "其他" : "Other";
+      if (category === "uncategorized") return language === "zh" ? "未分类" : "Unclassified";
       const storefrontCategory = storefrontCategories.find((item) => item.key === category);
       if (storefrontCategory) return language === "zh" ? storefrontCategory.zh : storefrontCategory.en;
       if (language !== "zh" && window.GOGO_SHOP_CATEGORY_TRANSLATIONS?.[category]) {
