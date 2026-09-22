@@ -16667,7 +16667,7 @@
       const preview = $("#designPreview");
       if (!preview) return;
       const design = effectiveDesign({ preview: true });
-      const heroBackground = design.heroImage ? `url("${escapeHtml(design.heroImage)}")` : "linear-gradient(135deg, #4d9298, #d88a76)";
+      const heroBackground = design.heroImage ? escapeHtml(`url("${design.heroImage.replace(/\\/g, "%5C").replace(/"/g, "%22").replace(/[\r\n]/g, "")}")`) : "linear-gradient(135deg, #4d9298, #d88a76)";
       const previewProducts = state.products
         .filter(isOnlineStoreProduct)
         .sort((a, b) => Number(Boolean(b.featured)) - Number(Boolean(a.featured)))
