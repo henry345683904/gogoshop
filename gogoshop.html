@@ -9625,7 +9625,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="store-config.js"></script>
   <link rel="stylesheet" href="online-category-editor.css?v=4">
-  <script src="online-category-editor.js?v=5"></script>
+  <script src="online-category-editor.js?v=6"></script>
   <script src="invoice-advisor.js?v=3"></script>
   <script src="pos-order-editor.js?v=1"></script>
   <script src="bank-deposit-tracker.js?v=1"></script>
@@ -11684,11 +11684,11 @@
     function productCategoryKeys(product) {
       if (productSalesChannel(product, "offline") !== "online") return [productCategoryKey(product)];
       const stored = String(product.category || "").split("||").map(value => value.trim()).filter(value => value && !/^online[-_ ]/i.test(value));
-      if (stored.length) return [...new Set(stored)];
+      if (stored.length) return [stored[0], ...stored.slice(1).filter(key=>window.GOGO_CATEGORY_EDITOR.parent(key)===stored[0])];
         if (isOnlineFurniture(product)) return ['home-storage'];
       const text = [product?.title, product?.titleEn, product?.titleZh, product?.descriptionEn, product?.descriptionZh, product?.productType, product?.tags].filter(Boolean).join(" ");
       const detected = ONLINE_ADMIN_CATEGORIES.filter(definition => definition.match.test(text)).map(definition => definition.key);
-      return [...new Set([...detected, ...String(product.category || "").split("||").slice(1)])].filter(Boolean);
+      return detected.slice(0,1);
     }
 
     function renderExtraProductCategories(product = null) {
@@ -11699,7 +11699,7 @@
       const categorySelect = form?.elements.namedItem('category');
       if (channel === "online" && categorySelect) {
         const primary = product ? productCategoryKey(product) : '';
-        const options = window.GOGO_CATEGORY_EDITOR.options([...ONLINE_ADMIN_CATEGORIES.map(item => item.key), ...state.products.filter(p => productSalesChannel(p, "offline") === "online").flatMap(productCategoryKeys), primary]);
+        const options = window.GOGO_CATEGORY_EDITOR.primaryOptions([...ONLINE_ADMIN_CATEGORIES.map(item => item.key), ...state.products.filter(p => productSalesChannel(p, "offline") === "online").flatMap(productCategoryKeys), primary]);
         categorySelect.innerHTML = `<option value="">${state.lang === 'zh' ? '自动识别' : 'Automatic'}</option>` + options.map(key => `<option value="${escapeHtml(key)}">${escapeHtml(categoryName(key))}</option>`).join('');
         categorySelect.value = primary;
       } else if (categorySelect) {
@@ -11710,8 +11710,12 @@
       }
       host.hidden = channel !== "online";
       const selected = product ? productCategoryKeys(product) : [];
-      const choices = window.GOGO_CATEGORY_EDITOR.options([...ONLINE_ADMIN_CATEGORIES.map(item => item.key), ...state.products.filter(p => productSalesChannel(p, "offline") === "online").flatMap(productCategoryKeys), ...holidayCategories.map(item => item.key)]);
-      host.innerHTML = `<fieldset style="border:0;padding:8px 0;margin:0"><legend>${state.lang === 'zh' ? '附加分类 / 节日（可多选）' : 'Additional Categories / Occasions'}</legend><div style="display:flex;flex-wrap:wrap;gap:10px">${choices.map(key => `<label style="display:flex;align-items:center;gap:5px"><input style="width:16px;min-height:16px" type="checkbox" data-extra-category value="${escapeHtml(key)}" ${selected.includes(key) ? 'checked' : ''}>${escapeHtml(categoryName(key))}</label>`).join('')}</div></fieldset>`;
+      const renderSecondary = () => {
+        const choices = window.GOGO_CATEGORY_EDITOR.children(categorySelect?.value || '');
+        host.innerHTML = `<label class="field"><span>${state.lang === 'zh' ? '二级分类' : 'Subcategory'}</span><select name="subcategory"><option value="">${state.lang === 'zh' ? '未设置' : 'None'}</option>${choices.map(key=>`<option value="${escapeHtml(key)}" ${selected.includes(key)?'selected':''}>${escapeHtml(categoryName(key))}</option>`).join('')}</select></label>`;
+      };
+      if (channel === 'online' && categorySelect) categorySelect.onchange = renderSecondary;
+      renderSecondary();
     }
 
     function renderHolidayShop() {
@@ -12321,11 +12325,14 @@
 
     function renderCategoryTabs() {
       const tabs = $("[data-category-tabs]");
-      tabs.innerHTML = categories().map((category) => `
+      const primary = window.GOGO_CATEGORY_EDITOR.parent(state.category) || state.category;
+      tabs.innerHTML = categories().filter(key=>!window.GOGO_CATEGORY_EDITOR.parent(key)).map((category) => `
         <button class="chip ${category === state.category ? "active" : ""}" type="button" data-category="${category}">
           ${categoryName(category)}
         </button>
       `).join("");
+      const children = window.GOGO_CATEGORY_EDITOR.children(primary).filter(key=>state.products.some(p=>isOnlineStoreProduct(p) && productCategoryKeys(p).includes(key)));
+      if (children.length) tabs.innerHTML += `<div class="chips" style="flex-basis:100%">${children.map(key=>`<button class="chip ${state.category===key?'active':''}" type="button" data-category="${escapeHtml(key)}">${escapeHtml(categoryName(key))}</button>`).join('')}</div>`;
       const toggle = $("[data-toggle-catalog-categories]");
       if (toggle) toggle.classList.toggle("active", state.category !== "All");
     }
@@ -18163,7 +18170,7 @@
         titleEn,
         titleZh,
         handle: id,
-        category: selectedChannel === "online" ? [...new Set([String(data.category || '').trim() || adminOnlineCategoryKey({ ...existing, title: titleEn || titleZh, titleEn, titleZh, descriptionEn, descriptionZh, productType: data.productType, tags: data.tags }), ...Array.from(form.querySelectorAll('[data-extra-category]:checked'), input => input.value)])].filter(Boolean).join("||") : data.category,
+        category: selectedChannel === "online" ? [String(data.category || '').trim() || adminOnlineCategoryKey({ ...existing, title: titleEn || titleZh, titleEn, titleZh, descriptionEn, descriptionZh, productType: data.productType, tags: data.tags }), ...(data.subcategory && window.GOGO_CATEGORY_EDITOR.parent(data.subcategory)===data.category ? [data.subcategory] : [])].join("||") : data.category,
         description: existing?.description || descriptionEn || descriptionZh,
         descriptionEn,
         descriptionZh,

@@ -18,12 +18,15 @@
       .filter(k => k && k !== 'All' && !removed.has(k) && !/^online[-_ ]/i.test(k));
   }
   async function load(db) {
-    const result = await db.from('online_category_settings').select('key,deleted,name_zh,name_en');
+    const result = await db.from('online_category_settings').select('key,deleted,name_zh,name_en,parent_key');
     if (result.error) throw result.error;
     registry = result.data || [];
     loaded = true;
   }
-  const allKeys = () => options(products().flatMap(context.keys));
+  const parent = key => registry.find(c=>c.key===key)?.parent_key || '';
+  const children = key => registry.filter(c=>!c.deleted && c.parent_key===key).map(c=>c.key);
+  const primaryOptions = base => options(base).filter(k=>!parent(k));
+  const allKeys = () => primaryOptions(products().flatMap(context.keys)).flatMap(k=>[k,...children(k)]);
   const label = (key,lang) => registry.find(c=>c.key===key && !c.deleted)?.[lang==='zh'?'name_zh':'name_en'] || '';
   const names = key => ({zh:label(key,'zh') || context.defaultName(key,'zh'),en:label(key,'en') || context.defaultName(key,'en')});
   const nameInputs = key => `<div class="category-editor-names"><label>${text('中文名称','Chinese name')}<input name="nameZh" required maxlength="100" value="${esc(key?names(key).zh:'')}" autocomplete="off"></label><label>${text('英文名称','English name')}<input name="nameEn" required maxlength="100" value="${esc(key?names(key).en:'')}" autocomplete="off"></label></div>`;
@@ -39,8 +42,8 @@
   function render() {
     const keys = allKeys();
     dialog.innerHTML = `<form method="dialog" class="category-editor-header"><h2>${text('编辑线上分类','Edit online categories')}</h2><button type="button" data-cat-close class="action-button" aria-label="${text('关闭','Close')}" title="${text('关闭','Close')}"><i data-lucide="x"></i></button></form>
-      <div class="category-editor-body"><aside><form data-cat-create class="category-editor-create">${nameInputs('')}<button class="action-button" title="${text('新增分类','Add category')}" aria-label="${text('新增分类','Add category')}"><i data-lucide="plus"></i></button></form>
-      <nav aria-label="${text('分类','Categories')}">${keys.map(k => `<button type="button" data-cat-key="${esc(k)}" aria-pressed="${current===k}"><span>${esc(context.name(k))}</span><small>${products().filter(p=>context.keys(p).includes(k)).length}</small></button>`).join('')}</nav></aside>
+      <div class="category-editor-body"><aside><form data-cat-create class="category-editor-create"><label>${text('所属一级分类','Primary category')}<select name="parentKey"><option value="">${text('新增一级分类','New primary category')}</option>${primaryOptions(products().flatMap(context.keys)).map(k=>`<option value="${esc(k)}">${esc(context.name(k))}</option>`).join('')}</select></label>${nameInputs('')}<button class="action-button" title="${text('新增分类','Add category')}" aria-label="${text('新增分类','Add category')}"><i data-lucide="plus"></i></button></form>
+      <nav aria-label="${text('分类','Categories')}">${keys.map(k => `<button type="button" data-cat-key="${esc(k)}" aria-pressed="${current===k}"><span>${parent(k)?'↳ ':''}${esc(context.name(k))}</span><small>${products().filter(p=>context.keys(p).includes(k)).length}</small></button>`).join('')}</nav></aside>
       <section>${current ? `<form data-cat-rename class="category-editor-rename">${nameInputs(current)}<button class="button ghost">${text('保存名称','Save names')}</button><button type="button" data-cat-delete class="action-button" ${current==='other'?'disabled':''} title="${text('删除分类','Delete category')}" aria-label="${text('删除分类','Delete category')}"><i data-lucide="trash-2"></i></button></form>
       <label class="category-editor-search">${text('搜索商品名称或货号','Search product name or item code')}<input type="search" data-cat-search value="${esc(query)}" autocomplete="off"></label>
       <label class="category-editor-unclassified"><input type="checkbox" data-cat-unclassified ${unclassifiedOnly?'checked':''}>${text('仅显示未分类商品','Unclassified products only')}</label>
@@ -53,6 +56,7 @@
     const needle = query.trim().toLocaleLowerCase();
     const removed = new Set(registry.filter(c=>c.deleted).map(c=>c.key));
     return products().filter(p => {
+      if (parent(current) && context.keys(p)[0]!==parent(current)) return false;
       if (unclassifiedOnly && context.keys(p).some(k=>k && k!=='other' && k!=='uncategorized' && !removed.has(k))) return false;
       return !needle || [context.productName(p),p.sku,p.barcode].join(' ').toLocaleLowerCase().includes(needle);
     }).sort((a,b)=>Number(selected.has(b.id))-Number(selected.has(a.id)));
@@ -67,23 +71,26 @@
   function status(message) { dialog.querySelector('[data-cat-status]').textContent = message; }
   async function execute(action, name, translations) {
     if (busy) return;
+    if (action === 'delete' && children(current).length) { status(text('请先删除此分类下的二级分类','Remove subcategories before deleting this primary category')); return; }
     if (!context.allowed()) { status(text('管理员登录已失效，请重新登录','Administrator session expired. Please sign in again.')); return; }
     busy = true;
-    dialog.querySelectorAll('button,input').forEach(el=>el.disabled=true);
+    dialog.querySelectorAll('button,input,select').forEach(el=>el.disabled=true);
     status(text('正在保存…','Saving…'));
     try {
       const changes = products().flatMap(p => {
         const keys = context.keys(p);
         let next = keys;
         if (action === 'rename' && keys.includes(current)) next = keys.map(k => k === current ? name : k);
-        if (action === 'delete' && keys.includes(current)) next = keys.filter(k => k !== current);
+        if (action === 'delete' && keys.includes(current)) next = parent(current) ? keys.filter(k => k !== current) : [];
         if (action === 'assign' && selected.has(p.id) !== original.has(p.id)) {
-          next = selected.has(p.id) ? [...keys.filter(k => k !== 'uncategorized'),current] : keys.filter(k => k !== current);
+          next = selected.has(p.id) ? (parent(current) ? [parent(current),current] : [current]) : (parent(current) ? keys.filter(k=>k!==current) : []);
         }
         if (next === keys) return [];
         return [{id:p.id,expected:p.category || '',category:[...new Set(next)].join('||') || 'uncategorized'}];
       });
-      const result = translations ? await context.db.rpc('save_online_category_names', {
+      const result = translations && action==='create' ? await context.db.rpc('create_online_subcategory', {
+        p_key:name,p_parent:translations.parent || null,p_zh:translations.zh,p_en:translations.en
+      }) : translations ? await context.db.rpc('save_online_category_names', {
         p_key:action==='create'?name:current,p_name_zh:translations.zh,p_name_en:translations.en,p_create:action==='create'
       }) : await context.db.rpc('edit_online_category', {
         p_action:action, p_key:current || name, p_name:name || null,
@@ -134,7 +141,7 @@
         if(!e.target.matches('[data-cat-create],[data-cat-rename]'))return;
         if(dirty() && !confirm(text('此操作会放弃未保存的商品选择，继续？','Discard unsaved product selection and continue?')))return;
         const data=new FormData(e.target);
-        const translations={zh:data.get('nameZh')?.trim(),en:data.get('nameEn')?.trim()};
+        const translations={zh:data.get('nameZh')?.trim(),en:data.get('nameEn')?.trim(),parent:data.get('parentKey') || ''};
         if(!translations.zh || !translations.en)return;
         const creating=e.target.matches('[data-cat-create]');
         if(allKeys().some(k=>(creating || k!==current) && (names(k).zh.toLocaleLowerCase()===translations.zh.toLocaleLowerCase() || names(k).en.toLocaleLowerCase()===translations.en.toLocaleLowerCase()))){status(text('分类名称已存在','Category name already exists'));return;}
@@ -147,5 +154,5 @@
     catch(error){status(error.message || String(error));}
     finally { busy=false; }
   }
-  window.GOGO_CATEGORY_EDITOR={open,load,options,label,get loaded(){return loaded;}};
+  window.GOGO_CATEGORY_EDITOR={open,load,options,primaryOptions,parent,children,label,get loaded(){return loaded;}};
 })();
