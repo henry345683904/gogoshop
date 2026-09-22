@@ -1,7 +1,8 @@
 begin;
+drop function if exists public.admin_customer_accounts(integer);
 create or replace function public.admin_customer_accounts(p_offset integer default 0)
 returns table(id uuid,email text,full_name text,points bigint,total_spent numeric,
-  created_at timestamptz,updated_at timestamptz,is_admin boolean,last_sign_in_at timestamptz)
+  created_at timestamptz,updated_at timestamptz,is_admin boolean,admin_role text,last_sign_in_at timestamptz)
 language plpgsql security definer set search_path=public as $$
 declare online_only boolean;
 begin
@@ -13,7 +14,7 @@ begin
     coalesce(nullif(p.full_name,''),u.raw_user_meta_data->>'full_name',u.raw_user_meta_data->>'name',''),
     case when online_only then coalesce(s.points,0) else coalesce(p.points,0)::bigint end,
     case when online_only then coalesce(s.spent,0) else coalesce(p.total_spent,0) end,
-    u.created_at,p.updated_at,coalesce(p.is_admin,false),u.last_sign_in_at
+    u.created_at,p.updated_at,coalesce(p.is_admin,false),coalesce(p.admin_role,'customer'),u.last_sign_in_at
   from auth.users u left join public.profiles p on p.id=u.id
   left join lateral (
     select sum(o.total) spent,sum(o.points_awarded)::bigint points from public.orders o

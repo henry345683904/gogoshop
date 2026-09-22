@@ -15238,7 +15238,7 @@
         const vip = vipStatus(customer.total_spent);
         return `
           <tr class="customer-table-row" data-view-customer="${escapeHtml(customer.id)}">
-            <td><strong>${escapeHtml(customer.full_name || customer.email || "Customer")}</strong><div class="muted">${escapeHtml(customer.email || "")}</div>${customer.is_admin ? `<div class="status featured">Admin</div>` : ""}</td>
+            <td><strong>${escapeHtml(customer.full_name || customer.email || "Customer")}</strong><div class="muted">${escapeHtml(customer.email || "")}</div>${customer.is_admin || customer.admin_role === "full_admin" || customer.admin_role === "online_manager" ? `<div class="status featured">${state.lang === "zh" ? "管理员" : "Admin"}</div>` : ""}${String(customer.id) === String(state.session?.user?.id) ? `<div class="status current-account">${state.lang === "zh" ? "本账号" : "Current account"}</div>` : ""}</td>
             <td>${vipBadge(vip)}</td>
             <td><strong>${stats.orders.length}</strong><div class="muted">${stats.confirmedOrders.length} confirmed</div></td>
             <td>${formatPrice(customer.total_spent)}</td>
