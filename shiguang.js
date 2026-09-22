@@ -3,9 +3,11 @@
   const $ = s => document.querySelector(s), esc = s => String(s ?? '').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const names = {'blind-box-plush':['盲盒与毛绒玩具','Blind boxes & plush'],'keychains-gifts':['钥匙链与礼品饰品','Keychains & gifts'],'phone-cases':['手机壳','Phone cases'],'phone-accessories':['手机配件','Phone accessories'],'office-supplies':['办公用品','Office supplies'],'other':['其他好物','Other finds'],'uncategorized':['其他好物','Other finds']};
   let products = [], lang = 'zh', category = '', limit = 48, active = null;
+  names['screen-protectors']=['手机膜','Screen protectors'];
+  const categoryRank = key => ({'blind-box-plush':0,'keychains-gifts':1,'phone-cases':2,'phone-accessories':3,'screen-protectors':8,'office-supplies':9}[key] ?? 4);
   const t = (zh,en) => lang==='zh'?zh:en;
   const title = p => (lang==='zh'?p.title_zh:p.title_en) || p.title || p.title_en || p.title_zh;
-  const cat = p => {const key=String(p.category || 'other').split('||')[0];return /1688|imports/i.test(key)?'other':key;};
+  const cat = p => {const key=String(p.category || 'other').split('||')[0];if(key==='phone-accessories' && /screen\s*protector|tempered\s*glass|手机膜|贴膜|钢化膜|保护膜|水凝膜/i.test([p.title,p.title_zh,p.title_en].join(' ')))return 'screen-protectors';return /1688|imports/i.test(key)?'other':key;};
   const label = k => names[k]?.[lang==='zh'?0:1] || k;
   const price = p => Number(p.price)>0 ? new Intl.NumberFormat('en-NZ',{style:'currency',currency:'NZD'}).format(p.price) : t('到店咨询','Enquire in store');
   function images(p) { return [...new Set([p.image,...(Array.isArray(p.images)?p.images:[])])].filter(s=>typeof s==='string' && s.trim()).map(s=>{try{const u=new URL(s,location.protocol==='file:'?'https://gogoshop.nz/':location.href);return ['https:','http:'].includes(u.protocol)?u.href:'';}catch{return '';}}).filter(Boolean); }
@@ -19,12 +21,13 @@
     $('.store-label').textContent=t('线下好物 · 到店选购','In-store collection');
     $('#search').placeholder=t('搜索商品或货号','Search products or item codes');
     $('#search').setAttribute('aria-label',$('#search').placeholder);
-    [...$('#sort').options].forEach((o,i)=>o.textContent=[t('最近更新','Recently updated'),t('价格从低到高','Price: low to high'),t('价格从高到低','Price: high to low'),t('商品名称','Product name')][i]);
-    const cats=[...new Set(products.map(cat))];
+    [...$('#sort').options].forEach((o,i)=>o.textContent=[t('推荐顺序','Recommended'),t('价格从低到高','Price: low to high'),t('价格从高到低','Price: high to low'),t('商品名称','Product name')][i]);
+    const cats=[...new Set(products.map(cat))].sort((a,b)=>categoryRank(a)-categoryRank(b));
     $('#categories').innerHTML=['',...cats].map(k=>`<button type="button" data-category="${esc(k)}" aria-pressed="${k===category}">${esc(k?label(k):t('全部商品','All products'))}</button>`).join('');
     const q=$('#search').value.trim().toLocaleLowerCase();
     const rows=products.filter(p=>(!category||cat(p)===category)&&(!$('#available').checked||p.available)&&(!q||[p.title,p.title_zh,p.title_en,p.sku].join(' ').toLocaleLowerCase().includes(q)));
     const sort=$('#sort').value;
+    if(sort==='latest')rows.sort((a,b)=>categoryRank(cat(a))-categoryRank(cat(b)));
     if(sort==='low'||sort==='high')rows.sort((a,b)=>(Number(a.price)-Number(b.price))*(sort==='low'?1:-1));
     if(sort==='name')rows.sort((a,b)=>title(a).localeCompare(title(b),lang));
     $('#count').textContent=t(`${rows.length} 件商品`,`${rows.length} products`);
