@@ -4267,6 +4267,40 @@
       gap: 7px;
     }
 
+    .product-category-card .shopify-card-head .muted {
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .product-category-recommendations {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 7px;
+      margin: -2px 0 12px;
+    }
+
+    .product-category-recommendation-label {
+      color: #687474;
+      font-size: 12px;
+    }
+
+    .product-category-suggestion {
+      min-height: 29px;
+      border: 1px solid #c9dcd4;
+      border-radius: 5px;
+      padding: 4px 10px;
+      background: #f1f8f4;
+      color: #205b45;
+      font-size: 12px;
+      font-weight: 650;
+    }
+
+    .product-category-suggestion:hover {
+      border-color: #205b45;
+      background: #e5f2eb;
+    }
+
     .product-channel-selector {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -9088,6 +9122,22 @@
               </div>
             </section>
 
+            <section class="shopify-editor-card product-category-card">
+              <div class="shopify-card-head"><h3>商品分类</h3><span class="muted">输入名称即可推荐</span></div>
+              <label class="field">
+                <span>一级分类</span>
+                <select name="category">
+                  <option value="blind-box-plush">盲盒与毛绒玩具</option>
+                  <option value="keychains-gifts">钥匙链与礼品饰品</option>
+                  <option value="phone-cases">手机壳</option>
+                  <option value="phone-accessories">手机配件</option>
+                  <option value="office-supplies">办公用品</option>
+                </select>
+              </label>
+              <div class="product-category-recommendations" data-product-category-recommendations hidden></div>
+              <div id="productExtraCategories"></div>
+            </section>
+
             <section class="shopify-editor-card">
               <div class="shopify-card-head">
                 <h3>媒体</h3>
@@ -9228,18 +9278,7 @@
             </section>
 
             <section class="shopify-editor-card">
-              <div class="shopify-card-head"><h3>商品组织</h3></div>
-              <label class="field">
-                <span>商品类别</span>
-                <select name="category">
-                  <option value="blind-box-plush">盲盒与毛绒玩具</option>
-                  <option value="keychains-gifts">钥匙链与礼品饰品</option>
-                  <option value="phone-cases">手机壳</option>
-                  <option value="phone-accessories">手机配件</option>
-                  <option value="office-supplies">办公用品</option>
-                </select>
-              </label>
-              <div id="productExtraCategories"></div>
+              <div class="shopify-card-head"><h3>产品资料</h3></div>
               <label class="field">
                 <span>商品类型</span>
                 <input type="text" name="productType" autocomplete="off">
@@ -10461,6 +10500,21 @@
       const text = [product?.title, product?.titleEn, product?.titleZh, product?.descriptionEn, product?.descriptionZh].filter(Boolean).join(" ");
       const matches = ONLINE_ADMIN_CATEGORIES.filter(definition => definition.match.test(text));
       return (matches.sort((a, b) => b.priority - a.priority)[0] || ONLINE_ADMIN_CATEGORIES.at(-1)).key;
+    }
+
+    function renderProductCategoryRecommendations(form = $("[data-product-form]")) {
+      const host = $("[data-product-category-recommendations]", form);
+      if (!host || productFormSalesChannel(form) !== "online") { if (host) host.hidden = true; return; }
+      const text = [form?.elements.namedItem("title")?.value, form?.elements.namedItem("titleZh")?.value,
+        form?.elements.namedItem("description")?.value, form?.elements.namedItem("descriptionZh")?.value]
+        .filter(Boolean).join(" ").trim();
+      if (!text) { host.hidden = true; host.innerHTML = ""; return; }
+      const matches = ONLINE_ADMIN_CATEGORIES.filter(definition => definition.match.test(text))
+        .sort((a, b) => b.priority - a.priority).slice(0, 3);
+      host.innerHTML = matches.length
+        ? `<span class="product-category-recommendation-label">${state.lang === "zh" ? "推荐分类" : "Suggested"}</span>${matches.map(item => `<button type="button" class="product-category-suggestion" data-product-category-suggestion="${escapeHtml(item.key)}">${escapeHtml(state.lang === "zh" ? item.zh : item.en)}</button>`).join("")}`
+        : `<span class="product-category-recommendation-label">${state.lang === "zh" ? "暂无匹配分类" : "No matching category"}</span>`;
+      host.hidden = false;
     }
 
     function adminProductCategoryKey(product, channel = activeAdminProductChannel()) {
@@ -11716,6 +11770,7 @@
       };
       if (channel === 'online' && categorySelect) categorySelect.onchange = renderSecondary;
       renderSecondary();
+      renderProductCategoryRecommendations(form);
     }
 
     function renderHolidayShop() {
@@ -18683,6 +18738,9 @@
       }
       if (event.target instanceof Element && event.target.closest("[data-product-form]")) {
         const productForm = event.target.closest("[data-product-form]");
+        if (event.target.matches('[name="title"], [name="titleZh"], [name="description"], [name="descriptionZh"]')) {
+          renderProductCategoryRecommendations(productForm);
+        }
         if (event.target.matches("[data-product-barcode-input]")) {
           event.target.setCustomValidity("");
           syncProductSkuFromBarcode(productForm);
@@ -18757,6 +18815,15 @@
         updateDesignFromForm();
       }
       if (event.target instanceof Element && event.target.closest("[data-product-form]")) {
+        if (event.target.matches("[data-product-category-suggestion]")) {
+          const form = event.target.closest("[data-product-form]");
+          const category = event.target.dataset.productCategorySuggestion;
+          const select = form?.elements.namedItem("category");
+          if (select && category) { select.value = category; select.dispatchEvent(new Event("change", { bubbles: true })); }
+          renderProductCategoryRecommendations(form);
+          updateProductEditorPreview();
+          return;
+        }
         if (event.target.matches('[name="salesChannel"]')) {
           setProductFormSalesChannel(event.target.value, event.target.closest("[data-product-form]"));
           updateProductEditorPreview();
