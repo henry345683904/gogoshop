@@ -4490,13 +4490,23 @@
     .shopify-rich-editor textarea {
       display: block;
       width: 100%;
-      min-height: 148px;
+      min-height: 42px;
+      height: 42px;
       resize: vertical;
       border: 0;
       border-radius: 0;
       padding: 12px;
       outline: 0;
       line-height: 1.55;
+      overflow: hidden;
+      transition: min-height 160ms ease, height 160ms ease;
+    }
+
+    .shopify-rich-editor textarea.product-description-input:focus,
+    .shopify-rich-editor textarea.product-description-input.has-content {
+      min-height: 148px;
+      height: 148px;
+      overflow: auto;
     }
 
     .shopify-media-layout {
@@ -9101,7 +9111,7 @@
                     <button type="button" data-description-format="link" aria-label="链接" title="链接"><i data-lucide="link"></i></button>
                     <button type="button" data-description-format="list" aria-label="项目列表" title="项目列表"><i data-lucide="list"></i></button>
                   </div>
-                  <textarea name="descriptionZh" rows="6" aria-label="中文描述"></textarea>
+                  <textarea class="product-description-input" name="descriptionZh" rows="1" aria-label="中文描述"></textarea>
                 </div>
               </div>
               <div class="product-editor-language-panel" data-product-editor-language-panel="en" role="tabpanel" hidden>
@@ -9117,7 +9127,7 @@
                     <button type="button" data-description-format="link" aria-label="Link" title="Link"><i data-lucide="link"></i></button>
                     <button type="button" data-description-format="list" aria-label="List" title="List"><i data-lucide="list"></i></button>
                   </div>
-                  <textarea name="description" rows="6" aria-label="English description"></textarea>
+                  <textarea class="product-description-input" name="description" rows="1" aria-label="English description"></textarea>
                 </div>
               </div>
             </section>
@@ -10527,6 +10537,12 @@
       host.hidden = false;
     }
 
+    function syncProductDescriptionField(field) {
+      if (field?.matches?.(".product-description-input")) {
+        field.classList.toggle("has-content", Boolean(String(field.value || "").trim()));
+      }
+    }
+
     function adminProductCategoryKey(product, channel = activeAdminProductChannel()) {
       return productCategoryKey(product);
     }
@@ -11784,6 +11800,8 @@
       };
       renderSecondary();
       renderProductCategoryRecommendations(form);
+      syncProductDescriptionField(form?.elements.namedItem("description"));
+      syncProductDescriptionField(form?.elements.namedItem("descriptionZh"));
     }
 
     function renderHolidayShop() {
@@ -18751,6 +18769,9 @@
       }
       if (event.target instanceof Element && event.target.closest("[data-product-form]")) {
         const productForm = event.target.closest("[data-product-form]");
+        if (event.target.matches(".product-description-input")) {
+          syncProductDescriptionField(event.target);
+        }
         if (event.target.matches('[name="title"], [name="titleZh"], [name="description"], [name="descriptionZh"]')) {
           renderProductCategoryRecommendations(productForm);
         }
