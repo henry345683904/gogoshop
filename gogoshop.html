@@ -11870,17 +11870,17 @@
       let name = original;
       if (lang === "zh") {
         name = name
-          .replace(/^\s*(?:新款|爆款|网红|创意|可爱|儿童|男童|女童|宝宝|家用|多功能|便携|迷你|超大|加厚|升级版|加长版|套装|礼盒装)\s*/i, "")
-          .replace(/^\s*\d+(?:\.\d+)?\s*(?:寸|英寸|厘米|公分|cm|mm|ml|l|kg|g)\s*/i, "")
-          .replace(/^\s*\d+(?:\.\d+)?\s*[x×*]\s*\d+(?:\.\d+)?(?:\s*[x×*]\s*\d+(?:\.\d+)?)?\s*(?:cm|mm|厘米|公分)?\s*/i, "")
+          .replace(/^\s*(?:(?:新款|爆款|网红|创意|可爱|儿童|男童|女童|宝宝|家用|多功能|便携|迷你|超大|加厚|升级版|加长版|套装|礼盒装)\s*)+/i, "")
+          .replace(/^\s*(?:(?:\d+(?:\.\d+)?\s*(?:寸|英寸|厘米|公分|cm|mm|ml|l|kg|g))|(?:\d+(?:\.\d+)?\s*[x×*]\s*\d+(?:\.\d+)?(?:\s*[x×*]\s*\d+(?:\.\d+)?)?\s*(?:cm|mm|厘米|公分)?))\s*/i, "")
+          .replace(/^\s*(?:(?:新款|爆款|网红|创意|可爱|儿童|男童|女童|宝宝|家用|多功能|便携|迷你|超大|加厚|升级版|加长版|套装|礼盒装)\s*)+/i, "")
           .replace(/[（(][^（）()]*?(?:\d+(?:\.\d+)?\s*(?:寸|英寸|cm|mm|厘米|公分|ml|l|kg|g)|混色|颜色|随机|款式|尺寸)[^（）()]*[）)]/gi, "")
           .replace(/\s*(?:\d+\s*个装|\d+\s*件装|\d+\s*只装|\d+\s*pcs?|\d+\s*片装)\s*$/i, "")
           .trim();
       } else {
         name = name
-          .replace(/^\s*(?:new|hot|popular|creative|cute|kids?|children'?s?|home|multi[- ]?function|portable|mini|extra[- ]?large|thick|upgraded?|extended|gift set)\s+/i, "")
-          .replace(/^\s*\d+(?:\.\d+)?\s*(?:inch(?:es)?|in|cm|mm|ml|l|kg|g)\s+/i, "")
-          .replace(/^\s*\d+(?:\.\d+)?\s*[x×*]\s*\d+(?:\.\d+)?(?:\s*[x×*]\s*\d+(?:\.\d+)?)?\s*(?:cm|mm)?\s+/i, "")
+          .replace(/^\s*(?:(?:new|hot|popular|creative|cute|kids?|children'?s?|home|multi[- ]?function|portable|mini|extra[- ]?large|thick|upgraded?|extended|gift set)\s*)+/i, "")
+          .replace(/^\s*(?:(?:\d+(?:\.\d+)?\s*(?:inch(?:es)?|in|cm|mm|ml|l|kg|g))|(?:\d+(?:\.\d+)?\s*[x×*]\s*\d+(?:\.\d+)?(?:\s*[x×*]\s*\d+(?:\.\d+)?)?\s*(?:cm|mm)?))\s*/i, "")
+          .replace(/^\s*(?:(?:new|hot|popular|creative|cute|kids?|children'?s?|home|multi[- ]?function|portable|mini|extra[- ]?large|thick|upgraded?|extended|gift set)\s*)+/i, "")
           .replace(/[（(][^（）()]*?(?:\d+(?:\.\d+)?\s*(?:inch(?:es)?|in|cm|mm|ml|l|kg|g)|mixed|assorted|random|colour|color|size)[^（）()]*[）)]/gi, "")
           .replace(/\s+(?:\d+\s*(?:pcs?|pieces?|pack|packs|sets?))\s*$/i, "")
           .trim();
@@ -12346,7 +12346,7 @@
           </div>
           <div class="product-detail-copy">
             <p class="product-detail-category">${escapeHtml(productCategoryKeys(product).map(categoryName).join(" · "))}</p>
-            <h1>${escapeHtml(productName(product))}</h1>
+            <h1>${escapeHtml(productCardName(product))}</h1>
             <p class="product-detail-price">${formatPrice(product.price)}</p>
             ${canAccessAdmin() && ["full-admin", "online-manager"].includes(state.catalogLoadedMode) ? `
               <button class="button ghost" type="button" data-edit-product="${escapeHtml(product.id)}">
