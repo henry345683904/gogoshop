@@ -1081,10 +1081,15 @@
     }
 
     .product-title {
+      display: -webkit-box;
+      min-height: 2.5em;
+      overflow: hidden;
       overflow-wrap: anywhere;
       font-size: 15px;
       font-weight: 500;
       line-height: 1.25;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
     }
 
     .price {
@@ -11836,21 +11841,39 @@
       return product.titleEn || localization?.en || product.title;
     }
 
+    function productCardName(product) {
+      const name = String(productName(product) || "").trim();
+      const limit = state.lang === "zh" ? 18 : 42;
+      if (name.length <= limit) return name;
+      const punctuation = state.lang === "zh" ? /[，。；、：,;:\-\s]/g : /[,;:\-()\s]/g;
+      let cut = -1;
+      let match;
+      while ((match = punctuation.exec(name)) && match.index < limit) cut = match.index;
+      if (cut < Math.floor(limit * 0.55)) cut = limit;
+      return `${name.slice(0, cut).trim()}…`;
+    }
+
     function productDescription(product) {
       const localization = window.GOGOSHOP_PRODUCT_LOCALIZATIONS?.[product.id];
       const importedFrom1688 = String(product.id || "").startsWith("1688-");
+      const fullName = String(productName(product) || "").trim();
+      const compactName = productCardName(product);
+      const nameNote = fullName && compactName !== fullName
+        ? (state.lang === "zh" ? `完整名称：${fullName}` : `Full product name: ${fullName}`)
+        : "";
       if (state.lang === "zh") {
-        if (importedFrom1688) return "";
-        return cleanStorefrontDescription(product.descriptionZh, product)
+        if (importedFrom1688) return nameNote;
+        const description = cleanStorefrontDescription(product.descriptionZh, product)
           || cleanStorefrontDescription(product.description, product)
           || t("productFallback");
+        return [nameNote, description].filter(Boolean).join("\n");
       }
-      if (importedFrom1688) return cleanStorefrontDescription(product.descriptionEn, product)
-        || cleanStorefrontDescription(localization?.description, product);
-      return cleanStorefrontDescription(product.descriptionEn, product)
+      if (importedFrom1688) return [nameNote, cleanStorefrontDescription(product.descriptionEn, product)
+        || cleanStorefrontDescription(localization?.description, product)].filter(Boolean).join("\n");
+      return [nameNote, cleanStorefrontDescription(product.descriptionEn, product)
         || cleanStorefrontDescription(localization?.description, product)
         || cleanStorefrontDescription(product.description, product)
-        || t("productFallback");
+        || t("productFallback")].filter(Boolean).join("\n");
     }
 
     function productForOrderItem(item) {
@@ -12593,7 +12616,7 @@
           </div>
           <div class="product-info">
             <a class="product-summary-link" href="#product=${encodeURIComponent(product.id)}" data-product-view="${escapeHtml(product.id)}">
-              <span class="product-title">${escapeHtml(productName(product))}</span>
+              <span class="product-title">${escapeHtml(productCardName(product))}</span>
               <span class="product-price-row">
                 <span class="price">${formatPrice(product.price)}</span>
                 <span class="product-code-chip">${state.lang === "zh" ? "货号" : "Code"} ${escapeHtml(productItemCode(product))}</span>
