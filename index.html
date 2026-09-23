@@ -4190,6 +4190,19 @@
       align-content: start;
     }
 
+    @media (min-width: 981px) {
+      .product-editor-main {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .product-editor-main > .shopify-editor-card:nth-child(1),
+      .product-editor-main > .product-category-card,
+      .product-editor-main > .shopify-editor-card:nth-child(3) {
+        grid-column: 1 / -1;
+      }
+    }
+
     .shopify-editor-card {
       border: 1px solid #dcdede;
       border-radius: 8px;
