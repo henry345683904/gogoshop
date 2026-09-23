@@ -6687,6 +6687,9 @@
     .daily-sales-entry .daily-reconcile-row { background:var(--daily-entry-background); }
     .daily-reconcile-panel > summary { cursor:pointer; padding:8px; font-size:13px; font-weight:600; }
     .product-editor-advanced-pricing > summary { cursor:pointer; padding:8px 0; font-size:13px; font-weight:700; }
+    .product-editor-extra-info > summary { cursor:pointer; display:flex; align-items:center; justify-content:space-between; gap:10px; font-size:14px; font-weight:700; list-style-position:inside; }
+    .product-editor-extra-info > summary small { color:#707878; font-size:11px; font-weight:500; }
+    .product-editor-extra-info[open] > summary { margin-bottom:12px; }
     .daily-reconcile-panel > summary:focus-visible { outline:2px solid var(--teal); outline-offset:-2px; }
     .daily-reconcile-row { display:flex; flex-wrap:wrap; gap:10px 16px; padding:0 8px 14px; border-bottom:1px solid #ddd; }
     .daily-reconcile-row label { display:grid; gap:4px; font-size:12px; flex:1 1 130px; max-width:200px; }
@@ -9318,23 +9321,25 @@
             </section>
 
             <section class="shopify-editor-card">
-              <div class="shopify-card-head"><h3>产品资料</h3></div>
-              <label class="field">
-                <span>商品类型</span>
-                <input type="text" name="productType" autocomplete="off">
-              </label>
-              <label class="field">
-                <span>厂商</span>
-                <input type="text" name="vendor" autocomplete="off">
-              </label>
-              <label class="field">
-                <span>商品来源链接</span>
-                <input type="url" name="sourceUrl" autocomplete="off">
-              </label>
-              <label class="field">
-                <span>标签</span>
-                <input type="text" name="tags" autocomplete="off">
-              </label>
+              <details class="product-editor-extra-info">
+                <summary><span>更多产品资料</span><small>类型 · 厂商 · 来源 · 标签</small></summary>
+                <label class="field">
+                  <span>商品类型</span>
+                  <input type="text" name="productType" autocomplete="off">
+                </label>
+                <label class="field">
+                  <span>厂商</span>
+                  <input type="text" name="vendor" autocomplete="off">
+                </label>
+                <label class="field">
+                  <span>商品来源链接</span>
+                  <input type="url" name="sourceUrl" autocomplete="off">
+                </label>
+                <label class="field">
+                  <span>标签</span>
+                  <input type="text" name="tags" autocomplete="off">
+                </label>
+              </details>
             </section>
 
             <section class="shopify-editor-card" data-online-manager-hidden>
