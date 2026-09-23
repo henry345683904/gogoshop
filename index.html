@@ -8335,6 +8335,85 @@
         grid-template-columns: 32px minmax(28px, 1fr) 32px;
       }
     }
+
+    @media (max-width: 420px) {
+      .mobile-header {
+        grid-template-columns: 34px 34px minmax(0, 1fr) auto;
+        gap: 7px;
+        padding-right: 9px;
+        padding-left: 9px;
+      }
+
+      .mobile-header .brand {
+        position: static;
+        min-width: 0;
+        max-width: 100%;
+        justify-self: center;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        transform: none;
+      }
+
+      .mobile-header .language-toggle,
+      .mobile-header .header-actions {
+        min-width: 0;
+      }
+
+      #catalog .catalog-heading-actions {
+        gap: 4px 8px;
+      }
+
+      #catalog .catalog-heading-actions > button {
+        min-width: 0;
+        padding-right: 7px;
+        padding-left: 7px;
+        font-size: 13px;
+      }
+
+      .product-price-row {
+        align-items: flex-start;
+        flex-wrap: wrap;
+        gap: 4px 6px;
+      }
+
+      .product-code-chip {
+        max-width: 100%;
+        overflow: hidden;
+        padding-right: 5px;
+        padding-left: 5px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 10px;
+      }
+
+      .payment-modal {
+        padding: 8px;
+      }
+
+      .payment-dialog {
+        max-height: calc(100dvh - 16px);
+      }
+
+      .payment-body {
+        gap: 14px;
+        padding: 15px 14px 16px;
+      }
+
+      .fulfillment-options,
+      .delivery-fields {
+        grid-template-columns: 1fr;
+      }
+
+      .payment-methods {
+        grid-template-columns: 1fr;
+      }
+
+      .payment-method:nth-child(2) {
+        border-left: 0;
+        padding-left: 0;
+      }
+    }
   </style>
 </head>
 <body>
