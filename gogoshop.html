@@ -4296,6 +4296,10 @@
       min-width: 0;
     }
 
+    .product-editor-modal[data-online-manager="true"] [data-online-manager-hidden] {
+      display: none;
+    }
+
     .product-category-recommendations {
       display: flex;
       flex-wrap: wrap;
@@ -9271,7 +9275,7 @@
           </div>
 
           <aside class="product-editor-sidebar">
-            <section class="shopify-editor-card">
+            <section class="shopify-editor-card" data-online-manager-hidden>
               <div class="shopify-card-head"><h3>销售渠道</h3></div>
               <div class="product-channel-selector" data-product-channel-selector role="radiogroup" aria-label="商品销售渠道">
                 <label class="product-channel-option" data-product-channel-option="offline">
@@ -9333,7 +9337,7 @@
               </label>
             </section>
 
-            <section class="shopify-editor-card">
+            <section class="shopify-editor-card" data-online-manager-hidden>
               <div class="shopify-card-head"><h3>在线商店</h3></div>
               <label class="field">
                 <span>模板</span>
@@ -17709,6 +17713,8 @@
     }
 
     function openProductEditor() {
+      const modal = $("#productEditorModal");
+      modal?.setAttribute("data-online-manager", isOnlineManager() ? "true" : "false");
       $("#productEditorModal").hidden = false;
       document.body.classList.add("editor-open");
       updateProductEditorPreview();
