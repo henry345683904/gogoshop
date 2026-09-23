@@ -10511,6 +10511,16 @@
       if (!text) { host.hidden = true; host.innerHTML = ""; return; }
       const matches = ONLINE_ADMIN_CATEGORIES.filter(definition => definition.match.test(text))
         .sort((a, b) => b.priority - a.priority).slice(0, 3);
+      const categorySelect = form?.elements.namedItem("category");
+      const isNewProduct = !form?.elements.namedItem("id")?.value;
+      if (isNewProduct && categorySelect && matches[0]
+        && (!categorySelect.value || form.dataset.categoryAutoSuggested === "true")) {
+        categorySelect.value = matches[0].key;
+        form.dataset.categoryAutoApplying = "true";
+        categorySelect.dispatchEvent(new Event("change", { bubbles: true }));
+        delete form.dataset.categoryAutoApplying;
+        form.dataset.categoryAutoSuggested = "true";
+      }
       host.innerHTML = matches.length
         ? `<span class="product-category-recommendation-label">${state.lang === "zh" ? "推荐分类" : "Suggested"}</span>${matches.map(item => `<button type="button" class="product-category-suggestion" data-product-category-suggestion="${escapeHtml(item.key)}">${escapeHtml(state.lang === "zh" ? item.zh : item.en)}</button>`).join("")}`
         : `<span class="product-category-recommendation-label">${state.lang === "zh" ? "暂无匹配分类" : "No matching category"}</span>`;
@@ -11768,7 +11778,10 @@
         const choices = window.GOGO_CATEGORY_EDITOR.children(categorySelect?.value || '');
         host.innerHTML = `<label class="field"><span>${state.lang === 'zh' ? '二级分类' : 'Subcategory'}</span><select name="subcategory"><option value="">${state.lang === 'zh' ? '未设置' : 'None'}</option>${choices.map(key=>`<option value="${escapeHtml(key)}" ${selected.includes(key)?'selected':''}>${escapeHtml(categoryName(key))}</option>`).join('')}</select></label>`;
       };
-      if (channel === 'online' && categorySelect) categorySelect.onchange = renderSecondary;
+      if (channel === 'online' && categorySelect) categorySelect.onchange = () => {
+        renderSecondary();
+        if (!form.dataset.categoryAutoApplying) form.dataset.categoryAutoSuggested = "false";
+      };
       renderSecondary();
       renderProductCategoryRecommendations(form);
     }
@@ -18819,7 +18832,11 @@
           const form = event.target.closest("[data-product-form]");
           const category = event.target.dataset.productCategorySuggestion;
           const select = form?.elements.namedItem("category");
-          if (select && category) { select.value = category; select.dispatchEvent(new Event("change", { bubbles: true })); }
+          if (select && category) {
+            select.value = category;
+            form.dataset.categoryAutoSuggested = "false";
+            select.dispatchEvent(new Event("change", { bubbles: true }));
+          }
           renderProductCategoryRecommendations(form);
           updateProductEditorPreview();
           return;
