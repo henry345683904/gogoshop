@@ -9162,7 +9162,7 @@
             </section>
 
             <section class="shopify-editor-card product-category-card">
-              <div class="shopify-card-head"><h3>商品分类</h3><span class="muted">输入名称即可推荐</span></div>
+              <div class="shopify-card-head"><h3>商品分类</h3></div>
               <div class="product-category-recommendations" data-product-category-recommendations hidden></div>
               <div class="product-category-fields">
                 <label class="field">
@@ -10562,10 +10562,8 @@
         delete form.dataset.categoryAutoApplying;
         form.dataset.categoryAutoSuggested = "true";
       }
-      host.innerHTML = matches.length
-        ? `<span class="product-category-recommendation-label">${state.lang === "zh" ? "推荐分类" : "Suggested"}</span>${matches.map(item => `<button type="button" class="product-category-suggestion" data-product-category-suggestion="${escapeHtml(item.key)}">${escapeHtml(state.lang === "zh" ? item.zh : item.en)}</button>`).join("")}`
-        : `<span class="product-category-recommendation-label">${state.lang === "zh" ? "暂无匹配分类" : "No matching category"}</span>`;
-      host.hidden = false;
+      host.innerHTML = matches.map(item => `<button type="button" class="product-category-suggestion" data-product-category-suggestion="${escapeHtml(item.key)}">${escapeHtml(state.lang === "zh" ? item.zh : item.en)}</button>`).join("");
+      host.hidden = !matches.length;
     }
 
     function syncProductDescriptionField(field) {
