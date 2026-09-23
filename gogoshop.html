@@ -4272,6 +4272,17 @@
       white-space: nowrap;
     }
 
+    .product-category-fields {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 12px;
+      align-items: end;
+    }
+
+    .product-category-fields > .field {
+      min-width: 0;
+    }
+
     .product-category-recommendations {
       display: flex;
       flex-wrap: wrap;
@@ -8144,6 +8155,11 @@
         flex-direction: column;
       }
 
+      .product-category-fields {
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+
       .shopify-card-head-actions {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -9134,18 +9150,20 @@
 
             <section class="shopify-editor-card product-category-card">
               <div class="shopify-card-head"><h3>商品分类</h3><span class="muted">输入名称即可推荐</span></div>
-              <label class="field">
-                <span>一级分类</span>
-                <select name="category">
-                  <option value="blind-box-plush">盲盒与毛绒玩具</option>
-                  <option value="keychains-gifts">钥匙链与礼品饰品</option>
-                  <option value="phone-cases">手机壳</option>
-                  <option value="phone-accessories">手机配件</option>
-                  <option value="office-supplies">办公用品</option>
-                </select>
-              </label>
               <div class="product-category-recommendations" data-product-category-recommendations hidden></div>
-              <div id="productExtraCategories"></div>
+              <div class="product-category-fields">
+                <label class="field">
+                  <span>一级分类</span>
+                  <select name="category">
+                    <option value="blind-box-plush">盲盒与毛绒玩具</option>
+                    <option value="keychains-gifts">钥匙链与礼品饰品</option>
+                    <option value="phone-cases">手机壳</option>
+                    <option value="phone-accessories">手机配件</option>
+                    <option value="office-supplies">办公用品</option>
+                  </select>
+                </label>
+                <div id="productExtraCategories"></div>
+              </div>
             </section>
 
             <section class="shopify-editor-card">
