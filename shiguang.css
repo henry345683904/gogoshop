@@ -18,3 +18,4 @@
 @media(max-width:760px){.intro-copy{max-width:calc(100% - 92px)}.orbit-art{right:0;top:4px;width:145px;height:112px;transform:scale(.5);transform-origin:top right;opacity:.55}}
 .intro-copy{max-width:none}
 @media(max-width:760px){.intro-copy{max-width:100%}.orbit-art{display:none}body{width:100%;max-width:100%;overflow-x:hidden}.intro,.catalog,header{width:100%;max-width:100%}}
+@media(max-width:760px){header{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;width:100%;padding-left:16px;padding-right:16px}.brand{min-width:0;overflow:hidden;white-space:nowrap}.store-label{display:none}#language{justify-self:end}.intro{display:block;width:100%;overflow:hidden}.catalog{overflow:hidden}}
