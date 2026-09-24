@@ -5,7 +5,8 @@ as $$
 select coalesce(jsonb_agg(jsonb_build_object(
   'id',id,'title',title,'title_zh',title_zh,'title_en',title_en,
   'category',category,'price',price,'sku',sku,'image',image,'images',images,
-  'available',stock>0
+  'available',stock>0,
+  'is_new_arrival',coalesce(tags, '') ~* '(^|[,;|[:space:]])(new|new-arrival|新品|新到)([,;|[:space:]]|$)'
 ) order by updated_at desc,id),'[]'::jsonb)
 from public.products
 where sales_channel='offline' and deleted_at is null

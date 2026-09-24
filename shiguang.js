@@ -9,6 +9,7 @@
   const categoryRank = key => ({'blind-box':0,'soft-toys':1,'squishy':1.5,'keychains-gifts':2,'phone-cases':3,'other-toys':4,'phone-accessories':5,'office-supplies':9}[key] ?? 6);
   const t = (zh,en) => lang==='zh'?zh:en;
   const title = p => (lang==='zh'?p.title_zh:p.title_en) || p.title || p.title_en || p.title_zh;
+  const isNewArrival = p => p.is_new_arrival === true || /(^|[,;|\s])(new|new-arrival|新品|新到)([,;|\s]|$)/i.test(String(p.tags || ''));
   const cat = p => {
     const key=String(p.category || 'other').split('||')[0];
     const text=[p.title,p.title_zh,p.title_en].filter(Boolean).join(' ');
@@ -47,9 +48,10 @@
     $('#search').setAttribute('aria-label',$('#search').placeholder);
     [...$('#sort').options].forEach((o,i)=>o.textContent=[t('推荐顺序','Recommended'),t('价格从低到高','Price: low to high'),t('价格从高到低','Price: high to low'),t('商品名称','Product name')][i]);
     const cats=[...new Set(products.map(cat))].sort((a,b)=>categoryRank(a)-categoryRank(b));
-    $('#categories').innerHTML=['',...cats].map(k=>`<button type="button" data-category="${esc(k)}" aria-pressed="${k===category}">${esc(k?label(k):t('全部商品','All products'))}</button>`).join('');
+    const arrivalButton = products.some(isNewArrival) ? `<button type="button" data-category="__new_arrivals" aria-pressed="${category==='__new_arrivals'}">${esc(t('新到商品','New arrivals'))}</button>` : '';
+    $('#categories').innerHTML=arrivalButton+['',...cats].map(k=>`<button type="button" data-category="${esc(k)}" aria-pressed="${k===category}">${esc(k?label(k):t('全部商品','All products'))}</button>`).join('');
     const q=$('#search').value.trim().toLocaleLowerCase();
-    const rows=products.filter(p=>(!category||cat(p)===category)&&(!$('#available').checked||p.available)&&(!q||[p.title,p.title_zh,p.title_en,p.sku].join(' ').toLocaleLowerCase().includes(q)));
+    const rows=products.filter(p=>(!category||(category==='__new_arrivals'?isNewArrival(p):cat(p)===category))&&(!$('#available').checked||p.available)&&(!q||[p.title,p.title_zh,p.title_en,p.sku].join(' ').toLocaleLowerCase().includes(q)));
     const sort=$('#sort').value;
     if(sort==='latest')rows.sort((a,b)=>categoryRank(cat(a))-categoryRank(cat(b)));
     if(sort==='low'||sort==='high')rows.sort((a,b)=>(Number(a.price)-Number(b.price))*(sort==='low'?1:-1));

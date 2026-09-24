@@ -9428,6 +9428,10 @@
                 <span>在首页置顶</span>
                 <input type="checkbox" name="featured">
               </label>
+              <label class="shopify-check-row" data-offline-arrival-option>
+                <span>在线下宣传页显示为新到商品</span>
+                <input type="checkbox" name="offlineNewArrival">
+              </label>
             </section>
 
             <section class="shopify-editor-card">
@@ -17311,6 +17315,7 @@
       });
       const onlineStore = form.elements.namedItem("onlineStore");
       const featured = form.elements.namedItem("featured");
+      const offlineNewArrival = form.elements.namedItem("offlineNewArrival");
       const offline = channel === "offline";
       if (onlineStore) {
         onlineStore.disabled = offline;
@@ -17319,6 +17324,10 @@
       if (featured) {
         featured.disabled = offline;
         if (offline) featured.checked = false;
+      }
+      if (offlineNewArrival) {
+        offlineNewArrival.disabled = !offline;
+        if (!offline) offlineNewArrival.checked = false;
       }
       const help = $("[data-product-channel-help]", form);
       if (help) {
@@ -18127,6 +18136,7 @@
       fields.namedItem("status").value = product.published ? "active" : "draft";
       fields.namedItem("onlineStore").checked = salesChannel === "online" && (product.onlineStore ?? product.published);
       fields.namedItem("featured").checked = Boolean(product.featured);
+      fields.namedItem("offlineNewArrival").checked = /(^|[,;|\s])(new|new-arrival|新品|新到)([,;|\s]|$)/i.test(String(product.tags || ""));
       setProductFormSalesChannel(salesChannel, form);
       renderExtraProductCategories(product);
       fields.namedItem("compareAtPrice").value = product.compareAtPrice || "";
@@ -18421,6 +18431,7 @@
         return;
       }
       const featured = selectedChannel === "online" && form.featured.checked;
+      const offlineNewArrival = selectedChannel === "offline" && form.offlineNewArrival.checked;
       const image = data.image.trim();
       const images = [...new Set([image, ...String(data.images || "").split(/\r?\n/).map((value) => value.trim()).filter(Boolean)])];
       const sourcePriceCny = Number(data.sourcePriceCny || 0);
@@ -18486,7 +18497,7 @@
         barcode,
         productType: data.productType.trim(),
         vendor: data.vendor.trim(),
-        tags: data.tags.trim(),
+        tags: [...new Set([data.tags.trim(), offlineNewArrival ? 'new-arrival' : ''].filter(Boolean))].join(', '),
         template: data.template,
         image,
         images,
