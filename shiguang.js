@@ -3,10 +3,23 @@
   const $ = s => document.querySelector(s), esc = s => String(s ?? '').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const names = {'blind-box-plush':['盲盒与毛绒玩具','Blind boxes & plush'],'keychains-gifts':['钥匙链与礼品饰品','Keychains & gifts'],'phone-cases':['手机壳','Phone cases'],'phone-accessories':['手机配件','Phone accessories'],'office-supplies':['办公用品','Office supplies'],'other':['其他好物','Other finds'],'uncategorized':['其他好物','Other finds']};
   let products = [], lang = 'zh', category = '', limit = 48, active = null;
-  const categoryRank = key => ({'blind-box-plush':0,'keychains-gifts':1,'phone-cases':2,'phone-accessories':3,'office-supplies':9}[key] ?? 4);
+  delete names['blind-box-plush'];
+  Object.assign(names, {'blind-box':['盲盒','Blind boxes'],'soft-toys':['毛绒玩具','Soft toys'],'other-toys':['其他玩具与周边','Other toys & accessories']});
+  const categoryRank = key => ({'blind-box':0,'soft-toys':1,'keychains-gifts':2,'phone-cases':3,'other-toys':4,'phone-accessories':5,'office-supplies':9}[key] ?? 6);
   const t = (zh,en) => lang==='zh'?zh:en;
   const title = p => (lang==='zh'?p.title_zh:p.title_en) || p.title || p.title_en || p.title_zh;
-  const cat = p => {const key=String(p.category || 'other').split('||')[0];return /1688|imports/i.test(key) || ['other','uncategorized','screen-protectors'].includes(key) ? 'phone-accessories' : key;};
+  const cat = p => {
+    const key=String(p.category || 'other').split('||')[0];
+    const text=[p.title,p.title_zh,p.title_en].filter(Boolean).join(' ');
+    // Blind-box packaging takes precedence over plush material.
+    if (/盲盒|blind[\s-]*box(?:es)?\b/i.test(text)) return 'blind-box';
+    if (/毛绒|毛絨|soft[\s-]*toys?\b|plush|stuffed[\s-]*(?:toys?|animals?)/i.test(text)) return 'soft-toys';
+    if (key==='blind-box-plush') {
+      if (/钥匙|鑰匙|key[\s-]*chains?|挂件|掛件/i.test(text)) return 'keychains-gifts';
+      return 'other-toys';
+    }
+    return /1688|imports/i.test(key) || ['other','uncategorized','screen-protectors'].includes(key) ? 'phone-accessories' : key;
+  };
   const label = k => names[k]?.[lang==='zh'?0:1] || k;
   const price = p => Number(p.price)>0 ? new Intl.NumberFormat('en-NZ',{style:'currency',currency:'NZD'}).format(p.price) : t('到店咨询','Enquire in store');
   function images(p) { return [...new Set([p.image,...(Array.isArray(p.images)?p.images:[])])].filter(s=>typeof s==='string' && s.trim()).map(s=>{try{const u=new URL(s,location.protocol==='file:'?'https://gogoshop.nz/':location.href);return ['https:','http:'].includes(u.protocol)?u.href:'';}catch{return '';}}).filter(Boolean); }
