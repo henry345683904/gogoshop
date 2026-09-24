@@ -23,7 +23,17 @@
     return /1688|imports/i.test(key) || ['other','uncategorized','screen-protectors'].includes(key) ? 'phone-accessories' : key;
   };
   const label = k => names[k]?.[lang==='zh'?0:1] || k;
-  const price = p => Number(p.price)>0 ? new Intl.NumberFormat('en-NZ',{style:'currency',currency:'NZD'}).format(p.price) : t('到店咨询','Enquire in store');
+  const money = value => new Intl.NumberFormat('en-NZ',{style:'currency',currency:'NZD'}).format(value);
+  const sale = p => {
+    const original = Number(p.price);
+    return cat(p) === 'blind-box' && original > 25 ? {original, discounted: Math.round(original * .85 * 100) / 100} : null;
+  };
+  const price = p => Number(p.price)>0 ? money(Number(p.price)) : t('到店咨询','Enquire in store');
+  const priceMarkup = p => {
+    const discount = sale(p);
+    if (!discount) return `<span class="price">${esc(price(p))}</span>`;
+    return `<span class="sale-price"><span class="original-price">${esc(money(discount.original))}</span><strong>${esc(money(discount.discounted))}</strong><small>${esc(t('盲盒优惠 · 85折','Blind box offer · 15% off'))}</small></span>`;
+  };
   function images(p) { return [...new Set([p.image,...(Array.isArray(p.images)?p.images:[])])].filter(s=>typeof s==='string' && s.trim()).map(s=>{try{const u=new URL(s,location.protocol==='file:'?'https://gogoshop.nz/':location.href);return ['https:','http:'].includes(u.protocol)?u.href:'';}catch{return '';}}).filter(Boolean); }
   const photo = (src,lazy=true) => `<div class="photo">${src?`<img src="${esc(src)}" alt="" ${lazy?'loading="lazy"':''} decoding="async" referrerpolicy="no-referrer">`:`<span class="missing">${t('图片待补充','Image coming soon')}</span>`}</div>`;
   const stock = p => `<span class="stock ${p.available?'':'out'}">${p.available?t('店内有货','In stock'):t('暂时缺货','Out of stock')}</span>`;
@@ -46,12 +56,12 @@
     if(sort==='name')rows.sort((a,b)=>title(a).localeCompare(title(b),lang));
     $('#count').textContent=t(`${rows.length} 件商品`,`${rows.length} products`);
     $('#status').textContent=rows.length?'':t('没有找到符合条件的商品','No products match your search');
-    $('#products').innerHTML=rows.slice(0,limit).map(p=>`<button type="button" class="product" data-id="${esc(p.id)}" aria-label="${esc(title(p))}">${photo(images(p)[0])}<h2>${esc(title(p))}</h2><div class="code">${p.sku?esc(t('货号 ','Item ')+p.sku):'&nbsp;'}</div><div class="price-line"><span class="price">${esc(price(p))}</span>${stock(p)}</div></button>`).join('');
+    $('#products').innerHTML=rows.slice(0,limit).map(p=>`<button type="button" class="product" data-id="${esc(p.id)}" aria-label="${esc(title(p))}">${photo(images(p)[0])}<h2>${esc(title(p))}</h2><div class="code">${p.sku?esc(t('货号 ','Item ')+p.sku):'&nbsp;'}</div><div class="price-line">${priceMarkup(p)}${stock(p)}</div></button>`).join('');
     $('#more').hidden=rows.length<=limit;$('#more').textContent=t('查看更多','Show more');wireImages($('#products'));
   }
   function detail(p) {
     active=p;const imgs=images(p);
-    $('#detail-content').innerHTML=`<div><div id="main-photo">${photo(imgs[0],false)}</div>${imgs.length>1?`<div class="thumbs">${imgs.map((s,i)=>`<button type="button" data-photo="${i}" aria-label="${t('商品图片','Product image')} ${i+1}"><img src="${esc(s)}" alt="" loading="lazy"></button>`).join('')}</div>`:''}</div><div><p class="eyebrow">${esc(label(cat(p)))}</p><h2>${esc(title(p))}</h2><p class="code">${esc(p.sku?t('货号：','Item: ')+p.sku:'')}</p><p class="price">${esc(price(p))}</p>${stock(p)}<p class="detail-note">${t('本商品仅在拾光小铺实体店销售。欢迎到店查看，实际价格与库存以店内为准。','Available at Shiguang Shop in store only. Please visit us; prices and availability are confirmed in store.')}</p></div>`;
+    $('#detail-content').innerHTML=`<div><div id="main-photo">${photo(imgs[0],false)}</div>${imgs.length>1?`<div class="thumbs">${imgs.map((s,i)=>`<button type="button" data-photo="${i}" aria-label="${t('商品图片','Product image')} ${i+1}"><img src="${esc(s)}" alt="" loading="lazy"></button>`).join('')}</div>`:''}</div><div><p class="eyebrow">${esc(label(cat(p)))}</p><h2>${esc(title(p))}</h2><p class="code">${esc(p.sku?t('货号：','Item: ')+p.sku:'')}</p><div class="detail-price">${priceMarkup(p)}</div>${stock(p)}<p class="detail-note">${t('本商品仅在拾光小铺实体店销售。欢迎到店查看，实际价格与库存以店内为准。','Available at Shiguang Shop in store only. Please visit us; prices and availability are confirmed in store.')}</p></div>`;
     wireImages($('#detail-content'));if(!$('#detail').open)$('#detail').showModal();
   }
   async function load() {
