@@ -3,3 +3,8 @@
 .intro{padding-top:34px;padding-bottom:26px;min-height:250px}
 .orbit-art{width:270px;height:190px;flex-basis:270px;transform:scale(.88)}
 @media(max-width:760px){.intro{padding-top:24px;padding-bottom:20px;min-height:220px}.orbit-art{top:12px;width:210px;height:170px;transform:scale(.72)}}
+.intro{padding-top:24px;padding-bottom:18px;min-height:190px}
+.intro h1{font-size:clamp(26px,3.2vw,40px);margin:6px 0 8px}
+.intro p:last-of-type{font-size:13px}
+.intro-tags{margin-top:14px}
+@media(max-width:760px){.intro{padding-top:18px;padding-bottom:14px;min-height:175px}.intro h1{font-size:25px;margin:4px 0 6px}.intro p:last-of-type{font-size:12px}.intro-tags{margin-top:10px}}
