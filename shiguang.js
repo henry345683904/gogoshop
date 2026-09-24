@@ -32,7 +32,7 @@
   const priceMarkup = p => {
     const discount = sale(p);
     if (!discount) return `<span class="price">${esc(price(p))}</span>`;
-    return `<span class="sale-price"><span class="original-price">${esc(money(discount.original))}</span><strong>${esc(money(discount.discounted))}</strong><small>${esc(t('盲盒优惠 · 85折','Blind box offer · 15% off'))}</small></span>`;
+    return `<span class="sale-price"><span class="original-price">${esc(money(discount.original))}</span><strong>${esc(money(discount.discounted))}</strong></span>`;
   };
   function images(p) { return [...new Set([p.image,...(Array.isArray(p.images)?p.images:[])])].filter(s=>typeof s==='string' && s.trim()).map(s=>{try{const u=new URL(s,location.protocol==='file:'?'https://gogoshop.nz/':location.href);return ['https:','http:'].includes(u.protocol)?u.href:'';}catch{return '';}}).filter(Boolean); }
   const photo = (src,lazy=true) => `<div class="photo">${src?`<img src="${esc(src)}" alt="" ${lazy?'loading="lazy"':''} decoding="async" referrerpolicy="no-referrer">`:`<span class="missing">${t('图片待补充','Image coming soon')}</span>`}</div>`;
