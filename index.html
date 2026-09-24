@@ -9279,6 +9279,7 @@
                   <select name="category">
                     <option value="blind-box">盲盒</option>
                     <option value="soft-toys">毛绒玩具</option>
+                    <option value="squishy">捏捏乐</option>
                     <option value="other-toys">其他玩具与周边</option>
                     <option value="keychains-gifts">钥匙链与礼品饰品</option>
                     <option value="phone-cases">手机壳</option>
@@ -11974,7 +11975,7 @@
         categorySelect.value = primary;
       } else if (categorySelect) {
         const primary = product ? productCategoryKey(product) : 'blind-box';
-        const options = [...new Set(['blind-box', 'soft-toys', 'keychains-gifts', 'phone-cases', 'other-toys', 'phone-accessories', 'office-supplies', primary])];
+        const options = [...new Set(['blind-box', 'soft-toys', 'squishy', 'keychains-gifts', 'phone-cases', 'other-toys', 'phone-accessories', 'office-supplies', primary])];
         categorySelect.innerHTML = options.map(key => `<option value="${escapeHtml(key)}">${escapeHtml(baseCategoryName(key))}</option>`).join('');
         categorySelect.value = primary;
       }
@@ -12005,6 +12006,7 @@
     }
 
     function baseCategoryName(category, language = state.lang) {
+      if (category === 'squishy') return language === 'zh' ? '捏捏乐' : 'Squishy';
       const offlineNames = {'blind-box':['盲盒','Blind boxes'],'soft-toys':['毛绒玩具','Soft toys'],'other-toys':['其他玩具与周边','Other toys & accessories']};
       if (offlineNames[category]) return offlineNames[category][language === 'zh' ? 0 : 1];
       const occasion = holidayCategories.find(item => item.key === category);
@@ -12066,6 +12068,7 @@
         return match?.key || "gifts";
       }
       const storedOffline = String(product?.category || '').split('||')[0];
+      if (storedOffline === 'squishy' || /捏捏|squish(?:y|ies)\b/i.test([product.title, product.titleZh, product.titleEn].filter(Boolean).join(' '))) return 'squishy';
       if (['blind-box','soft-toys','other-toys'].includes(storedOffline)) return storedOffline;
       const offlineText = [product.title, product.titleZh, product.titleEn].filter(Boolean).join(' ');
       if (/盲盒|blind[\s-]*box(?:es)?\b/i.test(offlineText)) return 'blind-box';

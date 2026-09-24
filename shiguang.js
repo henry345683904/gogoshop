@@ -5,12 +5,14 @@
   let products = [], lang = 'zh', category = '', limit = 48, active = null;
   delete names['blind-box-plush'];
   Object.assign(names, {'blind-box':['盲盒','Blind boxes'],'soft-toys':['毛绒玩具','Soft toys'],'other-toys':['其他玩具与周边','Other toys & accessories']});
-  const categoryRank = key => ({'blind-box':0,'soft-toys':1,'keychains-gifts':2,'phone-cases':3,'other-toys':4,'phone-accessories':5,'office-supplies':9}[key] ?? 6);
+  names.squishy = ['捏捏乐','Squishy'];
+  const categoryRank = key => ({'blind-box':0,'soft-toys':1,'squishy':1.5,'keychains-gifts':2,'phone-cases':3,'other-toys':4,'phone-accessories':5,'office-supplies':9}[key] ?? 6);
   const t = (zh,en) => lang==='zh'?zh:en;
   const title = p => (lang==='zh'?p.title_zh:p.title_en) || p.title || p.title_en || p.title_zh;
   const cat = p => {
     const key=String(p.category || 'other').split('||')[0];
     const text=[p.title,p.title_zh,p.title_en].filter(Boolean).join(' ');
+    if (key === 'squishy' || /捏捏|squish(?:y|ies)\b/i.test(text)) return 'squishy';
     // Blind-box packaging takes precedence over plush material.
     if (/盲盒|blind[\s-]*box(?:es)?\b/i.test(text)) return 'blind-box';
     if (/毛绒|毛絨|soft[\s-]*toys?\b|plush|stuffed[\s-]*(?:toys?|animals?)/i.test(text)) return 'soft-toys';
