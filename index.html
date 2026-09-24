@@ -9277,7 +9277,9 @@
                 <label class="field">
                   <span>一级分类</span>
                   <select name="category">
-                    <option value="blind-box-plush">盲盒与毛绒玩具</option>
+                    <option value="blind-box">盲盒</option>
+                    <option value="soft-toys">毛绒玩具</option>
+                    <option value="other-toys">其他玩具与周边</option>
                     <option value="keychains-gifts">钥匙链与礼品饰品</option>
                     <option value="phone-cases">手机壳</option>
                     <option value="phone-accessories">手机配件</option>
@@ -11971,8 +11973,8 @@
         categorySelect.innerHTML = `<option value="">${state.lang === 'zh' ? '自动识别' : 'Automatic'}</option>` + options.map(key => `<option value="${escapeHtml(key)}">${escapeHtml(categoryName(key))}</option>`).join('');
         categorySelect.value = primary;
       } else if (categorySelect) {
-        const primary = product ? productCategoryKey(product) : 'blind-box-plush';
-        const options = [...new Set(['blind-box-plush', 'keychains-gifts', 'phone-cases', 'phone-accessories', 'office-supplies', primary])];
+        const primary = product ? productCategoryKey(product) : 'blind-box';
+        const options = [...new Set(['blind-box', 'soft-toys', 'keychains-gifts', 'phone-cases', 'other-toys', 'phone-accessories', 'office-supplies', primary])];
         categorySelect.innerHTML = options.map(key => `<option value="${escapeHtml(key)}">${escapeHtml(baseCategoryName(key))}</option>`).join('');
         categorySelect.value = primary;
       }
@@ -12003,6 +12005,8 @@
     }
 
     function baseCategoryName(category, language = state.lang) {
+      const offlineNames = {'blind-box':['盲盒','Blind boxes'],'soft-toys':['毛绒玩具','Soft toys'],'other-toys':['其他玩具与周边','Other toys & accessories']};
+      if (offlineNames[category]) return offlineNames[category][language === 'zh' ? 0 : 1];
       const occasion = holidayCategories.find(item => item.key === category);
       if (occasion) return language === "zh" ? occasion.zh : occasion.en;
       const onlineCategory = ONLINE_ADMIN_CATEGORIES.find(item => item.key === category);
@@ -12060,6 +12064,14 @@
         const text = [product?.title, product?.titleEn, product?.titleZh, product?.descriptionEn, product?.descriptionZh, product?.productType, product?.tags].filter(Boolean).join(" ");
         const match = ONLINE_ADMIN_CATEGORIES.slice().sort((a,b)=>b.priority-a.priority).find(definition => definition.match.test(text));
         return match?.key || "gifts";
+      }
+      const storedOffline = String(product?.category || '').split('||')[0];
+      if (['blind-box','soft-toys','other-toys'].includes(storedOffline)) return storedOffline;
+      const offlineText = [product.title, product.titleZh, product.titleEn].filter(Boolean).join(' ');
+      if (/盲盒|blind[\s-]*box(?:es)?\b/i.test(offlineText)) return 'blind-box';
+      if (/毛绒|毛絨|soft[\s-]*toys?\b|plush|stuffed[\s-]*(?:toys?|animals?)/i.test(offlineText)) return 'soft-toys';
+      if (storedOffline === 'blind-box-plush' || storefrontCategoryByProductId.get(product.id) === 'blind-box-plush') {
+        return /钥匙|鑰匙|key[\s-]*chains?|挂件|掛件/i.test(offlineText) ? 'keychains-gifts' : 'other-toys';
       }
       if (String(product?.category || "").includes("||")) return String(product.category).split("||")[0];
       if (String(product?.id || "").startsWith("kdh-")) return String(product.category || "other").trim() || "other";
