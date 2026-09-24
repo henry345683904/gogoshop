@@ -8,3 +8,9 @@
 .intro p:last-of-type{font-size:13px}
 .intro-tags{margin-top:14px}
 @media(max-width:760px){.intro{padding-top:18px;padding-bottom:14px;min-height:175px}.intro h1{font-size:25px;margin:4px 0 6px}.intro p:last-of-type{font-size:12px}.intro-tags{margin-top:10px}}
+.intro{padding-top:14px;padding-bottom:12px;min-height:132px}
+.intro h1{font-size:28px;margin:3px 0 5px}
+.intro p:last-of-type{font-size:12px}
+.intro-tags{display:none}
+.orbit-art{width:210px;height:140px;transform:scale(.72)}
+@media(max-width:760px){.intro{padding-top:12px;padding-bottom:10px;min-height:118px}.intro h1{font-size:21px;margin:2px 0 4px}.intro p:last-of-type{font-size:11px}.orbit-art{right:-105px;top:2px;width:180px;height:125px;transform:scale(.58)}}
