@@ -4097,6 +4097,32 @@
       font-size: 14px;
     }
 
+    .admin-product-sales {
+      display: inline-flex !important;
+      flex-wrap: wrap;
+      gap: 4px 9px;
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 11px;
+      white-space: normal !important;
+    }
+    .admin-product-sales button {
+      border: 0;
+      padding: 0;
+      color: inherit;
+      background: transparent;
+      font-size: inherit;
+      cursor: pointer;
+    }
+    .admin-product-sales button:hover,
+    .admin-product-sales button:focus-visible { color: var(--teal); text-decoration: underline; }
+    .admin-product-sales strong { display: inline !important; margin: 0; font-size: inherit; color: var(--ink); }
+    .product-history-list { display: grid; gap: 6px; }
+    .product-history-row { display:flex; align-items:center; justify-content:space-between; gap:12px; width:100%; border:1px solid var(--line); border-radius:6px; padding:9px 11px; background:var(--soft); color:var(--ink); text-align:left; }
+    .product-history-row:hover { border-color:var(--teal); background:#f7fbfa; }
+    .product-history-row span { display:grid; gap:3px; min-width:0; }
+    .product-history-row small { color:var(--muted); }
+
     .admin-product-summary span {
       color: var(--muted);
       font-size: 12px;
@@ -16784,6 +16810,50 @@
       `).join("");
     }
 
+    function validSalesOrder(order) {
+      return !order?.deleted_at
+        && String(order?.status || '').toLowerCase() === 'confirmed'
+        && String(order?.payment_status || '').toLowerCase() !== 'refunded';
+    }
+
+    function productSalesRows(productId) {
+      const id = String(productId || '');
+      return state.adminOrders.flatMap((order) => {
+        if (!validSalesOrder(order)) return [];
+        const items = (order.order_items || []).filter((item) => String(item.product_id || '') === id);
+        return items.length ? [{ order, items, quantity: items.reduce((sum, item) => sum + Math.max(0, Number(item.quantity) || 0), 0) }] : [];
+      });
+    }
+
+    function productSalesSummary(product) {
+      const rows = productSalesRows(product.id);
+      const now = Date.now();
+      const monthStart = new Date(); monthStart.setDate(1); monthStart.setHours(0, 0, 0, 0);
+      const weekStart = new Date(); weekStart.setDate(weekStart.getDate() - ((weekStart.getDay() + 6) % 7)); weekStart.setHours(0, 0, 0, 0);
+      return {
+        total: rows.reduce((sum, row) => sum + row.quantity, 0),
+        month: rows.filter(row => new Date(row.order.created_at || row.order.confirmed_at || 0).getTime() >= monthStart.getTime()).reduce((sum, row) => sum + row.quantity, 0),
+        week: rows.filter(row => new Date(row.order.created_at || row.order.confirmed_at || 0).getTime() >= weekStart.getTime()).reduce((sum, row) => sum + row.quantity, 0)
+      };
+    }
+
+    function openProductSalesHistory(productId) {
+      const product = state.products.find(item => String(item.id) === String(productId));
+      if (!product) return;
+      const rows = productSalesRows(productId).sort((a, b) => new Date(b.order.created_at || 0) - new Date(a.order.created_at || 0));
+      const modal = $("#orderDetailModal");
+      const content = $("#orderDetailContent");
+      if (!modal || !content) return;
+      const summary = productSalesSummary(product);
+      const historyTitle = state.lang === "zh" ? "历史订单" : "Order history";
+      $("#orderDetailTitle").textContent = `${productName(product)} · ${historyTitle}`;
+      content.innerHTML = `<section class="order-detail-section"><div class="sales-summary-grid"><div class="metric"><small>总销量 / Total</small><strong>${summary.total}</strong></div><div class="metric"><small>本月 / Month</small><strong>${summary.month}</strong></div><div class="metric"><small>本周 / Week</small><strong>${summary.week}</strong></div></div></section>${rows.length ? `<section class="order-detail-section"><h3>${historyTitle}</h3><div class="product-history-list">${rows.map(row => `<button type="button" class="product-history-row" data-order-detail="${escapeHtml(row.order.id)}"><span><strong>${escapeHtml(row.order.order_number || "-")}</strong><small>${escapeHtml(new Date(row.order.created_at || row.order.confirmed_at || 0).toLocaleString(state.lang === "zh" ? "zh-CN" : "en-NZ"))}</small></span><strong>×${row.quantity}</strong></button>`).join("")}</div></section>` : `<div class="empty-state">${state.lang === "zh" ? "暂无已确认订单" : "No confirmed orders yet"}</div>`}`;
+      modal.hidden = false;
+      modal.setAttribute("aria-hidden", "false");
+      openProductSalesHistory.lastFocus = document.activeElement;
+      refreshIcons();
+    }
+
     function renderAdminProducts() {
       renderAdminProductChannelTabs();
       const channel = activeAdminProductChannel();
@@ -16833,6 +16903,7 @@
         const statusLabel = isOnlineChannel ? (product.published ? "Live" : "Draft") : "线下销售";
         const rowClass = isOnlineChannel && !product.published ? "is-offline-only" : "";
         const statusClass = isOnlineChannel ? (product.published ? "live" : "draft") : "offline";
+        const sales = productSalesSummary(product);
         return `
         <article class="admin-product-item ${rowClass}" data-edit-product-row="${escapeHtml(product.id)}" role="button" tabindex="0" aria-label="Edit ${escapeHtml(product.title)}">
           <img src="${escapeHtml(imageSource(product.image) || PRODUCT_IMAGE_FALLBACK)}" alt="${escapeHtml(product.title)}" loading="eager" decoding="async">
@@ -16840,6 +16911,11 @@
             <strong>${escapeHtml(product.title)}</strong>
             <span>${product.featured ? "Pinned · " : ""}${escapeHtml([categoryName(productCategoryKey(product)), product.vendor, productSourcePriceText(product)].filter(Boolean).join(" · "))}</span>
             <span>货号 ${escapeHtml(productItemCode(product))} · ${escapeHtml(channelLabel)}</span>
+            <span class="admin-product-sales" aria-label="销量统计">
+              <button type="button" data-product-history="${escapeHtml(product.id)}" title="查看历史订单">总 <strong>${sales.total}</strong></button>
+              <button type="button" data-product-history="${escapeHtml(product.id)}" title="查看历史订单">月 <strong>${sales.month}</strong></button>
+              <button type="button" data-product-history="${escapeHtml(product.id)}" title="查看历史订单">周 <strong>${sales.week}</strong></button>
+            </span>
           </div>
           <div class="admin-product-meta">
             <span>${formatPrice(product.price)}</span>
@@ -18710,6 +18786,13 @@
       }
       const target = clickedElement.closest("button, a");
       if (!target) return;
+
+      if (target.matches("[data-product-history]")) {
+        event.preventDefault();
+        event.stopPropagation();
+        openProductSalesHistory(target.dataset.productHistory);
+        return;
+      }
 
       if (target.matches("[data-close-product-label]")) {
         closeProductLabel();
