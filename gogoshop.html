@@ -4122,6 +4122,15 @@
     .admin-product-sales button:hover,
     .admin-product-sales button:focus-visible { color: var(--teal); text-decoration: underline; }
     .admin-product-sales strong { display: inline !important; margin: 0; font-size: inherit; color: var(--ink); }
+    .admin-product-discount { display:inline-flex; align-items:center; gap:4px; margin-top:4px; color:#b42318; font-size:11px; }
+    .admin-product-discount input { accent-color:#b42318; }
+    .admin-product-discount select { border:1px solid #f1b6ae; border-radius:4px; padding:1px 3px; color:#b42318; background:#fff7f5; font-size:11px; }
+    .admin-product-price-sale { color:#b42318; font-weight:700; }
+    .admin-product-price-old { color:var(--muted); text-decoration:line-through; font-size:11px; margin-right:4px; }
+    .product-discount-editor { display:grid; grid-template-columns:minmax(0, 1fr) 150px; gap:12px; align-items:end; margin:10px 0 12px; padding:10px; border:1px solid var(--line); border-radius:6px; background:var(--soft); }
+    .product-discount-editor .shopify-check-row { margin:0; }
+    .product-discount-percent-field { margin:0; }
+    .product-discount-percent-field small { color:#b42318; margin-top:4px; }
     .product-history-list { display: grid; gap: 6px; }
     .product-history-row { display:flex; align-items:center; justify-content:space-between; gap:12px; width:100%; border:1px solid var(--line); border-radius:6px; padding:9px 11px; background:var(--soft); color:var(--ink); text-align:left; }
     .product-history-row:hover { border-color:var(--teal); background:#f7fbfa; }
@@ -9363,6 +9372,17 @@
                 <span>售价 NZD（可手动修改；供应价变化时自动计算）</span>
                 <input class="product-price-input" type="number" name="price" min="0" step="0.01" data-price-mode="manual" required>
               </label>
+              <div class="product-discount-editor">
+                <label class="shopify-check-row">
+                  <span>启用商品折扣</span>
+                  <input type="checkbox" name="discountEnabled">
+                </label>
+                <label class="field product-discount-percent-field">
+                  <span>折扣百分比</span>
+                  <input type="number" name="discountPercent" min="0" max="100" step="1" value="0" inputmode="numeric">
+                  <small data-discount-preview>折后价：NZ$0.00</small>
+                </label>
+              </div>
               <details class="product-editor-advanced-pricing"><summary>高级定价（原价和采购成本）</summary><div class="form-row">
                 <label class="field">
                   <span>原价 NZD</span>
@@ -13170,14 +13190,14 @@
       }
       if (canManage) {
         const fields = onlineManager
-          ? "id,title,title_en,title_zh,category,description,description_en,description_zh,price,compare_at_price,cost_per_item,stock,sales,published,sales_channel,image,images,sku,barcode,tags,deleted_at,deleted_was_published"
-          : "id,title,title_en,title_zh,category,description,description_en,description_zh,price,compare_at_price,cost_per_item,stock,sales,published,sales_channel,image,images,vendor,sku,barcode,tags,source_url,source_currency,source_price,deleted_at,deleted_was_published";
+          ? "id,title,title_en,title_zh,category,description,description_en,description_zh,price,compare_at_price,discount_percent,cost_per_item,stock,sales,published,sales_channel,image,images,sku,barcode,tags,deleted_at,deleted_was_published"
+          : "id,title,title_en,title_zh,category,description,description_en,description_zh,price,compare_at_price,discount_percent,cost_per_item,stock,sales,published,sales_channel,image,images,vendor,sku,barcode,tags,source_url,source_currency,source_price,deleted_at,deleted_was_published";
         ({ data, error } = await loadAdminPages(fields, "Admin products"));
         if (error && isMissingSchemaError(error)) {
           supportsRecycleBin = false;
           const fallbackFields = onlineManager
-            ? "id,title,title_en,title_zh,category,description,description_en,description_zh,price,compare_at_price,cost_per_item,stock,sales,published,sales_channel,image,images,sku,barcode,tags"
-            : "id,title,title_en,title_zh,category,description,description_en,description_zh,price,compare_at_price,cost_per_item,stock,sales,published,sales_channel,image,images,vendor,sku,barcode,tags,source_url,source_currency,source_price";
+            ? "id,title,title_en,title_zh,category,description,description_en,description_zh,price,compare_at_price,discount_percent,cost_per_item,stock,sales,published,sales_channel,image,images,sku,barcode,tags"
+            : "id,title,title_en,title_zh,category,description,description_en,description_zh,price,compare_at_price,discount_percent,cost_per_item,stock,sales,published,sales_channel,image,images,vendor,sku,barcode,tags,source_url,source_currency,source_price";
           ({ data, error } = await loadAdminPages(fallbackFields, "Admin products fallback"));
           if (error && /sales_channel/i.test(error.message || "")) {
             state.adminProductLoadError = "数据库尚未启用 sales_channel，已暂按线下商品保护性显示。请执行 supabase-product-sales-channels.sql。";
@@ -13318,6 +13338,7 @@
           descriptionZh: remote.description_zh ?? localProduct?.descriptionZh ?? "",
           price: Number(remote.price),
           compareAtPrice: Number(remote.compare_at_price || 0),
+          discountPercent: Math.min(100, Math.max(0, Number(remote.discount_percent || localProduct?.discountPercent || 0))),
           costPerItem: canManage
             ? (sourcePricing?.cost ?? Number(remote.cost_per_item || 0))
             : 0,
@@ -16025,6 +16046,7 @@
         description_zh: product.descriptionZh || "",
         price: Number(product.price),
         compare_at_price: Math.max(0, Number(product.compareAtPrice) || 0),
+        discount_percent: Math.min(100, Math.max(0, Number(product.discountPercent) || 0)),
         cost_per_item: Math.max(0, Number(product.costPerItem) || 0),
         stock: Math.max(0, Number(product.stock) || 0),
         sales: Math.max(0, Number(product.sales) || 0),
@@ -16061,6 +16083,11 @@
         return state.lang === "zh"
           ? "数据库尚未完成线上/线下渠道迁移，商品没有保存。当前输入内容已保留，请先执行 supabase-product-sales-channels.sql。"
           : "The product sales-channel migration is not installed yet. Nothing was saved and your edits are still here.";
+      }
+      if (/discount_percent|products_discount_percent|schema cache/i.test(message)) {
+        return state.lang === "zh"
+          ? "数据库尚未启用商品折扣字段，请先执行 supabase-product-discounts.sql。当前输入内容已保留。"
+          : "The product discount field is not installed yet. Run supabase-product-discounts.sql; your edits are still here.";
       }
       if (/title_en|title_zh|description_en|description_zh|schema cache/i.test(message)) {
         return state.lang === "zh"
@@ -16924,12 +16951,13 @@
             </span>
           </div>
           <div class="admin-product-meta">
-            <span>${formatPrice(product.price)}</span>
+            <span>${Number(product.discountPercent || 0) > 0 ? `<span class="admin-product-price-old">${formatPrice(product.price)}</span><span class="admin-product-price-sale">${formatPrice(Number(product.price) * (1 - Number(product.discountPercent) / 100))}</span>` : formatPrice(product.price)}</span>
             <span>Stock ${Number(product.stock) || 0}</span>
             <span class="status ${statusClass}">${statusLabel}</span>
           </div>
           <div class="row-actions">
             <button class="action-button" type="button" data-open-product-label="${escapeHtml(product.id)}" aria-label="打印 ${escapeHtml(product.title)} Label" title="打印 Label"><i data-lucide="printer"></i></button>
+            <label class="admin-product-discount" title="快速设置商品折扣" onclick="event.stopPropagation()"><input type="checkbox" data-toggle-product-discount="${escapeHtml(product.id)}" ${Number(product.discountPercent || 0) > 0 ? "checked" : ""} aria-label="启用折扣"><select data-product-discount-percent="${escapeHtml(product.id)}" aria-label="折扣百分比" ${Number(product.discountPercent || 0) > 0 ? "" : "disabled"}>${[5,10,15,20,25,30,50].map((value) => `<option value="${value}" ${Number(product.discountPercent) === value ? "selected" : ""}>-${value}%</option>`).join("")}</select></label>
             ${onlineActions}
             <button class="action-button" type="button" data-delete-product="${escapeHtml(product.id)}" aria-label="Delete ${escapeHtml(product.title)}"><i data-lucide="trash-2"></i></button>
           </div>
@@ -18209,6 +18237,8 @@
       if (!Array.from(categorySelect.options).some(option => option.value === primaryCategory)) categorySelect.add(new Option(categoryName(primaryCategory), primaryCategory));
       categorySelect.value = primaryCategory;
       fields.namedItem("price").value = product.price;
+      fields.namedItem("discountPercent").value = Number(product.discountPercent || 0);
+      fields.namedItem("discountEnabled").checked = Number(product.discountPercent || 0) > 0;
       fields.namedItem("stock").value = product.stock;
       fields.namedItem("image").value = product.image;
       fields.namedItem("images").value = (product.images || []).filter((image) => image && image !== product.image).join("\n");
@@ -18252,6 +18282,7 @@
       setAdminTab("products");
       setProductEditorLanguage(state.lang);
       updateProductEditorPreview();
+      updateProductDiscountPreview(form);
       openProductEditor();
     }
 
@@ -18435,6 +18466,37 @@
       }
     }
 
+    function updateProductDiscountPreview(form) {
+      const price = Math.max(0, Number(form?.elements.namedItem("price")?.value || 0));
+      const enabled = Boolean(form?.elements.namedItem("discountEnabled")?.checked);
+      const percent = Math.min(100, Math.max(0, Number(form?.elements.namedItem("discountPercent")?.value || 0)));
+      const preview = form?.querySelector("[data-discount-preview]");
+      if (preview) preview.textContent = enabled && percent > 0
+        ? `折后价：${formatPrice(price * (1 - percent / 100))}`
+        : "未启用折扣";
+      const field = form?.elements.namedItem("discountPercent");
+      if (field) field.disabled = !enabled;
+    }
+
+    async function setProductDiscount(id, enabled, percent) {
+      const product = state.products.find((item) => String(item.id) === String(id));
+      if (!product || !canManageProducts()) return;
+      const value = enabled ? Math.min(100, Math.max(0, Number(percent) || 0)) : 0;
+      const button = $(`[data-toggle-product-discount="${CSS.escape(String(id))}"]`);
+      if (button) button.disabled = true;
+      try {
+        const { error } = await db.from("products").update({ discount_percent: value, updated_at: new Date().toISOString() }).eq("id", id);
+        if (error) throw error;
+        product.discountPercent = value;
+        persistProducts();
+        renderAdminProducts();
+        showToast(value > 0 ? `已设置 ${value}% 折扣` : "已取消商品折扣");
+      } catch (error) {
+        if (button) button.checked = Number(product.discountPercent || 0) > 0;
+        showToast(productSaveErrorMessage(error));
+      }
+    }
+
     /* Bulk hiding is intentionally unavailable; products are managed individually. */
     async function hideAllProductsFromStore() {
       const onlineProducts = state.products.filter((product) => productSalesChannel(product, "offline") === "online" && product.published);
@@ -18560,6 +18622,7 @@
         descriptionZh,
         price: Math.round((manualPrice + Number.EPSILON) * 100) / 100,
         compareAtPrice: Number(data.compareAtPrice || 0),
+        discountPercent: form.discountEnabled.checked ? Math.min(100, Math.max(0, Number(data.discountPercent || 0))) : 0,
         costPerItem: sourcePricing?.cost ?? Number(data.costPerItem || 0),
         sourcePriceCny,
         sourceCurrency,
@@ -19023,6 +19086,21 @@
       }
       if (target.matches("[data-edit-product]")) editProduct(target.dataset.editProduct);
       if (target.matches("[data-toggle-featured]")) toggleFeaturedProduct(target.dataset.toggleFeatured);
+      if (target.matches("[data-toggle-product-discount]")) {
+        event.stopPropagation();
+        const id = target.dataset.toggleProductDiscount;
+        const select = $(`[data-product-discount-percent="${CSS.escape(String(id))}"]`);
+        if (select) select.disabled = !target.checked;
+        void setProductDiscount(id, target.checked, select?.value || 0);
+        return;
+      }
+      if (target.matches("[data-product-discount-percent]")) {
+        event.stopPropagation();
+        const id = target.dataset.productDiscountPercent;
+        const checkbox = $(`[data-toggle-product-discount="${CSS.escape(String(id))}"]`);
+        void setProductDiscount(id, Boolean(checkbox?.checked), target.value);
+        return;
+      }
       if (target.matches("[data-toggle-product-online]")) {
         const product = state.products.find((item) => item.id === target.dataset.toggleProductOnline);
         if (product) setProductOnlineState(product.id, !product.published);
@@ -19074,6 +19152,9 @@
       }
       if (event.target instanceof Element && event.target.closest("[data-product-form]")) {
         const productForm = event.target.closest("[data-product-form]");
+        if (event.target.matches('[name="discountEnabled"], [name="discountPercent"], [name="price"]')) {
+          updateProductDiscountPreview(productForm);
+        }
         if (event.target.matches(".product-description-input")) {
           syncProductDescriptionField(event.target);
         }
