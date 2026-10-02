@@ -16816,10 +16816,22 @@
       return state.adminProductStatus;
     }
 
+    function isOfflineDraftProduct(product) {
+      if (productSalesChannel(product, "offline") !== "offline") return false;
+      const tags = String(product?.tags || "")
+        .split(/[\s,，]+/)
+        .map((value) => value.trim().toLowerCase())
+        .filter(Boolean);
+      if (tags.includes("draft")) return true;
+      const attributes = [product?.sourceAttributes, product?.source_attributes]
+        .flatMap((value) => Array.isArray(value) ? value : []);
+      return attributes.some((attribute) => String(attribute?.import_batch || "").trim() !== "");
+    }
+
     function adminProductSearchResults(products = adminProductChannelProducts()) {
       const status = renderAdminProductStatusFilter();
       const statusProducts = status === "draft"
-        ? products.filter((product) => !Boolean(product.published))
+        ? products.filter(isOfflineDraftProduct)
         : products;
       const query = normalizeAdminProductSearch(state.adminProductSearch);
       const category = adminProductCategoryOptions(statusProducts).includes(state.adminProductCategory)
@@ -16946,7 +16958,7 @@
       const products = adminProductSearchResults(channelProducts);
       const statusActive = state.adminProductStatus === "draft" && channel === "offline";
       $("#adminProductCount").textContent = query || categoryActive
-        ? `${products.length} of ${statusActive ? `${channelProducts.filter((product) => !product.published).length} draft products` : `${channelProducts.length} products`}`
+        ? `${products.length} of ${statusActive ? `${channelProducts.filter(isOfflineDraftProduct).length} draft products` : `${channelProducts.length} products`}`
         : statusActive
           ? `${products.length} draft products`
           : `${channelProducts.length} products`;
@@ -18693,7 +18705,11 @@
         barcode,
         productType: data.productType.trim(),
         vendor: data.vendor.trim(),
-        tags: [...new Set([data.tags.trim(), offlineNewArrival ? 'new-arrival' : ''].filter(Boolean))].join(', '),
+        tags: [...new Set([
+          data.tags.trim(),
+          offlineNewArrival ? 'new-arrival' : '',
+          selectedChannel === "offline" && !existing ? 'draft' : ''
+        ].filter(Boolean))].join(', '),
         template: data.template,
         image,
         images,
