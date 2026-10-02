@@ -16822,7 +16822,7 @@
         .split(/[\s,，]+/)
         .map((value) => value.trim().toLowerCase())
         .filter(Boolean);
-      if (tags.includes("draft")) return true;
+      if (tags.includes("offline-draft")) return true;
       const attributes = [product?.sourceAttributes, product?.source_attributes]
         .flatMap((value) => Array.isArray(value) ? value : []);
       return attributes.some((attribute) => String(attribute?.import_batch || "").trim() !== "");
@@ -18708,7 +18708,7 @@
         tags: [...new Set([
           data.tags.trim(),
           offlineNewArrival ? 'new-arrival' : '',
-          selectedChannel === "offline" && !existing ? 'draft' : ''
+          selectedChannel === "offline" && !existing ? 'offline-draft' : ''
         ].filter(Boolean))].join(', '),
         template: data.template,
         image,
