@@ -8783,6 +8783,14 @@
                   <span class="sr-only">Filter products by category</span>
                   <select id="adminProductCategoryFilter" data-admin-product-category aria-label="Filter products by category"></select>
                 </label>
+                <label class="admin-product-category-filter admin-product-status-filter">
+                  <i data-lucide="file-edit"></i>
+                  <span class="sr-only">Filter products by status</span>
+                  <select id="adminProductStatusFilter" data-admin-product-status aria-label="Filter products by status">
+                    <option value="All">全部商品</option>
+                    <option value="draft">未发布草稿</option>
+                  </select>
+                </label>
                 <button class="button ghost" type="button" data-edit-online-categories hidden><i data-lucide="folder-pen"></i><span>编辑分类</span></button>
               </div>
               <span class="sr-only" id="adminProductSearchStatus" role="status" aria-live="polite"></span>
@@ -10500,6 +10508,7 @@
       procurementCoverWeeks: PROCUREMENT_COVER_OPTIONS.includes(Number(savedProcurementSettings.coverWeeks)) ? Number(savedProcurementSettings.coverWeeks) : 3,
       adminProductSearch: "",
       adminProductCategory: "All",
+      adminProductStatus: "All",
       adminProductChannel: storageGet(ADMIN_PRODUCT_CHANNEL_KEY) === "online" ? "online" : "offline",
       adminProductLoadError: "",
       trashOpen: false,
@@ -10772,6 +10781,7 @@
       storageSet(ADMIN_PRODUCT_CHANNEL_KEY, nextChannel);
       state.adminProductSearch = "";
       state.adminProductCategory = "All";
+      state.adminProductStatus = "All";
       const searchInput = $("#adminProductSearch");
       if (searchInput) searchInput.value = "";
       renderAdminProducts();
@@ -16796,12 +16806,26 @@
       return selected;
     }
 
+    function renderAdminProductStatusFilter() {
+      const select = $("#adminProductStatusFilter");
+      if (!select) return "All";
+      const offline = activeAdminProductChannel() === "offline";
+      select.hidden = !offline;
+      select.value = offline && state.adminProductStatus === "draft" ? "draft" : "All";
+      state.adminProductStatus = select.value;
+      return state.adminProductStatus;
+    }
+
     function adminProductSearchResults(products = adminProductChannelProducts()) {
+      const status = renderAdminProductStatusFilter();
+      const statusProducts = status === "draft"
+        ? products.filter((product) => !Boolean(product.published))
+        : products;
       const query = normalizeAdminProductSearch(state.adminProductSearch);
-      const category = adminProductCategoryOptions(products).includes(state.adminProductCategory)
+      const category = adminProductCategoryOptions(statusProducts).includes(state.adminProductCategory)
         ? state.adminProductCategory
         : "All";
-      const categoryProducts = products.filter((product) => (
+      const categoryProducts = statusProducts.filter((product) => (
         category === "All" || adminProductCategoryKey(product) === category || (activeAdminProductChannel() === "online" && productCategoryKeys(product).includes(category))
       ));
       if (!query) return categoryProducts;
@@ -16920,15 +16944,20 @@
       const category = renderAdminProductCategoryFilter(channelProducts);
       const categoryActive = category !== "All";
       const products = adminProductSearchResults(channelProducts);
+      const statusActive = state.adminProductStatus === "draft" && channel === "offline";
       $("#adminProductCount").textContent = query || categoryActive
-        ? `${products.length} of ${channelProducts.length} products`
-        : `${channelProducts.length} products`;
+        ? `${products.length} of ${statusActive ? `${channelProducts.filter((product) => !product.published).length} draft products` : `${channelProducts.length} products`}`
+        : statusActive
+          ? `${products.length} draft products`
+          : `${channelProducts.length} products`;
       const searchStatus = $("#adminProductSearchStatus");
       if (searchStatus) searchStatus.textContent = query
         ? `${products.length} matching products`
         : categoryActive
           ? `${products.length} products in ${categoryName(category)}`
-        : `${channelProducts.length} products`;
+        : statusActive
+          ? `${products.length} unpublished drafts`
+          : `${channelProducts.length} products`;
       const clearSearch = $("[data-clear-admin-product-search]");
       if (clearSearch) clearSearch.hidden = !query;
       renderProductInventorySummary(channelProducts);
@@ -19221,6 +19250,11 @@
       }
       if (event.target instanceof Element && event.target.matches("[data-admin-product-category]")) {
         state.adminProductCategory = event.target.value || "All";
+        renderAdminProducts();
+        return;
+      }
+      if (event.target instanceof Element && event.target.matches("[data-admin-product-status]")) {
+        state.adminProductStatus = event.target.value === "draft" ? "draft" : "All";
         renderAdminProducts();
         return;
       }
