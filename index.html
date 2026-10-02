@@ -1097,6 +1097,11 @@
       font-weight: 650;
     }
 
+    .storefront-price-discount { display:inline-flex; align-items:baseline; gap:6px; flex-wrap:wrap; }
+    .storefront-price-original { color:var(--muted); text-decoration:line-through; font-size:.9em; }
+    .storefront-price-sale { color:#c62828; font-weight:700; }
+    .product-detail-price .storefront-price-original { font-size:.75em; }
+
     .product-code-chip {
       display: inline-flex;
       flex: 0 0 auto;
@@ -11746,6 +11751,23 @@
       return money.format(Number(value || 0));
     }
 
+    function productDiscountPercent(product) {
+      return Math.min(100, Math.max(0, Number(product?.discountPercent ?? product?.discount_percent ?? 0) || 0));
+    }
+
+    function productSalePrice(product) {
+      const price = Math.max(0, Number(product?.price || 0));
+      const discount = productDiscountPercent(product);
+      return Math.round((price * (1 - discount / 100) + Number.EPSILON) * 100) / 100;
+    }
+
+    function renderStorefrontPrice(product, className = "price") {
+      const discount = productDiscountPercent(product);
+      const original = formatPrice(product?.price);
+      if (!discount) return `<span class="${className}">${original}</span>`;
+      return `<span class="${className} storefront-price-discount"><span class="storefront-price-original">${original}</span><span class="storefront-price-sale">${formatPrice(productSalePrice(product))}</span></span>`;
+    }
+
     function vipStatus(totalSpent) {
       const spent = Math.max(0, Number(totalSpent || 0));
       let tierIndex = 0;
@@ -12418,7 +12440,7 @@
           <div class="product-detail-copy">
             <p class="product-detail-category">${escapeHtml(productCategoryKeys(product).map(categoryName).join(" · "))}</p>
             <h1>${escapeHtml(productCardName(product))}</h1>
-            <p class="product-detail-price">${formatPrice(product.price)}</p>
+            <p class="product-detail-price">${renderStorefrontPrice(product, "product-detail-price-value")}</p>
             ${canAccessAdmin() && ["full-admin", "online-manager"].includes(state.catalogLoadedMode) ? `
               <button class="button ghost" type="button" data-edit-product="${escapeHtml(product.id)}">
                 <i data-lucide="pencil"></i><span>${state.lang === "zh" ? "编辑商品" : "Edit product"}</span>
@@ -12742,7 +12764,7 @@
             <a class="product-summary-link" href="#product=${encodeURIComponent(product.id)}" data-product-view="${escapeHtml(product.id)}">
               <span class="product-title">${escapeHtml(productCardName(product))}</span>
               <span class="product-price-row">
-                <span class="price">${formatPrice(product.price)}</span>
+                ${renderStorefrontPrice(product)}
                 <span class="product-code-chip">${state.lang === "zh" ? "货号" : "Code"} ${escapeHtml(productItemCode(product))}</span>
               </span>
             </a>
@@ -13236,7 +13258,7 @@
         if (error && isMissingSchemaError(error)) {
           ({ data, error } = await requestWithTimeout(
             () => db.from("products")
-              .select("id,title,title_en,title_zh,category,description,description_en,description_zh,price,compare_at_price,stock,published,sales_channel,image,images")
+              .select("id,title,title_en,title_zh,category,description,description_en,description_zh,price,compare_at_price,discount_percent,stock,published,sales_channel,image,images")
               .eq("sales_channel", "online")
               .eq("published", true),
             REQUEST_TIMEOUTS.catalog,
@@ -14338,7 +14360,7 @@
     function cartTotal() {
       return state.cart.reduce((sum, line) => {
         const product = state.products.find((item) => item.id === line.id);
-        return product ? sum + product.price * line.quantity : sum;
+        return product ? productSalePrice(product) * line.quantity : sum;
       }, 0);
     }
 
@@ -14686,7 +14708,7 @@
             <img src="${escapeHtml(imageSource(product.image) || PRODUCT_IMAGE_FALLBACK)}" alt="${escapeHtml(productName(product))}" loading="eager" decoding="async">
             <div>
               <h3>${productName(product)}</h3>
-              <div class="muted">${formatPrice(product.price)}</div>
+              <div class="muted">${renderStorefrontPrice(product, "cart-line-price")}</div>
               <div class="quantity" aria-label="Quantity">
                 <button type="button" data-cart-minus="${product.id}" aria-label="Decrease">-</button>
                 <span>${line.quantity}</span>
@@ -14981,7 +15003,7 @@
           <div>
             <a class="result-product-link" href="#product=${encodeURIComponent(product.id)}" data-product-view="${escapeHtml(product.id)}"><strong>${escapeHtml(productName(product))}</strong></a>
             <div class="result-product-code">${state.lang === "zh" ? "货号" : "Item code"} ${escapeHtml(productItemCode(product) || "-")}</div>
-            <div class="muted">${formatPrice(product.price)} · ${productCategoryKeys(product).map(categoryName).join(" · ")}</div>
+            <div class="muted">${renderStorefrontPrice(product, "search-product-price")} · ${productCategoryKeys(product).map(categoryName).join(" · ")}</div>
             <div class="result-product-stock"><span class="stock-dot ${available(product) ? "" : "sold-out"}"></span><span>${searchStockText(product)}</span></div>
           </div>
           <button class="button ghost" type="button" data-add-cart="${escapeHtml(product.id)}" ${!available(product) ? "disabled" : ""}>
