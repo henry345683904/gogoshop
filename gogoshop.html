@@ -16822,7 +16822,7 @@
         .split(/[\s,，]+/)
         .map((value) => value.trim().toLowerCase())
         .filter(Boolean);
-      if (tags.includes("offline-draft")) return true;
+      if (tags.includes("offline-draft") || tags.some((tag) => tag.startsWith("1688-orders-"))) return true;
       const attributes = [product?.sourceAttributes, product?.source_attributes]
         .flatMap((value) => Array.isArray(value) ? value : []);
       return attributes.some((attribute) => String(attribute?.import_batch || "").trim() !== "");
