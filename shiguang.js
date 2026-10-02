@@ -27,7 +27,10 @@
   const money = value => new Intl.NumberFormat('en-NZ',{style:'currency',currency:'NZD'}).format(value);
   const sale = p => {
     const original = Number(p.price);
-    return cat(p) === 'blind-box' && original > 25 ? {original, discounted: Math.round(original * .85 * 100) / 100} : null;
+    const percent = Math.min(100, Math.max(0, Number(p.discount_percent ?? p.discountPercent ?? 0) || 0));
+    return percent > 0 && original > 0
+      ? {original, percent, discounted: Math.round(original * (1 - percent / 100) * 100) / 100}
+      : null;
   };
   const price = p => Number(p.price)>0 ? money(Number(p.price)) : t('到店咨询','Enquire in store');
   const priceMarkup = p => {
