@@ -10697,7 +10697,11 @@
     }
 
     function adminProductChannelProducts(channel = activeAdminProductChannel()) {
-      return state.products.filter((product) => productSalesChannel(product, "offline") === channel);
+      return state.products.filter((product) => (
+        productSalesChannel(product, "offline") === channel
+        && !product.deleted_at
+        && !product.deletedAt
+      ));
     }
 
     function adminDeletedProductChannelProducts(channel = activeAdminProductChannel()) {
