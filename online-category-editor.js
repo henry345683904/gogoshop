@@ -88,16 +88,34 @@
         if (next === keys) return [];
         return [{id:p.id,expected:p.category || '',category:[...new Set(next)].join('||') || 'uncategorized'}];
       });
-      const result = translations && action==='create' ? await context.db.rpc('create_online_subcategory', {
-        p_key:name,p_parent:translations.parent || null,p_zh:translations.zh,p_en:translations.en
-      }) : translations ? await context.db.rpc('save_online_category_names', {
-        p_key:action==='create'?name:current,p_name_zh:translations.zh,p_name_en:translations.en,p_create:action==='create'
-      }) : await context.db.rpc('edit_online_category', {
-        p_action:action, p_key:current || name, p_name:name || null,
-        p_changes:changes,
-        p_add:[],
-        p_remove:[]
-      });
+      let result;
+      if (!translations && action === 'assign') {
+        // Save product membership directly. This keeps category editing working
+        // when the optional bulk RPC is missing or stale in the database schema.
+        for (const change of changes) {
+          const update = await context.db.from('products').update({
+            category: change.category,
+            updated_at: new Date().toISOString()
+          }).eq('id', change.id);
+          if (update.error) throw update.error;
+        }
+        result = { error: null };
+      } else if (translations && action === 'create') {
+        result = await context.db.rpc('create_online_subcategory', {
+          p_key:name,p_parent:translations.parent || null,p_zh:translations.zh,p_en:translations.en
+        });
+      } else if (translations) {
+        result = await context.db.rpc('save_online_category_names', {
+          p_key:current,p_name_zh:translations.zh,p_name_en:translations.en,p_create:false
+        });
+      } else {
+        result = await context.db.rpc('edit_online_category', {
+          p_action:action, p_key:current || name, p_name:name || null,
+          p_changes:changes,
+          p_add:[],
+          p_remove:[]
+        });
+      }
       if (result.error) throw result.error;
       await load(context.db);
       const refreshed = await context.refresh();
