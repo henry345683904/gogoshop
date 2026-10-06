@@ -18,7 +18,7 @@
       try {
         if (location.hash === "#admin" && !new URLSearchParams(location.search).has("v")) {
           var next = new URL(location.href);
-          next.searchParams.set("v", "offline-active-20261006");
+          next.searchParams.set("v", "offline-status-20261006");
           location.replace(next.href);
         }
       } catch (error) {}
@@ -18724,9 +18724,9 @@
         productType: data.productType.trim(),
         vendor: data.vendor.trim(),
         tags: [...new Set([
-          data.tags.trim(),
+          ...String(data.tags || "").split(/[,，]+/).map(tag => tag.trim()).filter(tag => tag && !/^offline-draft$/i.test(tag)),
           offlineNewArrival ? 'new-arrival' : '',
-          selectedChannel === "offline" && !existing ? 'offline-draft' : ''
+          selectedChannel === "offline" && data.status === "draft" ? 'offline-draft' : ''
         ].filter(Boolean))].join(', '),
         template: data.template,
         image,
@@ -19690,4 +19690,5 @@
   </script>
 </body>
 </html>
+
 
