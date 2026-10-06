@@ -18,7 +18,7 @@
       try {
         if (location.hash === "#admin" && !new URLSearchParams(location.search).has("v")) {
           var next = new URL(location.href);
-          next.searchParams.set("v", "89b4eea");
+          next.searchParams.set("v", "offline-active-20261006");
           location.replace(next.href);
         }
       } catch (error) {}
@@ -13382,7 +13382,7 @@
           stock: Number(remote.stock),
           sales: Number(remote.sales ?? localProduct?.sales ?? 0),
           published: remoteChannel === "online" && Boolean(remote.published),
-          status: remoteChannel === "online" && remote.published ? "active" : "draft",
+          status: productAdminStatus({ ...remote, salesChannel: remoteChannel }),
           onlineStore: remoteChannel === "online" && Boolean(remote.published),
           image: remote.image ?? localProduct?.image ?? "",
           images: canManage && Array.isArray(remote.images) ? remote.images : [],
@@ -16833,6 +16833,12 @@
       return attributes.some((attribute) => String(attribute?.import_batch || "").trim() !== "");
     }
 
+    function productAdminStatus(product) {
+      return (productSalesChannel(product, "offline") === "offline"
+        ? !isOfflineDraftProduct(product)
+        : Boolean(product.published)) ? "active" : "draft";
+    }
+
     function adminProductSearchResults(products = adminProductChannelProducts()) {
       const status = renderAdminProductStatusFilter();
       const statusProducts = status === "draft"
@@ -17006,9 +17012,9 @@
         const onlineActions = isOnlineChannel ? `
             <button class="action-button ${product.published ? "" : "offline"}" type="button" data-toggle-product-online="${escapeHtml(product.id)}" aria-label="${product.published ? "Hide" : "Show"} ${escapeHtml(product.title)} ${product.published ? "from online store" : "in online store"}" title="${product.published ? "隐藏商品" : "发布到网店"}"><i data-lucide="${product.published ? "eye-off" : "eye"}"></i></button>
             <button class="action-button ${product.featured ? "pinned" : ""}" type="button" data-toggle-featured="${escapeHtml(product.id)}" aria-label="${product.featured ? "Unpin" : "Pin"} ${escapeHtml(product.title)}" aria-pressed="${Boolean(product.featured)}" title="${product.featured ? "取消首页置顶" : "置顶到首页"}"><i data-lucide="${product.featured ? "pin-off" : "pin"}"></i></button>` : "";
-        const statusLabel = isOnlineChannel ? (product.published ? "Live" : "Draft") : "线下销售";
+        const statusLabel = isOnlineChannel ? (product.published ? "Live" : "Draft") : (isOfflineDraftProduct(product) ? "草稿" : "活跃");
         const rowClass = isOnlineChannel && !product.published ? "is-offline-only" : "";
-        const statusClass = isOnlineChannel ? (product.published ? "live" : "draft") : "offline";
+        const statusClass = isOnlineChannel ? (product.published ? "live" : "draft") : (isOfflineDraftProduct(product) ? "draft" : "offline");
         const sales = productSalesSummary(product);
         return `
         <article class="admin-product-item ${rowClass}" data-edit-product-row="${escapeHtml(product.id)}" role="button" tabindex="0" aria-label="Edit ${escapeHtml(product.title)}">
@@ -18066,13 +18072,13 @@
         : fields.namedItem("title").value.trim();
       $("[data-product-editor-title]").textContent = editorTitle || (fields.namedItem("id").value ? "编辑商品" : "添加商品");
       const statusText = salesChannel === "offline"
-        ? "拾光小铺 · 线下"
+        ? (active ? "拾光小铺 · 活跃" : "拾光小铺 · 草稿")
         : !active
           ? "草稿"
           : published
             ? "GO GO SHOP · 活跃"
             : "线上未发布";
-      const statusClass = `status ${published ? "live" : "draft"}`;
+      const statusClass = `status ${salesChannel === "offline" ? (active ? "offline" : "draft") : (published ? "live" : "draft")}`;
       status.textContent = statusText;
       status.className = statusClass;
       sideStatus.textContent = statusText;
@@ -18318,7 +18324,7 @@
       fields.namedItem("description").value = product.descriptionEn || localization?.description || cleanStorefrontDescription(product.description, product) || "";
       fields.namedItem("descriptionZh").value = product.descriptionZh || "";
       const salesChannel = productSalesChannel(product, "offline");
-      fields.namedItem("status").value = product.published ? "active" : "draft";
+      fields.namedItem("status").value = productAdminStatus(product);
       fields.namedItem("onlineStore").checked = salesChannel === "online" && (product.onlineStore ?? product.published);
       fields.namedItem("featured").checked = Boolean(product.featured);
       fields.namedItem("offlineNewArrival").checked = /(^|[,;|\s])(new|new-arrival|新品|新到)([,;|\s]|$)/i.test(String(product.tags || ""));
