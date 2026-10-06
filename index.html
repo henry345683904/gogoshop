@@ -12068,7 +12068,7 @@
         categorySelect.value = primary;
       } else if (categorySelect) {
         const primary = product ? productCategoryKey(product) : 'blind-box';
-        const options = [...new Set(['blind-box', 'soft-toys', 'squishy', 'keychains-gifts', 'phone-cases', 'other-toys', 'phone-accessories', 'office-supplies', primary])];
+        const options = [...new Set(['blind-box', 'soft-toys', 'squishy', 'card', 'badge', 'keychains-gifts', 'phone-cases', 'other-toys', 'phone-accessories', 'office-supplies', primary])];
         categorySelect.innerHTML = options.map(key => `<option value="${escapeHtml(key)}">${escapeHtml(baseCategoryName(key))}</option>`).join('');
         categorySelect.value = primary;
       }
@@ -12100,7 +12100,7 @@
 
     function baseCategoryName(category, language = state.lang) {
       if (category === 'squishy') return language === 'zh' ? '捏捏乐' : 'Squishy';
-      const offlineNames = {'blind-box':['盲盒','Blind boxes'],'soft-toys':['毛绒玩具','Soft toys'],'other-toys':['其他玩具与周边','Other toys & accessories']};
+      const offlineNames = {'blind-box':['盲盒','Blind boxes'],'soft-toys':['毛绒玩具','Soft toys'],'squishy':['捏捏乐','Squishy'],'card':['卡片','Card'],'badge':['吧唧','Badge'],'other-toys':['其他玩具与周边','Other toys & accessories']};
       if (offlineNames[category]) return offlineNames[category][language === 'zh' ? 0 : 1];
       const occasion = holidayCategories.find(item => item.key === category);
       if (occasion) return language === "zh" ? occasion.zh : occasion.en;
@@ -12164,6 +12164,8 @@
       if (storedOffline === 'squishy' || /捏捏|squish(?:y|ies)\b/i.test([product.title, product.titleZh, product.titleEn].filter(Boolean).join(' '))) return 'squishy';
       if (['blind-box','soft-toys','other-toys'].includes(storedOffline)) return storedOffline;
       const offlineText = [product.title, product.titleZh, product.titleEn].filter(Boolean).join(' ');
+      if (['card', 'cards'].includes(storedOffline) || /\b cards?\b|卡片|卡牌/i.test(offlineText)) return 'card';
+      if (storedOffline === 'badge' || /\bbadge\b|吧唧|徽章|胸针/i.test(offlineText)) return 'badge';
       if (/盲盒|blind[\s-]*box(?:es)?\b/i.test(offlineText)) return 'blind-box';
       if (/毛绒|毛絨|soft[\s-]*toys?\b|plush|stuffed[\s-]*(?:toys?|animals?)/i.test(offlineText)) return 'soft-toys';
       if (storedOffline === 'blind-box-plush' || storefrontCategoryByProductId.get(product.id) === 'blind-box-plush') {
