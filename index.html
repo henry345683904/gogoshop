@@ -12161,11 +12161,11 @@
         return match?.key || "gifts";
       }
       const storedOffline = String(product?.category || '').split('||')[0];
-      if (storedOffline === 'squishy' || /捏捏|squish(?:y|ies)\b/i.test([product.title, product.titleZh, product.titleEn].filter(Boolean).join(' '))) return 'squishy';
-      if (['blind-box','soft-toys','other-toys'].includes(storedOffline)) return storedOffline;
       const offlineText = [product.title, product.titleZh, product.titleEn].filter(Boolean).join(' ');
       if (['card', 'cards'].includes(storedOffline) || /\b cards?\b|卡片|卡牌/i.test(offlineText)) return 'card';
       if (storedOffline === 'badge' || /\bbadge\b|吧唧|徽章|胸针/i.test(offlineText)) return 'badge';
+      if (storedOffline === 'squishy' || /捏捏|squish(?:y|ies)\b/i.test(offlineText)) return 'squishy';
+      if (['blind-box','soft-toys','other-toys'].includes(storedOffline)) return storedOffline;
       if (/盲盒|blind[\s-]*box(?:es)?\b/i.test(offlineText)) return 'blind-box';
       if (/毛绒|毛絨|soft[\s-]*toys?\b|plush|stuffed[\s-]*(?:toys?|animals?)/i.test(offlineText)) return 'soft-toys';
       if (storedOffline === 'blind-box-plush' || storefrontCategoryByProductId.get(product.id) === 'blind-box-plush') {
