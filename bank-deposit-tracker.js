@@ -1,7 +1,11 @@
 (function () {
   const storageKey = (userId) => `gogoshop-bank-deposits-${userId || "admin"}`;
   const money = (value) => new Intl.NumberFormat("en-NZ", { style: "currency", currency: "NZD" }).format(Number(value) || 0);
-  const today = () => new Date().toISOString().slice(0, 10);
+  const today = () => {
+    const parts = new Intl.DateTimeFormat('en-NZ', { timeZone: 'Pacific/Auckland', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(new Date());
+    const value = type => parts.find(part => part.type === type).value;
+    return `${value('year')}-${value('month')}-${value('day')}`;
+  };
   let currentUser = null;
   let recordsCache = [];
   let loading = false;
