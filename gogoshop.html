@@ -18,7 +18,7 @@
       try {
         if (location.hash === "#admin" && !new URLSearchParams(location.search).has("v")) {
           var next = new URL(location.href);
-          next.searchParams.set("v", "offline-code-input-20261007");
+          next.searchParams.set("v", "barcode-full-width-20261007");
           location.replace(next.href);
         }
       } catch (error) {}
@@ -4454,6 +4454,10 @@
       min-width: 0;
       font-variant-numeric: tabular-nums;
       letter-spacing: .02em;
+    }
+
+    .product-barcode-field {
+      grid-column: 1 / -1;
     }
 
     .product-inventory-code-input {
@@ -9449,7 +9453,7 @@
                   <span>货号（可手动输入）</span>
                   <input class="product-inventory-code-input" type="text" name="itemCode" autocomplete="off" spellcheck="false">
                 </label>
-                <div class="field">
+                <div class="field product-barcode-field">
                   <label for="productBarcodeInput">条形码</label>
                   <div class="product-barcode-scan-control" data-product-barcode-control>
                     <input id="productBarcodeInput" type="text" name="barcode" autocomplete="off" autocapitalize="off" spellcheck="false" data-product-barcode-input>
@@ -19718,6 +19722,7 @@
   </script>
 </body>
 </html>
+
 
 
 
