@@ -9913,7 +9913,7 @@
   <script src="online-category-editor.js?v=7"></script>
   <script src="invoice-advisor.js?v=3"></script>
   <script src="pos-order-editor.js?v=1"></script>
-  <script src="bank-deposit-tracker.js?v=1"></script>
+  <script src="bank-deposit-tracker.js?v=2"></script>
   <script src="freight-calculator.js?v=3"></script>
   <script src="product-localizations.js?v=5"></script>
   <script>
@@ -17412,7 +17412,7 @@
       }
       switch (activeTab) {
         case "overview":
-          window.renderBankDepositTracker?.(isFullAdmin(), state.lang, state.session?.user?.id);
+          window.renderBankDepositTracker?.(isFullAdmin(), state.lang, state.session?.user?.id, db);
           window.renderFreightCalculator?.(isFullAdmin(), state.lang, state.session?.user?.id);
           renderMetrics("#metricGrid");
           renderRevenueChart();
