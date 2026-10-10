@@ -11,7 +11,8 @@
   let unclassifiedOnly = false;
   const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const text = (zh, en) => context.lang() === 'zh' ? zh : en;
-  const products = () => context.products().filter(p => context.channel(p) === 'online');
+  const editChannel = () => context.editChannel || 'online';
+  const products = () => context.products().filter(p => context.channel(p) === editChannel());
   function options(base) {
     const removed = new Set(registry.filter(c => c.deleted).map(c => c.key));
     return [...new Set([...base, ...registry.filter(c => !c.deleted).map(c => c.key)])]
@@ -26,7 +27,7 @@
   const parent = key => registry.find(c=>c.key===key)?.parent_key || '';
   const children = key => registry.filter(c=>!c.deleted && c.parent_key===key).map(c=>c.key);
   const primaryOptions = base => options(base).filter(k=>!parent(k));
-  const allKeys = () => primaryOptions(products().flatMap(context.keys)).flatMap(k=>[k,...children(k)]);
+  const allKeys = () => editChannel() === 'offline' ? [...new Set([...(context.baseKeys || []), ...products().flatMap(context.keys)])].filter(k=>k && k!=='All') : primaryOptions(products().flatMap(context.keys)).flatMap(k=>[k,...children(k)]);
   const label = (key,lang) => registry.find(c=>c.key===key && !c.deleted)?.[lang==='zh'?'name_zh':'name_en'] || '';
   const names = key => ({zh:label(key,'zh') || context.defaultName(key,'zh'),en:label(key,'en') || context.defaultName(key,'en')});
   const nameInputs = key => `<div class="category-editor-names"><label>${text('中文名称','Chinese name')}<input name="nameZh" required maxlength="100" value="${esc(key?names(key).zh:'')}" autocomplete="off"></label><label>${text('英文名称','English name')}<input name="nameEn" required maxlength="100" value="${esc(key?names(key).en:'')}" autocomplete="off"></label></div>`;
@@ -41,10 +42,11 @@
   }
   function render() {
     const keys = allKeys();
-    dialog.innerHTML = `<form method="dialog" class="category-editor-header"><h2>${text('编辑线上分类','Edit online categories')}</h2><button type="button" data-cat-close class="action-button" aria-label="${text('关闭','Close')}" title="${text('关闭','Close')}"><i data-lucide="x"></i></button></form>
-      <div class="category-editor-body"><aside><form data-cat-create class="category-editor-create"><label>${text('所属一级分类','Primary category')}<select name="parentKey"><option value="">${text('新增一级分类','New primary category')}</option>${primaryOptions(products().flatMap(context.keys)).map(k=>`<option value="${esc(k)}">${esc(context.name(k))}</option>`).join('')}</select></label>${nameInputs('')}<button class="action-button" title="${text('新增分类','Add category')}" aria-label="${text('新增分类','Add category')}"><i data-lucide="plus"></i></button></form>
+    const offline = editChannel() === 'offline';
+    dialog.innerHTML = `<form method="dialog" class="category-editor-header"><h2>${offline ? text('编辑线下分类','Edit offline categories') : text('编辑线上分类','Edit online categories')}</h2><button type="button" data-cat-close class="action-button" aria-label="${text('关闭','Close')}" title="${text('关闭','Close')}"><i data-lucide="x"></i></button></form>
+      <div class="category-editor-body"><aside>${offline ? '' : `<form data-cat-create class="category-editor-create"><label>${text('所属一级分类','Primary category')}<select name="parentKey"><option value="">${text('新增一级分类','New primary category')}</option>${primaryOptions(products().flatMap(context.keys)).map(k=>`<option value="${esc(k)}">${esc(context.name(k))}</option>`).join('')}</select></label>${nameInputs('')}<button class="action-button" title="${text('新增分类','Add category')}" aria-label="${text('新增分类','Add category')}"><i data-lucide="plus"></i></button></form>`}
       <nav aria-label="${text('分类','Categories')}">${keys.map(k => `<button type="button" data-cat-key="${esc(k)}" aria-pressed="${current===k}"><span>${parent(k)?'↳ ':''}${esc(context.name(k))}</span><small>${products().filter(p=>context.keys(p).includes(k)).length}</small></button>`).join('')}</nav></aside>
-      <section>${current ? `<form data-cat-rename class="category-editor-rename">${nameInputs(current)}<button class="button ghost">${text('保存名称','Save names')}</button><button type="button" data-cat-delete class="action-button" ${current==='other'?'disabled':''} title="${text('删除分类','Delete category')}" aria-label="${text('删除分类','Delete category')}"><i data-lucide="trash-2"></i></button></form>
+      <section>${current ? `${offline ? '' : `<form data-cat-rename class="category-editor-rename">${nameInputs(current)}<button class="button ghost">${text('保存名称','Save names')}</button><button type="button" data-cat-delete class="action-button" ${current==='other'?'disabled':''} title="${text('删除分类','Delete category')}" aria-label="${text('删除分类','Delete category')}"><i data-lucide="trash-2"></i></button></form>`}
       <label class="category-editor-search">${text('搜索商品名称或货号','Search product name or item code')}<input type="search" data-cat-search value="${esc(query)}" autocomplete="off"></label>
       <label class="category-editor-unclassified"><input type="checkbox" data-cat-unclassified ${unclassifiedOnly?'checked':''}>${text('仅显示未分类商品','Unclassified products only')}</label>
       <div class="category-editor-tools"><button type="button" class="button ghost" data-cat-select>${text('选择搜索结果','Select results')}</button><button type="button" class="button ghost" data-cat-clear>${text('取消选择搜索结果','Deselect results')}</button><output data-cat-count></output></div><div class="category-editor-products"></div>` : `<p>${text('请新增或选择分类','Add or select a category')}</p>`}</section></div>
@@ -96,8 +98,9 @@
           const update = await context.db.from('products').update({
             category: change.category,
             updated_at: new Date().toISOString()
-          }).eq('id', change.id);
+          }).eq('id', change.id).select('id,category');
           if (update.error) throw update.error;
+          if (!update.data?.some(row => String(row.id) === String(change.id) && row.category === change.category)) throw new Error(text('分类未保存，请检查管理员权限后重试','Category was not saved. Check administrator permissions and retry.'));
         }
         result = { error: null };
       } else if (translations && action === 'create') {
@@ -108,16 +111,18 @@
         result = await context.db.rpc('save_online_category_names', {
           p_key:current,p_name_zh:translations.zh,p_name_en:translations.en,p_create:false
         });
-      } else {
+      } else if (editChannel() === 'online') {
         result = await context.db.rpc('edit_online_category', {
           p_action:action, p_key:current || name, p_name:name || null,
           p_changes:changes,
           p_add:[],
           p_remove:[]
         });
+      } else {
+        result = { error: null };
       }
       if (result.error) throw result.error;
-      await load(context.db);
+      if (editChannel() === 'online') await load(context.db);
       const refreshed = await context.refresh();
       if (!refreshed) throw new Error(text('已保存，但商品刷新失败。请关闭后重新打开。','Saved, but products could not refresh. Close and reopen.'));
       switchCategory(action==='delete' ? allKeys()[0] || '' : name || current);
@@ -168,7 +173,7 @@
     }
     current='';selected=new Set();original=new Set();busy=true;render();dialog.showModal();
     status(text('正在加载…','Loading…'));
-    try { await load(context.db); if(!await context.refresh())throw new Error(text('商品加载失败，请重试','Could not load products. Try again.'));switchCategory(allKeys()[0] || ''); }
+    try { if(editChannel() === 'online') await load(context.db); if(!await context.refresh())throw new Error(text('商品加载失败，请重试','Could not load products. Try again.'));switchCategory(allKeys()[0] || ''); }
     catch(error){status(error.message || String(error));}
     finally { busy=false; }
   }

@@ -18,7 +18,7 @@
       try {
         if (location.hash === "#admin" && !new URLSearchParams(location.search).has("v")) {
           var next = new URL(location.href);
-          next.searchParams.set("v", "offline-category-manual-20261010");
+          next.searchParams.set("v", "offline-category-editor-20261011");
           location.replace(next.href);
         }
       } catch (error) {}
@@ -9910,7 +9910,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="store-config.js"></script>
   <link rel="stylesheet" href="online-category-editor.css?v=4">
-  <script src="online-category-editor.js?v=7"></script>
+  <script src="online-category-editor.js?v=8"></script>
   <script src="invoice-advisor.js?v=3"></script>
   <script src="pos-order-editor.js?v=1"></script>
   <script src="bank-deposit-tracker.js?v=2"></script>
@@ -16825,7 +16825,7 @@
     function renderAdminProductCategoryFilter(products = adminProductChannelProducts()) {
       const editorButton = $("[data-edit-online-categories]");
       if (editorButton) {
-        editorButton.hidden = !canAccessAdmin() || activeAdminProductChannel() !== "online";
+        editorButton.hidden = !canAccessAdmin();
         editorButton.querySelector("span").textContent = state.lang === "zh" ? "编辑分类" : "Edit categories";
       }
       const select = $("#adminProductCategoryFilter");
@@ -19209,10 +19209,11 @@
       if (target.matches("[data-open-product-tab], [data-new-product]")) openNewProductEditor();
       if (target.matches("[data-close-product-editor]")) closeProductEditor();
       if (target.matches("[data-clear-form]")) clearProductForm();
-      if (target.matches("[data-edit-online-categories]") && canAccessAdmin() && activeAdminProductChannel() === "online") {
+      if (target.matches("[data-edit-online-categories]") && canAccessAdmin() && ["online", "offline"].includes(activeAdminProductChannel())) {
         void window.GOGO_CATEGORY_EDITOR.open({
           db, lang: () => state.lang, allowed: () => canAccessAdmin(),
-          products: () => state.products, channel: p => productSalesChannel(p, "offline"),
+          products: () => state.products, channel: p => productSalesChannel(p, "offline"), editChannel: activeAdminProductChannel(),
+          baseKeys: storefrontCategories.map(category => category.key),
           keys: productCategoryKeys, name: categoryName, defaultName: baseCategoryName, productName,
           refresh: () => loadStoreInventory(true)
         });
