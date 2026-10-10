@@ -19211,7 +19211,7 @@
       if (target.matches("[data-clear-form]")) clearProductForm();
       if (target.matches("[data-edit-online-categories]") && canAccessAdmin() && ["online", "offline"].includes(activeAdminProductChannel())) {
         void window.GOGO_CATEGORY_EDITOR.open({
-          db, lang: () => state.lang, allowed: () => canAccessAdmin(),
+          db, lang: () => state.lang, allowed: () => true,
           products: () => state.products, channel: p => productSalesChannel(p, "offline"), editChannel: activeAdminProductChannel(),
           baseKeys: storefrontCategories.map(category => category.key),
           keys: productCategoryKeys, name: categoryName, defaultName: baseCategoryName, productName,
