@@ -18,7 +18,7 @@
       try {
         if (location.hash === "#admin" && !new URLSearchParams(location.search).has("v")) {
           var next = new URL(location.href);
-          next.searchParams.set("v", "barcode-item-code-20261007");
+          next.searchParams.set("v", "offline-category-manual-20261010");
           location.replace(next.href);
         }
       } catch (error) {}
@@ -12181,9 +12181,15 @@
         const match = ONLINE_ADMIN_CATEGORIES.slice().sort((a,b)=>b.priority-a.priority).find(definition => definition.match.test(text));
         return match?.key || "gifts";
       }
-      const storedOffline = String(product?.category || '').split('||')[0];
+      const storedOffline = String(product?.category || '').split('||')[0].trim();
+      // An explicitly saved category takes precedence over name-based guesses.
+      if (storedOffline === 'cards') return 'card';
+      if (['card', 'badge', 'squishy', 'blind-box', 'soft-toys', 'other-toys',
+        'keychains-gifts', 'phone-cases', 'phone-accessories', 'office-supplies', 'other', 'uncategorized'].includes(storedOffline)
+        || (storedOffline !== 'blind-box-plush' && storefrontCategoryKeys.has(storedOffline))) return storedOffline;
       const offlineText = [product.title, product.titleZh, product.titleEn].filter(Boolean).join(' ');
-      if (['card', 'cards'].includes(storedOffline) || /\b cards?\b|卡片|卡牌/i.test(offlineText)) return 'card';
+      const cardAccessory = /\b(?:wallets?|holders?|sleeves?|binders?|albums?|pouches?|cases?)\b|卡包|卡夹|卡套|卡册|卡盒|卡片收纳|卡牌收纳/i.test(offlineText);
+      if (!cardAccessory && /\bcards?\b|卡片|卡牌/i.test(offlineText)) return 'card';
       if (storedOffline === 'badge' || /\bbadge\b|吧唧|徽章|胸针/i.test(offlineText)) return 'badge';
       if (storedOffline === 'squishy' || /捏捏|squish(?:y|ies)\b/i.test(offlineText)) return 'squishy';
       if (['blind-box','soft-toys','other-toys'].includes(storedOffline)) return storedOffline;
