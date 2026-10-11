@@ -9472,6 +9472,13 @@
                 <input type="number" name="stock" min="0" step="1" required>
               </label>
             </section>
+
+            <section class="shopify-editor-card" data-phone-film-stock-editor hidden>
+              <div class="shopify-card-head"><h3>6666 手机膜型号库存</h3></div>
+              <p class="muted">按手机型号维护库存。填写相同的共享库存组后，这些通用膜会共用同一库存。</p>
+              <div class="phone-film-stock-list" data-phone-film-stock-list></div>
+              <button class="button ghost" type="button" data-add-phone-film-stock><i data-lucide="plus"></i> 添加手机型号</button>
+            </section>
           </div>
 
           <aside class="product-editor-sidebar">
@@ -18076,6 +18083,49 @@
       setProductMediaUrls(urls);
     }
 
+    function isPhoneFilm6666Product(productOrForm) {
+      const values = productOrForm?.elements
+        ? [productOrForm.elements.namedItem("sku")?.value, productOrForm.elements.namedItem("barcode")?.value, productOrForm.elements.namedItem("itemCode")?.value]
+        : [productOrForm?.sku, productOrForm?.barcode, productOrForm?.itemCode, productOrForm?.item_code];
+      return values.some(value => String(value || "").trim() === "6666");
+    }
+
+    function normalizePhoneFilmStockRows(value) {
+      const rows = Array.isArray(value) ? value : [];
+      return rows.map((row) => {
+        if (typeof row === "string") return { name: String(row).trim(), stock: 0, sharedGroup: "" };
+        return { name: String(row?.name || row?.title || row?.value || "").trim(), stock: Math.max(0, Math.floor(Number(row?.stock) || 0)), sharedGroup: String(row?.sharedGroup || row?.shared_group || "").trim() };
+      }).filter(row => row.name);
+    }
+
+    function renderPhoneFilmStockEditor(productOrForm) {
+      const form = productOrForm?.elements ? productOrForm : $(`[data-product-form]`);
+      const panel = $(`[data-phone-film-stock-editor]`, form);
+      const list = $(`[data-phone-film-stock-list]`, form);
+      if (!panel || !list) return;
+      const visible = isPhoneFilm6666Product(form);
+      panel.hidden = !visible;
+      if (!visible) { list.innerHTML = ""; return; }
+      const product = state.products.find(item => String(item.id) === String(form.elements.namedItem("id")?.value));
+      const rows = normalizePhoneFilmStockRows(product?.sourceVariants);
+      if (!rows.length) rows.push({ name: "iPhone 13 Pro Max", stock: 0, sharedGroup: "" });
+      list.innerHTML = rows.map((row, index) => `<div class="form-row phone-film-stock-row" data-phone-film-row="${index}">
+        <label class="field"><span>手机型号</span><input type="text" data-phone-film-model value="${escapeHtml(row.name)}" list="phoneModelOptions"></label>
+        <label class="field"><span>库存</span><input type="number" data-phone-film-stock min="0" step="1" value="${row.stock}"></label>
+        <label class="field"><span>共享库存组（可选）</span><input type="text" data-phone-film-shared placeholder="例如 universal" value="${escapeHtml(row.sharedGroup)}"></label>
+        <button class="icon-button" type="button" data-remove-phone-film-row aria-label="删除型号" title="删除型号"><i data-lucide="trash-2"></i></button>
+      </div>`).join("");
+      refreshIcons();
+    }
+
+    function readPhoneFilmStockRows(form = $(`[data-product-form]`)) {
+      return $$(`[data-phone-film-row]`, form).map(row => ({
+        name: String($(`[data-phone-film-model]`, row)?.value || "").trim(),
+        stock: Math.max(0, Math.floor(Number($(`[data-phone-film-stock]`, row)?.value || 0))),
+        sharedGroup: String($(`[data-phone-film-shared]`, row)?.value || "").trim()
+      })).filter(row => row.name);
+    }
+
     function updateProductEditorPreview() {
       const form = $("[data-product-form]");
       if (!form) return;
@@ -18103,6 +18153,7 @@
       }
 
       renderProductMediaEditor(form);
+      renderPhoneFilmStockEditor(form);
 
       const editorTitle = state.productEditorLanguage === "zh"
         ? fields.namedItem("titleZh").value.trim()
@@ -18750,7 +18801,7 @@
         sourcePriceCny,
         sourceCurrency,
         sourceUrl: data.sourceUrl.trim(),
-        sourceVariants: existing?.sourceVariants || [],
+        sourceVariants: isPhoneFilm6666Product(form) ? readPhoneFilmStockRows(form) : (existing?.sourceVariants || []),
         sourceAttributes: existing?.sourceAttributes || [],
         stock: Number(data.stock),
         salesChannel: selectedChannel,
@@ -19219,6 +19270,18 @@
         });
       }
       if (target.matches("[data-edit-product]")) editProduct(target.dataset.editProduct);
+      if (target.matches("[data-add-phone-film-stock]")) {
+        const list = target.closest("[data-phone-film-stock-editor]")?.querySelector("[data-phone-film-stock-list]");
+        if (list) {
+          const row = document.createElement("div");
+          row.className = "form-row phone-film-stock-row";
+          row.innerHTML = `<label class="field"><span>手机型号</span><input type="text" data-phone-film-model list="phoneModelOptions"></label><label class="field"><span>库存</span><input type="number" data-phone-film-stock min="0" step="1" value="0"></label><label class="field"><span>共享库存组（可选）</span><input type="text" data-phone-film-shared placeholder="例如 universal"></label><button class="icon-button" type="button" data-remove-phone-film-row aria-label="删除型号" title="删除型号"><i data-lucide="trash-2"></i></button>`;
+          list.append(row);
+          refreshIcons();
+          row.querySelector("[data-phone-film-model]")?.focus();
+        }
+      }
+      if (target.matches("[data-remove-phone-film-row]")) target.closest("[data-phone-film-row], .phone-film-stock-row")?.remove();
       if (target.matches("[data-toggle-featured]")) toggleFeaturedProduct(target.dataset.toggleFeatured);
       if (target.matches("[data-toggle-product-discount]")) {
         event.stopPropagation();
