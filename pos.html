@@ -293,10 +293,16 @@
       const text=[product?.category,product?.title,product?.title_en,product?.title_zh,product?.tags].map(value=>String(value||"").toLocaleLowerCase()).join(" ");
       return /phone\s*case|screen\s*(?:protector|film)|tempered\s*glass|hydrogel|phone\s*film|phone\s*protector|glass\s*protector|手机壳|手机膜|钢化膜|保护膜|水凝膜|防窥膜|贴膜/.test(text);
     }
+    function sourceVariantArray(value){
+      if(Array.isArray(value))return value;
+      if(typeof value==="string"){try{const parsed=JSON.parse(value);return sourceVariantArray(parsed)}catch{return []}}
+      if(value&&typeof value==="object"){for(const key of ["variants","items","models","data"]){if(Array.isArray(value[key]))return value[key]}}
+      return [];
+    }
     function phoneModelOptions(product){
       const values=[];
       const add=(value)=>String(value||"").replace(/[\r\n，、|]+/g,",").split(",").map(item=>normalizePhoneModel(item)).filter(item=>item&&item.length<=80).forEach(item=>{if(!values.includes(item))values.push(item)});
-      const variants=[product?.source_variants,product?.sourceVariants].find(Array.isArray)||[];
+      const variants=sourceVariantArray(product?.source_variants??product?.sourceVariants);
       variants.forEach(variant=>add(variant?.name??variant?.title??variant?.value??variant));
       const attributes=[product?.source_attributes,product?.sourceAttributes].find(Array.isArray)||[];
       attributes.filter(attribute=>/model|型号|机型|适用/.test(String(attribute?.name||""))).forEach(attribute=>add(attribute?.value));
@@ -324,7 +330,7 @@
         field.innerHTML=`<span>${escapeHtml(t("phoneModelLabel"))}</span><input class="model-input" type="text" data-item-model="${escapeHtml(product.id)}" list="phoneModelOptions" maxlength="80" placeholder="${escapeHtml(t("phoneModelPlaceholder"))}" value="${escapeHtml(state.itemModels.get(product.id)||"")}" autocomplete="off">${phoneFilmAggregate(product)?`<small class="model-stock" data-model-stock="${escapeHtml(product.id)}"></small>`:""}`;
         noteInput.before(field);
       });
-      lines.filter(line=>phoneFilmAggregate(line.product)).forEach(({product})=>{const input=cartContent.querySelector(`[data-item-model="${CSS.escape(product.id)}"]`);const status=input?.closest(".model-field")?.querySelector("[data-model-stock]");if(!status)return;const model=normalizePhoneModel(input.value);const variant=(Array.isArray(product.source_variants)?product.source_variants:[]).find(item=>normalizePhoneModel(item?.name??item?.title??item?.value??item)===model);const stock=variant?Math.max(0,Number(variant.stock)||0):Math.max(0,Number(product.stock)||0);status.textContent=model?(state.lang==="zh"?`可用库存：${stock}`:`Available: ${stock}`):"";});
+      lines.filter(line=>phoneFilmAggregate(line.product)).forEach(({product})=>{const input=cartContent.querySelector(`[data-item-model="${CSS.escape(product.id)}"]`);const status=input?.closest(".model-field")?.querySelector("[data-model-stock]");if(!status)return;const model=normalizePhoneModel(input.value);const variant=sourceVariantArray(product.source_variants).find(item=>normalizePhoneModel(item?.name??item?.title??item?.value??item)===model);const stock=variant?Math.max(0,Number(variant.stock)||0):Math.max(0,Number(product.stock)||0);status.textContent=model?(state.lang==="zh"?`可用库存：${stock}`:`Available: ${stock}`):"";});
     }
     function receiptLines(){return [...state.cart].map(([id,quantity])=>{const product=state.products.find(item=>item.id===id);const unitPrice=product?cartUnitPrice(product):0;return product?{title:product.title,code:productItemCode(product)||product.id,quantity,unitPrice,subtotal:roundMoney(unitPrice*quantity),note:itemNoteText(id)}:null}).filter(Boolean)}
     function discountOfferText(type,value){const numeric=Number(value);if(!Number.isFinite(numeric)||numeric<=0)return "";return type==="percent"?`${numeric.toLocaleString("en-NZ",{maximumFractionDigits:2})}% OFF`:`${money.format(numeric)} OFF`}
@@ -481,7 +487,7 @@
     $("#clearManualDiscount").addEventListener("click",()=>{state.manualDiscount={type:"percent",value:0};render();$("#scanInput").focus()});
     function updateQty(id,value){const product=state.products.find(p=>p.id===id);const quantity=Math.max(0,Math.min(Number(product?.stock||0),Math.floor(Number(value)||0)));if(quantity)state.cart.set(id,quantity);else{state.cart.delete(id);state.itemNotes.delete(id);state.itemModels.delete(id);state.priceOverrides.delete(id)}render();$("#scanInput").focus()}
     function applyLocalStockDecrease(soldQuantities){soldQuantities.forEach((quantity,id)=>{const product=state.products.find(item=>item.id===id);if(product)product.stock=Math.max(0,(Number(product.stock)||0)-quantity)});rebuildProductLookup()}
-    function phoneFilmRows(product){const raw=Array.isArray(product?.source_variants)?product.source_variants:[];return raw.map((row,index)=>{if(row&&typeof row==="object")return {...row,name:normalizePhoneModel(row.name??row.title??row.value??""),stock:Math.max(0,Number(row.stock)||0),sharedGroup:String(row.sharedGroup??row.shared_group??"").trim()};return {name:normalizePhoneModel(row),stock:Math.max(0,Number(product?.stock)||0),sharedGroup:"",_legacy:index}}).filter(row=>row.name)}
+    function phoneFilmRows(product){const raw=sourceVariantArray(product?.source_variants);return raw.map((row,index)=>{if(row&&typeof row==="object")return {...row,name:normalizePhoneModel(row.name??row.title??row.value??""),stock:Math.max(0,Number(row.stock)||0),sharedGroup:String(row.sharedGroup??row.shared_group??"").trim()};return {name:normalizePhoneModel(row),stock:Math.max(0,Number(product?.stock)||0),sharedGroup:"",_legacy:index}}).filter(row=>row.name)}
     async function refreshPhoneFilmInventory(){
       const filmLines=[...state.cart].map(([id,quantity])=>({product:state.products.find(item=>item.id===id),quantity})).filter(line=>line.product&&phoneFilmAggregate(line.product));
       for(const {product,quantity} of filmLines){
