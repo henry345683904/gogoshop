@@ -481,6 +481,35 @@
     $("#clearManualDiscount").addEventListener("click",()=>{state.manualDiscount={type:"percent",value:0};render();$("#scanInput").focus()});
     function updateQty(id,value){const product=state.products.find(p=>p.id===id);const quantity=Math.max(0,Math.min(Number(product?.stock||0),Math.floor(Number(value)||0)));if(quantity)state.cart.set(id,quantity);else{state.cart.delete(id);state.itemNotes.delete(id);state.itemModels.delete(id);state.priceOverrides.delete(id)}render();$("#scanInput").focus()}
     function applyLocalStockDecrease(soldQuantities){soldQuantities.forEach((quantity,id)=>{const product=state.products.find(item=>item.id===id);if(product)product.stock=Math.max(0,(Number(product.stock)||0)-quantity)});rebuildProductLookup()}
+    function phoneFilmRows(product){const raw=Array.isArray(product?.source_variants)?product.source_variants:[];return raw.map((row,index)=>{if(row&&typeof row==="object")return {...row,name:normalizePhoneModel(row.name??row.title??row.value??""),stock:Math.max(0,Number(row.stock)||0),sharedGroup:String(row.sharedGroup??row.shared_group??"").trim()};return {name:normalizePhoneModel(row),stock:Math.max(0,Number(product?.stock)||0),sharedGroup:"",_legacy:index}}).filter(row=>row.name)}
+    async function refreshPhoneFilmInventory(){
+      const filmLines=[...state.cart].map(([id,quantity])=>({product:state.products.find(item=>item.id===id),quantity})).filter(line=>line.product&&phoneFilmAggregate(line.product));
+      for(const {product,quantity} of filmLines){
+        const {data,error}=await db.from("products").select("id,stock,source_variants").eq("id",product.id).maybeSingle();
+        if(error)throw error;
+        if(!data)throw new Error(state.lang==="zh"?"手机膜产品不存在":"The phone film product was not found");
+        product.stock=Number(data.stock)||0;product.source_variants=data.source_variants;
+        const model=normalizePhoneModel(state.itemModels.get(product.id)||"");
+        const rows=phoneFilmRows(product);
+        if(!model||!rows.length)continue;
+        const row=rows.find(item=>item.name===model);
+        if(!row)throw new Error(state.lang==="zh"?`请选择已配置的手机型号：${model}`:`Choose a configured phone model: ${model}`);
+        if(row.stock<quantity)throw new Error(state.lang==="zh"?`${model} 库存不足，当前 ${row.stock}`:`${model} has only ${row.stock} in stock`);
+      }
+    }
+    async function decrementPhoneFilmInventory(soldQuantities){
+      for(const [id,quantity] of soldQuantities){
+        const product=state.products.find(item=>item.id===id);if(!phoneFilmAggregate(product))continue;
+        const model=normalizePhoneModel(state.itemModels.get(id)||"");if(!model)continue;
+        const rows=phoneFilmRows(product);const row=rows.find(item=>item.name===model);if(!row)continue;
+        const nextStock=Math.max(0,row.stock-quantity);
+        if(row.sharedGroup)rows.forEach(item=>{if(item.sharedGroup===row.sharedGroup)item.stock=nextStock});else row.stock=nextStock;
+        const payload=rows.map(({_legacy,...item})=>item);
+        const {error}=await db.from("products").update({source_variants:payload}).eq("id",id);
+        if(error)throw error;
+        product.source_variants=payload;
+      }
+    }
     function setLinePrice(id,value){const product=state.products.find(item=>item.id===id);const numeric=Number(value);if(!product||!Number.isFinite(numeric)||numeric<0||numeric>999999.99){setStatus(t("invalidPrice"),"error");render();return}const price=roundMoney(numeric);if(Math.abs(price-roundMoney(product.price))<0.005)state.priceOverrides.delete(id);else state.priceOverrides.set(id,price);render();setStatus(`${product.title} · ${t("linePriceLabel")} ${money.format(price)}`,"success")}
     function render(){
       const lines=[...state.cart].map(([id,quantity])=>({product:state.products.find(p=>p.id===id),quantity})).filter(x=>x.product);
@@ -534,6 +563,7 @@
       const clientVoucherDiscount=roundMoney(voucherValue(chosenVoucher?.vouchers,clientSubtotal));
       const clientManualDiscount=manualDiscountValue(clientSubtotal,clientVoucherDiscount);
       try{
+        await refreshPhoneFilmInventory();
         const items=[...state.cart].map(([product_id,quantity])=>{const product=state.products.find(entry=>entry.id===product_id);return {product_id,quantity,unit_price:cartUnitPrice(product),note:itemNoteText(product_id)}});
         const rpcArgs={p_items:items,p_customer_barcode:state.customer?.customer_barcode||null,p_customer_voucher_id:chosenVoucher?.id||null,p_order_note:orderNote,p_manual_discount_type:clientManualDiscount>0?state.manualDiscount.type:null,p_manual_discount_value:clientManualDiscount>0?Number(state.manualDiscount.value)||0:0};
         const paymentMethod=document.querySelector('[name="posPaymentMethod"]:checked')?.value||"eftpos";
@@ -561,6 +591,7 @@
         renderCustomerSelection();
         renderVoucherOptions();
         applyLocalStockDecrease(soldQuantities);
+        try{await decrementPhoneFilmInventory(soldQuantities)}catch(inventoryError){console.error("Phone film model inventory sync failed",inventoryError);setStatus(state.lang==="zh"?"订单已完成，但手机膜型号库存同步失败，请刷新后台检查":"Order completed, but phone film model stock sync failed. Check the admin after refreshing.","error")}
         void loadProducts().catch(()=>{});
         $("#lastOrder").classList.remove("hidden");
         $("#reprintBtn").classList.remove("hidden");
