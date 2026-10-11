@@ -408,7 +408,7 @@
     }
     window.addEventListener("focus",refreshProductsWhenVisible);
     document.addEventListener("visibilitychange",refreshProductsWhenVisible);
-    async function loadProductModelOptions(product){if(!product||product.modelOptionsLoaded||!isPhoneModelProduct(product))return;product.modelOptionsLoaded=true;const {data,error}=await db.from("products").select("source_variants,source_attributes").eq("id",product.id).maybeSingle();if(error||!data)return;product.source_variants=data.source_variants;product.source_attributes=data.source_attributes;if(state.cart.has(product.id))render()}
+    async function loadProductModelOptions(product){if(!product||product.modelOptionsLoaded||!isPhoneModelProduct(product))return;product.modelOptionsLoaded=true;const {data,error}=await db.from("products").select("source_variants").eq("id",product.id).maybeSingle();if(error||!data)return;product.source_variants=data.source_variants;if(state.cart.has(product.id))render()}
     async function checkAdmin(user){
       let result=await db.from("profiles").select("id,is_admin,admin_role").eq("id",user.id).single();
       if(result.error&&/admin_role/i.test(result.error.message||"")){
