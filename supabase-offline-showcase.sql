@@ -14,11 +14,10 @@ where sales_channel='offline' and deleted_at is null
   and (
     coalesce(tags,'') ~* '(^|[,，[:space:]])offline-active([,，[:space:]]|$)'
     or not (
-      coalesce(tags,'') ~* '(^|[,，[:space:]])(offline-draft|draft|1688-orders-[^,，[:space:]]*)([,，[:space:]]|$)'
+      coalesce(tags,'') ~* '(^|[,，[:space:]])(offline-draft|draft)([,，[:space:]]|$)'
       or exists (
         select 1 from jsonb_array_elements(case when jsonb_typeof(source_attributes)='array' then source_attributes else '[]'::jsonb end) a
-        where coalesce(a->>'import_batch','') <> ''
-          or (coalesce(a->>'invoice_number','') <> '' and price=0 and not coalesce(published,false))
+        where coalesce(a->>'invoice_number','') <> '' and price=0 and not coalesce(published,false)
       )
     )
   );

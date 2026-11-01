@@ -16864,11 +16864,10 @@
         .map((value) => value.trim().toLowerCase())
         .filter(Boolean);
       if (tags.includes("offline-active")) return false;
-      if (tags.includes("offline-draft") || tags.includes("draft") || tags.some((tag) => tag.startsWith("1688-orders-"))) return true;
+      if (tags.includes("offline-draft") || tags.includes("draft")) return true;
       const attributes = [product?.sourceAttributes, product?.source_attributes]
         .flatMap((value) => Array.isArray(value) ? value : []);
-      return attributes.some((attribute) => String(attribute?.import_batch || "").trim() !== ""
-        || (attribute?.invoice_number && Number(product.price) === 0 && !product.published));
+      return attributes.some((attribute) => attribute?.invoice_number && Number(product.price) === 0 && !product.published);
     }
 
     function productAdminStatus(product) {
