@@ -16863,10 +16863,12 @@
         .split(/[\s,，]+/)
         .map((value) => value.trim().toLowerCase())
         .filter(Boolean);
-      if (tags.includes("offline-draft") || tags.some((tag) => tag.startsWith("1688-orders-"))) return true;
+      if (tags.includes("offline-active")) return false;
+      if (tags.includes("offline-draft") || tags.includes("draft") || tags.some((tag) => tag.startsWith("1688-orders-"))) return true;
       const attributes = [product?.sourceAttributes, product?.source_attributes]
         .flatMap((value) => Array.isArray(value) ? value : []);
-      return attributes.some((attribute) => String(attribute?.import_batch || "").trim() !== "");
+      return attributes.some((attribute) => String(attribute?.import_batch || "").trim() !== ""
+        || (attribute?.invoice_number && Number(product.price) === 0 && !product.published));
     }
 
     function productAdminStatus(product) {
@@ -17074,6 +17076,7 @@
             <button class="action-button" type="button" data-open-product-label="${escapeHtml(product.id)}" aria-label="打印 ${escapeHtml(product.title)} Label" title="打印 Label"><i data-lucide="printer"></i></button>
             <label class="admin-product-discount" title="快速设置商品折扣" onclick="event.stopPropagation()"><input type="checkbox" data-toggle-product-discount="${escapeHtml(product.id)}" ${Number(product.discountPercent || 0) > 0 ? "checked" : ""} aria-label="启用折扣"><select data-product-discount-percent="${escapeHtml(product.id)}" aria-label="折扣百分比" ${Number(product.discountPercent || 0) > 0 ? "" : "disabled"}>${[5,10,15,20,25,30,50].map((value) => `<option value="${value}" ${Number(product.discountPercent) === value ? "selected" : ""}>-${value}%</option>`).join("")}</select></label>
             ${onlineActions}
+            ${!isOnlineChannel && isOfflineDraftProduct(product) ? `<button class="action-button" type="button" data-publish-offline="${escapeHtml(product.id)}" title="${state.lang === "zh" ? "发布商品" : "Publish product"}" aria-label="${state.lang === "zh" ? "发布商品" : "Publish product"}"><i data-lucide="upload"></i></button>` : ""}
             <button class="action-button" type="button" data-delete-product="${escapeHtml(product.id)}" aria-label="Delete ${escapeHtml(product.title)}"><i data-lucide="trash-2"></i></button>
           </div>
         </article>
@@ -18601,6 +18604,28 @@
       refreshIcons();
     }
 
+    async function publishOfflineProduct(id) {
+      const product = state.products.find((item) => item.id === id);
+      if (!product || !canManageProducts() || !isOfflineDraftProduct(product)) return;
+      const tags = String(product.tags || "").split(/[,，]+/).map(tag => tag.trim())
+        .filter(tag => tag && !/^(offline-draft|offline-active|draft)$/i.test(tag));
+      const nextTags = [...tags, "offline-active"].join(", ");
+      try {
+        if (!db) throw new Error("Database unavailable");
+        const { data, error } = await db.from("products").update({ tags: nextTags, updated_at: new Date().toISOString() })
+          .eq("id", id).eq("sales_channel", "offline").select("id");
+        if (error) throw error;
+        if (!data?.length) throw new Error("Product was not published");
+        product.tags = nextTags;
+        product.status = "active";
+        persistProducts();
+        renderAll();
+        showToast(state.lang === "zh" ? "商品已发布" : "Product published");
+      } catch (error) {
+        showToast(authErrorMessage(error));
+      }
+    }
+
     async function setProductOnlineState(id, online) {
       const product = state.products.find((item) => item.id === id);
       if (product && productSalesChannel(product, "offline") !== "online") return;
@@ -18817,9 +18842,9 @@
         productType: data.productType.trim(),
         vendor: data.vendor.trim(),
         tags: [...new Set([
-          ...String(data.tags || "").split(/[,，]+/).map(tag => tag.trim()).filter(tag => tag && !/^offline-draft$/i.test(tag)),
+          ...String(data.tags || "").split(/[,，]+/).map(tag => tag.trim()).filter(tag => tag && !/^(offline-draft|offline-active|draft)$/i.test(tag)),
           offlineNewArrival ? 'new-arrival' : '',
-          selectedChannel === "offline" && data.status === "draft" ? 'offline-draft' : ''
+          selectedChannel === "offline" ? (data.status === "draft" ? 'offline-draft' : 'offline-active') : ''
         ].filter(Boolean))].join(', '),
         template: data.template,
         image,
@@ -19296,6 +19321,10 @@
         const id = target.dataset.productDiscountPercent;
         const checkbox = $(`[data-toggle-product-discount="${CSS.escape(String(id))}"]`);
         void setProductDiscount(id, Boolean(checkbox?.checked), target.value);
+        return;
+      }
+      if (target.matches("[data-publish-offline]")) {
+        void publishOfflineProduct(target.dataset.publishOffline);
         return;
       }
       if (target.matches("[data-toggle-product-online]")) {
