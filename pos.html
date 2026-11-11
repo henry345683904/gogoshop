@@ -52,6 +52,9 @@
     .voucher-option span { color:var(--muted); font-size:12px; margin-top:2px; }
     .voucher-option b { color:var(--green); white-space:nowrap; }
     .discount-row { color:var(--green); }
+    .line-discount-field { display:flex; align-items:center; justify-content:space-between; gap:6px; margin-top:8px; font-size:11px; color:var(--muted); }
+    .line-discount-field span { white-space:nowrap; }
+    .line-discount-field input { width:66px; min-width:0; height:30px; padding:3px 5px; border:1px solid var(--line); border-radius:4px; font-size:13px; }
     .line-price-editor { display:flex; width:132px; align-items:center; gap:5px; }
     .line-price-field { display:grid; min-width:0; flex:1; grid-template-columns:24px minmax(0,1fr); align-items:center; overflow:hidden; border:1px solid var(--line); border-radius:5px; background:#fff; }
     .line-price-field:focus-within { border-color:var(--green); box-shadow:0 0 0 2px #cce8dc; }
@@ -517,6 +520,37 @@
       }
     }
     function setLinePrice(id,value){const product=state.products.find(item=>item.id===id);const numeric=Number(value);if(!product||!Number.isFinite(numeric)||numeric<0||numeric>999999.99){setStatus(t("invalidPrice"),"error");render();return}const price=roundMoney(numeric);if(Math.abs(price-roundMoney(product.price))<0.005)state.priceOverrides.delete(id);else state.priceOverrides.set(id,price);render();setStatus(`${product.title} · ${t("linePriceLabel")} ${money.format(price)}`,"success")}
+    function lineDiscountPrice(price,percent){return roundMoney(Number(price)*(100-Number(percent))/100)}
+    function renderLineDiscountControls(lines){
+      lines.forEach(({product})=>{
+        const input=document.querySelector(`[data-line-price="${CSS.escape(product.id)}"]`);
+        if(!input)return;
+        const label=document.createElement("label");
+        label.className="line-discount-field";
+        const text=document.createElement("span");
+        text.textContent=state.lang==="zh"?"单品折扣 %":"Item discount %";
+        const control=document.createElement("input");
+        control.type="number";control.min="0";control.max="100";control.step="0.01";control.inputMode="decimal";
+        control.dataset.lineDiscount=product.id;
+        control.setAttribute("aria-label",text.textContent);
+        control.disabled=Number(product.price)<=0;
+        const percent=Number(product.price)>0?Math.max(0,(1-cartUnitPrice(product)/Number(product.price))*100):0;
+        control.value=percent>0?String(Math.round(percent*100)/100):"";
+        control.placeholder="0";
+        label.append(text,control);input.closest("td").append(label);
+      });
+    }
+    $("#cartContent").addEventListener("change",event=>{
+      if(!event.target.matches("[data-line-discount]"))return;
+      const product=state.products.find(p=>p.id===event.target.dataset.lineDiscount);
+      const percent=Number(event.target.value);
+      if(!product)return;
+      if(!Number.isFinite(percent)||percent<0||percent>100){render();return}
+      setLinePrice(product.id,lineDiscountPrice(product.price,percent));
+    });
+    $("#cartContent").addEventListener("keydown",event=>{
+      if(event.key==="Enter"&&event.target.matches("[data-line-discount]")){event.preventDefault();event.target.blur()}
+    });
     function render(){
       const lines=[...state.cart].map(([id,quantity])=>({product:state.products.find(p=>p.id===id),quantity})).filter(x=>x.product);
       const count=lines.reduce((sum,line)=>sum+line.quantity,0);
@@ -547,6 +581,7 @@
       document.querySelectorAll("[data-manual-discount-type]").forEach(button=>button.setAttribute("aria-pressed",String(button.dataset.manualDiscountType===state.manualDiscount.type)));
       $("#cartContent").innerHTML=lines.length?`<table class="cart-table"><thead><tr><th>${state.lang==="zh"?"商品":"Product"}</th><th>${state.lang==="zh"?"单价":"Unit price"}</th><th>${state.lang==="zh"?"数量":"Qty"}</th><th>${state.lang==="zh"?"小计":"Subtotal"}</th><th></th></tr></thead><tbody>${lines.map(({product:p,quantity:q})=>{const unitPrice=cartUnitPrice(p);const overridden=hasPriceOverride(p);return `<tr><td><div class="product-cell"><img class="thumb" src="${escapeHtml(p.image||"")}" alt=""><div class="product-meta"><strong>${escapeHtml(p.title)}</strong><span>${escapeHtml(productItemCode(p)||p.id)} · ${t("stock")} ${p.stock}</span><input class="note-input" type="text" data-item-note="${escapeHtml(p.id)}" maxlength="500" placeholder="${escapeHtml(t("itemNotePlaceholder"))}" value="${escapeHtml(state.itemNotes.get(p.id)||"")}"></div></div></td><td><div class="line-price-editor"><label class="line-price-field"><span>$</span><input type="number" data-line-price="${escapeHtml(p.id)}" min="0" max="999999.99" step="0.01" inputmode="decimal" value="${unitPrice.toFixed(2)}" aria-label="${escapeHtml(t("linePriceLabel"))}"></label>${overridden?`<button class="line-price-reset" type="button" data-reset-line-price="${escapeHtml(p.id)}" title="${escapeHtml(t("originalPrice"))} ${escapeHtml(money.format(p.price))}"><i data-lucide="rotate-ccw"></i></button>`:""}</div>${overridden?`<small class="line-price-original">${escapeHtml(t("originalPrice"))} ${escapeHtml(money.format(p.price))}</small>`:""}</td><td><div class="qty"><button data-id="${escapeHtml(p.id)}" data-delta="-1">−</button><input aria-label="${state.lang==="zh"?"数量":"Quantity"}" data-id="${escapeHtml(p.id)}" value="${q}" inputmode="numeric"><button data-id="${escapeHtml(p.id)}" data-delta="1">+</button></div></td><td><strong>${money.format(unitPrice*q)}</strong></td><td><button class="remove" data-remove="${escapeHtml(p.id)}" title="${t("remove")} "><i data-lucide="x"></i></button></td></tr>`}).join("")}</tbody></table>`:`<div class="empty"><i data-lucide="scan-line"></i><p>${t("emptyCart")}</p></div>`;
       renderPhoneModelFields(lines);
+      renderLineDiscountControls(lines);
       renderDiscountedLinePrices(subtotal,totalDiscount);
       renderVoucherOptions();
       icons();
