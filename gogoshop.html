@@ -9473,6 +9473,10 @@
               </label>
             </section>
 
+            <section class="shopify-editor-card" data-animal-stock-editor hidden>
+              <div class="shopify-card-head"><h3>2003 · 小动物库存 / Animal stock</h3></div>
+              <div data-animal-stock-list></div>
+            </section>
             <section class="shopify-editor-card" data-phone-film-stock-editor hidden>
               <div class="shopify-card-head"><h3>6666 手机膜型号库存</h3></div>
               <p class="muted">按手机型号维护库存。填写相同的共享库存组后，这些通用膜会共用同一库存。</p>
@@ -17579,6 +17583,8 @@
     function clearProductForm() {
       const form = $("[data-product-form]");
       if (!form) return;
+      const animalPanel = $("[data-animal-stock-editor]", form);
+      if (animalPanel) delete animalPanel.dataset.loaded;
       const fields = form.elements;
       form.reset();
       renderExtraProductCategories();
@@ -18086,6 +18092,31 @@
       setProductMediaUrls(urls);
     }
 
+    const ANIMAL_2003_NAMES = ["小羊 / Lamb", "小鸭子 / Duck", "小猫咪 / Cat", "企鹅 / Penguin", "小猪 / Pig", "小兔子 / Rabbit", "秋田犬 / Akita", "小浣熊 / Raccoon", "狐狸 / Fox", "大象 / Elephant", "棕熊 / Brown Bear"];
+    function isAnimal2003Product(value) {
+      const fields = value?.elements;
+      return (fields ? [fields.namedItem("sku")?.value, fields.namedItem("itemCode")?.value] : [value?.sku, value?.itemCode, value?.item_code]).some(code => String(code || "").trim() === "2003");
+    }
+    function renderAnimalStockEditor(form) {
+      const panel = $("[data-animal-stock-editor]", form);
+      const product = state.products.find(p => String(p.id) === String(form.elements.namedItem("id")?.value));
+      panel.hidden = !isAnimal2003Product(form);
+      if (panel.hidden) { delete panel.dataset.loaded; return; }
+      const key = String(product?.id || "new");
+      if (panel.dataset.loaded === key) return;
+      panel.dataset.loaded = key;
+      const saved = product?.sourceVariants || [];
+      $("[data-animal-stock-list]", panel).innerHTML = ANIMAL_2003_NAMES.map((name, index) => {
+        const row = saved.find(v => v.animalKey === String(index)) || saved.find(v => v.name === name);
+        return `<label class="field" style="display:grid;grid-template-columns:minmax(0,1fr) 90px;align-items:center;gap:10px"><span>${escapeHtml(name)}</span><input type="number" min="0" step="1" data-animal-stock="${index}" aria-label="${escapeHtml(name)}" placeholder="待填写" value="${row?.stock ?? ""}"></label>`;
+      }).join("");
+    }
+    function readAnimalStockRows(form) {
+      const inputs = $$("[data-animal-stock]", form);
+      if (inputs.every(input => input.value === "")) return null;
+      if (inputs.some(input => input.value === "" || !Number.isInteger(Number(input.value)) || Number(input.value) < 0)) throw new Error("请填写全部 11 种小动物的库存（没有库存填 0） / Enter stock for all 11 animals");
+      return inputs.map(input => ({animalKey: input.dataset.animalStock, name: ANIMAL_2003_NAMES[Number(input.dataset.animalStock)], stock: Number(input.value)}));
+    }
     function isPhoneFilm6666Product(productOrForm) {
       const values = productOrForm?.elements
         ? [productOrForm.elements.namedItem("sku")?.value, productOrForm.elements.namedItem("barcode")?.value, productOrForm.elements.namedItem("itemCode")?.value]
@@ -18157,6 +18188,7 @@
 
       renderProductMediaEditor(form);
       renderPhoneFilmStockEditor(form);
+      renderAnimalStockEditor(form);
 
       const editorTitle = state.productEditorLanguage === "zh"
         ? fields.namedItem("titleZh").value.trim()
@@ -18765,6 +18797,9 @@
       }
       const id = data.id || `${(titleEn || titleZh).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}-${Date.now().toString(36)}`;
       const existing = state.products.find((product) => product.id === id);
+      let animalRows = null;
+      try { if (isAnimal2003Product(form)) animalRows = readAnimalStockRows(form); }
+      catch (error) { showToast(error.message); return; }
       const selectedChannel = normalizeSalesChannel(data.salesChannel, existing ? productSalesChannel(existing, "offline") : activeAdminProductChannel());
       if (isOnlineManager() && selectedChannel !== "online") {
         showToast(state.lang === "zh" ? "线上管理员只能保存 GO GO SHOP 线上商品" : "Online managers can only save GO GO SHOP products");
@@ -18826,9 +18861,9 @@
         sourcePriceCny,
         sourceCurrency,
         sourceUrl: data.sourceUrl.trim(),
-        sourceVariants: isPhoneFilm6666Product(form) ? readPhoneFilmStockRows(form) : (existing?.sourceVariants || []),
+        sourceVariants: isAnimal2003Product(form) ? (animalRows || existing?.sourceVariants || []) : isPhoneFilm6666Product(form) ? readPhoneFilmStockRows(form) : (existing?.sourceVariants || []),
         sourceAttributes: existing?.sourceAttributes || [],
-        stock: Number(data.stock),
+        stock: animalRows ? animalRows.reduce((sum, row) => sum + row.stock, 0) : Number(data.stock),
         salesChannel: selectedChannel,
         published: selectedChannel === "online" && data.status === "active" && form.onlineStore.checked,
         status: data.status,

@@ -299,6 +299,30 @@
     function sharedExperimentalCodes(){try{const raw=localStorage.getItem(SHARED_PRODUCTS_STORAGE_KEY);const products=raw?JSON.parse(raw):[];return new Map((Array.isArray(products)?products:[]).filter(product=>product&&product.id&&/^\d+$/.test(String(product.experimentalCode||"").trim())).map(product=>[String(product.id),String(product.experimentalCode).trim()]))}catch{return new Map()}}
     function assignExperimentalItemCodes(products=[]){const sharedCodes=sharedExperimentalCodes();products.forEach(product=>{if(product&&product.id&&!String(product.experimentalCode||"").trim()){const sharedCode=sharedCodes.get(String(product.id));if(sharedCode)product.experimentalCode=sharedCode}});const sortedProducts=[...products].filter(product=>product&&product.id).sort((a,b)=>String(a.id).localeCompare(String(b.id),undefined,{numeric:true,sensitivity:"base"}));sortedProducts.forEach(product=>{const generatedCode=String(product.experimentalCode||"").trim();const sku=String(product.sku||"").trim();const barcode=String(product.barcode||"").trim();if(generatedCode&&/^\d+$/.test(generatedCode)){if(sku===generatedCode)product.sku="";if(barcode===generatedCode)product.barcode=""}});const usedManualCodes=new Set(sortedProducts.map(productManualCode).filter(Boolean));let nextCode=EXPERIMENTAL_ITEM_CODE_START;sortedProducts.forEach(product=>{const manualCode=productManualCode(product);if(manualCode)return;const savedCode=String(product.experimentalCode||"").trim();if(/^\d+$/.test(savedCode)){usedManualCodes.add(savedCode);return}while(usedManualCodes.has(String(nextCode)))nextCode+=1;product.experimentalCode=String(nextCode);usedManualCodes.add(product.experimentalCode);nextCode+=1});return products}
     function productItemCode(product){return String(productStoredCode(product)||productManualCode(product)||product?.experimentalCode||"").trim()}
+    const animalSelections=new Map();
+    function isAnimal2003(product){return [product?.sku,product?.item_code,product?.itemCode,productItemCode(product)].some(code=>String(code||"").trim()==="2003")}
+    function animalAllocation(product){return sourceVariantArray(product.source_variants).filter(v=>v.animalKey!=null).map(v=>({key:String(v.animalKey),name:v.name,quantity:Number(animalSelections.get(product.id)?.[v.animalKey])||0,stock:Number(v.stock)||0})).filter(v=>v.quantity>0)}
+    function renderAnimalChoices(lines){
+      for(const {product} of lines){
+        if(!isAnimal2003(product))continue;
+        const note=[...document.querySelectorAll('[data-item-note]')].find(el=>el.dataset.itemNote===product.id);
+        const box=document.createElement('div');box.className='model-field';
+        const rows=sourceVariantArray(product.source_variants).filter(v=>v.animalKey!=null);
+        if(!rows.length){box.textContent=state.lang==='zh'?'请先在后台填写11种小动物库存':'Set animal stock in admin first';note.before(box);continue}
+        box.innerHTML=`<details open><summary>${state.lang==='zh'?'小动物类型与数量':'Animals & quantities'}</summary>${rows.map(v=>`<label style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:5px;font-size:12px"><span>${escapeHtml(v.name)} (${Number(v.stock)||0})</span><input type="number" style="width:60px;height:30px" min="0" max="${Number(v.stock)||0}" step="1" data-animal-product="${escapeHtml(product.id)}" data-animal-key="${escapeHtml(String(v.animalKey))}" aria-label="${escapeHtml(v.name)}" value="${Number(animalSelections.get(product.id)?.[v.animalKey])||0}"></label>`).join('')}</details>`;
+        note.before(box);
+      }
+    }
+    document.querySelector('#cartContent').addEventListener('change',event=>{
+      const input=event.target;if(!input.matches('[data-animal-product]'))return;
+      const product=state.products.find(p=>p.id===input.dataset.animalProduct);if(!product)return;
+      const quantities={...animalSelections.get(product.id)};
+      quantities[input.dataset.animalKey]=Math.max(0,Math.min(Number(input.max),Math.floor(Number(input.value)||0)));
+      animalSelections.set(product.id,quantities);
+      const total=Object.values(quantities).reduce((sum,n)=>sum+n,0);
+      if(total)state.cart.set(product.id,total);
+      render();
+    });
     const COMMON_PHONE_MODELS=Object.freeze(["iPhone 17","iPhone 17 Pro","iPhone 17 Pro Max","iPhone 17 Air","iPhone 16","iPhone 16 Pro","iPhone 16 Pro Max","iPhone 16 Plus","iPhone 15","iPhone 15 Pro","iPhone 15 Pro Max","iPhone 14","iPhone 14 Pro","iPhone 14 Pro Max","iPhone 13","iPhone 13 Pro","iPhone 13 Pro Max","iPhone 12","iPhone 12 Pro","iPhone 12 Pro Max","iPhone 11","iPhone 11 Pro","iPhone 11 Pro Max","Samsung S26","Samsung S26 Plus","Samsung S26 Ultra","Samsung S25","Samsung S25 Plus","Samsung S25 Ultra","Samsung S24","Samsung S24 Plus","Samsung S24 Ultra","Samsung S23","Samsung S23 Plus","Samsung S23 Ultra","Samsung A56","Samsung A36","Samsung A16","Samsung A15","Samsung A06","Google Pixel","Huawei Mate","Other / 其他"]);
     function normalizePhoneModel(value){return String(value||"").trim().replace(/iPhone\s*13\s*ProMax/i,"iPhone 13 Pro Max").replace(/iPhone\s*13Pro\s*Max/i,"iPhone 13 Pro Max").replace(/iPhone\s*13Pro/i,"iPhone 13 Pro")}
     function phoneFilmAggregate(product){return product&&([product.sku,product.barcode,product.item_code,product.itemCode].some(value=>String(value||"").trim()==="6666")||String(product.id||"")==="1688-905020913177")}
@@ -324,7 +348,9 @@
     function itemNoteText(productId){
       const model=String(state.itemModels.get(productId)||"").trim();
       const note=String(state.itemNotes.get(productId)||"").trim();
-      return [`${model?`${t("phoneModelLabel")}: ${model}`:""}`,note].filter(Boolean).join(" · ").slice(0,500);
+      const product=state.products.find(p=>p.id===productId);
+      const animals=product&&isAnimal2003(product)?animalAllocation(product).map(v=>`${v.name} x${v.quantity}`).join(', '):'';
+      return [`${model?`${t("phoneModelLabel")}: ${model}`:""}`,animals,note].filter(Boolean).join(" · ").slice(0,500);
     }
     function renderPhoneModelFields(lines){
       const cartContent=$("#cartContent");
@@ -562,6 +588,7 @@
       if(event.key==="Enter"&&event.target.matches("[data-line-discount]")){event.preventDefault();event.target.blur()}
     });
     function render(){
+      for(const id of animalSelections.keys())if(!state.cart.has(id))animalSelections.delete(id);
       const lines=[...state.cart].map(([id,quantity])=>({product:state.products.find(p=>p.id===id),quantity})).filter(x=>x.product);
       const count=lines.reduce((sum,line)=>sum+line.quantity,0);
       const subtotal=cartSubtotal();
@@ -591,6 +618,7 @@
       document.querySelectorAll("[data-manual-discount-type]").forEach(button=>button.setAttribute("aria-pressed",String(button.dataset.manualDiscountType===state.manualDiscount.type)));
       $("#cartContent").innerHTML=lines.length?`<table class="cart-table"><thead><tr><th>${state.lang==="zh"?"商品":"Product"}</th><th>${state.lang==="zh"?"单价":"Unit price"}</th><th>${state.lang==="zh"?"数量":"Qty"}</th><th>${state.lang==="zh"?"小计":"Subtotal"}</th><th></th></tr></thead><tbody>${lines.map(({product:p,quantity:q})=>{const unitPrice=cartUnitPrice(p);const overridden=hasPriceOverride(p);return `<tr><td><div class="product-cell"><img class="thumb" src="${escapeHtml(p.image||"")}" alt=""><div class="product-meta"><strong>${escapeHtml(p.title)}</strong><span>${escapeHtml(productItemCode(p)||p.id)} · ${t("stock")} ${p.stock}</span><input class="note-input" type="text" data-item-note="${escapeHtml(p.id)}" maxlength="500" placeholder="${escapeHtml(t("itemNotePlaceholder"))}" value="${escapeHtml(state.itemNotes.get(p.id)||"")}"></div></div></td><td><div class="line-price-editor"><label class="line-price-field"><span>$</span><input type="number" data-line-price="${escapeHtml(p.id)}" min="0" max="999999.99" step="0.01" inputmode="decimal" value="${unitPrice.toFixed(2)}" aria-label="${escapeHtml(t("linePriceLabel"))}"></label>${overridden?`<button class="line-price-reset" type="button" data-reset-line-price="${escapeHtml(p.id)}" title="${escapeHtml(t("originalPrice"))} ${escapeHtml(money.format(p.price))}"><i data-lucide="rotate-ccw"></i></button>`:""}</div>${overridden?`<small class="line-price-original">${escapeHtml(t("originalPrice"))} ${escapeHtml(money.format(p.price))}</small>`:""}</td><td><div class="qty"><button data-id="${escapeHtml(p.id)}" data-delta="-1">−</button><input aria-label="${state.lang==="zh"?"数量":"Quantity"}" data-id="${escapeHtml(p.id)}" value="${q}" inputmode="numeric"><button data-id="${escapeHtml(p.id)}" data-delta="1">+</button></div></td><td><strong>${money.format(unitPrice*q)}</strong></td><td><button class="remove" data-remove="${escapeHtml(p.id)}" title="${t("remove")} "><i data-lucide="x"></i></button></td></tr>`}).join("")}</tbody></table>`:`<div class="empty"><i data-lucide="scan-line"></i><p>${t("emptyCart")}</p></div>`;
       renderPhoneModelFields(lines);
+      renderAnimalChoices(lines);
       renderLineDiscountControls(lines);
       renderDiscountedLinePrices(subtotal,totalDiscount);
       renderVoucherOptions();
@@ -615,10 +643,13 @@
       const clientManualDiscount=manualDiscountValue(clientSubtotal,clientVoucherDiscount);
       try{
         await refreshPhoneFilmInventory();
+        for(const [id,quantity] of state.cart){const product=state.products.find(p=>p.id===id);if(!isAnimal2003(product))continue;const allocations=animalAllocation(product);if(!allocations.length||allocations.reduce((sum,v)=>sum+v.quantity,0)!==quantity)throw new Error(state.lang==='zh'?'请选择小动物，款式数量合计必须等于商品数量':'Select animals: allocated quantities must match item quantity');}
         const items=[...state.cart].map(([product_id,quantity])=>{const product=state.products.find(entry=>entry.id===product_id);return {product_id,quantity,unit_price:cartUnitPrice(product),note:itemNoteText(product_id)}});
         const rpcArgs={p_items:items,p_customer_barcode:state.customer?.customer_barcode||null,p_customer_voucher_id:chosenVoucher?.id||null,p_order_note:orderNote,p_manual_discount_type:clientManualDiscount>0?state.manualDiscount.type:null,p_manual_discount_value:clientManualDiscount>0?Number(state.manualDiscount.value)||0:0};
         const paymentMethod=document.querySelector('[name="posPaymentMethod"]:checked')?.value||"eftpos";
-        const {data,error}=await db.rpc("create_pos_order_with_payment",{...rpcArgs,p_payment_method:paymentMethod}).single();
+        const hasAnimals=[...state.cart.keys()].some(id=>isAnimal2003(state.products.find(p=>p.id===id)));
+        const request=hasAnimals?{...rpcArgs,p_items:items.map(item=>{const product=state.products.find(p=>p.id===item.product_id);return isAnimal2003(product)?{...item,animal_allocations:animalAllocation(product).map(v=>({key:v.key,quantity:v.quantity}))}:item}),p_payment_method:paymentMethod}:{...rpcArgs,p_payment_method:paymentMethod};
+        const {data,error}=await db.rpc(hasAnimals?"create_pos_order_with_animals":"create_pos_order_with_payment",request).single();
         if(error)throw error;
         try { localStorage.setItem("gogoshop_pos_order_completed", JSON.stringify({id:data.id,at:Date.now()})); } catch {}
         const serverDiscount=Number(data.discount_amount||0);
@@ -631,6 +662,7 @@
         const pointsNote=awardedPoints?" · +"+awardedPoints+" "+t("pointsAwarded"):"";
         document.querySelector('[name="posPaymentMethod"][value="eftpos"]').checked=true;
         state.cart.clear();
+        animalSelections.clear();
         state.itemNotes.clear();
         state.itemModels.clear();
         state.priceOverrides.clear();
