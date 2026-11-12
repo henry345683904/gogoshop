@@ -9476,6 +9476,7 @@
             <section class="shopify-editor-card" data-animal-stock-editor hidden>
               <div class="shopify-card-head"><h3>2003 · 小动物库存 / Animal stock</h3></div>
               <div data-animal-stock-list></div>
+              <p class="muted" data-animal-stock-summary></p>
             </section>
             <section class="shopify-editor-card" data-phone-film-stock-editor hidden>
               <div class="shopify-card-head"><h3>6666 手机膜型号库存</h3></div>
@@ -18103,19 +18104,31 @@
       panel.hidden = !isAnimal2003Product(form);
       if (panel.hidden) { delete panel.dataset.loaded; return; }
       const key = String(product?.id || "new");
-      if (panel.dataset.loaded === key) return;
+      if (panel.dataset.loaded === key) { updateAnimalStockSummary(form); return; }
       panel.dataset.loaded = key;
       const saved = product?.sourceVariants || [];
       $("[data-animal-stock-list]", panel).innerHTML = ANIMAL_2003_NAMES.map((name, index) => {
         const row = saved.find(v => v.animalKey === String(index)) || saved.find(v => v.name === name);
         return `<label class="field" style="display:grid;grid-template-columns:minmax(0,1fr) 90px;align-items:center;gap:10px"><span>${escapeHtml(name)}</span><input type="number" min="0" step="1" data-animal-stock="${index}" aria-label="${escapeHtml(name)}" placeholder="待填写" value="${row?.stock ?? ""}"></label>`;
       }).join("");
+      updateAnimalStockSummary(form);
+    }
+    function updateAnimalStockSummary(form) {
+      const inputs = $$("[data-animal-stock]", form);
+      const filled = inputs.filter(input => input.value !== "");
+      const total = filled.reduce((sum, input) => sum + Math.max(0, Number(input.value) || 0), 0);
+      const summary = $("[data-animal-stock-summary]", form);
+      if (!summary) return;
+      summary.textContent = state.lang === "zh"
+        ? `已填写 ${filled.length}/11 种，共 ${total} 件。可逐种保存；留空表示未盘点，无货请填 0。`
+        : `${filled.length}/11 types counted, ${total} units. Save individually; blank means uncounted, enter 0 for none.`;
+      if (filled.length === inputs.length && inputs.length) form.elements.namedItem("stock").value = String(total);
     }
     function readAnimalStockRows(form) {
       const inputs = $$("[data-animal-stock]", form);
       if (inputs.every(input => input.value === "")) return null;
-      if (inputs.some(input => input.value === "" || !Number.isInteger(Number(input.value)) || Number(input.value) < 0)) throw new Error("请填写全部 11 种小动物的库存（没有库存填 0） / Enter stock for all 11 animals");
-      return inputs.map(input => ({animalKey: input.dataset.animalStock, name: ANIMAL_2003_NAMES[Number(input.dataset.animalStock)], stock: Number(input.value)}));
+      if (inputs.some(input => input.value !== "" && (!Number.isInteger(Number(input.value)) || Number(input.value) < 0))) throw new Error("库存必须为非负整数 / Stock must be a non-negative whole number");
+      return inputs.map(input => ({animalKey: input.dataset.animalStock, name: ANIMAL_2003_NAMES[Number(input.dataset.animalStock)], stock: input.value === "" ? null : Number(input.value)}));
     }
     function isPhoneFilm6666Product(productOrForm) {
       const values = productOrForm?.elements
@@ -18863,7 +18876,7 @@
         sourceUrl: data.sourceUrl.trim(),
         sourceVariants: isAnimal2003Product(form) ? (animalRows || existing?.sourceVariants || []) : isPhoneFilm6666Product(form) ? readPhoneFilmStockRows(form) : (existing?.sourceVariants || []),
         sourceAttributes: existing?.sourceAttributes || [],
-        stock: animalRows ? animalRows.reduce((sum, row) => sum + row.stock, 0) : Number(data.stock),
+        stock: animalRows ? Math.max(animalRows.reduce((sum, row) => sum + (row.stock ?? 0), 0), animalRows.some(row => row.stock === null) ? Number(data.stock) : 0) : Number(data.stock),
         salesChannel: selectedChannel,
         published: selectedChannel === "online" && data.status === "active" && form.onlineStore.checked,
         status: data.status,
@@ -19413,6 +19426,7 @@
       }
       if (event.target instanceof Element && event.target.closest("[data-product-form]")) {
         const productForm = event.target.closest("[data-product-form]");
+        if (event.target.matches("[data-animal-stock]")) updateAnimalStockSummary(productForm);
         if (event.target.matches('[name="discountEnabled"], [name="discountPercent"], [name="price"]')) {
           updateProductDiscountPreview(productForm);
         }
