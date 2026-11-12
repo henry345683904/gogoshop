@@ -309,7 +309,7 @@
         const box=document.createElement('div');box.className='model-field';
         const rows=sourceVariantArray(product.source_variants).filter(v=>v.animalKey!=null);
         if(!rows.length){box.textContent=state.lang==='zh'?'请先在后台填写11种小动物库存':'Set animal stock in admin first';note.before(box);continue}
-        box.innerHTML=`<details open><summary>${state.lang==='zh'?'小动物类型与数量':'Animals & quantities'}</summary>${rows.map(v=>`<label style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:5px;font-size:12px"><span>${escapeHtml(v.name)} (${Number(v.stock)||0})</span><input type="number" style="width:60px;height:30px" min="0" max="${Number(v.stock)||0}" step="1" data-animal-product="${escapeHtml(product.id)}" data-animal-key="${escapeHtml(String(v.animalKey))}" aria-label="${escapeHtml(v.name)}" value="${Number(animalSelections.get(product.id)?.[v.animalKey])||0}"></label>`).join('')}</details>`;
+        box.innerHTML=`<details open><summary>${state.lang==='zh'?'小动物类型与数量':'Animals & quantities'}</summary>${rows.map(v=>`<label style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:5px;font-size:12px"><span>${escapeHtml(v.name)} (${v.stock==null?(state.lang==='zh'?'待填写库存':'Set stock'):Number(v.stock)||0})</span><input type="number" style="width:60px;height:30px" min="0" max="${Number(v.stock)||0}" ${v.stock==null?'disabled':''} step="1" data-animal-product="${escapeHtml(product.id)}" data-animal-key="${escapeHtml(String(v.animalKey))}" aria-label="${escapeHtml(v.name)}" value="${Number(animalSelections.get(product.id)?.[v.animalKey])||0}"></label>`).join('')}</details>`;
         note.before(box);
       }
     }
@@ -648,7 +648,7 @@
         const rpcArgs={p_items:items,p_customer_barcode:state.customer?.customer_barcode||null,p_customer_voucher_id:chosenVoucher?.id||null,p_order_note:orderNote,p_manual_discount_type:clientManualDiscount>0?state.manualDiscount.type:null,p_manual_discount_value:clientManualDiscount>0?Number(state.manualDiscount.value)||0:0};
         const paymentMethod=document.querySelector('[name="posPaymentMethod"]:checked')?.value||"eftpos";
         const hasAnimals=[...state.cart.keys()].some(id=>isAnimal2003(state.products.find(p=>p.id===id)));
-        const request=hasAnimals?{...rpcArgs,p_items:items.map(item=>{const product=state.products.find(p=>p.id===item.product_id);return isAnimal2003(product)?{...item,animal_allocations:animalAllocation(product).map(v=>({key:v.key,quantity:v.quantity}))}:item}),p_payment_method:paymentMethod}:{...rpcArgs,p_payment_method:paymentMethod};
+        const request=hasAnimals?{...rpcArgs,p_items:items.map(item=>{const product=state.products.find(p=>p.id===item.product_id);return isAnimal2003(product)?{...item,note:String(state.itemNotes.get(product.id)||'').trim(),animal_allocations:animalAllocation(product).map(v=>({key:v.key,quantity:v.quantity}))}:item}),p_payment_method:paymentMethod}:{...rpcArgs,p_payment_method:paymentMethod};
         const {data,error}=await db.rpc(hasAnimals?"create_pos_order_with_animals":"create_pos_order_with_payment",request).single();
         if(error)throw error;
         try { localStorage.setItem("gogoshop_pos_order_completed", JSON.stringify({id:data.id,at:Date.now()})); } catch {}
