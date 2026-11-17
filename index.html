@@ -13255,6 +13255,7 @@
       let error;
       state.adminProductLoadError = "";
       async function loadAdminPages(fields, label) {
+        fields = [...new Set([...fields.split(","), "source_variants", "source_attributes"])].join(",");
         const rows = [];
         const pageSize = 500;
         for (let offset = 0; ; offset += pageSize) {
@@ -16146,10 +16147,14 @@
         deleted_was_published: false,
         updated_at: new Date().toISOString()
       };
-      let result = await db.from("products").upsert(payload);
+      // Quick edits may use public catalog rows without private stock variants.
+      // Omit missing variants so an unrelated edit cannot erase saved allocations.
+      if (!payload.source_variants.length) delete payload.source_variants;
+      if (!payload.source_attributes.length) delete payload.source_attributes;
+      let result = await db.from("products").upsert(payload, { defaultToNull: false });
       if (result.error && /item_code|schema cache/i.test(result.error.message || "")) {
         delete payload.item_code;
-        result = await db.from("products").upsert(payload);
+        result = await db.from("products").upsert(payload, { defaultToNull: false });
       }
       if (result.error) throw result.error;
       return true;
