@@ -16977,6 +16977,26 @@
       });
     }
 
+    function buildProductSalesSummaries() {
+      const summaries = new Map();
+      const month = new Date(); month.setDate(1); month.setHours(0, 0, 0, 0);
+      const week = new Date(); week.setDate(week.getDate() - ((week.getDay() + 6) % 7)); week.setHours(0, 0, 0, 0);
+      for (const order of state.adminOrders) {
+        if (!validSalesOrder(order)) continue;
+        const date = new Date(order.created_at || order.confirmed_at || 0).getTime();
+        for (const item of order.order_items || []) {
+          const id = String(item.product_id || "");
+          const summary = summaries.get(id) || { total: 0, month: 0, week: 0 };
+          const quantity = Math.max(0, Number(item.quantity) || 0);
+          summary.total += quantity;
+          if (date >= month.getTime()) summary.month += quantity;
+          if (date >= week.getTime()) summary.week += quantity;
+          summaries.set(id, summary);
+        }
+      }
+      return summaries;
+    }
+
     function productSalesSummary(product) {
       const rows = productSalesRows(product.id);
       const now = Date.now();
@@ -17055,6 +17075,7 @@
       const loadState = inventoryLoading && !channelProducts.length
         ? `<div class="empty-state catalog-load-state"><i data-lucide="loader-circle"></i><span>${t("productsLoading")}</span></div>`
         : "";
+      const salesSummaries = buildProductSalesSummaries();
       $("#adminProductRows").innerHTML = products.map((product) => {
         const isOnlineChannel = channel === "online";
         const onlineActions = isOnlineChannel ? `
@@ -17063,10 +17084,10 @@
         const statusLabel = isOnlineChannel ? (product.published ? "Live" : "Draft") : (isOfflineDraftProduct(product) ? "草稿" : "活跃");
         const rowClass = isOnlineChannel && !product.published ? "is-offline-only" : "";
         const statusClass = isOnlineChannel ? (product.published ? "live" : "draft") : (isOfflineDraftProduct(product) ? "draft" : "offline");
-        const sales = productSalesSummary(product);
+        const sales = salesSummaries.get(String(product.id)) || { total: 0, month: 0, week: 0 };
         return `
         <article class="admin-product-item ${rowClass}" data-edit-product-row="${escapeHtml(product.id)}" role="button" tabindex="0" aria-label="Edit ${escapeHtml(product.title)}">
-          <img src="${escapeHtml(imageSource(product.image) || PRODUCT_IMAGE_FALLBACK)}" alt="${escapeHtml(product.title)}" loading="eager" decoding="async">
+          <img src="${escapeHtml(imageSource(product.image) || PRODUCT_IMAGE_FALLBACK)}" alt="${escapeHtml(product.title)}" loading="lazy" decoding="async">
           <div class="admin-product-summary">
             <strong>${escapeHtml(product.title)}</strong>
             <span>${product.featured ? "Pinned · " : ""}${escapeHtml([categoryName(productCategoryKey(product)), product.vendor, productSourcePriceText(product)].filter(Boolean).join(" · "))}</span>
@@ -17412,14 +17433,6 @@
         const target = shell?.querySelector(".admin-main") || shell;
         if (target) target.insertAdjacentHTML("afterbegin", `<div class="empty-state admin-render-error">后台部分内容加载失败，请刷新后重试。</div>`);
       }
-      window.requestAnimationFrame(() => {
-        const shell = $("#adminShell");
-        const active = shell?.querySelector('.admin-section.active:not([hidden])');
-        if (!active) return;
-        active.style.transform = "translateZ(0)";
-        void active.offsetHeight;
-        active.style.transform = "none";
-      });
     }
 
     function renderAdminContent() {
