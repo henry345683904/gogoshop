@@ -12698,10 +12698,21 @@
       showToast.timer = window.setTimeout(() => toast.classList.remove("show"), 2200);
     }
 
+    let iconRefreshFrame = 0;
     function refreshIcons() {
-      if (window.lucide) {
-        window.lucide.createIcons();
-      }
+      if (!window.lucide || iconRefreshFrame) return;
+      iconRefreshFrame = window.requestAnimationFrame(() => {
+        iconRefreshFrame = 0;
+        // Only new placeholders need conversion; existing SVGs are already ready.
+        const icons = Array.from(document.querySelectorAll('i[data-lucide]'));
+        if (!icons.length) return;
+        icons.forEach(icon => {
+          icon.setAttribute('data-icon-pending', icon.getAttribute('data-lucide'));
+          icon.removeAttribute('data-lucide');
+        });
+        window.lucide.createIcons({ nameAttr: 'data-icon-pending' });
+        document.querySelectorAll('[data-icon-pending]').forEach(icon => icon.removeAttribute('data-icon-pending'));
+      });
     }
 
     function categories() {
@@ -12792,6 +12803,7 @@
     }
 
     function renderProducts() {
+      if (isAdminRoute() || $("#admin")?.classList.contains("active")) return;
       const arrivalsButton = $("[data-new-arrivals]");
       arrivalsButton?.setAttribute("aria-pressed", String(state.category === "__new_arrivals"));
       arrivalsButton?.classList.toggle("active", state.category === "__new_arrivals");
@@ -15173,6 +15185,8 @@
       if (isAdminRoute()) {
         history.replaceState(null, "", "#home");
       }
+      renderProducts();
+      applyStoreDesign();
       refreshIcons();
     }
 
@@ -18998,6 +19012,11 @@
 
     function renderAll() {
       window.syncSupportChat?.();
+      if (isAdminRoute() || $("#admin")?.classList.contains("active")) {
+        renderAccount();
+        renderAdmin();
+        return;
+      }
       renderHolidayShop();
       renderProducts();
       renderCart();
