@@ -8821,6 +8821,7 @@
               <div class="admin-product-list" id="adminTrashRows"></div>
             </section>
             <div class="admin-product-list" id="adminProductRows"></div>
+            <button class="button ghost" type="button" data-admin-products-more hidden></button>
           </div>
         </section>
 
@@ -14331,13 +14332,13 @@
       });
       if (!inventoryRefreshTimer) {
         inventoryRefreshTimer = window.setInterval(() => {
-          if (!document.hidden) void loadStoreInventory();
+          if (!document.hidden && $("#productEditorModal")?.hidden !== false) void loadStoreInventory();
         }, CATALOG_REFRESH_INTERVAL);
       }
       if (!inventoryVisibilityListenerReady) {
         inventoryVisibilityListenerReady = true;
         document.addEventListener("visibilitychange", () => {
-          if (!document.hidden) void loadStoreInventory();
+          if (!document.hidden && $("#productEditorModal")?.hidden !== false) void loadStoreInventory();
         });
       }
     }
@@ -17040,7 +17041,10 @@
       refreshIcons();
     }
 
+    let adminProductRenderLimit = 40;
+    let adminProductRenderFilter = "";
     function renderAdminProducts() {
+      if (state.adminTab !== "products" || $("#adminShell")?.hidden) return;
       renderAdminProductChannelTabs();
       const channel = activeAdminProductChannel();
       const channelProducts = adminProductChannelProducts(channel);
@@ -17051,6 +17055,14 @@
       const category = renderAdminProductCategoryFilter(channelProducts);
       const categoryActive = category !== "All";
       const products = adminProductSearchResults(channelProducts);
+      const filterKey = JSON.stringify([channel, state.adminProductSearch, category, state.adminProductStatus]);
+      if (filterKey !== adminProductRenderFilter) {
+        adminProductRenderFilter = filterKey;
+        adminProductRenderLimit = 40;
+      }
+      const moreButton = $("[data-admin-products-more]");
+      moreButton.hidden = products.length <= adminProductRenderLimit;
+      moreButton.textContent = state.lang === "zh" ? `加载更多（已显示 ${Math.min(adminProductRenderLimit, products.length)}/${products.length}）` : `Load more (${Math.min(adminProductRenderLimit, products.length)}/${products.length})`;
       const statusActive = channel === "offline" && ["active", "draft"].includes(state.adminProductStatus);
       const draftStatus = state.adminProductStatus === "draft";
       const activeProducts = channelProducts.filter((product) => !isOfflineDraftProduct(product));
@@ -17090,7 +17102,7 @@
         ? `<div class="empty-state catalog-load-state"><i data-lucide="loader-circle"></i><span>${t("productsLoading")}</span></div>`
         : "";
       const salesSummaries = buildProductSalesSummaries();
-      $("#adminProductRows").innerHTML = products.map((product) => {
+      $("#adminProductRows").innerHTML = products.slice(0, adminProductRenderLimit).map((product) => {
         const isOnlineChannel = channel === "online";
         const onlineActions = isOnlineChannel ? `
             <button class="action-button ${product.published ? "" : "offline"}" type="button" data-toggle-product-online="${escapeHtml(product.id)}" aria-label="${product.published ? "Hide" : "Show"} ${escapeHtml(product.title)} ${product.published ? "from online store" : "in online store"}" title="${product.published ? "隐藏商品" : "发布到网店"}"><i data-lucide="${product.published ? "eye-off" : "eye"}"></i></button>
@@ -19344,6 +19356,10 @@
       if (target.matches("[data-back-store]")) exitAdminToStore();
       if (target.matches("[data-admin-logout]")) logoutAdmin();
       if (target.matches("[data-admin-tab]")) setAdminTab(target.dataset.adminTab);
+      if (target.matches("[data-admin-products-more]")) {
+        adminProductRenderLimit += 40;
+        renderAdminProducts();
+      }
       if (target.matches("[data-design-section]")) selectDesignEditorSection(target.dataset.designSection);
       if (target.matches("[data-select-design-section]")) selectDesignEditorSection(target.dataset.selectDesignSection, target.dataset.designBlockId || null);
       if (target.matches("[data-design-device]")) setDesignPreviewDevice(target.dataset.designDevice);
