@@ -7,9 +7,9 @@
     <meta name="description" content="GO GO Pocket 模拟数字资产钱包，仅供界面体验，不连接真实区块链。" />
     <title>GO GO Pocket · 钱包</title>
     <link rel="icon" href="../assets/app-icon-192.png" />
-    <link rel="stylesheet" href="./styles.css?v=20261126-1" />
+    <link rel="stylesheet" href="./styles.css?v=20261126-miner" />
     <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js" defer></script>
-    <script src="./app.js?v=20261126-btc-eth" defer></script>
+    <script src="./app.js?v=20261126-miner" defer></script>
   </head>
   <body>
     <main class="wallet-app" aria-label="GO GO Pocket 模拟钱包">
@@ -116,6 +116,12 @@
 
       <section id="discoverView" class="view" data-view="discover" hidden>
         <div class="page-heading"><div><small>演示入口</small><h1>发现</h1></div><button class="icon-button soft" type="button" aria-label="收藏"><i data-lucide="star"></i></button></div>
+        <section class="content-section miner-section" aria-label="GOGO COIN miner">
+          <div class="section-title"><h2>GOGO COIN</h2><button id="minerSettings" type="button" aria-label="矿机设置"><i data-lucide="sliders-horizontal"></i></button></div>
+          <div class="miner-hero"><div class="mining-machine" id="miningMachine" aria-hidden="true"><i data-lucide="cpu"></i><span></span><span></span><span></span></div><div><small id="minerStatus">已暂停</small><h2>GOGO 矿机</h2><strong id="minerRate">0.1 GOGO/s</strong></div></div>
+          <div class="miner-stats"><div><small>累计产出</small><strong id="minerEarned">0 GOGO</strong></div><div><small>产出价值</small><strong id="minerEarnedValue">NZ$0</strong></div><div><small>GOGO 单价</small><strong id="minerPrice">NZ$0.125</strong></div><div><small>每秒价值</small><strong id="minerValueRate">NZ$0.0125/s</strong></div></div>
+          <button class="primary-button" id="toggleMiner" type="button">启动矿机</button>
+        </section>
         <section class="discover-banner">
           <div><small>GO GO SHOP</small><h2>积分与代金券中心</h2><p>体验 GOGO 在商城场景中的模拟使用流程。</p><a href="https://gogoshop.nz/">打开商城 <i data-lucide="arrow-up-right"></i></a></div>
           <span class="discover-coin">G</span>

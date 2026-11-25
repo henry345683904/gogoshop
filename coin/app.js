@@ -8,6 +8,7 @@ const TOKEN_META = {
 };
 
 const DEFAULT_STATE = {
+  miner: { running: false, rate: 0.1, price: 0.125, earned: 0, lastAt: 0 },
   language: "zh",
   balances: { GOGO: 12580, BTC: 0, ETH: 1.8426, USDT: 52.18 },
   hidden: false,
@@ -30,6 +31,7 @@ function loadState() {
     return parsed ? {
       ...structuredClone(DEFAULT_STATE),
       ...parsed,
+      miner: { ...DEFAULT_STATE.miner, ...(parsed.miner || {}) },
       balances: { ...DEFAULT_STATE.balances, ...(parsed.balances || {}), ETH: parsed.balances?.ETH ?? parsed.balances?.BNB ?? DEFAULT_STATE.balances.ETH },
       activity: Array.isArray(parsed.activity) ? parsed.activity : DEFAULT_STATE.activity
     } : structuredClone(DEFAULT_STATE);
@@ -43,9 +45,12 @@ function saveState() {
 }
 
 function settingsModal() {
+  settleMining();
   openModal("设置", `<form id="walletSettingsForm" class="sheet-body">
     <div class="field"><label for="language">语言</label><select id="language" name="language"><option value="zh" ${state.language !== "en" ? "selected" : ""}>简体中文</option><option value="en" ${state.language === "en" ? "selected" : ""}>English</option></select></div>
     ${Object.keys(TOKEN_META).map(symbol => `<div class="field"><label for="balance${symbol}">${symbol} 余额</label><input id="balance${symbol}" name="balance${symbol}" type="number" min="0" max="1000000000000000" step="any" value="${state.balances[symbol]}" required /></div>`).join("")}
+    <div class="field"><label for="minerRateInput">矿机速率（GOGO/s）</label><input id="minerRateInput" name="minerRate" type="number" min="0" max="1000000000" step="any" value="${state.miner.rate}" required /></div>
+    <div class="field"><label for="coinPriceInput">GOGO 单价（NZD）</label><input id="coinPriceInput" name="coinPrice" type="number" min="0" max="1000000000" step="any" value="${state.miner.price}" required /></div>
     <button type="submit" class="primary-button">保存设置</button>
   </form>`);
 }
@@ -60,6 +65,7 @@ const ENGLISH_COPY = {
 Object.assign(ENGLISH_COPY, {
   "可用": "Available", "请输入有效余额": "Enter a valid balance", "请输入有效的 0x 地址": "Enter a valid 0x address", "余额不足或数量无效": "Insufficient balance or invalid amount", "GOGO 余额不足": "Insufficient GOGO balance", "转账已完成，没有产生真实链上交易": "Transfer recorded locally. No blockchain transaction was sent.", "兑换完成": "Swap complete", "地址已复制": "Address copied", "地址簿为空": "Address book is empty", "检测完成：没有真实链上授权": "No blockchain approvals found", "账户 2 仅作界面展示": "Account 2 is for display only", "扫描功能仅作界面演示，不会调用摄像头": "Scanner preview; camera access is not requested", "行情为固定数据，不代表真实市场价格": "Prices are illustrative, not live market prices", "数据已重置": "Data reset", "已添加 ETH 演示资产": "ETH asset added", "已移除 ETH 演示资产": "ETH asset removed", "功能仅作界面演示": " is a demo feature", "页面仅作展示": " is a display-only page", "已切换至": "Switched to ", "本页面用于钱包界面体验。余额和交易保存在当前浏览器，不代表真实资产，不会发送链上交易。": "This is a wallet interface demo. Balances and activity are stored in this browser, represent no real assets, and do not send blockchain transactions."
 });
+Object.assign(ENGLISH_COPY, { "矿机速率（GOGO/s）": "Mining rate (GOGO/s)", "GOGO 单价（NZD）": "GOGO price (NZD)", "GOGO 矿机": "GOGO Miner", "矿机设置": "Miner settings", "累计产出": "Total mined", "产出价值": "Mined value", "GOGO 单价": "GOGO price", "每秒价值": "Value per second", "已暂停": "Paused", "运行中": "Running", "启动矿机": "Start mining", "暂停矿机": "Pause mining" });
 const englishPhrases = Object.entries(ENGLISH_COPY).sort((a, b) => b[0].length - a[0].length);
 const languageAttributes = new WeakMap();
 
@@ -120,6 +126,7 @@ function refreshIcons() {
 }
 
 function updateBalances() {
+  TOKEN_META.GOGO.nzd = state.miner.price;
   dom.gogoBalance.textContent = formatAmount(state.balances.GOGO, 2);
   dom.usdtBalance.textContent = formatAmount(state.balances.USDT, 2);
   for (const symbol of Object.keys(TOKEN_META)) {
@@ -134,6 +141,35 @@ function updateBalances() {
   dom.toggleBalance.setAttribute("aria-label", state.hidden ? "显示余额" : "隐藏余额");
   dom.toggleBalance.innerHTML = `<i data-lucide="${state.hidden ? "eye-off" : "eye"}"></i>`;
   refreshIcons();
+  renderMiner();
+}
+
+function settleMining() {
+  const now = Date.now();
+  const elapsed = state.miner.lastAt > 0 ? Math.max(0, (now - state.miner.lastAt) / 1000) : 0;
+  if (state.miner.running) {
+    const earned = elapsed * state.miner.rate;
+    state.balances.GOGO += earned;
+    state.miner.earned += earned;
+  }
+  state.miner.lastAt = now;
+}
+
+function miningNumber(value) {
+  return Number(value).toLocaleString("en-NZ", { maximumFractionDigits: 8 });
+}
+
+function renderMiner() {
+  document.getElementById("minerStatus").textContent = state.miner.running ? "运行中" : "已暂停";
+  document.getElementById("minerRate").textContent = `${miningNumber(state.miner.rate)} GOGO/s`;
+  document.getElementById("minerEarned").textContent = `${miningNumber(state.miner.earned)} GOGO`;
+  document.getElementById("minerEarnedValue").textContent = `NZ$${miningNumber(state.miner.earned * state.miner.price)}`;
+  document.getElementById("minerPrice").textContent = `NZ$${miningNumber(state.miner.price)}`;
+  document.getElementById("minerValueRate").textContent = `NZ$${miningNumber(state.miner.rate * state.miner.price)}/s`;
+  document.getElementById("toggleMiner").textContent = state.miner.running ? "暂停矿机" : "启动矿机";
+  document.getElementById("miningMachine").classList.toggle("is-running", state.miner.running);
+  document.querySelector(".market-row .gogo-logo").parentElement.querySelector("div:last-child strong").textContent = miningNumber(state.miner.price);
+  applyLanguage();
 }
 
 function renderActivity() {
@@ -209,7 +245,7 @@ function swapModal() {
     <form id="swapForm" class="sheet-body">
       <div class="swap-box"><div class="swap-row"><span><small>支付</small><strong>GOGO</strong></span><input id="swapAmount" type="number" min="1" step="1" value="100" aria-label="支付 GOGO 数量" /></div><small>余额 ${formatAmount(state.balances.GOGO)} GOGO</small></div>
       <div class="swap-divider"><i data-lucide="arrow-down"></i></div>
-      <div class="swap-box"><div class="swap-row"><span><small>获得</small><strong>USDT</strong></span><input id="swapOutput" value="7.4316" aria-label="获得 USDT 数量" readonly /></div><small>模拟汇率：1 GOGO = 0.074316 USDT</small></div>
+      <div class="swap-box"><div class="swap-row"><span><small>获得</small><strong>USDT</strong></span><input id="swapOutput" value="${formatAmount(100 * state.miner.price / TOKEN_META.USDT.nzd, 4)}" aria-label="获得 USDT 数量" readonly /></div><small>模拟汇率：1 GOGO = ${miningNumber(state.miner.price / TOKEN_META.USDT.nzd)} USDT</small></div>
       <div class="summary-box"><div><span>价格影响</span><strong>&lt; 0.01%</strong></div><div><span>网络费</span><strong>0.0008 tBNB</strong></div></div>
       <button class="primary-button" type="submit">确认模拟兑换</button>
     </form>`);
@@ -255,12 +291,18 @@ function handleSubmit(event) {
   if (event.target.id === "walletSettingsForm") {
     event.preventDefault();
     const values = {};
+    const rate = Number(event.target.elements.minerRate.value);
+    const price = Number(event.target.elements.coinPrice.value);
+    if (![rate, price].every(value => Number.isFinite(value) && value >= 0 && value <= 1e9)) return toast("请输入有效余额");
     for (const symbol of Object.keys(TOKEN_META)) {
       const value = Number(event.target.elements[`balance${symbol}`].value);
       if (!Number.isFinite(value) || value < 0 || value > 1e15) return toast("请输入有效余额");
       values[symbol] = value;
     }
     state.balances = values;
+    state.miner.rate = rate;
+    state.miner.price = price;
+    state.miner.lastAt = Date.now();
     state.language = event.target.elements.language.value === "en" ? "en" : "zh";
     saveState(); updateBalances(); renderActivity(); closeModal(); toast(state.language === "en" ? "Settings saved" : "设置已保存");
     applyLanguage();
@@ -280,7 +322,7 @@ function handleSubmit(event) {
     event.preventDefault();
     const amount = Number(document.getElementById("swapAmount").value);
     if (!amount || amount <= 0 || amount > state.balances.GOGO) return toast("GOGO 模拟余额不足");
-    const output = amount * 0.074316;
+    const output = amount * state.miner.price / TOKEN_META.USDT.nzd;
     state.balances.GOGO -= amount;
     state.balances.USDT += output;
     state.activity.unshift({ type: "swap", token: "USDT", amount: output, peer: `${formatAmount(amount, 2)} GOGO → USDT`, time: "刚刚" });
@@ -306,6 +348,13 @@ function copyAddress() {
 }
 
 function bindEvents() {
+  document.getElementById("minerSettings").addEventListener("click", settingsModal);
+  document.getElementById("toggleMiner").addEventListener("click", () => {
+    settleMining();
+    state.miner.running = !state.miner.running;
+    saveState(); updateBalances();
+  });
+  window.addEventListener("pagehide", () => { settleMining(); saveState(); });
   document.querySelector('[aria-label="设置"]').addEventListener("click", settingsModal);
   document.querySelectorAll("[data-nav]").forEach((button) => button.addEventListener("click", () => showView(button.dataset.nav)));
   document.querySelectorAll("[data-action]").forEach((button) => button.addEventListener("click", () => {
@@ -338,7 +387,7 @@ function bindEvents() {
   dom.modalBody.addEventListener("click", handleModalClick);
   dom.modalBody.addEventListener("submit", handleSubmit);
   dom.modalBody.addEventListener("input", (event) => {
-    if (event.target.id === "swapAmount") document.getElementById("swapOutput").value = formatAmount(Number(event.target.value || 0) * 0.074316, 4);
+    if (event.target.id === "swapAmount") document.getElementById("swapOutput").value = formatAmount(Number(event.target.value || 0) * state.miner.price / TOKEN_META.USDT.nzd, 4);
   });
   dom.resetDemoButton.addEventListener("click", () => {
     Object.assign(state, structuredClone(DEFAULT_STATE)); saveState(); updateBalances(); renderActivity(); toast("模拟数据已重置");
@@ -351,9 +400,14 @@ function init() {
     dom[id] = id === "app" ? document.querySelector(".wallet-app") : document.getElementById(id);
   });
   bindEvents();
+  settleMining();
   updateBalances();
   renderActivity();
   refreshIcons();
+  setInterval(() => {
+    if (!dom.modalBackdrop.hidden) return;
+    settleMining(); saveState(); updateBalances();
+  }, 1000);
 }
 
 document.addEventListener("DOMContentLoaded", init);

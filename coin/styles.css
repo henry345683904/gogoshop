@@ -240,6 +240,27 @@ button { border: 0; cursor: pointer; }
 .usdt-logo { background: #26a17b; }
 .eth-logo { background: #6775c5; }
 .btc-logo { background: #f7931a; }
+
+.miner-section { margin-top: 0; padding-bottom: 16px; }
+.miner-section .section-title button { display: grid; place-items: center; width: 30px; height: 30px; }
+.miner-section .section-title svg { width: 18px; height: 18px; }
+.miner-hero { display: flex; align-items: center; gap: 18px; padding: 20px 18px; }
+.miner-hero > div:last-child { min-width: 0; }
+.miner-hero h2 { margin: 5px 0 8px; font-size: 1.15rem; }
+.miner-hero small { color: var(--muted); font-size: .7rem; }
+.miner-hero strong { color: var(--blue); font-size: .95rem; overflow-wrap: anywhere; }
+.mining-machine { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; flex: 0 0 82px; width: 82px; padding: 12px; border: 2px solid #cad9ec; border-radius: 8px; background: #eef5fc; }
+.mining-machine svg { grid-column: 1 / 4; width: 48px; height: 48px; margin: auto auto 6px; color: var(--blue); }
+.mining-machine span { height: 5px; background: #abb9cc; border-radius: 2px; }
+.mining-machine.is-running span { background: var(--green); animation: miningLight 1.2s ease-in-out infinite alternate; }
+.mining-machine.is-running span:nth-child(3) { animation-delay: .3s; }
+.mining-machine.is-running span:nth-child(4) { animation-delay: .6s; }
+.miner-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; padding: 0 18px 20px; }
+.miner-stats > div { display: grid; gap: 5px; min-width: 0; }
+.miner-stats small { color: var(--muted); font-size: .68rem; }
+.miner-stats strong { font-size: .84rem; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+.miner-section > .primary-button { display: block; width: calc(100% - 36px); margin: 0 18px; }
+@keyframes miningLight { from { opacity: .35; } to { opacity: 1; } }
 .token-meta,
 .token-balance { display: grid; gap: 4px; min-width: 0; }
 .token-meta strong,
