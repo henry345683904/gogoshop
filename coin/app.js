@@ -2,13 +2,14 @@ const DEMO_ADDRESS = "0x5AaCd7f7aF55073bD11e8CCA63186aF40bF4E71d";
 const STORAGE_KEY = "gogo-pocket-demo-v1";
 const TOKEN_META = {
   GOGO: { name: "GoGo Coin", balance: 12580, decimals: 2, colorClass: "gogo-logo", mark: "G", nzd: 0.125 },
-  BNB: { name: "BNB Testnet", balance: 1.8426, decimals: 4, colorClass: "bnb-logo", mark: "◆", nzd: 643.78 },
+  BTC: { name: "Bitcoin", balance: 0, decimals: 8, colorClass: "btc-logo", mark: "₿", nzd: 156000 },
+  ETH: { name: "Ethereum", balance: 1.8426, decimals: 4, colorClass: "eth-logo", mark: "♦", nzd: 6233.4 },
   USDT: { name: "模拟稳定币", balance: 52.18, decimals: 2, colorClass: "usdt-logo", mark: "₮", nzd: 1.682 }
 };
 
 const DEFAULT_STATE = {
   language: "zh",
-  balances: { GOGO: 12580, BNB: 1.8426, USDT: 52.18 },
+  balances: { GOGO: 12580, BTC: 0, ETH: 1.8426, USDT: 52.18 },
   hidden: false,
   extraToken: false,
   network: "BSC 测试网",
@@ -29,7 +30,7 @@ function loadState() {
     return parsed ? {
       ...structuredClone(DEFAULT_STATE),
       ...parsed,
-      balances: { ...DEFAULT_STATE.balances, ...(parsed.balances || {}) },
+      balances: { ...DEFAULT_STATE.balances, ...(parsed.balances || {}), ETH: parsed.balances?.ETH ?? parsed.balances?.BNB ?? DEFAULT_STATE.balances.ETH },
       activity: Array.isArray(parsed.activity) ? parsed.activity : DEFAULT_STATE.activity
     } : structuredClone(DEFAULT_STATE);
   } catch {
@@ -120,16 +121,15 @@ function refreshIcons() {
 
 function updateBalances() {
   dom.gogoBalance.textContent = formatAmount(state.balances.GOGO, 2);
-  dom.bnbBalance.textContent = formatAmount(state.balances.BNB, 4);
   dom.usdtBalance.textContent = formatAmount(state.balances.USDT, 2);
   for (const symbol of Object.keys(TOKEN_META)) {
     const row = document.querySelector(`[data-token="${symbol}"]`);
+    row.querySelector(".token-balance strong").textContent = formatAmount(state.balances[symbol], TOKEN_META[symbol].decimals);
     row.querySelector(".token-balance small").textContent = `≈ NZ$${formatAmount(state.balances[symbol] * TOKEN_META[symbol].nzd)}`;
   }
-  const total = state.balances.GOGO * TOKEN_META.GOGO.nzd + state.balances.BNB * TOKEN_META.BNB.nzd + state.balances.USDT * TOKEN_META.USDT.nzd + (state.extraToken ? 149.6 : 0);
+  const total = Object.entries(TOKEN_META).reduce((sum, [symbol, meta]) => sum + state.balances[symbol] * meta.nzd, 0);
   dom.totalBalance.textContent = `NZ$${formatAmount(total, 2)}`;
   dom.app.classList.toggle("balance-hidden", state.hidden);
-  dom.ethRow.hidden = !state.extraToken;
   dom.networkName.textContent = state.network;
   dom.toggleBalance.setAttribute("aria-label", state.hidden ? "显示余额" : "隐藏余额");
   dom.toggleBalance.innerHTML = `<i data-lucide="${state.hidden ? "eye-off" : "eye"}"></i>`;
@@ -225,7 +225,7 @@ function networkModal() {
 
 function moreModal() {
   openModal("更多模拟功能", `<div class="more-list">
-    <button class="more-option" type="button" data-more="token"><span><i data-lucide="circle-plus"></i></span><div><strong>${state.extraToken ? "移除 ETH 演示资产" : "添加 ETH 演示资产"}</strong><small>仅改变本页面显示</small></div><i data-lucide="chevron-right"></i></button>
+    <button class="more-option" type="button" data-more="balances"><span><i data-lucide="sliders-horizontal"></i></span><div><strong>设置</strong><small>余额</small></div><i data-lucide="chevron-right"></i></button>
     <button class="more-option" type="button" data-more="address"><span><i data-lucide="contact-round"></i></span><div><strong>地址簿</strong><small>查看模拟联系人</small></div><i data-lucide="chevron-right"></i></button>
     <button class="more-option" type="button" data-more="approval"><span><i data-lucide="file-check-2"></i></span><div><strong>授权检测</strong><small>此演示没有任何真实授权</small></div><i data-lucide="chevron-right"></i></button>
   </div>`);
@@ -294,7 +294,7 @@ function handleModalClick(event) {
   const network = event.target.closest("[data-network]")?.dataset.network;
   if (network) { state.network = network; saveState(); updateBalances(); closeModal(); toast(`已切换至 ${network}（模拟）`); }
   const more = event.target.closest("[data-more]")?.dataset.more;
-  if (more === "token") { state.extraToken = !state.extraToken; saveState(); updateBalances(); closeModal(); toast(state.extraToken ? "已添加 ETH 演示资产" : "已移除 ETH 演示资产"); }
+  if (more === "balances") settingsModal();
   if (more === "address") toast("模拟地址簿为空");
   if (more === "approval") toast("检测完成：没有真实链上授权");
   if (event.target.closest("[data-detail-action='send']")) sendModal();

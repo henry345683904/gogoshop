@@ -239,6 +239,7 @@ button { border: 0; cursor: pointer; }
 .bnb-logo { color: #27200b; background: #f3ba2f; }
 .usdt-logo { background: #26a17b; }
 .eth-logo { background: #6775c5; }
+.btc-logo { background: #f7931a; }
 .token-meta,
 .token-balance { display: grid; gap: 4px; min-width: 0; }
 .token-meta strong,

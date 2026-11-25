@@ -9,7 +9,7 @@
     <link rel="icon" href="../assets/app-icon-192.png" />
     <link rel="stylesheet" href="./styles.css?v=20261126-1" />
     <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js" defer></script>
-    <script src="./app.js?v=20261126-settings" defer></script>
+    <script src="./app.js?v=20261126-btc-eth" defer></script>
   </head>
   <body>
     <main class="wallet-app" aria-label="GO GO Pocket 模拟钱包">
@@ -76,20 +76,20 @@
               <span class="token-meta"><strong>GOGO</strong><small>GoGo Coin · 本地模拟资产</small></span>
               <span class="token-balance"><strong id="gogoBalance">12,580.00</strong><small>≈ NZ$1,572.50</small></span>
             </button>
-            <button class="asset-row" type="button" data-token="BNB">
-              <span class="token-logo bnb-logo">◆</span>
-              <span class="token-meta"><strong>tBNB</strong><small>BNB Smart Chain Testnet</small></span>
-              <span class="token-balance"><strong id="bnbBalance">1.8426</strong><small>≈ NZ$1,186.24</small></span>
+            <button class="asset-row" type="button" data-token="BTC">
+              <span class="token-logo" style="background:#f7931a">₿</span>
+              <span class="token-meta"><strong>Bitcoin</strong><small>BTC</small></span>
+              <span class="token-balance"><strong>0.00000000</strong><small>≈ NZ$0.00</small></span>
+            </button>
+            <button class="asset-row" type="button" data-token="ETH">
+              <span class="token-logo eth-logo">♦</span>
+              <span class="token-meta"><strong>Ethereum</strong><small>ETH</small></span>
+              <span class="token-balance"><strong>1.8426</strong><small>≈ NZ$0.00</small></span>
             </button>
             <button class="asset-row" type="button" data-token="USDT">
               <span class="token-logo usdt-logo">₮</span>
               <span class="token-meta"><strong>USDT</strong><small>模拟稳定币</small></span>
               <span class="token-balance"><strong id="usdtBalance">52.18</strong><small>≈ NZ$87.78</small></span>
-            </button>
-            <button class="asset-row optional-token" id="ethRow" type="button" data-token="ETH" hidden>
-              <span class="token-logo eth-logo">♦</span>
-              <span class="token-meta"><strong>ETH</strong><small>模拟资产</small></span>
-              <span class="token-balance"><strong>0.0240</strong><small>≈ NZ$149.60</small></span>
             </button>
           </div>
 
