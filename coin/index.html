@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#1377e6" />
+    <meta name="description" content="GO GO Pocket 模拟数字资产钱包，仅供界面体验，不连接真实区块链。" />
+    <title>GO GO Pocket · 模拟钱包</title>
+    <link rel="icon" href="../assets/app-icon-192.png" />
+    <link rel="stylesheet" href="./styles.css?v=20261126-1" />
+    <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js" defer></script>
+    <script src="./app.js?v=20261126-1" defer></script>
+  </head>
+  <body>
+    <main class="wallet-app" aria-label="GO GO Pocket 模拟钱包">
+      <header class="topbar">
+        <a class="brand" href="https://gogoshop.nz/" aria-label="返回 GO GO SHOP">
+          <span class="brand-mark" aria-hidden="true"><span>G</span></span>
+          <span class="brand-copy"><strong>GO GO Pocket</strong><small>模拟钱包</small></span>
+        </a>
+        <div class="header-actions">
+          <button class="network-button" id="networkButton" type="button" aria-label="切换网络">
+            <span class="network-dot"></span>
+            <span id="networkName">BSC 测试网</span>
+            <i data-lucide="chevron-down" aria-hidden="true"></i>
+          </button>
+          <button class="icon-button" id="scanButton" type="button" aria-label="扫描">
+            <i data-lucide="scan-line" aria-hidden="true"></i>
+          </button>
+        </div>
+      </header>
+
+      <section class="demo-notice" aria-label="演示提示">
+        <i data-lucide="shield-check" aria-hidden="true"></i>
+        <span>模拟演示，不连接真实区块链，不会索取助记词或私钥</span>
+      </section>
+
+      <section id="walletView" class="view is-active" data-view="wallet">
+        <section class="account-panel" aria-label="账户资产">
+          <div class="account-line">
+            <button class="account-selector" id="accountButton" type="button">
+              <span class="avatar">A1</span>
+              <span><small>账户 1</small><strong id="shortAddress">0x5AaC...E71d</strong></span>
+              <i data-lucide="chevron-down" aria-hidden="true"></i>
+            </button>
+            <button class="icon-button soft" id="copyAddressButton" type="button" aria-label="复制模拟地址">
+              <i data-lucide="copy" aria-hidden="true"></i>
+            </button>
+          </div>
+          <div class="balance-label">
+            <span>总资产（NZD）</span>
+            <button class="visibility-button" id="toggleBalance" type="button" aria-label="隐藏余额">
+              <i data-lucide="eye" aria-hidden="true"></i>
+            </button>
+          </div>
+          <div class="total-balance" id="totalBalance">NZ$2,846.52</div>
+          <div class="balance-change"><span>今日</span><strong>+NZ$38.74</strong><em>+1.38%</em></div>
+        </section>
+
+        <section class="quick-actions" aria-label="快捷操作">
+          <button type="button" data-action="send"><span><i data-lucide="arrow-up-right"></i></span><strong>转账</strong></button>
+          <button type="button" data-action="receive"><span><i data-lucide="arrow-down-left"></i></span><strong>收款</strong></button>
+          <button type="button" data-action="swap"><span><i data-lucide="repeat-2"></i></span><strong>兑换</strong></button>
+          <button type="button" data-action="more"><span><i data-lucide="layout-grid"></i></span><strong>更多</strong></button>
+        </section>
+
+        <section class="content-section asset-section" aria-labelledby="assetHeading">
+          <div class="section-heading">
+            <div class="segmented" role="tablist" aria-label="资产与记录">
+              <button class="is-active" type="button" data-asset-tab="assets">资产</button>
+              <button type="button" data-asset-tab="activity">记录</button>
+            </div>
+            <button class="icon-button subtle" id="manageTokensButton" type="button" aria-label="管理代币">
+              <i data-lucide="sliders-horizontal" aria-hidden="true"></i>
+            </button>
+          </div>
+
+          <div id="assetList" class="asset-list">
+            <button class="asset-row" type="button" data-token="GOGO">
+              <span class="token-logo gogo-logo">G</span>
+              <span class="token-meta"><strong>GOGO</strong><small>GoGo Coin · 本地模拟资产</small></span>
+              <span class="token-balance"><strong id="gogoBalance">12,580.00</strong><small>≈ NZ$1,572.50</small></span>
+            </button>
+            <button class="asset-row" type="button" data-token="BNB">
+              <span class="token-logo bnb-logo">◆</span>
+              <span class="token-meta"><strong>tBNB</strong><small>BNB Smart Chain Testnet</small></span>
+              <span class="token-balance"><strong id="bnbBalance">1.8426</strong><small>≈ NZ$1,186.24</small></span>
+            </button>
+            <button class="asset-row" type="button" data-token="USDT">
+              <span class="token-logo usdt-logo">₮</span>
+              <span class="token-meta"><strong>USDT</strong><small>模拟稳定币</small></span>
+              <span class="token-balance"><strong id="usdtBalance">52.18</strong><small>≈ NZ$87.78</small></span>
+            </button>
+            <button class="asset-row optional-token" id="ethRow" type="button" data-token="ETH" hidden>
+              <span class="token-logo eth-logo">♦</span>
+              <span class="token-meta"><strong>ETH</strong><small>模拟资产</small></span>
+              <span class="token-balance"><strong>0.0240</strong><small>≈ NZ$149.60</small></span>
+            </button>
+          </div>
+
+          <div id="activityList" class="activity-list" hidden></div>
+        </section>
+      </section>
+
+      <section id="marketsView" class="view" data-view="markets" hidden>
+        <div class="page-heading"><div><small>模拟市场</small><h1>行情</h1></div><button class="icon-button soft" type="button" aria-label="搜索"><i data-lucide="search"></i></button></div>
+        <section class="market-summary">
+          <div><span>模拟市场总值</span><strong>NZ$4.82B</strong><small class="positive">+2.41% 今日</small></div>
+          <div class="market-bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        </section>
+        <section class="content-section market-list-section">
+          <div class="section-title"><h2>关注列表</h2><button type="button" id="marketInfoButton">模拟价格</button></div>
+          <div class="market-list">
+            <article class="market-row"><span class="token-logo gogo-logo">G</span><div><strong>GOGO / NZD</strong><small>GoGo Coin</small></div><span class="sparkline up" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span><div><strong>0.125</strong><small class="positive">+5.20%</small></div></article>
+            <article class="market-row"><span class="token-logo bnb-logo">◆</span><div><strong>BNB / NZD</strong><small>BNB</small></div><span class="sparkline up alt" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span><div><strong>643.78</strong><small class="positive">+1.72%</small></div></article>
+            <article class="market-row"><span class="token-logo eth-logo">♦</span><div><strong>ETH / NZD</strong><small>Ethereum</small></div><span class="sparkline down" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span><div><strong>6,233.40</strong><small class="negative">-0.46%</small></div></article>
+            <article class="market-row"><span class="token-logo usdt-logo">₮</span><div><strong>USDT / NZD</strong><small>Tether</small></div><span class="sparkline flat" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span><div><strong>1.682</strong><small>0.00%</small></div></article>
+          </div>
+        </section>
+      </section>
+
+      <section id="discoverView" class="view" data-view="discover" hidden>
+        <div class="page-heading"><div><small>演示入口</small><h1>发现</h1></div><button class="icon-button soft" type="button" aria-label="收藏"><i data-lucide="star"></i></button></div>
+        <section class="discover-banner">
+          <div><small>GO GO SHOP</small><h2>积分与代金券中心</h2><p>体验 GOGO 在商城场景中的模拟使用流程。</p><a href="https://gogoshop.nz/">打开商城 <i data-lucide="arrow-up-right"></i></a></div>
+          <span class="discover-coin">G</span>
+        </section>
+        <section class="content-section dapp-section">
+          <div class="section-title"><h2>常用功能</h2><span>全部为模拟</span></div>
+          <div class="dapp-grid">
+            <button type="button" data-demo-feature="跨链桥"><span class="dapp-icon blue"><i data-lucide="shuffle"></i></span><strong>跨链桥</strong><small>网络资产互换</small></button>
+            <button type="button" data-demo-feature="质押"><span class="dapp-icon green"><i data-lucide="landmark"></i></span><strong>质押</strong><small>模拟收益中心</small></button>
+            <button type="button" data-demo-feature="NFT"><span class="dapp-icon coral"><i data-lucide="image"></i></span><strong>NFT</strong><small>数字藏品预览</small></button>
+            <button type="button" data-demo-feature="投票"><span class="dapp-icon gold"><i data-lucide="badge-check"></i></span><strong>投票</strong><small>社区治理演示</small></button>
+          </div>
+        </section>
+        <section class="content-section security-note"><i data-lucide="info"></i><div><strong>请勿输入真实钱包资料</strong><p>本页没有真实 DApp、签名或链上授权功能。</p></div></section>
+      </section>
+
+      <section id="profileView" class="view" data-view="profile" hidden>
+        <div class="page-heading"><div><small>本地模拟账户</small><h1>我的</h1></div><button class="icon-button soft" type="button" aria-label="设置"><i data-lucide="settings"></i></button></div>
+        <section class="profile-card">
+          <span class="avatar large">A1</span>
+          <div><strong>账户 1</strong><small>0x5AaC...E71d</small></div>
+          <span class="demo-chip">DEMO</span>
+        </section>
+        <section class="content-section settings-list">
+          <button type="button" data-profile-action="网络"><span><i data-lucide="network"></i></span><div><strong>网络</strong><small>BSC 测试网</small></div><i data-lucide="chevron-right"></i></button>
+          <button type="button" data-profile-action="安全"><span><i data-lucide="shield"></i></span><div><strong>安全中心</strong><small>不保存任何真实密钥</small></div><i data-lucide="chevron-right"></i></button>
+          <button type="button" data-profile-action="语言"><span><i data-lucide="languages"></i></span><div><strong>语言</strong><small>简体中文</small></div><i data-lucide="chevron-right"></i></button>
+          <button type="button" data-profile-action="关于"><span><i data-lucide="circle-help"></i></span><div><strong>关于本演示</strong><small>TokenPocket 风格界面模拟</small></div><i data-lucide="chevron-right"></i></button>
+        </section>
+        <button class="reset-button" id="resetDemoButton" type="button"><i data-lucide="rotate-ccw"></i> 重置模拟数据</button>
+      </section>
+
+      <nav class="bottom-nav" aria-label="主要导航">
+        <button class="is-active" type="button" data-nav="wallet"><i data-lucide="wallet-cards"></i><span>钱包</span></button>
+        <button type="button" data-nav="markets"><i data-lucide="chart-candlestick"></i><span>行情</span></button>
+        <button type="button" data-nav="discover"><i data-lucide="compass"></i><span>发现</span></button>
+        <button type="button" data-nav="profile"><i data-lucide="circle-user-round"></i><span>我的</span></button>
+      </nav>
+    </main>
+
+    <div class="modal-backdrop" id="modalBackdrop" hidden>
+      <section class="sheet" id="modalSheet" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <div class="sheet-handle" aria-hidden="true"></div>
+        <header class="sheet-header"><h2 id="modalTitle">操作</h2><button class="icon-button soft" id="closeModal" type="button" aria-label="关闭"><i data-lucide="x"></i></button></header>
+        <div class="sheet-body" id="modalBody"></div>
+      </section>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </body>
+</html>
