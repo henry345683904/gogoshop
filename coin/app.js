@@ -7,6 +7,7 @@ const TOKEN_META = {
 };
 
 const DEFAULT_STATE = {
+  language: "zh",
   balances: { GOGO: 12580, BNB: 1.8426, USDT: 52.18 },
   hidden: false,
   extraToken: false,
@@ -40,6 +41,62 @@ function saveState() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 }
 
+function settingsModal() {
+  openModal("设置", `<form id="walletSettingsForm" class="sheet-body">
+    <div class="field"><label for="language">语言</label><select id="language" name="language"><option value="zh" ${state.language !== "en" ? "selected" : ""}>简体中文</option><option value="en" ${state.language === "en" ? "selected" : ""}>English</option></select></div>
+    ${Object.keys(TOKEN_META).map(symbol => `<div class="field"><label for="balance${symbol}">${symbol} 余额</label><input id="balance${symbol}" name="balance${symbol}" type="number" min="0" max="1000000000000000" step="any" value="${state.balances[symbol]}" required /></div>`).join("")}
+    <button type="submit" class="primary-button">保存设置</button>
+  </form>`);
+}
+
+const languageNodes = new WeakMap();
+const ENGLISH_COPY = {
+  "钱包": "Wallet", "总资产（NZD）": "Total assets (NZD)", "今日": "Today", "转账": "Send", "收款": "Receive", "兑换": "Swap", "更多": "More", "资产": "Assets", "记录": "Activity", "行情": "Markets", "发现": "Discover", "我的": "Profile",
+  "账户 1": "Account 1", "账户 2": "Account 2", "本地账户": "Local account", "简体中文": "Simplified Chinese", "设置": "Settings", "保存设置": "Save settings", "余额": "Balance", "语言": "Language", "网络": "Network", "稳定币": "Stablecoin", "本地资产": "Local asset", "安全中心": "Security", "不保存任何真实密钥": "No private keys stored", "关于本演示": "About this demo", "TokenPocket 风格界面": "TokenPocket-style interface", "重置数据": "Reset data",
+  "市场": "Market", "市场总值": "Market capitalization", "关注列表": "Watchlist", "价格": "Prices", "演示入口": "Explore", "积分与代金券中心": "Rewards & vouchers", "体验 GOGO 在商城场景中的使用流程。": "Explore GOGO in the shop.", "打开商城": "Open shop", "常用功能": "Quick access", "全部为": "Demo features", "跨链桥": "Bridge", "网络资产互换": "Cross-network swap", "质押": "Staking", "收益中心": "Rewards", "数字藏品预览": "Collectibles", "投票": "Vote", "社区治理演示": "Community governance", "请勿输入真实钱包资料": "Do not enter wallet secrets", "本页没有真实 DApp、签名或链上授权功能。": "No live DApps, signatures or blockchain approvals.",
+  "选择网络": "Select network", "BSC 网": "BSC Network", "Ethereum 网": "Ethereum Network", "Polygon 网": "Polygon Network", "仅切换界面，不连接节点": "Display only; no node connection", "收款地址": "Recipient address", "数量": "Amount", "全部": "Max", "仅本地": "Local only", "矿工费": "Network fee", "确认转账": "Confirm transfer", "输入 0x 开头的地址": "Enter a 0x address", "复制地址": "Copy address", "此二维码仅供界面演示，不可用于真实转账": "Display QR only. Not for real transfers.", "提示": "Note", "支付": "You pay", "获得": "You receive", "汇率：": "Rate: ", "价格影响": "Price impact", "网络费": "Network fee", "确认兑换": "Confirm swap", "更多功能": "More features", "添加 ETH 演示资产": "Add ETH demo asset", "移除 ETH 演示资产": "Remove ETH demo asset", "仅改变本页面显示": "Changes this page only", "地址簿": "Address book", "查看联系人": "View contacts", "授权检测": "Approval check", "此演示没有任何真实授权": "No blockchain approvals", "资产详情": "Asset details", "本地项目 · 未部署到公共网络": "Local project; not publicly deployed", "市场数据": "Market data", "估值": "Value", "暂无交易": "No transactions", "完成一次转账或兑换后会显示在这里": "Transfers and swaps appear here.", "刚刚": "Just now", "商城积分奖励": "Shop reward", "今天": "Today", "昨天": "Yesterday", "关闭": "Close", "复制地址": "Copy address", "切换网络": "Switch network", "扫描": "Scan", "隐藏余额": "Hide balance", "显示余额": "Show balance", "管理代币": "Manage tokens", "搜索": "Search", "收藏": "Favorites"
+};
+Object.assign(ENGLISH_COPY, {
+  "可用": "Available", "请输入有效余额": "Enter a valid balance", "请输入有效的 0x 地址": "Enter a valid 0x address", "余额不足或数量无效": "Insufficient balance or invalid amount", "GOGO 余额不足": "Insufficient GOGO balance", "转账已完成，没有产生真实链上交易": "Transfer recorded locally. No blockchain transaction was sent.", "兑换完成": "Swap complete", "地址已复制": "Address copied", "地址簿为空": "Address book is empty", "检测完成：没有真实链上授权": "No blockchain approvals found", "账户 2 仅作界面展示": "Account 2 is for display only", "扫描功能仅作界面演示，不会调用摄像头": "Scanner preview; camera access is not requested", "行情为固定数据，不代表真实市场价格": "Prices are illustrative, not live market prices", "数据已重置": "Data reset", "已添加 ETH 演示资产": "ETH asset added", "已移除 ETH 演示资产": "ETH asset removed", "功能仅作界面演示": " is a demo feature", "页面仅作展示": " is a display-only page", "已切换至": "Switched to ", "本页面用于钱包界面体验。余额和交易保存在当前浏览器，不代表真实资产，不会发送链上交易。": "This is a wallet interface demo. Balances and activity are stored in this browser, represent no real assets, and do not send blockchain transactions."
+});
+const englishPhrases = Object.entries(ENGLISH_COPY).sort((a, b) => b[0].length - a[0].length);
+const languageAttributes = new WeakMap();
+
+function applyLanguage() {
+  const clean = value => value.replaceAll("模拟", "").replaceAll("测试", "").replaceAll("Testnet", "Network");
+  const translate = value => {
+    let output = clean(value);
+    if (state.language === "en") for (const [zh, en] of englishPhrases) output = output.split(zh).join(en);
+    return output;
+  };
+  const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+  while (walker.nextNode()) {
+    const node = walker.currentNode;
+    if (node.parentElement.closest("script, style")) continue;
+    const cached = languageNodes.get(node);
+    const original = cached && node.nodeValue === cached.output ? cached.original : node.nodeValue;
+    const output = translate(original);
+    languageNodes.set(node, { original, output });
+    if (node.nodeValue !== output) node.nodeValue = output;
+  }
+  document.documentElement.lang = state.language === "en" ? "en" : "zh-CN";
+  for (const element of document.querySelectorAll("[placeholder], [aria-label]")) {
+    const cache = languageAttributes.get(element) || {};
+    for (const attribute of ["placeholder", "aria-label"]) {
+      if (!element.hasAttribute(attribute)) continue;
+      const value = element.getAttribute(attribute);
+      const entry = cache[attribute];
+      const original = entry && value === entry.output ? entry.original : value;
+      const output = translate(original);
+      cache[attribute] = { original, output };
+      element.setAttribute(attribute, output);
+    }
+    languageAttributes.set(element, cache);
+  }
+  document.querySelector('[data-profile-action="语言"] small').textContent = state.language === "en" ? "English" : "简体中文";
+  document.title = state.language === "en" ? "GO GO Pocket · Wallet" : "GO GO Pocket · 钱包";
+}
+
 function formatAmount(value, decimals = 2) {
   return Number(value).toLocaleString("en-NZ", { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
 }
@@ -51,18 +108,24 @@ function shortAddress(address = DEMO_ADDRESS) {
 function toast(message) {
   clearTimeout(toastTimer);
   dom.toast.textContent = message;
+  applyLanguage();
   dom.toast.classList.add("is-visible");
   toastTimer = setTimeout(() => dom.toast.classList.remove("is-visible"), 2300);
 }
 
 function refreshIcons() {
   if (window.lucide) window.lucide.createIcons({ attrs: { "aria-hidden": "true" } });
+  applyLanguage();
 }
 
 function updateBalances() {
   dom.gogoBalance.textContent = formatAmount(state.balances.GOGO, 2);
   dom.bnbBalance.textContent = formatAmount(state.balances.BNB, 4);
   dom.usdtBalance.textContent = formatAmount(state.balances.USDT, 2);
+  for (const symbol of Object.keys(TOKEN_META)) {
+    const row = document.querySelector(`[data-token="${symbol}"]`);
+    row.querySelector(".token-balance small").textContent = `≈ NZ$${formatAmount(state.balances[symbol] * TOKEN_META[symbol].nzd)}`;
+  }
   const total = state.balances.GOGO * TOKEN_META.GOGO.nzd + state.balances.BNB * TOKEN_META.BNB.nzd + state.balances.USDT * TOKEN_META.USDT.nzd + (state.extraToken ? 149.6 : 0);
   dom.totalBalance.textContent = `NZ$${formatAmount(total, 2)}`;
   dom.app.classList.toggle("balance-hidden", state.hidden);
@@ -189,6 +252,20 @@ function accountModal() {
 }
 
 function handleSubmit(event) {
+  if (event.target.id === "walletSettingsForm") {
+    event.preventDefault();
+    const values = {};
+    for (const symbol of Object.keys(TOKEN_META)) {
+      const value = Number(event.target.elements[`balance${symbol}`].value);
+      if (!Number.isFinite(value) || value < 0 || value > 1e15) return toast("请输入有效余额");
+      values[symbol] = value;
+    }
+    state.balances = values;
+    state.language = event.target.elements.language.value === "en" ? "en" : "zh";
+    saveState(); updateBalances(); renderActivity(); closeModal(); toast(state.language === "en" ? "Settings saved" : "设置已保存");
+    applyLanguage();
+    return;
+  }
   if (event.target.id === "sendForm") {
     event.preventDefault();
     const address = event.target.address.value.trim();
@@ -229,6 +306,7 @@ function copyAddress() {
 }
 
 function bindEvents() {
+  document.querySelector('[aria-label="设置"]').addEventListener("click", settingsModal);
   document.querySelectorAll("[data-nav]").forEach((button) => button.addEventListener("click", () => showView(button.dataset.nav)));
   document.querySelectorAll("[data-action]").forEach((button) => button.addEventListener("click", () => {
     ({ send: sendModal, receive: receiveModal, swap: swapModal, more: moreModal })[button.dataset.action]?.();
@@ -238,6 +316,8 @@ function bindEvents() {
   document.querySelectorAll("[data-profile-action]").forEach((button) => button.addEventListener("click", () => {
     const action = button.dataset.profileAction;
     if (action === "网络") return networkModal();
+    if (action === "语言") return settingsModal();
+    if (action === "关于") return openModal("关于本演示", "<p>本页面用于钱包界面体验。余额和交易保存在当前浏览器，不代表真实资产，不会发送链上交易。</p>");
     toast(`${action}页面仅作模拟展示`);
   }));
   document.querySelectorAll("[data-asset-tab]").forEach((button) => button.addEventListener("click", () => {
